@@ -2,7 +2,7 @@ plugins {
     kotlin("jvm")
 }
 
-group = "com.opentool.mediatork"
+group = "com.fajrbahr.mediatork"
 version = "1.0-SNAPSHOT"
 
 repositories {
@@ -12,6 +12,8 @@ repositories {
 dependencies {
     testImplementation(kotlin("test"))
     implementation(project(":library"))
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.10.2")
+
 }
 
 kotlin {

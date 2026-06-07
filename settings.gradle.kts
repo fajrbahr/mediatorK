@@ -4,4 +4,12 @@ plugins {
 rootProject.name = "MediatorK"
 include("sample")
 
- include("library")
+include("library")
+include("publishMaven")
+
+dependencyResolutionManagement {
+    repositories {
+        mavenCentral()
+    }
+}
+
