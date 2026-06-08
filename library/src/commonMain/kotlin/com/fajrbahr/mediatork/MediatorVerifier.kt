@@ -1,12 +1,15 @@
 package com.fajrbahr.mediatork
 
 /**
- * Iterates over every registered request handler and confirms it resolves without throwing.
- * Call this once at app startup (after Koin loads all modules) to surface missing-handler bugs
- * early-as a warning log rather than a runtime crash at first use.
+ * Iterates over every registered request type and confirms a handler exists for it.
  *
- * @param onMissingHandler called for each request type that has no handler registered.
- *   Defaults to a no-op; callers typically provide a logger.warning invocation.
+ * Call this once at application startup — after all [MediatorRegistrar]s have run —
+ * to surface missing-handler misconfigurations as early warnings rather than
+ * runtime crashes at first use. [MediatorFactory.create] invokes this automatically.
+ *
+ * @receiver the registry to inspect.
+ * @param onMissingHandler invoked for each request type that has no registered handler.
+ *   Defaults to a no-op; callers typically supply a logger or `println` call.
  */
 fun HandlerRegistry.verifyHandlers(
     onMissingHandler: (typeName: String) -> Unit = {},

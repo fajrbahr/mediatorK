@@ -1,14 +1,21 @@
 package com.fajrbahr.mediatork
 
 /**
- *  Why a new RequestContext per request and not a class-level property?
- *   MediatorImpl is a singleton-if RequestContext were a shared property,
- *   concurrent send() calls (e.g. two ViewModels firing at the same time)
- *   would overwrite each other's locale, auth token, or any other bag value.
- *   Creating it here scopes the context to this single pipeline execution,
- *   the same way ASP.NET Core scopes HttpContext per HTTP request.
- *   Pipeline behaviors (like LocalePipelineBehavior) populate it,
- *   and handlers consume it-all within one isolated request lifecycle.
+ * Default [Mediator] implementation produced by [MediatorFactory.create].
+ *
+ * Intended to be used as an application-wide singleton. Thread-safety comes from
+ * the fact that all mutable state is confined to a per-call [RequestContext] that
+ * is created fresh inside [executePipeline] — concurrent `send` calls never share
+ * context.
+ *
+ * Why a new [RequestContext] per request and not a class-level property?
+ * [MediatorImpl] is a singleton — if [RequestContext] were a shared property,
+ * concurrent [send] calls (e.g. two ViewModels firing at the same time) would
+ * overwrite each other's locale, auth token, or any other bag value. Creating it
+ * inside [executePipeline] scopes the context to a single pipeline execution, the
+ * same way ASP.NET Core scopes `HttpContext` per HTTP request. Pipeline behaviors
+ * (like `LocalePipelineBehavior`) populate it, and handlers consume it — all
+ * within one isolated request lifecycle.
  */
 internal class MediatorImpl(
     private val registry: HandlerRegistry,
@@ -18,21 +25,48 @@ internal class MediatorImpl(
     private val notificationPublisher: NotificationPublisher,
 ) : Mediator {
 
+    /**
+     * Resolves the handler for [request] and runs the full pipeline.
+     *
+     * @throws MissingHandlerException if no handler is registered for the request type.
+     */
     override suspend fun <TRequest : Request<TResult>, TResult> send(request: TRequest): TResult {
         val handler = registry.resolveHandler(request)
         return executePipeline(request, handler)
     }
 
+    /**
+     * Resolves all notification handlers and delivers [notification] via the
+     * default [NotificationPublisher].
+     */
     override suspend fun <T : Notification> publish(notification: T) {
         val handlers = registry.resolveNotificationHandlers(notification)
         notificationPublisher.publish(notification, handlers)
     }
 
+    /**
+     * Resolves all notification handlers and delivers [notification] via the
+     * supplied [publisher], overriding the default for this call only.
+     *
+     * @param publisher the strategy to use instead of the default [NotificationPublisher].
+     */
     override suspend fun <T : Notification> publish(notification: T, publisher: NotificationPublisher) {
         val handlers = registry.resolveNotificationHandlers(notification)
         publisher.publish(notification, handlers)
     }
 
+    /**
+     * Composes and executes the full behavior/pre-processor/handler/post-processor chain
+     * for a single request dispatch.
+     *
+     * Pipeline behaviors are folded right so that lower-[PipelineBehavior.order] behaviors
+     * are outermost (they see the request first and the response last). Pre- and
+     * post-processors run inside all behaviors, immediately before and after the handler.
+     *
+     * @param request the incoming request.
+     * @param handler the resolved handler for this request type.
+     * @return the result produced by the handler (possibly transformed by behaviors).
+     */
     private suspend fun <TRequest : Request<TResult>, TResult> executePipeline(
         request: TRequest,
         handler: RequestHandler<TRequest, TResult>,
@@ -44,9 +78,7 @@ internal class MediatorImpl(
 
         val finalDelegate: RequestHandlerDelegate<TRequest, TResult> = { req ->
             sortedPre.forEach { it.process(requestContext, req) }
-
             val result = handler.handle(this@MediatorImpl, requestContext, req)
-
             sortedPost.forEach { it.process(requestContext, req, result) }
             result
         }
