@@ -5,8 +5,8 @@ plugins {
     id("com.gradleup.nmcp") version "1.5.0"
 }
 
-group = "com.fajrbahr.mediatork"
-version = "0.0.3"
+group = "io.github.fajrbahr"
+version = "0.0.4"
 
 repositories {
     mavenCentral()
@@ -39,7 +39,7 @@ publishing {
             from(components["java"])
             artifact(javadocJar)
 
-            groupId = "com.fajrbahr.mediatork"
+            groupId = "io.github.fajrbahr"
             artifactId = "mediatork"
             version = project.version.toString()
 

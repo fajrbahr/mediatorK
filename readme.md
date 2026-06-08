@@ -1,6 +1,6 @@
 # MediatorK
 
-[![Maven Central](https://img.shields.io/maven-central/v/com.fajrbahr.mediatork/mediatork)](https://central.sonatype.com/artifact/com.fajrbahr.mediatork/mediatork)
+[![Maven Central](https://img.shields.io/maven-central/v/io.github.fajrbahr/mediatork)](https://central.sonatype.com/artifact/io.github.fajrbahr/mediatork)
 [![Kotlin](https://img.shields.io/badge/Kotlin-2.0+-blue.svg)](https://kotlinlang.org)
 [![Coroutines](https://img.shields.io/badge/Coroutines-1.10+-green)](https://kotlinlang.org/docs/coroutines-overview.html)
 [![License: CC0](https://img.shields.io/badge/License-CC0-brightgreen)](LICENSE)
@@ -13,7 +13,7 @@ A coroutine-first Mediator library for Kotlin. Implements the CQRS and Vertical 
 
 ```kotlin
 dependencies {
-    implementation("com.fajrbahr.mediatork:mediatork:0.0.2")
+    implementation("io.github.fajrbahr:mediatork:0.0.4")
 }
 ```
 
