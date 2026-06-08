@@ -8,10 +8,11 @@ See the [full Spring Boot example](examples/spring-boot-3.md) for a complete Web
 
 ## Setup
 
+Add Spring Boot WebFlux alongside MediatorK (see [Installation](installation.md) for the MediatorK coordinate):
+
 ```kotlin
 // build.gradle.kts
 dependencies {
-    implementation("io.github.fajrbahr:mediatork:0.1.2")
     implementation("org.springframework.boot:spring-boot-starter-webflux")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-reactor:1.10.2")
 }

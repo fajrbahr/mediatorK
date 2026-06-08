@@ -68,7 +68,7 @@ class ValidationBehavior(
     override val order = -50 // run early
 
     @Suppress("UNCHECKED_CAST")
-    override fun <TReq : Request<TRes>, TRes> process(
+    override suspend fun <TReq : Request<TRes>, TRes> process(
         requestContext: RequestContext,
         next: RequestHandlerDelegate<TReq, TRes>,
         request: TReq,

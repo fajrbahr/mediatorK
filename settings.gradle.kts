@@ -14,6 +14,7 @@ include("sample")
 
 include("library")
 project(":library").name = "mediatork"
+include("mediatork-test")
 include("publishMaven")
 
 dependencyResolutionManagement {
