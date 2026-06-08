@@ -1,6 +1,6 @@
 # MediatorK
 
-[![Maven Central](https://img.shields.io/badge/Maven%20Central-0.0.5-blue)](https://central.sonatype.com/artifact/io.github.fajrbahr/mediatork)
+[![Maven Central](https://img.shields.io/maven-central/v/io.github.fajrbahr/mediatork?label=Maven%20Central)](https://central.sonatype.com/artifact/io.github.fajrbahr/mediatork)
 [![Kotlin](https://img.shields.io/badge/Kotlin-2.0+-blue.svg)](https://kotlinlang.org)
 [![Coroutines](https://img.shields.io/badge/Coroutines-1.10+-green)](https://kotlinlang.org/docs/coroutines-overview.html)
 [![License: CC0](https://img.shields.io/badge/License-CC0-brightgreen)](LICENSE)
@@ -21,7 +21,7 @@ MediatorK is a Kotlin Multiplatform library. Pick the snippet that matches your 
 ```kotlin
 // build.gradle.kts
 dependencies {
-    implementation("io.github.fajrbahr:mediatork:0.0.5")
+    implementation("io.github.fajrbahr:mediatork:0.0.7")
 }
 ```
 
@@ -29,7 +29,7 @@ dependencies {
 ```groovy
 // build.gradle
 dependencies {
-    implementation 'io.github.fajrbahr:mediatork:0.0.5'
+    implementation 'io.github.fajrbahr:mediatork:0.0.7'
 }
 ```
 
@@ -38,7 +38,7 @@ dependencies {
 <dependency>
     <groupId>io.github.fajrbahr</groupId>
     <artifactId>mediatork-jvm</artifactId>
-    <version>0.0.5</version>
+    <version>0.0.7</version>
 </dependency>
 ```
 
@@ -49,7 +49,7 @@ dependencies {
 ```kotlin
 // app/build.gradle.kts
 dependencies {
-    implementation("io.github.fajrbahr:mediatork:0.0.5")
+    implementation("io.github.fajrbahr:mediatork:0.0.7")
 }
 ```
 
@@ -69,7 +69,7 @@ kotlin {
 
     sourceSets {
         commonMain.dependencies {
-            implementation("io.github.fajrbahr:mediatork:0.0.5")
+            implementation("io.github.fajrbahr:mediatork:0.0.7")
         }
     }
 }
