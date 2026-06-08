@@ -1,242 +1,163 @@
-# Spring Boot 3.x Examples
+# Spring Boot Example
 
-This example demonstrates how to use Kordinator with Spring Boot 3.x.
+A complete CRUD API using MediatorK with Spring Boot (WebFlux + coroutines).
 
-## Prerequisites
-
-Create a new Spring Boot 3.x project. You can use [Spring Initializr](https://start.spring.io/) to create a new project.
-
-## Step 1: Create Project with Spring Boot 3.x and dependencies
-
-Create Spring Boot project with Reactive Web dependency. You can use [Spring Initializr](https://start.spring.io/) to
-create a new project.
-
-## Step 2: Add Kordinator dependency
-
-### Maven
-
-Add Kordinator dependency to your `pom.xml`:
-
-```xml
-
-<dependency>
-    <groupId>dev.ceviz</groupId>
-    <artifactId>kordinator</artifactId>
-    <version>1.0.0</version>
-</dependency>
-<dependency>
-<groupId>dev.ceviz</groupId>
-<artifactId>spring-3x-kordinator</artifactId>
-<version>1.0.0</version>
-</dependency>
-```
-
-### Gradle (Groovy)
-
-Add Kordinator dependency to your `build.gradle`:
-
-```groovy
-implementation 'dev.ceviz:kordinator:1.0.0'
-implementation 'dev.ceviz:spring-3x-kordinator:1.0.0'
-```
-
-### Gradle (Kotlin)
-
-Add Kordinator dependency to your `build.gradle.kts`:
+## 1. Add dependencies
 
 ```kotlin
-implementation("dev.ceviz:kordinator:1.0.0")
-implementation("dev.ceviz:spring-3x-kordinator:1.0.0")
+// build.gradle.kts
+dependencies {
+    implementation("io.github.fajrbahr:mediatork:0.0.9")
+    implementation("org.springframework.boot:spring-boot-starter-webflux")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-reactor:1.10.2")
+}
 ```
 
-## Step 3: Create a simple data modal
+---
 
-Create a simple data model to represent a todo:
+## 2. Define the domain model
 
 ```kotlin
-data class Todo(
-    var id: Int,
-    var title: String,
-    var description: String,
-    var completed: Boolean
-)
+data class Todo(val id: Int, val title: String, val completed: Boolean)
 ```
 
-## Step 4: Create commands and queries
+---
 
-Create commands and queries to interact with todos:
-
-### CreateTodoCommand
+## 3. Define requests
 
 ```kotlin
-data class CreateTodoCommand(
-    val title: String,
-    val description: String
-) : Command
+data class GetTodosQuery : Request<List<Todo>>
+data class GetTodoQuery(val id: Int) : Request<Todo>
+data class CreateTodoCommand(val title: String) : Request<Todo>
+data class CompleteTodoCommand(val id: Int) : Request<Unit>
+data class DeleteTodoCommand(val id: Int) : Request<Unit>
 ```
 
-### UpdateTodoCommand
+---
+
+## 4. Implement handlers
 
 ```kotlin
-data class UpdateTodoCommand(
-    var id: Int,
-    val completed: Boolean
-) : Command
-```
-
-### DeleteTodoCommand
-
-```kotlin
-data class DeleteTodoCommand(
-    @PathVariable("id") val id: Int,
-) : Command
-```
-
-### GetTodoQuery
-
-```kotlin
-data class GetTodosQuery : Query<List<Todo>>
-```
-
-## Step 5: Create a simple Repository
-
-Create a simple repository to store todos:
-
-```kotlin
-interface TodoRepository {
-    fun findAll(): List<Todo>
-    fun findById(id: Int): Todo?
-    fun save(todo: Todo): Todo
-    fun update(todo: Todo): Todo
-    fun deleteById(id: Int)
+@Service
+class GetTodosHandler(private val repo: TodoRepository) : RequestHandler<GetTodosQuery, List<Todo>> {
+    override suspend fun handle(mediator: Mediator, ctx: RequestContext, request: GetTodosQuery) =
+        repo.findAll()
 }
 
 @Service
-class TodoRepositoryImpl : TodoRepository {
-    private val todos = mutableListOf<Todo>()
+class GetTodoHandler(private val repo: TodoRepository) : RequestHandler<GetTodoQuery, Todo> {
+    override suspend fun handle(mediator: Mediator, ctx: RequestContext, request: GetTodoQuery) =
+        repo.findById(request.id) ?: error("Todo ${request.id} not found")
+}
 
-    override fun findAll(): List<Todo> {
-        return todos
+@Service
+class CreateTodoHandler(private val repo: TodoRepository) : RequestHandler<CreateTodoCommand, Todo> {
+    override suspend fun handle(mediator: Mediator, ctx: RequestContext, request: CreateTodoCommand) =
+        repo.save(Todo(id = 0, title = request.title, completed = false))
+}
+
+@Service
+class CompleteTodoHandler(private val repo: TodoRepository) : RequestHandler<CompleteTodoCommand, Unit> {
+    override suspend fun handle(mediator: Mediator, ctx: RequestContext, request: CompleteTodoCommand) {
+        val todo = repo.findById(request.id) ?: return
+        repo.save(todo.copy(completed = true))
     }
+}
 
-    override fun findById(id: Int): Todo? {
-        return todos.find { it.id == id }
-    }
-
-    override fun save(todo: Todo): Todo {
-        val id = if (todos.isEmpty()) 1 else todos.last().id + 1
-        val newTodo = todo.copy(id = id)
-        todos.add(newTodo)
-        return newTodo
-    }
-
-    override fun update(todo: Todo): Todo {
-        val index = todos.indexOfFirst { it.id == todo.id }
-        todos[index] = todo
-        return todo
-    }
-
-    override fun deleteById(id: Int) {
-        todos.removeIf { it.id == id }
+@Service
+class DeleteTodoHandler(private val repo: TodoRepository) : RequestHandler<DeleteTodoCommand, Unit> {
+    override suspend fun handle(mediator: Mediator, ctx: RequestContext, request: DeleteTodoCommand) {
+        repo.deleteById(request.id)
     }
 }
 ```
 
-## Step 6: Implement Command and Query Handlers
+---
 
-### CreateTodoCommandHandler
-
-```kotlin
-@Service
-class CreateTodoCommandHandler(
-    private val repository: TodoRepository
-) : CommandHandler<CreateTodoCommand> {
-    override suspend fun handle(command: CreateTodoCommand) {
-        repository.save(
-            Todo(
-                id = 0,
-                title = command.title,
-                description = command.description,
-                completed = false
-            )
-        )
-    }
-}
-```
-
-### UpdateTodoCommandHandler
+## 5. Register handlers
 
 ```kotlin
-@Service
-class UpdateTodoCommandHandler(
-    private val repository: TodoRepository
-) : CommandHandler<UpdateTodoCommand> {
-    override suspend fun handle(command: UpdateTodoCommand) {
-        val todo = repository.findById(command.id)
-        todo?.let {
-            it.completed = command.completed
-            repository.update(it)
+@Component
+class TodoRegistrar(
+    private val getTodos: GetTodosHandler,
+    private val getTodo: GetTodoHandler,
+    private val create: CreateTodoHandler,
+    private val complete: CompleteTodoHandler,
+    private val delete: DeleteTodoHandler,
+) : MediatorRegistrar {
+    override fun register(registry: HandlerRegistry) {
+        registry.scope {
+            +getTodos
+            +getTodo
+            +create
+            +complete
+            +delete
         }
     }
 }
 ```
 
-### DeleteTodoCommandHandler
+---
+
+## 6. Create the Mediator bean
 
 ```kotlin
-@Service
-class DeleteTodoCommandHandler(
-    private val repository: TodoRepository
-) : CommandHandler<DeleteTodoCommand> {
-    override suspend fun handle(command: DeleteTodoCommand) {
-        repository.deleteById(command.id)
-    }
+@Configuration
+class MediatorConfig(private val registrars: List<MediatorRegistrar>) {
+    @Bean
+    fun mediator(): Mediator = MediatorFactory.create(registrars = registrars)
 }
 ```
 
-### GetTodosQueryHandler
+> Spring injects all `MediatorRegistrar` beans automatically — no manual wiring needed.
+
+---
+
+## 7. Controller
 
 ```kotlin
-@Service
-class GetTodosQueryHandler(
-    private val repository: TodoRepository
-) : QueryHandler<GetTodosQuery, List<Todo>> {
-    override suspend fun handle(query: GetTodosQuery): List<Todo> {
-        return repository.findAll()
-    }
-}
-```
-
-## Step 7: Create a Controller
-
-Create a controller to handle HTTP requests:
-
-```kotlin
-@RequestMapping("/todos")
 @RestController
-class TodosController(private val mediator: Mediator) {
+@RequestMapping("/todos")
+class TodoController(private val mediator: Mediator) {
+
     @GetMapping
-    suspend fun getTodos(query: GetTodosQuery) = mediator.send(query)
+    suspend fun getAll() = mediator.send(GetTodosQuery())
+
+    @GetMapping("/{id}")
+    suspend fun get(@PathVariable id: Int) = mediator.send(GetTodoQuery(id))
 
     @PostMapping
-    suspend fun createTodo(@RequestBody command: CreateTodoCommand) = mediator.send(command)
+    suspend fun create(@RequestBody body: CreateTodoCommand) = mediator.send(body)
 
-    @PatchMapping("/{id}")
-    suspend fun markAsComplete(@PathVariable("id") id: Int, @RequestBody command: UpdateTodoCommand) {
-        command.id = id
-        mediator.send(command)
-    }
+    @PatchMapping("/{id}/complete")
+    suspend fun complete(@PathVariable id: Int) = mediator.send(CompleteTodoCommand(id))
 
     @DeleteMapping("/{id}")
-    suspend fun delete(command: DeleteTodoCommand) = mediator.send(command)
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    suspend fun delete(@PathVariable id: Int) = mediator.send(DeleteTodoCommand(id))
 }
 ```
 
-## Step 8: Run the Application
+---
 
-Run the application and test the endpoints using a REST client like Postman or curl.
+## 8. Run
 
-## Conclusion
+```bash
+./gradlew bootRun
+```
 
-In this example, you learned how to use Kordinator with Spring Boot 3.x to implement CQRS and Mediator pattern.
+Test it:
 
+```bash
+# Create
+curl -X POST http://localhost:8080/todos -H 'Content-Type: application/json' -d '{"title":"Buy milk"}'
+
+# List
+curl http://localhost:8080/todos
+
+# Complete
+curl -X PATCH http://localhost:8080/todos/1/complete
+
+# Delete
+curl -X DELETE http://localhost:8080/todos/1
+```

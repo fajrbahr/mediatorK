@@ -1,151 +1,142 @@
-# Spring Boot 3.x Examples
+# Basic Example
 
-This example demonstrates how to use Kordinator on raw Kotlin project without any framework
+A complete end-to-end example using MediatorK in a plain Kotlin project.
 
-## Prerequisites
-
-Create empty Kotlin project
-
-## Step 1: Add Kordinator dependency
-
-### Maven
-
-Add Kordinator dependency to your `pom.xml`:
-
-```xml
-<dependency>
-    <groupId>dev.ceviz</groupId>
-    <artifactId>kordinator</artifactId>
-    <version>1.0.0</version>
-</dependency>
-```
-
-### Gradle (Groovy)
-
-Add Kordinator dependency to your `build.gradle`:
-
-```groovy
-implementation 'dev.ceviz:kordinator:1.0.0'
-```
-
-### Gradle (Kotlin)
-
-Add Kordinator dependency to your `build.gradle.kts`:
+## 1. Add the dependency
 
 ```kotlin
-implementation("dev.ceviz:kordinator:1.0.0")
-```
-
-## Step 2: Create a simple app
-
-When we create a basic app with Kotlin, we will see basic main function in generated code like below:
-
-```kotlin
-fun main() {
-    println("Hello, World!")
+// build.gradle.kts
+dependencies {
+    implementation("io.github.fajrbahr:mediatork:0.0.9")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.10.2")
 }
 ```
 
-Now we will add command and query to run our app with Kordinator:
+---
+
+## 2. Define your domain
 
 ```kotlin
-
-data class TestCommand(
-    val message: String
-) : Command
-
-data class TestQuery(
-    val type: String
-) : Query<String>
-
+data class User(val id: String, val name: String)
 ```
 
-## Step 3: Implement Command and Query Handlers
+---
+
+## 3. Define requests and notifications
 
 ```kotlin
+// Query — expects exactly one handler, returns a result
+data class GetUserQuery(val id: String) : Request<User>
 
-class TestCommandHandler : CommandHandler<TestCommand> {
-    override suspend fun handle(command: TestCommand) {
-        println("Test command message: ${command.message}")
+// Command — performs a side effect, returns Unit
+data class CreateUserCommand(val id: String, val name: String) : Request<Unit>
+
+// Notification — broadcast to zero or more handlers, no return value
+data class UserCreatedEvent(val userId: String) : Notification
+```
+
+---
+
+## 4. Implement handlers
+
+```kotlin
+class GetUserHandler(private val db: UserRepository) : RequestHandler<GetUserQuery, User> {
+    override suspend fun handle(
+        mediator: Mediator,
+        requestContext: RequestContext,
+        request: GetUserQuery,
+    ): User = db.findById(request.id) ?: error("User ${request.id} not found")
+}
+
+class CreateUserHandler(private val db: UserRepository) : RequestHandler<CreateUserCommand, Unit> {
+    override suspend fun handle(
+        mediator: Mediator,
+        requestContext: RequestContext,
+        request: CreateUserCommand,
+    ) {
+        db.save(User(request.id, request.name))
+        mediator.publish(UserCreatedEvent(request.id))
     }
 }
 
-class TestQueryHandler : QueryHandler<TestQuery, String> {
-    override suspend fun handle(query: TestQuery): String {
-        if (query.type == "info") {
-            return "Info Test query type: ${query.type}"
-        } else if (query.type == "error") {
-            return "Error Test query type: ${query.type}"
-        } else if (query.type == "warm") {
-            return "Warm Test query type: ${query.type}"
+// Two handlers react to the same notification independently
+class SendWelcomeEmailHandler : NotificationHandler<UserCreatedEvent> {
+    override suspend fun handle(notification: UserCreatedEvent) {
+        println("Sending welcome email for user ${notification.userId}")
+    }
+}
+
+class TrackSignupHandler : NotificationHandler<UserCreatedEvent> {
+    override suspend fun handle(notification: UserCreatedEvent) {
+        println("Tracking signup for user ${notification.userId}")
+    }
+}
+```
+
+---
+
+## 5. Register and wire up
+
+```kotlin
+class UserRegistrar(private val db: UserRepository) : MediatorRegistrar {
+    override fun register(registry: HandlerRegistry) {
+        registry.scope {
+            +GetUserHandler(db)
+            +CreateUserHandler(db)
+            +SendWelcomeEmailHandler()
+            +TrackSignupHandler()
         }
-
-        return "Test query type: ${query.type}"
     }
 }
-
 ```
 
-## Step 4: Register Command and Query Handlers
+---
 
-Now we have to implement simple Dependency Injection to register our handlers:
-
-```kotlin
-
-class TestDependencyFactory(
-    private val handlerMap: HashMap<Class<*>, Any>
-) : DependencyFactory {
-    override fun <T> getSubTypesOf(clazz: Class<T>): Collection<Class<T>> {
-        return handlerMap
-            .filter {
-                it.key.interfaces.contains(clazz)
-            }
-            .map {
-                it.key as Class<T>
-            }
-    }
-
-    override fun <T> getInstanceOf(clazz: Class<T>): T {
-        return handlerMap[clazz] as T
-    }
-}
-
-```
-
-## Step 5: Use Kordinator with these command and query
-
-Let's start to implement and define in main function
+## 6. Create the mediator and use it
 
 ```kotlin
+import kotlinx.coroutines.runBlocking
 
-suspend fun main() {
-    // Initialize handlers
-    val testCommandHandler = TestCommandHandler()
-    val testQueryHandler = TestQueryHandler()
-    
-    // Initialize Dependency Factory
-    val dependencyFactory = TestDependencyFactory(
-        hashMapOf(
-            TestCommandHandler::class.java to testCommandHandler,
-            TestQueryHandler::class.java to testQueryHandler
-        )
+fun main() = runBlocking {
+    val db = InMemoryUserRepository()
+
+    val mediator = MediatorFactory.create(
+        registrars = listOf(UserRegistrar(db)),
     )
 
-    // Initialize Mediator
-    val mediator = MediatorBuilder(dependencyFactory)
-        .build()
+    // Command
+    mediator.send(CreateUserCommand(id = "u-1", name = "Alice"))
 
-    // Send query and command
-    val message = mediator.send(TestQuery("info"))
-    mediator.send(TestCommand(message))
+    // Query
+    val user = mediator.send(GetUserQuery(id = "u-1"))
+    println("Found: ${user.name}") // Found: Alice
 }
-
 ```
 
-## Step 6: Run your app
+---
 
-Now you can run your app and see the output:
+## 7. Add a pipeline behavior (optional)
 
-```shell
-./gradlew run
+Behaviors wrap every request — useful for logging, retry, auth, etc.
+
+```kotlin
+class LoggingBehavior : PipelineBehavior {
+    override val order = 0
+
+    override suspend fun <TReq : Request<TRes>, TRes> process(
+        requestContext: RequestContext,
+        next: RequestHandlerDelegate<TReq, TRes>,
+        request: TReq,
+    ): TRes {
+        println("→ ${request::class.simpleName}")
+        val result = next(request)
+        println("← ${request::class.simpleName}")
+        return result
+    }
+}
+
+val mediator = MediatorFactory.create(
+    registrars = listOf(UserRegistrar(db)),
+    pipelineBehaviors = listOf(LoggingBehavior()),
+)
 ```
