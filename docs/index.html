@@ -5,53 +5,85 @@
   <title>MediatorK — Kotlin Multiplatform Mediator</title>
   <meta name="description" content="Coroutine-first Mediator library for Kotlin and KMP. CQRS, pipeline behaviors, notifications." />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0" />
-  <link rel="icon" href="https://raw.githubusercontent.com/fajrbahr/MediatorK/main/docs/assets/logo.svg" />
 
-  <!-- Theme -->
-  <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/docsify-themeable@0/dist/css/theme-simple.css" />
+  <!-- Dark theme base -->
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/docsify-themeable@0/dist/css/theme-simple-dark.css" />
 
   <style>
     :root {
       --theme-color: #7c3aed;
-      --sidebar-width: 260px;
-      --sidebar-background: #0f0f17;
-      --sidebar-nav-link-color: #c4b5fd;
+
+      /* Background */
+      --base-background-color: #0d0d14;
+      --sidebar-background: #0a0a10;
+      --navbar-background: #0a0a10;
+
+      /* Sidebar */
+      --sidebar-width: 270px;
+      --sidebar-nav-link-color: #a78bfa;
       --sidebar-nav-link-color--active: #fff;
-      --sidebar-nav-link-background--active: rgba(124,58,237,.25);
+      --sidebar-nav-link-background--active: rgba(124,58,237,.3);
       --sidebar-nav-link-border-radius: 6px;
       --sidebar-name-color: #fff;
-      --sidebar-name-font-size: 1.1rem;
+      --sidebar-name-font-size: 1.05rem;
       --sidebar-name-font-weight: 700;
-      --cover-background-color: linear-gradient(135deg, #0f0f17 0%, #1e1b4b 60%, #4c1d95 100%);
+      --sidebar-border-color: rgba(124,58,237,.2);
+
+      /* Cover */
+      --cover-background-color: linear-gradient(135deg, #0d0d14 0%, #1a1040 60%, #3b1a7a 100%);
       --cover-heading-color: #fff;
       --cover-blockquote-color: #c4b5fd;
+      --cover-link-color: #a78bfa;
+
+      /* Body text */
+      --base-color: #e2e8f0;
       --base-font-family: 'Inter', system-ui, sans-serif;
-      --base-line-height: 1.7;
-      --heading-color: #1e1b4b;
-      --link-color: #7c3aed;
-      --code-theme-background: #1e1b4b;
+      --base-line-height: 1.75;
+      --heading-color: #f1f5f9;
+      --link-color: #a78bfa;
+      --link-color--hover: #c4b5fd;
+
+      /* Code */
+      --code-theme-background: #13111f;
       --code-theme-text: #e2e8f0;
+      --code-inline-background: #1e1a2e;
+      --code-inline-color: #c4b5fd;
+
+      /* Blockquote */
       --blockquote-border-color: #7c3aed;
-      --blockquote-background: #f5f3ff;
+      --blockquote-background: #13111f;
+      --blockquote-color: #c4b5fd;
+
+      /* Table */
+      --table-head-background: #1e1a2e;
+      --table-row-odd-background: #13111f;
+      --table-row-even-background: #0d0d14;
+      --table-cell-border-color: rgba(124,58,237,.2);
+
+      /* Misc */
+      --border-color: rgba(124,58,237,.2);
     }
 
+    /* Cover buttons */
     .cover-main > p:last-child a {
       border-radius: 8px;
       font-weight: 600;
-      padding: 0.65em 1.4em;
+      padding: 0.65em 1.5em;
     }
-
     .cover-main > p:last-child a:first-child {
       background: #7c3aed;
       border: 2px solid #7c3aed;
       color: #fff;
     }
-
     .cover-main > p:last-child a:last-child {
-      border: 2px solid rgba(255,255,255,.4);
+      border: 2px solid rgba(255,255,255,.3);
       color: #fff;
     }
+    .cover-main > p:last-child a:hover {
+      opacity: .85;
+    }
 
+    /* Sidebar nav items */
     .sidebar .sidebar-nav a {
       padding: 4px 12px;
       display: block;
@@ -59,38 +91,63 @@
       transition: background .15s;
     }
 
+    /* Headings with divider */
     .markdown-section h1,
     .markdown-section h2 {
-      border-bottom: 2px solid #ede9fe;
+      border-bottom: 1px solid rgba(124,58,237,.35);
       padding-bottom: .3em;
+      color: #f1f5f9;
+    }
+    .markdown-section h3,
+    .markdown-section h4 {
+      color: #e2e8f0;
     }
 
+    /* Inline code */
     .markdown-section code {
       border-radius: 4px;
       padding: 2px 6px;
-      background: #f5f3ff;
-      color: #5b21b6;
+      background: #1e1a2e;
+      color: #c4b5fd;
       font-size: .9em;
     }
-
     .markdown-section pre code {
       background: transparent;
       color: inherit;
       padding: 0;
     }
-
-    .markdown-section table th {
-      background: #ede9fe;
-      color: #3b0764;
+    .markdown-section pre {
+      background: #13111f !important;
+      border: 1px solid rgba(124,58,237,.2);
+      border-radius: 8px;
     }
 
+    /* Table */
+    .markdown-section table th {
+      background: #1e1a2e;
+      color: #c4b5fd;
+      border-color: rgba(124,58,237,.3);
+    }
+    .markdown-section table td {
+      border-color: rgba(124,58,237,.15);
+    }
+    .markdown-section table tr:nth-child(2n) {
+      background: #13111f;
+    }
+
+    /* Blockquote */
     .markdown-section blockquote {
       border-left: 4px solid #7c3aed;
-      background: #f5f3ff;
+      background: #13111f;
       border-radius: 0 6px 6px 0;
       padding: 1em 1.2em;
-      color: #4c1d95;
+      color: #c4b5fd;
     }
+
+    /* Scrollbar */
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: #0a0a10; }
+    ::-webkit-scrollbar-thumb { background: #4c1d95; border-radius: 3px; }
   </style>
 </head>
 <body>
@@ -99,7 +156,6 @@
   <script>
     window.$docsify = {
       name: 'MediatorK',
-      logo: '',
       repo: 'fajrbahr/MediatorK',
       coverpage: '_coverpage.md',
       loadSidebar: true,
@@ -129,21 +185,14 @@
     }
   </script>
 
-  <!-- Docsify -->
   <script src="//cdn.jsdelivr.net/npm/docsify@4/lib/docsify.min.js"></script>
-
-  <!-- Plugins -->
   <script src="//cdn.jsdelivr.net/npm/docsify/lib/plugins/emoji.min.js"></script>
   <script src="//cdn.jsdelivr.net/npm/docsify-copy-code@2/dist/docsify-copy-code.min.js"></script>
   <script src="//cdn.jsdelivr.net/npm/docsify@4/lib/plugins/search.min.js"></script>
   <script src="//cdn.jsdelivr.net/npm/docsify-pagination/dist/docsify-pagination.min.js"></script>
-
-  <!-- Syntax highlighting -->
   <script src="//cdn.jsdelivr.net/npm/prismjs@1/components/prism-kotlin.min.js"></script>
   <script src="//cdn.jsdelivr.net/npm/prismjs@1/components/prism-groovy.min.js"></script>
   <script src="//cdn.jsdelivr.net/npm/prismjs@1/components/prism-xml-doc.min.js"></script>
-
-  <!-- Themeable -->
   <script src="//cdn.jsdelivr.net/npm/docsify-themeable@0/dist/js/docsify-themeable.min.js"></script>
 </body>
 </html>
