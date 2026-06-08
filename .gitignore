@@ -119,4 +119,4 @@ fabric.properties
 /sample/build/
 .gradle
 .idea/
-build/
+build/.kotlin/
