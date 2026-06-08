@@ -8,7 +8,7 @@
 
 > Coroutine-first Mediator for Kotlin & KMP.  
 > One handler per request. Pipeline behaviors. Fan-out notifications.  
-> Zero reflection. Zero frameworks.
+> No kotlin-reflect. No frameworks.
 
 [Get Started](README.md)
 [GitHub](https://github.com/fajrbahr/MediatorK)
