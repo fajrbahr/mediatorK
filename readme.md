@@ -1,395 +1,454 @@
-# Mediatork – The Kotlin Multiplatform Mediator
+# MediatorK
 
+[![Maven Central](https://img.shields.io/maven-central/v/com.fajrbahr.mediatork/mediatork)](https://central.sonatype.com/artifact/com.fajrbahr.mediatork/mediatork)
 [![Kotlin](https://img.shields.io/badge/Kotlin-2.0+-blue.svg)](https://kotlinlang.org)
-[![KMP](https://img.shields.io/badge/Kotlin%20Multiplatform-supported-purple)](https://kotlinlang.org/docs/multiplatform.html)
-[![Coroutines](https://img.shields.io/badge/Coroutines-1.8+-green)](https://kotlinlang.org/docs/coroutines-overview.html)
-[![CC0 1.0 Universal](https://img.shields.io/badge/License-CC0-brightgreen)](LICENSE)
+[![Coroutines](https://img.shields.io/badge/Coroutines-1.10+-green)](https://kotlinlang.org/docs/coroutines-overview.html)
+[![License: CC0](https://img.shields.io/badge/License-CC0-brightgreen)](LICENSE)
 
-**Mediatork** brings the proven MediatR patterns to **Kotlin** – and goes beyond by being **100% multiplatform**. Build maintainable, scalable applications with CQRS and Vertical Slice Architecture across JVM, Android, iOS, JS, Wasm, and native platforms.
+A coroutine-first Mediator library for Kotlin. Implements the CQRS and Vertical Slice patterns — requests go to exactly one handler, notifications fan out to many, and a pipeline of behaviors sits in between.
 
 ---
 
-## 🚀 Example Usage
+## Installation
+
+```kotlin
+dependencies {
+    implementation("com.fajrbahr.mediatork:mediatork:0.0.2")
+}
+```
+
+---
+
+## Core Concepts
+
+| Concept | Description |
+|---|---|
+| `Request<TResponse>` | A command or query with exactly one handler |
+| `Notification` | An event broadcast to zero or more handlers |
+| `RequestHandler` | Handles one request type, returns a result |
+| `NotificationHandler` | Reacts to one notification type, no return value |
+| `PipelineBehavior` | Middleware that wraps every request (logging, retry, auth…) |
+| `RequestPreProcessor` | Runs before the handler (validation, enrichment…) |
+| `RequestPostProcessor` | Runs after the handler (metrics, audit…) |
+| `RequestExceptionHandler` | Catches exceptions thrown by a specific request |
+| `RequestContext` | Per-request key/value bag (locale, user, trace ID…) |
+
+---
+
+## Quick Start
+
+### 1 — Define a Request
+
+```kotlin
+// Command with a result
+data class CreateOrderCommand(val id: String, val amount: Double) : Request<Order>
+
+// Query
+data class GetOrderQuery(val id: String) : Request<Order>
+
+// Command with no result
+data class DeleteOrderCommand(val id: String) : Request<Unit>
+```
+
+### 2 — Implement a Handler
+
+```kotlin
+class CreateOrderHandler(private val db: OrderRepository) : RequestHandler<CreateOrderCommand, Order> {
+    override suspend fun handle(
+        mediator: Mediator,
+        requestContext: RequestContext,
+        request: CreateOrderCommand
+    ): Order {
+        val order = Order(request.id, request.amount)
+        db.save(order)
+
+        // handlers can publish further notifications or send requests
+        mediator.publish(OrderCreatedEvent(order.id))
+
+        return order
+    }
+}
+```
+
+### 3 — Define a Notification
+
+```kotlin
+data class OrderCreatedEvent(val orderId: String) : Notification
+```
+
+### 4 — Implement Notification Handlers
+
+```kotlin
+class SendConfirmationEmailHandler : NotificationHandler<OrderCreatedEvent> {
+    override suspend fun handle(notification: OrderCreatedEvent) {
+        emailService.send(notification.orderId)
+    }
+}
+
+class UpdateInventoryHandler : NotificationHandler<OrderCreatedEvent> {
+    override suspend fun handle(notification: OrderCreatedEvent) {
+        inventory.decrement(notification.orderId)
+    }
+}
+```
+
+### 5 — Register Handlers
+
+```kotlin
+class OrderRegistrar(private val db: OrderRepository) : MediatorRegistrar {
+    override fun register(registry: HandlerRegistry) {
+        registry.scope {
+            +CreateOrderHandler(db)
+            +GetOrderHandler(db)
+            +DeleteOrderHandler(db)
+        }
+    }
+}
+
+class OrderEventsRegistrar : MediatorRegistrar {
+    override fun register(registry: HandlerRegistry) {
+        registry.scope {
+            +SendConfirmationEmailHandler()
+            +UpdateInventoryHandler()
+        }
+    }
+}
+```
+
+> `+Handler()` inside `scope { }` auto-detects whether it is a `RequestHandler` or `NotificationHandler` and registers it correctly.
+
+### 6 — Create the Mediator
+
+```kotlin
+val mediator = MediatorFactory.create(
+    registrars = listOf(OrderRegistrar(db), OrderEventsRegistrar()),
+)
+```
+
+### 7 — Use It
 
 ```kotlin
 val order = mediator.send(CreateOrderCommand("ORD-1", 150.0))
-```
-
-```kotlin
-mediator.publish(OrderCreatedNotification("ORD-1", "customer@mail.com"))
+mediator.publish(OrderCreatedEvent("ORD-1"))
 ```
 
 ---
 
-## ⭐ Why Mediatork?
-
-* ✅ Kotlin-first (`suspend` everywhere)
-* ✅ Fully multiplatform (JVM, Android, iOS, JS, Wasm, Native)
-* ✅ Apache 2.0 (free forever)
-* ✅ Built-in `RequestContext` (locale, user, tracing)
-* ✅ Pipeline system (middleware-style)
-* ✅ 4 notification strategies out of the box
-
-### Notification Publishers
-
-* `ParallelNotificationPublisher` (default, concurrent)
-* `SequentialNotificationPublisher` (fail fast)
-* `ContinueOnExceptionNotificationPublisher` (collect errors)
-* `FireAndForgetNotificationPublisher` (background)
-
----
-
-## 🧩 Core Capabilities
-
-* **Request/Response (CQRS)** – exactly one handler per request
-* **Notifications (Events)** – zero to many handlers
-* **PipelineBehavior** – middleware layer
-* **Pre/Post Processors**
-* **Exception Handling**
-* **RequestContext (scoped state)**
-
----
-
-## 📦 Installation
-
-```kotlin
-implementation("com.fajrbahr:mediatork:1.0.0")
-```
-
----
-
-## ⚡ Quick Start
-
-### 1. Define Request
-
-```kotlin
-data class CreateOrderCommand(val id: String, val amount: Double) : Request<OrderResult>
-```
-
-### 2. Define Handler
-
-```kotlin
-class CreateOrderHandler : RequestHandler<CreateOrderCommand, OrderResult> {
-    override suspend fun handle(ctx: RequestContext, req: CreateOrderCommand): OrderResult {
-        return OrderResult(success = true)
-    }
-}
-```
-
-### 3. Define Notification
-
-```kotlin
-data class OrderCreatedNotification(val orderId: String, val customerEmail: String) : Notification
-```
-
-### 4. Define Notification Handlers
-
-```kotlin
-class SendConfirmationEmailHandler : NotificationHandler<OrderCreatedNotification>
-class UpdateInventoryHandler : NotificationHandler<OrderCreatedNotification>
-```
-
-### 5. Register Everything
-
-```kotlin
-class MyRegistrar : MediatorRegistrar {
-    override fun register(registry: HandlerRegistry) {
-        registry.register(CreateOrderCommand::class, CreateOrderHandler())
-        registry.registerNotification(OrderCreatedNotification::class, SendConfirmationEmailHandler())
-        registry.registerNotification(OrderCreatedNotification::class, UpdateInventoryHandler())
-    }
-}
-```
-
-### 6. Build Mediator
+## MediatorFactory
 
 ```kotlin
 val mediator = MediatorFactory.create(
-    registrars = listOf(MyRegistrar()),
-    pipelineBehaviors = listOf(),
-    preProcessors = listOf(),
-    postProcessors = listOf(),
-    notificationPublisher = ParallelNotificationPublisher()
+    registrars           = listOf(OrderRegistrar(), UserRegistrar()),
+    pipelineBehaviors    = listOf(LoggingBehavior(), RetryBehavior()),
+    preProcessors        = listOf(AuthPreProcessor()),
+    postProcessors       = listOf(MetricsPostProcessor()),
+    notificationPublisher = ParallelNotificationPublisher()   // default
+)
+```
+
+All parameters are optional and default to empty lists / `ParallelNotificationPublisher`.
+
+---
+
+## Pipeline Behaviors
+
+Behaviors wrap every request in order. Implement `PipelineBehavior`:
+
+```kotlin
+class LoggingBehavior : PipelineBehavior {
+    override val order: Int = 0   // lower = outer
+
+    override suspend fun <TReq : Request<TRes>, TRes> process(
+        requestContext: RequestContext,
+        next: RequestHandlerDelegate<TReq, TRes>,
+        request: TReq,
+    ): TRes {
+        println("-> ${request::class.simpleName}")
+        val result = next(request)
+        println("<- ${request::class.simpleName}")
+        return result
+    }
+}
+```
+
+**Optional overrides:**
+
+| Property | Default | Purpose |
+|---|---|---|
+| `order` | `0` | Execution order; lower runs first (outermost) |
+| `isEnabled` | `true` | Toggle without removing from the list |
+| `appliesTo(request)` | `true` | Filter which request types this behavior applies to |
+
+**Retry example:**
+
+```kotlin
+class RetryBehavior(private val maxRetries: Int = 3) : PipelineBehavior {
+    override val order = 10
+
+    override suspend fun <TReq : Request<TRes>, TRes> process(
+        requestContext: RequestContext,
+        next: RequestHandlerDelegate<TReq, TRes>,
+        request: TReq,
+    ): TRes {
+        repeat(maxRetries - 1) {
+            try { return next(request) } catch (_: Exception) {}
+        }
+        return next(request)
+    }
+}
+```
+
+---
+
+## Pre / Post Processors
+
+Run before and after the handler, outside of pipeline behaviors.
+
+```kotlin
+class AuthPreProcessor : RequestPreProcessor {
+    override val order = 0
+    override suspend fun process(requestContext: RequestContext, request: Request<*>) {
+        requestContext.put("userId", currentUser.id)
+    }
+}
+
+class MetricsPostProcessor : RequestPostProcessor {
+    override val order = 0
+    override suspend fun process(requestContext: RequestContext, request: Request<*>, response: Any?) {
+        metrics.record(request::class.simpleName!!)
+    }
+}
+```
+
+---
+
+## RequestContext
+
+A per-request key/value bag scoped to a single pipeline execution. Safe under concurrent requests — each `send()` call gets its own isolated instance.
+
+```kotlin
+// Write (typically in a pre-processor or behavior)
+requestContext.put("locale", "en")
+requestContext.put("userId", "u-123")
+
+// Read (in a handler or post-processor)
+val locale = requestContext.getMetaDate<String>("locale")
+val userId = requestContext.getMetaDate<String>("userId")
+```
+
+---
+
+## Exception Handling
+
+Register a typed exception handler per request type:
+
+```kotlin
+class CreateOrderExceptionHandler
+    : RequestExceptionHandler<CreateOrderCommand, Order, IllegalArgumentException> {
+
+    override suspend fun handle(
+        requestContext: RequestContext,
+        request: CreateOrderCommand,
+        exception: IllegalArgumentException,
+    ): Order {
+        // return a fallback value or rethrow
+        throw exception
+    }
+}
+
+// Register
+registry.registerExceptionHandler(
+    CreateOrderCommand::class,
+    IllegalArgumentException::class,
+    CreateOrderExceptionHandler()
 )
 ```
 
 ---
 
-## 🔧 Advanced Features
+## Notification Publishers
 
-### RequestContext Example
+Choose how notification handlers are invoked by passing a publisher to `MediatorFactory.create()`.
+
+| Publisher | Behaviour |
+|---|---|
+| `ParallelNotificationPublisher` *(default)* | All handlers run concurrently via `coroutineScope` |
+| `SequentialNotificationPublisher` | Handlers run one by one; stops on first exception |
+| `ContinueOnExceptionNotificationPublisher` | All handlers run even if some fail; errors collected into `AggregateException` |
+| `FireAndForgetNotificationPublisher(scope)` | Returns immediately; handlers run in the background on the provided `CoroutineScope` |
+
+Override per call:
 
 ```kotlin
-ctx.locale = Locale.getDefault().language
-println(ctx.locale)
+mediator.publish(OrderCreatedEvent("ORD-1"), SequentialNotificationPublisher())
 ```
 
-### Retry Behavior
+---
+
+## Validation
+
+MediatorK ships a lightweight validation DSL.
+
+### `rules { }` — collect all errors
 
 ```kotlin
-class RetryBehavior : PipelineBehavior {
-    // retry logic with backoff
+val result = rules {
+    check(request.amount > 0) { "Amount must be positive" }
+    ruleFor(OrderField.Id, request.id) {
+        check(it.isNotBlank()) { "Order ID is required" }
+        check(it.length <= 50) { "Order ID too long" }
+    }
+}
+
+if (!result.isValid) throw ValidationException(result)
+```
+
+### `rulesFailFast { }` — stop at first error
+
+```kotlin
+val result = rulesFailFast {
+    check(request.id.isNotBlank()) { "ID required" }
+    check(request.amount > 0) { "Amount must be positive" }
 }
 ```
 
-### Custom Notification Publisher
+### `ValidationResult` helpers
 
 ```kotlin
-withTimeout(1000) {
-    // run handlers
+ValidationResult.Success
+ValidationResult.error("Something went wrong")
+ValidationResult.error(OrderField.Amount, "Must be positive")
+ValidationResult.failure(error1, error2)
+```
+
+### Custom field markers
+
+```kotlin
+enum class OrderField : FieldV { Id, Amount, CustomerId }
+
+ruleFor(OrderField.Amount, request.amount) {
+    check(it > 0) { "Must be greater than 0" }
 }
 ```
 
 ---
 
-## 🧪 Testability
+## DI Integration
 
-```kotlin
-val registry = HandlerRegistry().apply {
-    register(MyCommand::class, MockHandler())
-}
-```
-
----
-
-## 🌍 Multiplatform Support
-
-* JVM (8+)
-* Android
-* iOS (arm64, x64)
-* JS (IR & legacy)
-* Wasm (WasmJS, WasmWasi)
-* Windows (mingwX64)
-* macOS (arm64, x64)
-* Linux (x64, arm64)
-
----
-## ⚙️ Full Mediator Setup Example
+### Manual
 
 ```kotlin
 val mediator = MediatorFactory.create(
-    registrars = listOf(
-        UserRegistrar(),
-        OrderRegistrar(),
-        OrderNotificationRegistrar()
-    ),
-    pipelineBehaviors = listOf(
-        LoggingBehavior(),
-        RetryPipelineBehavior(maxRetries = 2),
-        TracingPipelineBehavior()
-    ),
-    preProcessors = listOf(
-        AuthPreProcessor(),
-        LocalePreProcessor()
-    ),
-    postProcessors = listOf(
-        MetricsPostProcessor()
-    ),
-    notificationPublisher = ParallelNotificationPublisher()
+    registrars = listOf(OrderRegistrar(OrderRepository()))
 )
 ```
 
----
-
-## 📦 Registrars
-
-### 🧾 OrderRegistrar
-
-Registers request/response handlers:
+### Koin
 
 ```kotlin
-class OrderRegistrar(
-    private val fakeApi: FakeApi = FakeApi()
-) : MediatorRegistrar {
-
-    override fun register(registry: HandlerRegistry) {
-        registry.scope {
-            +CreateOrderHandler(api = fakeApi)
-        }
+val appModule = module {
+    single { OrderRepository() }
+    single<Mediator> {
+        MediatorFactory.create(registrars = listOf(OrderRegistrar(get())))
     }
 }
 ```
 
----
-
-### 📣 OrderNotificationRegistrar
-
-Registers notification (event) handlers:
-
-```kotlin
-class OrderNotificationRegistrar : MediatorRegistrar {
-
-    override fun register(registry: HandlerRegistry) {
-        registry.scope {
-            +SendOrderConfirmationEmailHandler()
-            +SendOrderSmsHandler()
-            +TrackOrderAnalyticsHandler()
-
-            // explicit style also supported
-            registerNotification(UpdateInventoryHandler())
-        }
-    }
-}
-```
-
----
-
-## 💡 Notes
-
-* `registry.scope { +Handler() }` → idiomatic, clean DSL-style registration
-* `+Handler()` automatically detects and registers the correct handler type
-* You can mix DSL (`+`) and explicit (`registerNotification(...)`) styles
-* `ParallelNotificationPublisher` runs all notification handlers concurrently
-
----
-
-## 🔌 DI Integration
-
-Mediatork works seamlessly with any dependency injection approach: **Spring Boot**, **Koin**, or even **manual DI**.
-
----
-
-### 🌱 Spring Boot
-
-Define a `Mediator` bean and auto-register handlers:
+### Spring Boot (WebFlux + coroutines)
 
 ```kotlin
 @Configuration
-class MediatorConfig {
-
+class MediatorConfig(private val db: OrderRepository) {
     @Bean
-    fun mediator(handlers: List<RequestHandler<*, *>>): Mediator {
-        val registry = HandlerRegistry()
-
-        // Auto-register all discovered handlers
-        handlers.forEach { handler ->
-            @Suppress("UNCHECKED_CAST")
-            registry.register(handler)
-        }
-
-        return MediatorFactory.create(
-            registrars = listOf(RegistryRegistrar(registry))
-        )
-    }
-}
-
-class RegistryRegistrar(
-    private val registry: HandlerRegistry
-) : MediatorRegistrar {
-    override fun register(registry: HandlerRegistry) {
-        // already registered
-    }
-}
-```
-
-Use `Mediator` inside your services or controllers:
-
-```kotlin
-@Service
-class UserService(private val mediator: Mediator) {
-
-    suspend fun findUser(id: Long): UserDto {
-        return mediator.send(GetUserByIdQuery(id))
-    }
-}
-```
-
-```kotlin
-data class GetUserByIdQuery(val id: Long) : Request<UserDto>
-```
-
-```kotlin
-@Component
-class GetUserByIdQueryHandler(
-    private val userRepository: UserRepository
-) : RequestHandler<GetUserByIdQuery, UserDto> {
-
-    override suspend fun handle(
-        ctx: RequestContext,
-        query: GetUserByIdQuery
-    ): UserDto {
-        val user = userRepository.findById(query.id)
-        return UserDto(user.id, user.name)
-    }
-}
-```
-
-> ⚠️ For `suspend` support, use **Spring WebFlux** or add `kotlinx-coroutines-reactor`.
-
----
-
-### 🧩 Koin
-
-```kotlin
-val mediatorModule = module {
-
-    single { createMediator(get()) }
-
-    single { GetUserByIdQueryHandler(get()) }
-}
-
-private fun createMediator(koin: Koin): Mediator {
-    val registry = HandlerRegistry()
-
-    // Register handlers from Koin
-    registry.register(koin.get<GetUserByIdQueryHandler>())
-
-    return MediatorFactory.create(
-        registrars = listOf(RegistryRegistrar(registry))
+    fun mediator(): Mediator = MediatorFactory.create(
+        registrars = listOf(OrderRegistrar(db))
     )
 }
+
+@Service
+class OrderService(private val mediator: Mediator) {
+    suspend fun create(id: String, amount: Double): Order =
+        mediator.send(CreateOrderCommand(id, amount))
+}
 ```
 
-Inject and use anywhere:
+> For `suspend` support in Spring, use **Spring WebFlux** with `kotlinx-coroutines-reactor`.
+
+---
+
+## Testing
+
+Swap real handlers for fakes — no mocking library needed:
 
 ```kotlin
-class UserService(private val mediator: Mediator) {
+@Test
+fun `create order returns order`() = runTest {
+    val mediator = MediatorFactory.create(
+        registrars = listOf(object : MediatorRegistrar {
+            override fun register(registry: HandlerRegistry) {
+                registry register FakeCreateOrderHandler()
+            }
+        })
+    )
 
-    suspend fun findUser(id: Long): UserDto {
-        return mediator.send(GetUserByIdQuery(id))
-    }
+    val order = mediator.send(CreateOrderCommand("ORD-1", 99.0))
+    assertEquals("ORD-1", order.id)
 }
 ```
 
 ---
 
-### 🧱 Manual DI (Simple)
+## API Reference
+
+### `Mediator`
 
 ```kotlin
-val registry = HandlerRegistry().apply {
-    register(CreateOrderHandler(FakeApi()))
-}
+suspend fun <TReq : Request<TRes>, TRes> send(request: TReq): TRes
+suspend fun <T : Notification> publish(notification: T)
+suspend fun <T : Notification> publish(notification: T, publisher: NotificationPublisher)
+```
 
-val mediator = MediatorFactory.create(
-    registrars = listOf(RegistryRegistrar(registry))
-)
+### `HandlerRegistry`
+
+```kotlin
+infix fun <TReq, TRes> register(handler: RequestHandler<TReq, TRes>): HandlerRegistry
+infix fun <T : Notification> registerNotification(handler: NotificationHandler<T>): HandlerRegistry
+fun <TReq, TRes, TEx : Throwable> registerExceptionHandler(...): HandlerRegistry
+fun scope(block: HandlerRegistry.() -> Unit)
+operator fun RequestHandler<*, *>.unaryPlus()
+operator fun NotificationHandler<*>.unaryPlus()
+fun hasHandler(requestType: KClass<*>): Boolean
+```
+
+### `MediatorFactory`
+
+```kotlin
+fun create(
+    registrars: List<MediatorRegistrar> = emptyList(),
+    pipelineBehaviors: List<PipelineBehavior> = emptyList(),
+    preProcessors: List<RequestPreProcessor> = emptyList(),
+    postProcessors: List<RequestPostProcessor> = emptyList(),
+    notificationPublisher: NotificationPublisher = ParallelNotificationPublisher(),
+): Mediator
 ```
 
 ---
 
+## Exceptions
 
-## 📜 License
+| Exception | Thrown when |
+|---|---|
+| `MissingHandlerException` | `send()` is called with no handler registered for that request type |
+| `AggregateException` | `ContinueOnExceptionNotificationPublisher` collects one or more handler failures |
 
-This project is released under the CC0 1.0 Universal (Public Domain Dedication).
+---
 
-You are free to:
+## License
 
-Use it in personal, open-source, and commercial projects
-Modify and distribute it
-Copy the repository fully or partially
+Released under the [CC0 1.0 Universal](LICENSE) — public domain. No attribution required.
 
-No attribution
-No restrictions
-Full reuse without credit
-
-Use it however you like.
-
-
-## 🤝 Contributing
-
-Contributions are welcome!
-
+---
 
 ## Inspired by MediatR (.NET)
-MediatR is the most popular mediator library in the .NET ecosystem, created by Jimmy Bogard.
-MediatR is widely used in CQRS and Clean Architecture, helping developers build scalable and maintainable applications by reducing direct dependencies between components.
+
+MediatorK is inspired by [MediatR](https://github.com/jbogard/MediatR) by Jimmy Bogard, the most widely-used mediator library in the .NET ecosystem.
