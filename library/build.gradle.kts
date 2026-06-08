@@ -76,6 +76,11 @@ signing {
     }
 }
 
+// Ensure all publish tasks run after all sign tasks (KMP implicit dependency fix)
+tasks.withType<AbstractPublishToMaven>().configureEach {
+    mustRunAfter(tasks.withType<Sign>())
+}
+
 nmcp {
     publishAllPublicationsToCentralPortal {
         username = providers.gradleProperty("mavenCentralUsername").orElse("")
