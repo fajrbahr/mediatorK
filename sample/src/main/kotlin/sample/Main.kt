@@ -52,7 +52,7 @@ suspend fun main() {
     )
     println("Order result: $orderResult")
 
-    println("\n=== TEST 2: Query — fetch user ===")
+    println("\n=== TEST 2: Query — fetch user === ")
     val user = mediator.send(
         FetchUserQuery(id = "USER-1", amount = 0.0)
     )
