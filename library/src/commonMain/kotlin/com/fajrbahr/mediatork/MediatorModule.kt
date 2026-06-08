@@ -23,8 +23,8 @@ object MediatorFactory {
      *
      * Registration order:
      * 1. Each [MediatorRegistrar] in [registrars] is called to populate the [HandlerRegistry].
-     * 2. The registry is verified; a warning is printed to stdout for any request type whose
-     *    handler is absent after registration.
+     * 2. If [verifyHandlers] is `true`, the registry is verified; a warning is printed to stdout
+     *    for any request type whose handler is absent after registration.
      * 3. A [MediatorImpl] is constructed with the assembled registry and processors.
      *
      * @param registrars modules that contribute handlers to the registry.
@@ -34,6 +34,9 @@ object MediatorFactory {
      * @param notificationPublisher strategy for delivering notifications to their handlers.
      *   Defaults to [ParallelNotificationPublisher].
      * @param postProcessors hooks that run after the handler; sorted by [RequestPostProcessor.order].
+     * @param verifyHandlers when `true` (the default), logs a warning for every registered request
+     *   type that has no handler after all registrars have run. Set to `false` to suppress these
+     *   warnings (e.g. in test setups where partial registration is intentional).
      * @return a ready-to-use [Mediator] instance.
      */
     fun create(
@@ -41,16 +44,17 @@ object MediatorFactory {
         pipelineBehaviors: List<PipelineBehavior> = emptyList(),
         preProcessors: List<RequestPreProcessor> = emptyList(),
         notificationPublisher: NotificationPublisher = ParallelNotificationPublisher(),
-        postProcessors: List<RequestPostProcessor> = emptyList()
+        postProcessors: List<RequestPostProcessor> = emptyList(),
+        verifyHandlers: Boolean = true,
     ): Mediator {
         val registry = HandlerRegistry()
 
-        // Register all handlers
         registrars.forEach { it.register(registry) }
 
-        // Verify handlers
-        registry.verifyHandlers { typeName ->
-            println("MEDIATOR WARNING: No handler registered for '$typeName'")
+        if (verifyHandlers) {
+            registry.verifyHandlers { typeName ->
+                println("MEDIATOR WARNING: No handler registered for '$typeName'")
+            }
         }
 
         return MediatorImpl(
