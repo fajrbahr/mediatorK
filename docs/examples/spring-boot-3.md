@@ -7,7 +7,7 @@ A complete CRUD API using MediatorK with Spring Boot (WebFlux + coroutines).
 ```kotlin
 // build.gradle.kts
 dependencies {
-    implementation("io.github.fajrbahr:mediatork:0.1.0")
+    implementation("io.github.fajrbahr:mediatork:0.1.1")
     implementation("org.springframework.boot:spring-boot-starter-webflux")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-reactor:1.10.2")
 }
@@ -29,8 +29,8 @@ data class Todo(val id: Int, val title: String, val completed: Boolean)
 data class GetTodosQuery : Request<List<Todo>>
 data class GetTodoQuery(val id: Int) : Request<Todo>
 data class CreateTodoCommand(val title: String) : Request<Todo>
-data class CompleteTodoCommand(val id: Int) : Request<Unit>
-data class DeleteTodoCommand(val id: Int) : Request<Unit>
+data class CompleteTodoCommand(val id: Int) : Request.Unit
+data class DeleteTodoCommand(val id: Int) : Request.Unit
 ```
 
 ---

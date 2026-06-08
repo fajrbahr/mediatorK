@@ -24,4 +24,7 @@ package com.fajrbahr.mediatork
  *
  * @see com.fajrbahr.mediatork.Notification for broadcasting events to zero-or-many handlers with no response.
  */
-interface Request<out TResponse>
+interface Request<out TResponse> {
+    /** Convenience marker for commands that return no value. Use instead of `Request<Unit>`. */
+    interface Unit : Request<kotlin.Unit>
+}
