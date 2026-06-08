@@ -1,6 +1,6 @@
 # MediatorK
 
-[![Maven Central](https://img.shields.io/maven-central/v/io.github.fajrbahr/mediatork)](https://central.sonatype.com/artifact/io.github.fajrbahr/mediatork)
+[![Maven Central](https://img.shields.io/badge/Maven%20Central-0.0.4-blue)](https://central.sonatype.com/artifact/io.github.fajrbahr/mediatork/0.0.4)
 [![Kotlin](https://img.shields.io/badge/Kotlin-2.0+-blue.svg)](https://kotlinlang.org)
 [![Coroutines](https://img.shields.io/badge/Coroutines-1.10+-green)](https://kotlinlang.org/docs/coroutines-overview.html)
 [![License: CC0](https://img.shields.io/badge/License-CC0-brightgreen)](LICENSE)
