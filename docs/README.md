@@ -1,62 +1,67 @@
-# Kordinator
+# Introduction
 
-Kordinator is a lightweight, flexible, and easy-to-use MediatR pattern library that provides advanced features for managing
-commands and queries in your application. It is designed to help you write clean, concise, and maintainable code by
-using native Kotlin coroutines and dynamic dependency injection.
+**MediatorK** is a coroutine-first Mediator library for Kotlin and Kotlin Multiplatform.
 
-## Features
+It implements the **CQRS** and **Vertical Slice** patterns:
 
-- Native Kotlin Coroutine Support: Write clean, concise, and asynchronous code that is easy to understand and maintain.
-- Interruptible Handlers with Behaviors: Control the flow of your application with advanced handler interruption based
-  on custom logic.
-- Dynamic Dependency Injectors: Effortlessly manage dependencies with flexible and dynamic injection, making your code
-  cleaner and more modular.
-- Spring Boot 3 Integration: Enjoy out-of-the-box support for Spring Boot 3, allowing you to leverage the latest
-  features of one of the most popular frameworks in the Kotlin/Java ecosystem.
+- Every **request** is routed to exactly one handler
+- Every **notification** fans out to many handlers
+- A **pipeline** of behaviors sits in between (logging, retry, auth, validation…)
 
-## Installation
+No reflection. No annotation processing. No framework required.
 
-Core library is available on Maven Central Repository.
+---
 
-### Maven
+## Why MediatorK?
 
-```xml
+| Feature | Description |
+|---|---|
+| 🎯 **Coroutine-native** | `suspend` all the way down — no callbacks, no blocking |
+| 🧩 **KMP ready** | Works on JVM, Android, and iOS from a single `commonMain` dependency |
+| 🔌 **Framework-agnostic** | Works with Spring Boot, Ktor, KMM, or plain Kotlin |
+| 🪶 **Zero magic** | No reflection, no code generation, no annotation processors |
+| 🧪 **Testable by design** | Swap real handlers for fakes — no mocking library needed |
 
-<dependency>
-    <groupId>dev.ceviz</groupId>
-    <artifactId>kordinator</artifactId>
-    <version>1.0.0</version>
-</dependency>
-```
+---
 
-### Gradle (Groovy)
-
-```groovy
-implementation 'dev.ceviz:kordinator:1.0.0'
-```
-
-### Gradle (Kotlin)
+## Quick Example
 
 ```kotlin
-implementation("dev.ceviz:kordinator:1.0.0")
+// 1. Define a request
+data class GetUserQuery(val id: String) : Request<User>
+
+// 2. Implement a handler
+class GetUserHandler(private val db: UserRepository) : RequestHandler<GetUserQuery, User> {
+    override suspend fun handle(
+        mediator: Mediator,
+        requestContext: RequestContext,
+        request: GetUserQuery
+    ): User = db.findById(request.id) ?: error("User not found")
+}
+
+// 3. Wire it up
+val mediator = MediatorFactory.create(
+    registrars = listOf(object : MediatorRegistrar {
+        override fun register(registry: HandlerRegistry) {
+            registry register GetUserHandler(db)
+        }
+    })
+)
+
+// 4. Use it
+val user = mediator.send(GetUserQuery("user-1"))
 ```
 
-## Usage
+---
 
-### Basic Usage
+## Supported Targets
 
-You can find basic usage examples in the docs page [here](examples/basic.md).
+| Platform | Target |
+|---|---|
+| JVM / Spring Boot / Ktor | `jvm` |
+| Android | `androidTarget` |
+| iOS Device | `iosArm64` |
+| iOS Simulator (Apple Silicon) | `iosSimulatorArm64` |
+| iOS Simulator (Intel) | `iosX64` |
 
-### Spring Boot 3 Integration
-
-You can find Spring Boot 3 integration examples in the docs page [here](examples/spring-boot.md).
-
-## License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-## Buy Me a Coffee
-
-If you like this project, consider buying me a coffee!
-
-[!["Buy Me A Coffee"](https://www.buymeacoffee.com/assets/img/custom_images/orange_img.png)](https://www.buymeacoffee.com/peacecwz)
+Ready to start? Head to [Installation →](installation.md)

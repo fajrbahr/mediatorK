@@ -11,23 +11,29 @@ A coroutine-first Mediator library for Kotlin. Implements the CQRS and Vertical 
 
 ## Installation
 
-### Kotlin JVM / Android
+MediatorK is a Kotlin Multiplatform library. Pick the snippet that matches your project type.
 
-**Gradle (Kotlin DSL)**
+---
+
+### Kotlin JVM (Spring Boot, Ktor, CLI, etc.)
+
+**Gradle Kotlin DSL**
 ```kotlin
+// build.gradle.kts
 dependencies {
     implementation("io.github.fajrbahr:mediatork:0.0.5")
 }
 ```
 
-**Gradle (Groovy)**
+**Gradle Groovy**
 ```groovy
+// build.gradle
 dependencies {
     implementation 'io.github.fajrbahr:mediatork:0.0.5'
 }
 ```
 
-**Maven**
+**Maven** — use the `-jvm` artifact ID, Maven does not resolve KMP metadata
 ```xml
 <dependency>
     <groupId>io.github.fajrbahr</groupId>
@@ -36,17 +42,31 @@ dependencies {
 </dependency>
 ```
 
-> Maven does not understand Kotlin Multiplatform metadata — use the `-jvm` artifact ID.
+---
+
+### Android (single-platform)
+
+```kotlin
+// app/build.gradle.kts
+dependencies {
+    implementation("io.github.fajrbahr:mediatork:0.0.5")
+}
+```
 
 ---
 
 ### Kotlin Multiplatform (KMP)
 
-Add to your shared module's `commonMain` source set:
+Add to `commonMain` in your shared module — Gradle picks the right platform artifact automatically.
 
-**Gradle (Kotlin DSL)**
 ```kotlin
+// shared/build.gradle.kts
 kotlin {
+    androidTarget()
+    iosX64()
+    iosArm64()
+    iosSimulatorArm64()
+
     sourceSets {
         commonMain.dependencies {
             implementation("io.github.fajrbahr:mediatork:0.0.5")
@@ -57,12 +77,13 @@ kotlin {
 
 **Supported targets**
 
-| Target | Artifact |
+| Target | Notes |
 |---|---|
-| JVM / Android | `mediatork-jvm` |
-| iOS Arm64 | `mediatork-iosarm64` |
-| iOS Simulator Arm64 | `mediatork-iossimulatorarm64` |
-| iOS x64 | `mediatork-iosx64` |
+| `jvm` | JVM / Spring Boot / Ktor |
+| `androidTarget` | Android apps and libraries |
+| `iosArm64` | iOS device |
+| `iosSimulatorArm64` | iOS simulator (Apple Silicon) |
+| `iosX64` | iOS simulator (Intel) |
 
 ---
 

@@ -1,1 +1,3 @@
-* [:us: :uk:](/)
+- [Home](/)
+- [GitHub](https://github.com/fajrbahr/MediatorK)
+- [Maven Central](https://central.sonatype.com/artifact/io.github.fajrbahr/mediatork)

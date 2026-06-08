@@ -1,32 +1,149 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>Kordinator - Mediator Implementation for Kotlin</title>
-    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1"/>
-    <meta name="description" content="Kordinator - Mediator Implementation for Kotlin">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0">
-    <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/docsify@4/lib/themes/vue.css">
+  <meta charset="UTF-8" />
+  <title>MediatorK — Kotlin Multiplatform Mediator</title>
+  <meta name="description" content="Coroutine-first Mediator library for Kotlin and KMP. CQRS, pipeline behaviors, notifications." />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0" />
+  <link rel="icon" href="https://raw.githubusercontent.com/fajrbahr/MediatorK/main/docs/assets/logo.svg" />
+
+  <!-- Theme -->
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/docsify-themeable@0/dist/css/theme-simple.css" />
+
+  <style>
+    :root {
+      --theme-color: #7c3aed;
+      --sidebar-width: 260px;
+      --sidebar-background: #0f0f17;
+      --sidebar-nav-link-color: #c4b5fd;
+      --sidebar-nav-link-color--active: #fff;
+      --sidebar-nav-link-background--active: rgba(124,58,237,.25);
+      --sidebar-nav-link-border-radius: 6px;
+      --sidebar-name-color: #fff;
+      --sidebar-name-font-size: 1.1rem;
+      --sidebar-name-font-weight: 700;
+      --cover-background-color: linear-gradient(135deg, #0f0f17 0%, #1e1b4b 60%, #4c1d95 100%);
+      --cover-heading-color: #fff;
+      --cover-blockquote-color: #c4b5fd;
+      --base-font-family: 'Inter', system-ui, sans-serif;
+      --base-line-height: 1.7;
+      --heading-color: #1e1b4b;
+      --link-color: #7c3aed;
+      --code-theme-background: #1e1b4b;
+      --code-theme-text: #e2e8f0;
+      --blockquote-border-color: #7c3aed;
+      --blockquote-background: #f5f3ff;
+    }
+
+    .cover-main > p:last-child a {
+      border-radius: 8px;
+      font-weight: 600;
+      padding: 0.65em 1.4em;
+    }
+
+    .cover-main > p:last-child a:first-child {
+      background: #7c3aed;
+      border: 2px solid #7c3aed;
+      color: #fff;
+    }
+
+    .cover-main > p:last-child a:last-child {
+      border: 2px solid rgba(255,255,255,.4);
+      color: #fff;
+    }
+
+    .sidebar .sidebar-nav a {
+      padding: 4px 12px;
+      display: block;
+      border-radius: 6px;
+      transition: background .15s;
+    }
+
+    .markdown-section h1,
+    .markdown-section h2 {
+      border-bottom: 2px solid #ede9fe;
+      padding-bottom: .3em;
+    }
+
+    .markdown-section code {
+      border-radius: 4px;
+      padding: 2px 6px;
+      background: #f5f3ff;
+      color: #5b21b6;
+      font-size: .9em;
+    }
+
+    .markdown-section pre code {
+      background: transparent;
+      color: inherit;
+      padding: 0;
+    }
+
+    .markdown-section table th {
+      background: #ede9fe;
+      color: #3b0764;
+    }
+
+    .markdown-section blockquote {
+      border-left: 4px solid #7c3aed;
+      background: #f5f3ff;
+      border-radius: 0 6px 6px 0;
+      padding: 1em 1.2em;
+      color: #4c1d95;
+    }
+  </style>
 </head>
 <body>
-<div id="app"></div>
-<script>
+  <div id="app"></div>
+
+  <script>
     window.$docsify = {
-        name: 'Kordinator',
-        basePath:
-            'https://raw.githubusercontent.com/peacecwz/kordinator/master/docs/',
-        repo: 'peacecwz/kordinator',
-        coverPage: true,
-        loadSidebar: true,
-        alias: {
-            '/*/_sidebar.md': '/_sidebar.md'
-        },
-        subMaxLevel: 2,
-        loadNavbar: true,
+      name: 'MediatorK',
+      logo: '',
+      repo: 'fajrbahr/MediatorK',
+      coverpage: '_coverpage.md',
+      loadSidebar: true,
+      loadNavbar: true,
+      subMaxLevel: 2,
+      auto2top: true,
+      homepage: 'README.md',
+      alias: {
+        '/*/_sidebar.md': '/_sidebar.md',
+        '/*/_navbar.md':  '/_navbar.md',
+      },
+      search: {
+        placeholder: 'Search…',
+        noData: 'No results.',
+        depth: 3,
+      },
+      copyCode: {
+        buttonText: 'Copy',
+        errorText:  'Error',
+        successText: 'Copied!',
+      },
+      pagination: {
+        previousText: '← Previous',
+        nextText: 'Next →',
+        crossChapter: true,
+      },
     }
-</script>
-<!-- Docsify v4 -->
-<script src="//cdn.jsdelivr.net/npm/docsify@4"></script>
-<script src="//cdn.jsdelivr.net/npm/docsify/lib/plugins/emoji.min.js"></script>
+  </script>
+
+  <!-- Docsify -->
+  <script src="//cdn.jsdelivr.net/npm/docsify@4/lib/docsify.min.js"></script>
+
+  <!-- Plugins -->
+  <script src="//cdn.jsdelivr.net/npm/docsify/lib/plugins/emoji.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/docsify-copy-code@2/dist/docsify-copy-code.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/docsify@4/lib/plugins/search.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/docsify-pagination/dist/docsify-pagination.min.js"></script>
+
+  <!-- Syntax highlighting -->
+  <script src="//cdn.jsdelivr.net/npm/prismjs@1/components/prism-kotlin.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/prismjs@1/components/prism-groovy.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/prismjs@1/components/prism-xml-doc.min.js"></script>
+
+  <!-- Themeable -->
+  <script src="//cdn.jsdelivr.net/npm/docsify-themeable@0/dist/js/docsify-themeable.min.js"></script>
 </body>
 </html>
