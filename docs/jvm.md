@@ -2,23 +2,7 @@
 
 Use MediatorK in any JVM project — Spring Boot, Ktor, CLI tools, or plain Kotlin.
 
----
-
-## Installation
-
-```kotlin
-// build.gradle.kts
-dependencies {
-    implementation("io.github.fajrbahr:mediatork:0.1.2")
-}
-```
-
-```groovy
-// build.gradle
-dependencies {
-    implementation 'io.github.fajrbahr:mediatork:0.1.2'
-}
-```
+See [Installation](installation.md) for dependency coordinates.
 
 ---
 

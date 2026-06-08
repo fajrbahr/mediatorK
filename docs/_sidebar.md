@@ -17,6 +17,13 @@
   - [Spring Boot](spring.md)
   - [Koin](koin.md)
 
+- **Examples**
+  - [Basic Kotlin project](examples/basic.md)
+  - [Spring Boot](examples/spring-boot-3.md)
+
+- **Testing**
+  - [Testing Utilities](testing.md)
+
 - **Reference**
   - [API Reference](api.md)
   - [Changelog](https://github.com/fajrbahr/MediatorK/releases)

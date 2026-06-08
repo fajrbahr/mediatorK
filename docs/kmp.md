@@ -4,28 +4,7 @@ MediatorK is a pure KMP library — all APIs live in `commonMain` and work ident
 
 ---
 
-## Installation
-
-```kotlin
-// build.gradle.kts (KMP module)
-kotlin {
-    sourceSets {
-        commonMain.dependencies {
-            implementation("io.github.fajrbahr:mediatork:0.1.2")
-        }
-    }
-}
-```
-
-No platform-specific artifacts needed. The library publishes:
-
-| Artifact | Target |
-|---|---|
-| `mediatork` | Root metadata |
-| `mediatork-jvm` | JVM / Android |
-| `mediatork-iosarm64` | iOS device |
-| `mediatork-iossimulatararm64` | iOS Simulator (Apple Silicon) |
-| `mediatork-iosx64` | iOS Simulator (Intel) |
+See [Installation](installation.md) for dependency coordinates. Add to `commonMain` — Gradle resolves the right platform artifact automatically.
 
 ---
 

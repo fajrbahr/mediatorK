@@ -108,6 +108,8 @@ Stores all registered handlers. Populated by `MediatorRegistrar` implementations
 | `registerExceptionHandler(reqClass, exClass, handler)` | Register an exception handler |
 | `scope { }` | Group registrations for readability |
 | `+handler` | Operator shorthand for `register` / `registerNotification` inside `scope` |
+| `hasHandler(requestType)` | Returns `true` if a handler is registered for the given request type |
+| `registeredRequestTypes()` | Returns the set of all request types that have a registered handler |
 
 ---
 
@@ -121,7 +123,6 @@ object MediatorFactory {
         preProcessors: List<RequestPreProcessor> = emptyList(),
         notificationPublisher: NotificationPublisher = ParallelNotificationPublisher(),
         postProcessors: List<RequestPostProcessor> = emptyList(),
-        verifyHandlers: Boolean = true,
     ): Mediator
 }
 ```
@@ -133,7 +134,6 @@ object MediatorFactory {
 | `preProcessors` | `emptyList()` | Hooks that run before the handler; sorted by `order` |
 | `notificationPublisher` | `ParallelNotificationPublisher()` | Strategy for delivering notifications |
 | `postProcessors` | `emptyList()` | Hooks that run after the handler; sorted by `order` |
-| `verifyHandlers` | `true` | When `true`, logs a warning for every registered request type that has no handler. Set to `false` to suppress (e.g. in partial test setups) |
 
 ---
 

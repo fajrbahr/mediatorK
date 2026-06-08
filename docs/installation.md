@@ -7,14 +7,14 @@ For Spring Boot, Ktor, or any plain JVM project.
 **Gradle (Kotlin DSL)**
 ```kotlin
 dependencies {
-    implementation("io.github.fajrbahr:mediatork:0.1.2")
+    implementation("io.github.fajrbahr:mediatork:0.1.4")
 }
 ```
 
 **Gradle (Groovy)**
 ```groovy
 dependencies {
-    implementation 'io.github.fajrbahr:mediatork:0.1.2'
+    implementation 'io.github.fajrbahr:mediatork:0.1.4'
 }
 ```
 
@@ -26,7 +26,7 @@ dependencies {
 <dependency>
     <groupId>io.github.fajrbahr</groupId>
     <artifactId>mediatork-jvm</artifactId>
-    <version>0.1.2</version>
+    <version>0.1.4</version>
 </dependency>
 ```
 
@@ -37,7 +37,7 @@ dependencies {
 ```kotlin
 // app/build.gradle.kts
 dependencies {
-    implementation("io.github.fajrbahr:mediatork:0.1.2")
+    implementation("io.github.fajrbahr:mediatork:0.1.4")
 }
 ```
 
@@ -57,7 +57,7 @@ kotlin {
 
     sourceSets {
         commonMain.dependencies {
-            implementation("io.github.fajrbahr:mediatork:0.1.2")
+            implementation("io.github.fajrbahr:mediatork:0.1.4")
         }
     }
 }
@@ -72,6 +72,18 @@ kotlin {
 | `iosArm64` | iOS device |
 | `iosSimulatorArm64` | iOS Simulator (Apple Silicon) |
 | `iosX64` | iOS Simulator (Intel) |
+
+---
+
+## Testing utilities
+
+```kotlin
+dependencies {
+    testImplementation("io.github.fajrbahr:mediatork-test:0.1.4")
+}
+```
+
+See [Testing](testing.md) for usage.
 
 ---
 

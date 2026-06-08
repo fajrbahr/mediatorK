@@ -26,7 +26,7 @@ kotlin {
     jvmToolchain(21)
 
     androidTarget {
-        publishAllLibraryVariants()
+        publishLibraryVariants("release")
     }
 
     androidNativeX64()
