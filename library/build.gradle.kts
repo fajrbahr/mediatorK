@@ -1,5 +1,6 @@
 plugins {
     kotlin("multiplatform")
+    id("com.android.library")
     `maven-publish`
     signing
     id("com.gradleup.nmcp") version "1.5.0"
@@ -10,15 +11,66 @@ version = "0.1.2"
 
 repositories {
     mavenCentral()
+    google()
+}
+
+android {
+    namespace = "com.fajrbahr.mediatork"
+    compileSdk = 35
+    defaultConfig {
+        minSdk = 21
+    }
 }
 
 kotlin {
     jvmToolchain(21)
 
-    jvm()
-    iosX64()
+    androidTarget {
+        publishAllLibraryVariants()
+    }
+
+    androidNativeX64()
+    androidNativeX86()
+    androidNativeArm32()
+    androidNativeArm64()
+
     iosArm64()
     iosSimulatorArm64()
+    iosX64()
+
+    js {
+        browser()
+    }
+
+    jvm()
+
+    linuxArm64()
+    linuxX64()
+
+    macosArm64()
+    macosX64()
+
+    mingwX64()
+
+    tvosArm64()
+    tvosSimulatorArm64()
+    tvosX64()
+
+    @OptIn(org.jetbrains.kotlin.gradle.ExperimentalWasmDsl::class)
+    wasmJs {
+        browser()
+    }
+
+    @OptIn(org.jetbrains.kotlin.gradle.ExperimentalWasmDsl::class)
+    wasmWasi {
+        nodejs()
+    }
+
+    watchosArm32()
+    watchosArm64()
+    watchosDeviceArm64()
+    watchosSimulatorArm64()
+    watchosX64()
 
     sourceSets {
         commonMain.dependencies {
