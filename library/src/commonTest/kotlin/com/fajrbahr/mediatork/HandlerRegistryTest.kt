@@ -37,15 +37,19 @@ class HandlerRegistryTest {
     fun `register replaces previously registered handler for same type`() = runTest {
         val registry = HandlerRegistry()
         val first = object : RequestHandler<PingQuery, String> {
-            override suspend fun handle(mediator: Mediator, requestContext: RequestContext, request: PingQuery) = "first"
+            override suspend fun handle(mediator: Mediator, requestContext: RequestContext, request: PingQuery) =
+                "first"
         }
         val second = object : RequestHandler<PingQuery, String> {
-            override suspend fun handle(mediator: Mediator, requestContext: RequestContext, request: PingQuery) = "second"
+            override suspend fun handle(mediator: Mediator, requestContext: RequestContext, request: PingQuery) =
+                "second"
         }
         registry.register(first)
         registry.register(second)
         val m = MediatorFactory.create(registrars = listOf(object : MediatorRegistrar {
-            override fun register(r: HandlerRegistry) { r.register(second) }
+            override fun register(r: HandlerRegistry) {
+                r.register(second)
+            }
         }))
         assertEquals("second", m.send(PingQuery("x")))
     }
@@ -91,7 +95,11 @@ class HandlerRegistryTest {
     fun `registerExceptionHandler resolves for matching request and exception`() {
         val registry = HandlerRegistry()
         val exHandler = object : RequestExceptionHandler<PingQuery, String, RuntimeException> {
-            override suspend fun handle(requestContext: RequestContext, request: PingQuery, exception: RuntimeException) = "handled"
+            override suspend fun handle(
+                requestContext: RequestContext,
+                request: PingQuery,
+                exception: RuntimeException
+            ) = "handled"
         }
         registry.registerExceptionHandler(PingQuery::class, RuntimeException::class, exHandler)
         val resolved = registry.resolveExceptionHandler(PingQuery("x"), RuntimeException("err"))

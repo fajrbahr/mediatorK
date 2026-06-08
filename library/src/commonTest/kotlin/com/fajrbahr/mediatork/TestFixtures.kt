@@ -57,7 +57,9 @@ fun mediator(
     block: HandlerRegistry.() -> Unit,
 ): Mediator = MediatorFactory.create(
     registrars = listOf(object : MediatorRegistrar {
-        override fun register(registry: HandlerRegistry) { registry.block() }
+        override fun register(registry: HandlerRegistry) {
+            registry.block()
+        }
     }),
     pipelineBehaviors = pipelineBehaviors,
     preProcessors = preProcessors,

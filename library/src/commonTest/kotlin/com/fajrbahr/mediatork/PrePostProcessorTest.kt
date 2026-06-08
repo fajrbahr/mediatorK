@@ -1,7 +1,10 @@
 package com.fajrbahr.mediatork
 
 import kotlinx.coroutines.test.runTest
-import kotlin.test.*
+import kotlin.test.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
+import kotlin.test.assertFalse
 
 class PrePostProcessorTest {
 
@@ -16,7 +19,11 @@ class PrePostProcessorTest {
             }
         }
         val handler = object : RequestHandler<PingQuery, String> {
-            override suspend fun handle(mediator: Mediator, requestContext: RequestContext, request: PingQuery): String {
+            override suspend fun handle(
+                mediator: Mediator,
+                requestContext: RequestContext,
+                request: PingQuery
+            ): String {
                 order += "handler"
                 return "ok"
             }
@@ -35,7 +42,11 @@ class PrePostProcessorTest {
             }
         }
         val handler = object : RequestHandler<PingQuery, String> {
-            override suspend fun handle(mediator: Mediator, requestContext: RequestContext, request: PingQuery): String {
+            override suspend fun handle(
+                mediator: Mediator,
+                requestContext: RequestContext,
+                request: PingQuery
+            ): String {
                 captured = requestContext.getMetaDate("token")
                 return "ok"
             }
@@ -50,11 +61,15 @@ class PrePostProcessorTest {
         val order = mutableListOf<String>()
         val first = object : RequestPreProcessor {
             override val order = 1
-            override suspend fun process(requestContext: RequestContext, request: Request<*>) { order += "first" }
+            override suspend fun process(requestContext: RequestContext, request: Request<*>) {
+                order += "first"
+            }
         }
         val second = object : RequestPreProcessor {
             override val order = 2
-            override suspend fun process(requestContext: RequestContext, request: Request<*>) { order += "second" }
+            override suspend fun process(requestContext: RequestContext, request: Request<*>) {
+                order += "second"
+            }
         }
         val m = mediator(preProcessors = listOf(second, first)) { register(PingHandler()) }
         m.send(PingQuery("x"))
@@ -70,7 +85,11 @@ class PrePostProcessorTest {
             }
         }
         val handler = object : RequestHandler<PingQuery, String> {
-            override suspend fun handle(mediator: Mediator, requestContext: RequestContext, request: PingQuery): String {
+            override suspend fun handle(
+                mediator: Mediator,
+                requestContext: RequestContext,
+                request: PingQuery
+            ): String {
                 handlerRan = true
                 return "ok"
             }
@@ -91,7 +110,11 @@ class PrePostProcessorTest {
             }
         }
         val handler = object : RequestHandler<PingQuery, String> {
-            override suspend fun handle(mediator: Mediator, requestContext: RequestContext, request: PingQuery): String {
+            override suspend fun handle(
+                mediator: Mediator,
+                requestContext: RequestContext,
+                request: PingQuery
+            ): String {
                 order += "handler"
                 return "ok"
             }
@@ -132,11 +155,15 @@ class PrePostProcessorTest {
         val order = mutableListOf<String>()
         val first = object : RequestPostProcessor {
             override val order = 1
-            override suspend fun process(requestContext: RequestContext, request: Request<*>, response: Any?) { order += "first" }
+            override suspend fun process(requestContext: RequestContext, request: Request<*>, response: Any?) {
+                order += "first"
+            }
         }
         val second = object : RequestPostProcessor {
             override val order = 2
-            override suspend fun process(requestContext: RequestContext, request: Request<*>, response: Any?) { order += "second" }
+            override suspend fun process(requestContext: RequestContext, request: Request<*>, response: Any?) {
+                order += "second"
+            }
         }
         val m = mediator(postProcessors = listOf(second, first)) { register(PingHandler()) }
         m.send(PingQuery("x"))

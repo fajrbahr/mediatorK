@@ -3,7 +3,10 @@ package com.fajrbahr.mediatork
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.runTest
-import kotlin.test.*
+import kotlin.test.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
+import kotlin.test.assertTrue
 
 class NotificationTest {
 
@@ -53,10 +56,14 @@ class NotificationTest {
     fun `publish with custom publisher overrides default for that call`() = runTest {
         val order = mutableListOf<String>()
         val h1 = object : NotificationHandler<PingNotification> {
-            override suspend fun handle(notification: PingNotification) { order += "h1" }
+            override suspend fun handle(notification: PingNotification) {
+                order += "h1"
+            }
         }
         val h2 = object : NotificationHandler<PingNotification> {
-            override suspend fun handle(notification: PingNotification) { order += "h2" }
+            override suspend fun handle(notification: PingNotification) {
+                order += "h2"
+            }
         }
         val m = mediator {
             registerNotification(h1)
@@ -73,7 +80,9 @@ class NotificationTest {
         val order = mutableListOf<Int>()
         val handlers = (1..3).map { i ->
             object : NotificationHandler<PingNotification> {
-                override suspend fun handle(notification: PingNotification) { order += i }
+                override suspend fun handle(notification: PingNotification) {
+                    order += i
+                }
             }
         }
         val pub = SequentialNotificationPublisher()
@@ -85,13 +94,19 @@ class NotificationTest {
     fun `SequentialNotificationPublisher stops on first exception`() = runTest {
         val ran = mutableListOf<Int>()
         val h1 = object : NotificationHandler<PingNotification> {
-            override suspend fun handle(notification: PingNotification) { ran += 1 }
+            override suspend fun handle(notification: PingNotification) {
+                ran += 1
+            }
         }
         val h2 = object : NotificationHandler<PingNotification> {
-            override suspend fun handle(notification: PingNotification) { throw RuntimeException("fail"); ran += 2 }
+            override suspend fun handle(notification: PingNotification) {
+                throw RuntimeException("fail"); ran += 2
+            }
         }
         val h3 = object : NotificationHandler<PingNotification> {
-            override suspend fun handle(notification: PingNotification) { ran += 3 }
+            override suspend fun handle(notification: PingNotification) {
+                ran += 3
+            }
         }
         val pub = SequentialNotificationPublisher()
         assertFailsWith<RuntimeException> { pub.publish(PingNotification("x"), listOf(h1, h2, h3)) }
@@ -113,7 +128,9 @@ class NotificationTest {
     @Test
     fun `ParallelNotificationPublisher propagates exception`() = runTest {
         val failing = object : NotificationHandler<PingNotification> {
-            override suspend fun handle(notification: PingNotification) { throw IllegalStateException("boom") }
+            override suspend fun handle(notification: PingNotification) {
+                throw IllegalStateException("boom")
+            }
         }
         val pub = ParallelNotificationPublisher()
         assertFailsWith<IllegalStateException> { pub.publish(PingNotification("x"), listOf(failing)) }
@@ -131,13 +148,19 @@ class NotificationTest {
     fun `ContinueOnException runs all handlers even when one throws`() = runTest {
         val ran = mutableListOf<Int>()
         val h1 = object : NotificationHandler<PingNotification> {
-            override suspend fun handle(notification: PingNotification) { ran += 1 }
+            override suspend fun handle(notification: PingNotification) {
+                ran += 1
+            }
         }
         val h2 = object : NotificationHandler<PingNotification> {
-            override suspend fun handle(notification: PingNotification) { throw RuntimeException("fail"); ran += 2 }
+            override suspend fun handle(notification: PingNotification) {
+                throw RuntimeException("fail"); ran += 2
+            }
         }
         val h3 = object : NotificationHandler<PingNotification> {
-            override suspend fun handle(notification: PingNotification) { ran += 3 }
+            override suspend fun handle(notification: PingNotification) {
+                ran += 3
+            }
         }
         val pub = ContinueOnExceptionNotificationPublisher()
         assertFailsWith<AggregateException> { pub.publish(PingNotification("x"), listOf(h1, h2, h3)) }
@@ -147,10 +170,14 @@ class NotificationTest {
     @Test
     fun `ContinueOnException collects all failures into AggregateException`() = runTest {
         val h1 = object : NotificationHandler<PingNotification> {
-            override suspend fun handle(notification: PingNotification) { throw RuntimeException("e1") }
+            override suspend fun handle(notification: PingNotification) {
+                throw RuntimeException("e1")
+            }
         }
         val h2 = object : NotificationHandler<PingNotification> {
-            override suspend fun handle(notification: PingNotification) { throw RuntimeException("e2") }
+            override suspend fun handle(notification: PingNotification) {
+                throw RuntimeException("e2")
+            }
         }
         val pub = ContinueOnExceptionNotificationPublisher()
         val ex = assertFailsWith<AggregateException> { pub.publish(PingNotification("x"), listOf(h1, h2)) }
@@ -186,7 +213,9 @@ class NotificationTest {
     fun `FireAndForget launches handlers on provided scope and returns`() = runTest {
         val ran = mutableListOf<String>()
         val h = object : NotificationHandler<PingNotification> {
-            override suspend fun handle(notification: PingNotification) { ran += notification.message }
+            override suspend fun handle(notification: PingNotification) {
+                ran += notification.message
+            }
         }
         val scope = CoroutineScope(UnconfinedTestDispatcher(testScheduler))
         val pub = FireAndForgetNotificationPublisher(scope)

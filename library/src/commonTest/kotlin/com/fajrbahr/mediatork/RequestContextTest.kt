@@ -1,6 +1,8 @@
 package com.fajrbahr.mediatork
 
-import kotlin.test.*
+import kotlin.test.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertNull
 
 class RequestContextTest {
 
@@ -51,6 +53,7 @@ class RequestContextTest {
     @Test
     fun `stores arbitrary non-string value`() {
         data class Payload(val id: Int)
+
         val ctx = RequestContext()
         ctx.put("payload", Payload(7))
         assertEquals(Payload(7), ctx.getMetaDate<Payload>("payload"))

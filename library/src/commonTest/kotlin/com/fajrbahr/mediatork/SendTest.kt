@@ -1,7 +1,10 @@
 package com.fajrbahr.mediatork
 
 import kotlinx.coroutines.test.runTest
-import kotlin.test.*
+import kotlin.test.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
+import kotlin.test.assertTrue
 
 class SendTest {
 
@@ -72,10 +75,12 @@ class SendTest {
     @Test
     fun `handler registered last wins when registered twice`() = runTest {
         val first = object : RequestHandler<PingQuery, String> {
-            override suspend fun handle(mediator: Mediator, requestContext: RequestContext, request: PingQuery) = "first"
+            override suspend fun handle(mediator: Mediator, requestContext: RequestContext, request: PingQuery) =
+                "first"
         }
         val second = object : RequestHandler<PingQuery, String> {
-            override suspend fun handle(mediator: Mediator, requestContext: RequestContext, request: PingQuery) = "second"
+            override suspend fun handle(mediator: Mediator, requestContext: RequestContext, request: PingQuery) =
+                "second"
         }
         val m = mediator {
             register(first)
@@ -91,7 +96,11 @@ class SendTest {
                 request.text
         }
         val outer = object : RequestHandler<PingQuery, String> {
-            override suspend fun handle(mediator: Mediator, requestContext: RequestContext, request: PingQuery): String =
+            override suspend fun handle(
+                mediator: Mediator,
+                requestContext: RequestContext,
+                request: PingQuery
+            ): String =
                 "nested:" + mediator.send(EchoQuery(request.value))
         }
         val m = mediator {

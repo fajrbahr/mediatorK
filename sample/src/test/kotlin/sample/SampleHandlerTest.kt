@@ -2,10 +2,13 @@ package sample
 
 import com.fajrbahr.mediatork.*
 import kotlinx.coroutines.test.runTest
+import sample.notification.OrderCreatedNotification
 import sample.query.FetchUserQuery
 import sample.query.User
-import sample.notification.OrderCreatedNotification
-import kotlin.test.*
+import kotlin.test.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
+import kotlin.test.assertTrue
 
 /**
  * Shows how to test MediatorK handlers without any mocking library.

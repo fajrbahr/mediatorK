@@ -78,6 +78,7 @@ suspend fun main() {
                     else -> println("Error: ${error.message}")
                 }
             }
+
             else -> println("Unexpected error: ${throwable.message}")
         }
     }
@@ -102,6 +103,7 @@ suspend fun main() {
                     else -> println("Error: ${error.message}")
                 }
             }
+
             else -> println("Unexpected error: ${throwable.message}")
         }
     }
@@ -120,6 +122,7 @@ suspend fun main() {
                     else -> println("Error: ${error.message}")
                 }
             }
+
             else -> println("Unexpected error: ${throwable.message}")
         }
     }

@@ -1,7 +1,9 @@
 package com.fajrbahr.mediatork
 
 import kotlinx.coroutines.test.runTest
-import kotlin.test.*
+import kotlin.test.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
 
 class ExceptionHandlerTest {
 
@@ -13,7 +15,11 @@ class ExceptionHandlerTest {
     @Test
     fun `exception handler converts exception to response`() = runTest {
         val exHandler = object : RequestExceptionHandler<PingQuery, String, IllegalStateException> {
-            override suspend fun handle(requestContext: RequestContext, request: PingQuery, exception: IllegalStateException) =
+            override suspend fun handle(
+                requestContext: RequestContext,
+                request: PingQuery,
+                exception: IllegalStateException
+            ) =
                 "recovered"
         }
         val m = MediatorFactory.create(
@@ -31,7 +37,11 @@ class ExceptionHandlerTest {
     fun `exception handler receives request and context`() = runTest {
         var capturedRequest: PingQuery? = null
         val exHandler = object : RequestExceptionHandler<PingQuery, String, RuntimeException> {
-            override suspend fun handle(requestContext: RequestContext, request: PingQuery, exception: RuntimeException): String {
+            override suspend fun handle(
+                requestContext: RequestContext,
+                request: PingQuery,
+                exception: RuntimeException
+            ): String {
                 capturedRequest = request
                 return "ok"
             }
@@ -63,10 +73,18 @@ class ExceptionHandlerTest {
     @Test
     fun `first matching exception handler wins when multiple registered`() = runTest {
         val first = object : RequestExceptionHandler<PingQuery, String, RuntimeException> {
-            override suspend fun handle(requestContext: RequestContext, request: PingQuery, exception: RuntimeException) = "first"
+            override suspend fun handle(
+                requestContext: RequestContext,
+                request: PingQuery,
+                exception: RuntimeException
+            ) = "first"
         }
         val second = object : RequestExceptionHandler<PingQuery, String, RuntimeException> {
-            override suspend fun handle(requestContext: RequestContext, request: PingQuery, exception: RuntimeException) = "second"
+            override suspend fun handle(
+                requestContext: RequestContext,
+                request: PingQuery,
+                exception: RuntimeException
+            ) = "second"
         }
         val m = MediatorFactory.create(
             registrars = listOf(object : MediatorRegistrar {
@@ -83,7 +101,11 @@ class ExceptionHandlerTest {
     @Test
     fun `exception handler matches subclass of registered exception type`() = runTest {
         val exHandler = object : RequestExceptionHandler<PingQuery, String, RuntimeException> {
-            override suspend fun handle(requestContext: RequestContext, request: PingQuery, exception: RuntimeException) =
+            override suspend fun handle(
+                requestContext: RequestContext,
+                request: PingQuery,
+                exception: RuntimeException
+            ) =
                 "caught-subclass"
         }
         val m = MediatorFactory.create(
@@ -100,7 +122,11 @@ class ExceptionHandlerTest {
     @Test
     fun `exception handler for different request type does not intercept`() = runTest {
         val addExHandler = object : RequestExceptionHandler<AddCommand, Int, RuntimeException> {
-            override suspend fun handle(requestContext: RequestContext, request: AddCommand, exception: RuntimeException) = -1
+            override suspend fun handle(
+                requestContext: RequestContext,
+                request: AddCommand,
+                exception: RuntimeException
+            ) = -1
         }
         val m = MediatorFactory.create(
             registrars = listOf(object : MediatorRegistrar {
@@ -123,7 +149,11 @@ class ExceptionHandlerTest {
             }
         }
         val exHandler = object : RequestExceptionHandler<PingQuery, String, RuntimeException> {
-            override suspend fun handle(requestContext: RequestContext, request: PingQuery, exception: RuntimeException): String {
+            override suspend fun handle(
+                requestContext: RequestContext,
+                request: PingQuery,
+                exception: RuntimeException
+            ): String {
                 contextValue = requestContext.getMetaDate("trace")
                 return "handled"
             }

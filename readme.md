@@ -1,8 +1,14 @@
 # MediatorK
 
 [![Maven Central](https://img.shields.io/maven-central/v/io.github.fajrbahr/mediatork?label=Maven%20Central)](https://central.sonatype.com/artifact/io.github.fajrbahr/mediatork)
-[![Kotlin](https://img.shields.io/badge/Kotlin-2.0+-blue.svg)](https://kotlinlang.org)
-[![Coroutines](https://img.shields.io/badge/Coroutines-1.10+-green)](https://kotlinlang.org/docs/coroutines-overview.html)
+[![Kotlin](https://img.shields.io/badge/Kotlin-2.3.21-blue.svg?logo=kotlin)](https://kotlinlang.org)
+[![Gradle](https://img.shields.io/badge/Gradle-9.3.0-02303A.svg?logo=gradle)](https://gradle.org)
+[![Android](https://img.shields.io/badge/Android-supported-brightgreen.svg?logo=android)](https://developer.android.com)
+[![iOS](https://img.shields.io/badge/iOS-supported-brightgreen.svg?logo=apple)](https://developer.apple.com)
+[![Linux](https://img.shields.io/badge/Linux-supported-brightgreen.svg?logo=linux)](https://www.linux.org)
+[![Windows](https://img.shields.io/badge/Windows-supported-brightgreen.svg?logo=windows)](https://www.microsoft.com/windows)
+[![Web (JS/WASM)](https://img.shields.io/badge/Web%20(JS%2FWASM)-supported-brightgreen.svg?logo=javascript)](https://kotlinlang.org/docs/js-overview.html)
+[![CI](https://github.com/fajrbahr/mediatorK/actions/workflows/release.yml/badge.svg)](https://github.com/fajrbahr/mediatorK/actions/workflows/release.yml)
 [![License: CC0](https://img.shields.io/badge/License-CC0-brightgreen)](LICENSE)
 
 A coroutine-first Mediator library for Kotlin. Implements the CQRS and Vertical Slice patterns — requests go to exactly one handler, notifications fan out to many, and a pipeline of behaviors sits in between.
