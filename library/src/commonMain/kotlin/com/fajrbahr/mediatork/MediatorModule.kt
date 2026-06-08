@@ -1,5 +1,8 @@
 package com.fajrbahr.mediatork
 
+import com.fajrbahr.mediatork.MediatorFactory.create
+
+
 /**
  * Factory object for constructing a fully configured [Mediator] instance.
  *

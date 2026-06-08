@@ -1,7 +1,10 @@
 package com.fajrbahr.mediatork
 
 import kotlinx.coroutines.test.runTest
-import kotlin.test.*
+import kotlin.test.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertFalse
+import kotlin.test.assertTrue
 
 class PipelineBehaviorTest {
 
@@ -61,7 +64,9 @@ class PipelineBehaviorTest {
                 requestContext: RequestContext,
                 next: RequestHandlerDelegate<TReq, TRes>,
                 request: TReq,
-            ): TRes { ran = true; return next(request) }
+            ): TRes {
+                ran = true; return next(request)
+            }
         }
         val m = mediator(pipelineBehaviors = listOf(selective)) {
             register(PingHandler())
@@ -79,7 +84,9 @@ class PipelineBehaviorTest {
                 requestContext: RequestContext,
                 next: RequestHandlerDelegate<TReq, TRes>,
                 request: TReq,
-            ): TRes { ran = true; return next(request) }
+            ): TRes {
+                ran = true; return next(request)
+            }
         }
         val m = mediator(pipelineBehaviors = listOf(b)) { register(PingHandler()) }
         m.send(PingQuery("x"))
@@ -95,7 +102,9 @@ class PipelineBehaviorTest {
                 requestContext: RequestContext,
                 next: RequestHandlerDelegate<TReq, TRes>,
                 request: TReq,
-            ): TRes { ran = true; return next(request) }
+            ): TRes {
+                ran = true; return next(request)
+            }
         }
         val m = mediator(pipelineBehaviors = listOf(disabled)) { register(PingHandler()) }
         m.send(PingQuery("x"))
@@ -116,7 +125,11 @@ class PipelineBehaviorTest {
         }
         var captured: String? = null
         val handler = object : RequestHandler<PingQuery, String> {
-            override suspend fun handle(mediator: Mediator, requestContext: RequestContext, request: PingQuery): String {
+            override suspend fun handle(
+                mediator: Mediator,
+                requestContext: RequestContext,
+                request: PingQuery
+            ): String {
                 captured = requestContext.getMetaDate("from-behavior")
                 return "ok"
             }
@@ -138,7 +151,11 @@ class PipelineBehaviorTest {
             ): TRes = "short-circuited" as TRes
         }
         val handler = object : RequestHandler<PingQuery, String> {
-            override suspend fun handle(mediator: Mediator, requestContext: RequestContext, request: PingQuery): String {
+            override suspend fun handle(
+                mediator: Mediator,
+                requestContext: RequestContext,
+                request: PingQuery
+            ): String {
                 handlerRan = true
                 return "handler"
             }
@@ -158,7 +175,9 @@ class PipelineBehaviorTest {
                 requestContext: RequestContext,
                 next: RequestHandlerDelegate<TReq, TRes>,
                 request: TReq,
-            ): TRes { ranForPing = true; return next(request) }
+            ): TRes {
+                ranForPing = true; return next(request)
+            }
         }
         val m = mediator(pipelineBehaviors = listOf(pingOnly)) {
             register(PingHandler())

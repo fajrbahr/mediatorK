@@ -5,7 +5,9 @@ import kotlin.test.*
 
 fun mediator(block: HandlerRegistry.() -> Unit): Mediator =
     MediatorFactory.create(registrars = listOf(object : MediatorRegistrar {
-        override fun register(registry: HandlerRegistry) { registry.block() }
+        override fun register(registry: HandlerRegistry) {
+            registry.block()
+        }
     }))
 
 // ── Tests ─────────────────────────────────────────────────────────────────────
@@ -102,7 +104,9 @@ class MediatorTest {
 
         val m = MediatorFactory.create(
             registrars = listOf(object : MediatorRegistrar {
-                override fun register(registry: HandlerRegistry) { registry.register(PingHandler()) }
+                override fun register(registry: HandlerRegistry) {
+                    registry.register(PingHandler())
+                }
             }),
             pipelineBehaviors = listOf(inner, outer),
         )
@@ -120,11 +124,15 @@ class MediatorTest {
                 requestContext: RequestContext,
                 next: RequestHandlerDelegate<TReq, TRes>,
                 request: TReq,
-            ): TRes { ran = true; return next(request) }
+            ): TRes {
+                ran = true; return next(request)
+            }
         }
         val m = MediatorFactory.create(
             registrars = listOf(object : MediatorRegistrar {
-                override fun register(registry: HandlerRegistry) { registry.register(PingHandler()) }
+                override fun register(registry: HandlerRegistry) {
+                    registry.register(PingHandler())
+                }
             }),
             pipelineBehaviors = listOf(selective),
         )
@@ -143,7 +151,11 @@ class MediatorTest {
         }
 
         val handler = object : RequestHandler<PingQuery, String> {
-            override suspend fun handle(mediator: Mediator, requestContext: RequestContext, request: PingQuery): String {
+            override suspend fun handle(
+                mediator: Mediator,
+                requestContext: RequestContext,
+                request: PingQuery
+            ): String {
                 contextValue = requestContext.getMetaDate("key")
                 return "ok"
             }
@@ -151,7 +163,9 @@ class MediatorTest {
 
         val m = MediatorFactory.create(
             registrars = listOf(object : MediatorRegistrar {
-                override fun register(registry: HandlerRegistry) { registry.register(handler) }
+                override fun register(registry: HandlerRegistry) {
+                    registry.register(handler)
+                }
             }),
             preProcessors = listOf(pre),
         )
@@ -171,7 +185,9 @@ class MediatorTest {
 
         val m = MediatorFactory.create(
             registrars = listOf(object : MediatorRegistrar {
-                override fun register(registry: HandlerRegistry) { registry.register(PingHandler()) }
+                override fun register(registry: HandlerRegistry) {
+                    registry.register(PingHandler())
+                }
             }),
             postProcessors = listOf(post),
         )
@@ -182,7 +198,11 @@ class MediatorTest {
     @Test
     fun `exception handler converts exception to response`() = runTest {
         val failingHandler = object : RequestHandler<PingQuery, String> {
-            override suspend fun handle(mediator: Mediator, requestContext: RequestContext, request: PingQuery): String =
+            override suspend fun handle(
+                mediator: Mediator,
+                requestContext: RequestContext,
+                request: PingQuery
+            ): String =
                 throw IllegalStateException("boom")
         }
 

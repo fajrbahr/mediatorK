@@ -11,6 +11,7 @@ fun rulesFailFast(block: FailFastValidationBuilder.() -> Unit): ValidationResult
     builder.block()
     return builder.build()
 }
+
 class FailFastValidationBuilder {
     private val errors = mutableListOf<ValidationError>()
 
