@@ -21,7 +21,7 @@ MediatorK is a Kotlin Multiplatform library. Pick the snippet that matches your 
 ```kotlin
 // build.gradle.kts
 dependencies {
-    implementation("io.github.fajrbahr:mediatork:0.0.7")
+    implementation("io.github.fajrbahr:mediatork:0.0.8")
 }
 ```
 
@@ -29,7 +29,7 @@ dependencies {
 ```groovy
 // build.gradle
 dependencies {
-    implementation 'io.github.fajrbahr:mediatork:0.0.7'
+    implementation 'io.github.fajrbahr:mediatork:0.0.8'
 }
 ```
 
@@ -38,7 +38,7 @@ dependencies {
 <dependency>
     <groupId>io.github.fajrbahr</groupId>
     <artifactId>mediatork-jvm</artifactId>
-    <version>0.0.7</version>
+    <version>0.0.8</version>
 </dependency>
 ```
 
@@ -49,7 +49,7 @@ dependencies {
 ```kotlin
 // app/build.gradle.kts
 dependencies {
-    implementation("io.github.fajrbahr:mediatork:0.0.7")
+    implementation("io.github.fajrbahr:mediatork:0.0.8")
 }
 ```
 
@@ -69,7 +69,7 @@ kotlin {
 
     sourceSets {
         commonMain.dependencies {
-            implementation("io.github.fajrbahr:mediatork:0.0.7")
+            implementation("io.github.fajrbahr:mediatork:0.0.8")
         }
     }
 }

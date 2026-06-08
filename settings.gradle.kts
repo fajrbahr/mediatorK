@@ -5,6 +5,7 @@ rootProject.name = "MediatorK"
 include("sample")
 
 include("library")
+project(":library").name = "mediatork"
 include("publishMaven")
 
 dependencyResolutionManagement {
