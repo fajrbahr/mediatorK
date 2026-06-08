@@ -6,7 +6,7 @@ plugins {
 }
 
 group = "io.github.fajrbahr"
-version = "0.0.6"
+version = "0.0.7"
 
 repositories {
     mavenCentral()
@@ -36,6 +36,7 @@ val javadocJar by tasks.registering(Jar::class) {
 
 publishing {
     publications.withType<MavenPublication> {
+        artifactId = artifactId.replace("library", "mediatork")
         artifact(javadocJar)
 
         pom {
