@@ -11,10 +11,27 @@ A coroutine-first Mediator library for Kotlin. Implements the CQRS and Vertical 
 
 ## Installation
 
+**Gradle (Kotlin DSL)**
 ```kotlin
 dependencies {
     implementation("io.github.fajrbahr:mediatork:0.0.4")
 }
+```
+
+**Gradle (Groovy)**
+```groovy
+dependencies {
+    implementation 'io.github.fajrbahr:mediatork:0.0.4'
+}
+```
+
+**Maven**
+```xml
+<dependency>
+    <groupId>io.github.fajrbahr</groupId>
+    <artifactId>mediatork</artifactId>
+    <version>0.0.4</version>
+</dependency>
 ```
 
 ---
