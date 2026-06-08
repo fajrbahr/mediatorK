@@ -78,7 +78,13 @@ internal class MediatorImpl(
 
         val finalDelegate: RequestHandlerDelegate<TRequest, TResult> = { req ->
             sortedPre.forEach { it.process(requestContext, req) }
-            val result = handler.handle(this@MediatorImpl, requestContext, req)
+            val result = try {
+                handler.handle(this@MediatorImpl, requestContext, req)
+            } catch (e: Throwable) {
+                val exHandler = registry.resolveExceptionHandler(req, e)
+                    ?: throw e
+                exHandler.handle(requestContext, req, e)
+            }
             sortedPost.forEach { it.process(requestContext, req, result) }
             result
         }

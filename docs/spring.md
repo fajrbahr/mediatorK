@@ -11,7 +11,7 @@ See the [full Spring Boot example](examples/spring-boot-3.md) for a complete Web
 ```kotlin
 // build.gradle.kts
 dependencies {
-    implementation("io.github.fajrbahr:mediatork:0.1.1")
+    implementation("io.github.fajrbahr:mediatork:0.1.2")
     implementation("org.springframework.boot:spring-boot-starter-webflux")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-reactor:1.10.2")
 }

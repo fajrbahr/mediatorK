@@ -21,7 +21,7 @@ MediatorK is a Kotlin Multiplatform library. Pick the snippet that matches your 
 ```kotlin
 // build.gradle.kts
 dependencies {
-    implementation("io.github.fajrbahr:mediatork:0.1.0")
+    implementation("io.github.fajrbahr:mediatork:0.1.2")
 }
 ```
 
@@ -29,7 +29,7 @@ dependencies {
 ```groovy
 // build.gradle
 dependencies {
-    implementation 'io.github.fajrbahr:mediatork:0.1.0'
+    implementation 'io.github.fajrbahr:mediatork:0.1.2'
 }
 ```
 
@@ -38,7 +38,7 @@ dependencies {
 <dependency>
     <groupId>io.github.fajrbahr</groupId>
     <artifactId>mediatork-jvm</artifactId>
-    <version>0.1.0</version>
+    <version>0.1.2</version>
 </dependency>
 ```
 
@@ -49,7 +49,7 @@ dependencies {
 ```kotlin
 // app/build.gradle.kts
 dependencies {
-    implementation("io.github.fajrbahr:mediatork:0.1.0")
+    implementation("io.github.fajrbahr:mediatork:0.1.2")
 }
 ```
 
@@ -69,7 +69,7 @@ kotlin {
 
     sourceSets {
         commonMain.dependencies {
-            implementation("io.github.fajrbahr:mediatork:0.1.0")
+            implementation("io.github.fajrbahr:mediatork:0.1.2")
         }
     }
 }
@@ -514,6 +514,18 @@ fun create(
 ## License
 
 Released under the [CC0 1.0 Universal](LICENSE) — public domain. No attribution required.
+
+---
+
+## Acknowledgements
+
+First and above all — **الحمد لله** (Alhamdulillah). This library was built during a hard time, and every line was written with Allah's help and guidance.
+
+**[Jimmy Bogard](https://www.jimmybogard.com/)** — for his talks on Vertical Slice Architecture and MediatR (.NET), which were the direct inspiration for bringing this pattern to Kotlin.
+
+**[beno.com](https://beno.com)** — the production environment that shaped this library. Real-world usage at scale drove every design decision here.
+
+**Ahmed Akilan** — our CTO, whose technical mentorship and trust made it possible to grow as an engineer and ship something worth sharing.
 
 ---
 

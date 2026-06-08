@@ -7,14 +7,14 @@ For Spring Boot, Ktor, or any plain JVM project.
 **Gradle (Kotlin DSL)**
 ```kotlin
 dependencies {
-    implementation("io.github.fajrbahr:mediatork:0.1.1")
+    implementation("io.github.fajrbahr:mediatork:0.1.2")
 }
 ```
 
 **Gradle (Groovy)**
 ```groovy
 dependencies {
-    implementation 'io.github.fajrbahr:mediatork:0.1.1'
+    implementation 'io.github.fajrbahr:mediatork:0.1.2'
 }
 ```
 
@@ -26,7 +26,7 @@ dependencies {
 <dependency>
     <groupId>io.github.fajrbahr</groupId>
     <artifactId>mediatork-jvm</artifactId>
-    <version>0.1.1</version>
+    <version>0.1.2</version>
 </dependency>
 ```
 
@@ -37,7 +37,7 @@ dependencies {
 ```kotlin
 // app/build.gradle.kts
 dependencies {
-    implementation("io.github.fajrbahr:mediatork:0.1.1")
+    implementation("io.github.fajrbahr:mediatork:0.1.2")
 }
 ```
 
@@ -57,7 +57,7 @@ kotlin {
 
     sourceSets {
         commonMain.dependencies {
-            implementation("io.github.fajrbahr:mediatork:0.1.1")
+            implementation("io.github.fajrbahr:mediatork:0.1.2")
         }
     }
 }

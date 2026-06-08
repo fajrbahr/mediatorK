@@ -9,7 +9,7 @@ MediatorK works naturally with [Koin](https://insert-koin.io/) for dependency in
 ```kotlin
 // build.gradle.kts
 dependencies {
-    implementation("io.github.fajrbahr:mediatork:0.1.1")
+    implementation("io.github.fajrbahr:mediatork:0.1.2")
     implementation("io.insert-koin:koin-core:3.5.6")
     // Android
     implementation("io.insert-koin:koin-android:3.5.6")

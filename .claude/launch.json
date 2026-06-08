@@ -4,7 +4,7 @@
     {
       "name": "docs",
       "runtimeExecutable": "/usr/bin/python3",
-      "runtimeArgs": ["/Users/hf/Desktop/MediatorK/docs/serve.py"],
+      "runtimeArgs": ["/tmp/mediatork_serve.py"],
       "port": 3030
     }
   ]

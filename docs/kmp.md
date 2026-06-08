@@ -11,7 +11,7 @@ MediatorK is a pure KMP library — all APIs live in `commonMain` and work ident
 kotlin {
     sourceSets {
         commonMain.dependencies {
-            implementation("io.github.fajrbahr:mediatork:0.1.1")
+            implementation("io.github.fajrbahr:mediatork:0.1.2")
         }
     }
 }
