@@ -29,7 +29,7 @@ class CreateOrderHandler(
         requestContext: RequestContext,
         request: CreateOrderCommand
     ): OrderResult {
-        val newOrderId = "ORD-$4234234}"
+        val newOrderId = "ORD-${request.id}"
 
         val result = api.createOrder(newOrderId, requestContext.locale, requestContext.currentUser!!.token)
 

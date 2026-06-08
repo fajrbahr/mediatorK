@@ -118,4 +118,5 @@ fabric.properties
 /library/build/
 /sample/build/
 .gradle
-.idea/vcs.xml
+.idea/
+build/

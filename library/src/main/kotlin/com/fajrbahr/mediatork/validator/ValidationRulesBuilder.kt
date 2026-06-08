@@ -22,7 +22,7 @@ class FailFastValidationBuilder {
     fun <V> ruleFor(fieldName: FieldV, value: V, block: FieldValidator<V>.(V) -> Unit) {
         if (errors.isNotEmpty()) return
 
-        val fieldValidator = FieldValidator<V>(fieldName)
+        val fieldValidator = FieldValidator<V>(fieldName, failFast = true)
         fieldValidator.block(value)
         errors += fieldValidator.collectErrors()
     }
@@ -46,10 +46,11 @@ class ValidationRulesBuilder {
     internal fun build(): ValidationResult = ValidationResult(errors.toList())
 }
 
-class FieldValidator<V>(private val fieldName: FieldV) {
+class FieldValidator<V>(private val fieldName: FieldV, private val failFast: Boolean = false) {
     private val errors = mutableListOf<ValidationError>()
 
     fun check(condition: Boolean, message: () -> String) {
+        if (failFast && errors.isNotEmpty()) return
         if (!condition) errors += ValidationError(field = fieldName, message = message())
     }
 

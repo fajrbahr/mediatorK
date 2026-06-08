@@ -13,7 +13,9 @@ class LoggingBehavior : PipelineBehavior {
         next: RequestHandlerDelegate<TReq, TRes>,
         request: TReq
     ): TRes {
+        println("[LOG] --> ${request::class.simpleName}")
         val result = next(request)
+        println("[LOG] <-- ${request::class.simpleName} result: $result")
         return result
     }
 }

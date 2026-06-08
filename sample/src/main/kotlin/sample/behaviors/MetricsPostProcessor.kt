@@ -11,7 +11,7 @@ class MetricsPostProcessor : RequestPostProcessor {
         request: Request<*>,
         response: Any?
     ) {
-        // println("📊 Metrics for ${request::class.simpleName}")
+        println("[METRICS] ${request::class.simpleName} completed")
     }
 
 }

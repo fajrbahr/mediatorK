@@ -26,8 +26,9 @@ class RetryPipelineBehavior(
             try {
                 return next(request)
             } catch (t: Throwable) {
+                if (t is IllegalArgumentException) throw t
                 lastError = t
-                println("Retry attempt ${attempt + 1} failed for ${request::class.simpleName}")
+                println("[RETRY] attempt ${attempt + 1}/${maxRetries + 1} failed for ${request::class.simpleName}: ${t.message}")
             }
         }
 

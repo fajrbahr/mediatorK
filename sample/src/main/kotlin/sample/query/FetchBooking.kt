@@ -13,7 +13,7 @@ class FetchBookingHandler : RequestHandler<FetchUserQueryId, String> {
         requestContext: RequestContext,
         request: FetchUserQueryId
     ): String {
-        return "sddsd"
+        return "Booking ${request.bookingId} found for ${request.userEmail}"
     }
 }
 
