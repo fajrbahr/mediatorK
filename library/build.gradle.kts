@@ -6,7 +6,7 @@ plugins {
 }
 
 group = "io.github.fajrbahr"
-version = "0.0.5"
+version = "0.0.6"
 
 repositories {
     mavenCentral()
@@ -69,8 +69,10 @@ publishing {
 signing {
     val signingKey: String? by project
     val signingPassword: String? by project
-    useInMemoryPgpKeys(signingKey, signingPassword)
-    sign(publishing.publications)
+    if (signingKey != null) {
+        useInMemoryPgpKeys(signingKey, signingPassword)
+        sign(publishing.publications)
+    }
 }
 
 nmcp {
