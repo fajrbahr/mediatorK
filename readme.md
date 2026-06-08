@@ -1,6 +1,6 @@
 # MediatorK
 
-[![Maven Central](https://img.shields.io/maven-central/v/io.github.fajrbahr/mediatork)](https://central.sonatype.com/artifact/io.github.fajrbahr/mediatork)
+[![Maven Central](https://img.shields.io/badge/Maven%20Central-0.0.5-blue)](https://central.sonatype.com/artifact/io.github.fajrbahr/mediatork)
 [![Kotlin](https://img.shields.io/badge/Kotlin-2.0+-blue.svg)](https://kotlinlang.org)
 [![Coroutines](https://img.shields.io/badge/Coroutines-1.10+-green)](https://kotlinlang.org/docs/coroutines-overview.html)
 [![License: CC0](https://img.shields.io/badge/License-CC0-brightgreen)](LICENSE)
@@ -11,17 +11,19 @@ A coroutine-first Mediator library for Kotlin. Implements the CQRS and Vertical 
 
 ## Installation
 
+### Kotlin JVM / Android
+
 **Gradle (Kotlin DSL)**
 ```kotlin
 dependencies {
-    implementation("io.github.fajrbahr:mediatork:0.0.4")
+    implementation("io.github.fajrbahr:mediatork:0.0.5")
 }
 ```
 
 **Gradle (Groovy)**
 ```groovy
 dependencies {
-    implementation 'io.github.fajrbahr:mediatork:0.0.4'
+    implementation 'io.github.fajrbahr:mediatork:0.0.5'
 }
 ```
 
@@ -29,10 +31,38 @@ dependencies {
 ```xml
 <dependency>
     <groupId>io.github.fajrbahr</groupId>
-    <artifactId>mediatork</artifactId>
-    <version>0.0.4</version>
+    <artifactId>mediatork-jvm</artifactId>
+    <version>0.0.5</version>
 </dependency>
 ```
+
+> Maven does not understand Kotlin Multiplatform metadata — use the `-jvm` artifact ID.
+
+---
+
+### Kotlin Multiplatform (KMP)
+
+Add to your shared module's `commonMain` source set:
+
+**Gradle (Kotlin DSL)**
+```kotlin
+kotlin {
+    sourceSets {
+        commonMain.dependencies {
+            implementation("io.github.fajrbahr:mediatork:0.0.5")
+        }
+    }
+}
+```
+
+**Supported targets**
+
+| Target | Artifact |
+|---|---|
+| JVM / Android | `mediatork-jvm` |
+| iOS Arm64 | `mediatork-iosarm64` |
+| iOS Simulator Arm64 | `mediatork-iossimulatorarm64` |
+| iOS x64 | `mediatork-iosx64` |
 
 ---
 
