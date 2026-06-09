@@ -54,6 +54,6 @@ The use-cases, analytics trackers, feature-flag observers, and performance track
 
 ```kotlin
 dependencies {
-    testImplementation("io.github.fajrbahr:mediatork-test:0.1.7")
+    testImplementation("io.github.fajrbahr:mediatork-test:0.6.0")
 }
 ```
