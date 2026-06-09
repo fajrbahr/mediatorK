@@ -31,21 +31,6 @@ class GetProductHandler(private val repo: ProductRepository) : RequestHandler<Ge
 
 ---
 
-## Platform-specific implementations
-
-Inject platform implementations via `expect`/`actual` or constructor injection:
-
-```kotlin
-// commonMain
-interface ProductRepository {
-    suspend fun findById(id: String): Product?
-}
-
-// androidMain / iosMain — provide concrete implementations
-```
-
----
-
 ## Creating the mediator
 
 ```kotlin
