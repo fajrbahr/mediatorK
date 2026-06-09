@@ -72,26 +72,6 @@ class MyApp : Application() {
 
 ---
 
-## Use in ViewModel
-
-```kotlin
-class UserViewModel(private val mediator: Mediator) : ViewModel() {
-
-    val user = MutableStateFlow<User?>(null)
-
-    fun load(id: String) {
-        viewModelScope.launch {
-            user.value = mediator.send(GetUserQuery(id))
-        }
-    }
-}
-
-// koin module
-viewModel { UserViewModel(get()) }
-```
-
----
-
 ## KMP shared module
 
 Declare the mediator in `commonMain` and inject platform repositories:

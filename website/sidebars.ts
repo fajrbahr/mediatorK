@@ -33,6 +33,7 @@ const sidebars: SidebarsConfig = {
         'integration/spring',
         'integration/ktor',
         'integration/koin',
+        'integration/viewmodel',
       ],
     },
     {
