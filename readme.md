@@ -1,5 +1,6 @@
 # MediatorK
 
+[![Docs](https://img.shields.io/badge/Docs-mediatorK-a97cf8)](https://fajrbahr.github.io/mediatorK/)
 [![Maven Central](https://img.shields.io/maven-central/v/io.github.fajrbahr/mediatork?label=Maven%20Central)](https://central.sonatype.com/artifact/io.github.fajrbahr/mediatork)
 [![Kotlin](https://img.shields.io/badge/Kotlin-2.3.21-blue.svg?logo=kotlin)](https://kotlinlang.org)
 [![Gradle](https://img.shields.io/badge/Gradle-9.3.0-02303A.svg?logo=gradle)](https://gradle.org)
