@@ -28,15 +28,15 @@ data class BookingPurchasedNotification(
 Multiple handlers can react to the same notification. Each is independent.
 
 ```kotlin
-class AnalyticsHandler : NotificationHandler<BookingPurchasedNotification> {
+class TrackOrderAnalyticsHandler : NotificationHandler<BookingPurchasedNotification> {
     override suspend fun handle(notification: BookingPurchasedNotification) {
         analytics.track("purchase", notification.bookingId)
     }
 }
 
-class EmailHandler(private val mailer: Mailer) : NotificationHandler<BookingPurchasedNotification> {
+class UpdateInventoryHandler(private val inventory: InventoryService) : NotificationHandler<BookingPurchasedNotification> {
     override suspend fun handle(notification: BookingPurchasedNotification) {
-        mailer.sendReceipt(notification.bookingId, notification.amount)
+        inventory.decrementStock(notification.bookingId, notification.amount)
     }
 }
 ```
@@ -45,14 +45,15 @@ class EmailHandler(private val mailer: Mailer) : NotificationHandler<BookingPurc
 
 ## Registering handlers
 
+Use `+handler` as shorthand or call `registerNotification()` directly — both are equivalent:
+
 ```kotlin
-class NotificationRegistrar(
-    private val analytics: AnalyticsHandler,
-    private val email: EmailHandler,
-) : MediatorRegistrar {
+class NotificationRegistrar : MediatorRegistrar {
     override fun register(registry: HandlerRegistry) {
-        registry registerNotification analytics
-        registry registerNotification email
+        registry.scope {
+            +TrackOrderAnalyticsHandler()
+            registerNotification(UpdateInventoryHandler(inventoryService))
+        }
     }
 }
 ```

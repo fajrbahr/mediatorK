@@ -54,16 +54,14 @@ class AppRegistrar(
     private val db: UserRepository,
 ) : MediatorRegistrar {
     override fun register(registry: HandlerRegistry) {
-        registry.scope {
-            +GetUserHandler(db)
-            +CreateOrderHandler(db)
-            +DeleteAccountHandler(db)
-        }
+        registry register GetUserHandler(db)
+        registry register CreateOrderHandler(db)
+        registry register DeleteAccountHandler(db)
     }
 }
 ```
 
-The `+handler` operator is shorthand for `registry register handler`.
+The `registry register handler` infix call is the standard way to register a handler. The `+handler` operator inside a `scope { }` block is a shorthand alias for the same thing.
 
 ---
 
