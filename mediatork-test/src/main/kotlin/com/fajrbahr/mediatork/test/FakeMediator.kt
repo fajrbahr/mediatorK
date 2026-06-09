@@ -91,3 +91,19 @@ inline fun <reified T : Notification> fakeNotificationHandler(
 ): NotificationHandler<T> = object : NotificationHandler<T> {
     override suspend fun handle(notification: T) = handler(notification)
 }
+
+/**
+ * Registers a [NotificationHandler] for [T] and returns the live list that collects every
+ * notification published to this mediator.
+ *
+ * ```kotlin
+ * val events = mediator.captureNotifications<OrderPlacedEvent>()
+ * mediator.publish(OrderPlacedEvent(orderId = "ORD-1"))
+ * assertEquals("ORD-1", events.first().orderId)
+ * ```
+ */
+inline fun <reified T : Notification> FakeMediator.captureNotifications(): List<T> {
+    val captured = mutableListOf<T>()
+    registry.registerNotification(fakeNotificationHandler<T> { captured += it })
+    return captured
+}

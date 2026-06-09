@@ -170,10 +170,23 @@ The test is short because there is nothing to fake — the date logic is already
 
 ---
 
-## Summary
+## Custom mediator
 
-| What | How to test |
-|---|---|
-| Business rules (validation, formatting, calculations) | Unit test the pure class directly — no mocks |
-| Handler wiring (repository calls, result mapping) | Integration test with `FakeMediator` + real/in-memory dependencies |
-| ViewModel reactions (loading state, error state, events) | Unit test with `FakeMediator` + `fakeHandler` |
+Remember — you can always extend `Mediator` however you need. `FakeMediator` and `DummyMediator` are conveniences, not constraints. If your test scenario calls for something more specific, implement the interface directly:
+
+```kotlin
+class CapturingMediator : Mediator {
+    val sent = mutableListOf<Any>()
+
+    @Suppress("UNCHECKED_CAST")
+    override suspend fun <TRequest : Request<TResult>, TResult> send(request: TRequest): TResult {
+        sent += request
+        return Unit as TResult
+    }
+
+    override suspend fun <T : Notification> publish(notification: T) = Unit
+    override suspend fun <T : Notification> publish(notification: T, publisher: NotificationPublisher) = Unit
+}
+```
+
+The `Mediator` interface is yours to implement, wrap, decorate, or proxy in any way the test requires.

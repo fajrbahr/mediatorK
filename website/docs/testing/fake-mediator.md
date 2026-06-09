@@ -8,56 +8,13 @@ sidebar_label: FakeMediator
 
 `mediatork-test` ships a set of test helpers that let you write handler and ViewModel tests without a mocking library.
 
----
-
-## Testing without a mocking library
-
-The biggest testing win from MediatorK is what it does to your ViewModel constructor.
-
-A typical ViewModel that manages its own dependencies directly ends up looking like this:
-
-```kotlin
-class SplashViewModel(
-    private val appInfo: AppInfo,
-    private val fetchAndCacheFeaturesFlagsUseCase: FetchAndCacheFeaturesFlagsUseCase,
-    observeFeatureFlagsUseCase: ObserveFeatureFlagsUseCase,
-    private val saveCacheDataUseCase: SaveCacheDataUseCase,
-    private val getCurrentUserAndCacheUseCase: GetCurrentUserAndCacheUseCase,
-    getPrefLanguageUseCase: GetPrefLanguageUseCase,
-    getThemeConfigUseCase: GetThemeConfigUseCase,
-    private val analyticsTrackerPort: AnalyticsTrackerPort,
-    val environmentConfiguration: EnvironmentConfig,
-    val performanceTracker: PerformanceTracker,
-    val firebasePerformanceTracker: TraceListener,
-    val basicLoggerTracker: BasicLoggerTracker,
-) : ViewModel()
-```
-
-To instantiate this in a test you need to stub or mock every one of those twelve parameters — even if the test only exercises one code path that touches two of them. Every new use-case added to the ViewModel breaks every existing test that constructs it.
-
-With MediatorK the constructor collapses to one dependency:
-
-```kotlin
-class SplashViewModel(
-    private val mediator: Mediator,
-) : ViewModel()
-```
-
-Now every test starts the same way:
-
-```kotlin
-val vm = SplashViewModel(DummyMediator())      // no send calls in this test
-val vm = SplashViewModel(FakeMediator())       // register handlers as needed
-```
-
-The use-cases, analytics trackers, feature-flag observers, and performance trackers are all moved into individual `RequestHandler` implementations. Each handler is tested in isolation. The ViewModel test only verifies how the ViewModel reacts to success or failure — it never needs to know which use-cases exist.
-
 | Helper | What it does |
 |---|---|
 | `FakeMediator` | Real mediator backed by a live `HandlerRegistry`. Register handlers at any time. |
 | `DummyMediator` | Zero-arg no-op. `send` silently returns, `publish` does nothing. |
 | `fakeHandler` | Creates a `RequestHandler` from a suspend lambda. |
 | `fakeNotificationHandler` | Creates a `NotificationHandler` from a suspend lambda. |
+| `captureNotifications` | Registers a notification handler and returns the live captured list. |
 
 ---
 
@@ -183,38 +140,11 @@ fun `createOrder failure sets error`() = runTest {
 
 ---
 
-## fakeNotificationHandler
-
-`fakeNotificationHandler` builds a `NotificationHandler` from a suspend lambda. Register it via `mediator.registry`:
-
-```kotlin
-val captured = mutableListOf<OrderPlacedEvent>()
-
-val mediator = FakeMediator {
-    +fakeNotificationHandler<OrderPlacedEvent> { event ->
-        captured += event
-    }
-}
-
-mediator.publish(OrderPlacedEvent(orderId = "ORD-1"))
-
-assertEquals(1, captured.size)
-assertEquals("ORD-1", captured.first().orderId)
-```
-
----
-
-## ViewModel testing
-
-Full runnable example: [`sample/src/test/kotlin/sample/OrderViewModelTest.kt`](https://github.com/fajrbahr/MediatorK/blob/main/sample/src/test/kotlin/sample/OrderViewModelTest.kt).
-
----
-
 ## Choosing the right helper
 
 | Situation | Use |
 |---|---|
 | Test only checks initial state, never calls `send` | `DummyMediator()` |
 | Test controls what `send` returns | `FakeMediator` + `fakeHandler` |
+| Test captures published notifications | [`captureNotifications`](notification-testing.md) |
 | Test verifies all handlers are wired up | [`MediatorTestUtils.assertAllHandlersRegistered`](handler-validation.md) |
-| Test captures published notifications | `FakeMediator` + `fakeNotificationHandler` |

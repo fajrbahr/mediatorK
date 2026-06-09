@@ -46,7 +46,7 @@ const sidebars: SidebarsConfig = {
             type: 'category',
             label: 'Testing',
             collapsed: false,
-            items: ['testing/dump-mediator', 'testing/fake-mediator', 'testing/handler-testing', 'testing/handler-validation'],
+            items: ['testing/before-mediator', 'testing/dump-mediator', 'testing/fake-mediator', 'testing/notification-testing', 'testing/handler-testing', 'testing/viewmodel-testing', 'testing/handler-validation'],
         },
         'api',
         'about',
