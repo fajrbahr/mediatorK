@@ -105,8 +105,16 @@ const config: Config = {
             { label: 'Issues', href: 'https://github.com/fajrbahr/MediatorK/issues' },
           ],
         },
+        {
+          title: 'Creator',
+          items: [
+            { label: 'Huzaifa Al-Fararjeh', to: '/docs/about' },
+            { label: 'LinkedIn', href: 'https://www.linkedin.com/in/hfararjeh/' },
+            { label: 'hfararjeh28@gmail.com', href: 'mailto:hfararjeh28@gmail.com' },
+          ],
+        },
       ],
-      copyright: `© ${new Date().getFullYear()} MediatorK. Built with Docusaurus.`,
+      copyright: `© ${new Date().getFullYear()} Huzaifa Al-Fararjeh. Built with Docusaurus.`,
     },
     prism: {
       theme: prismThemes.vsDark,
