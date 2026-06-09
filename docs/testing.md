@@ -11,14 +11,14 @@ Add `mediatork-test` as a **test** dependency:
 **Gradle (Kotlin DSL)**
 ```kotlin
 dependencies {
-    testImplementation("io.github.fajrbahr:mediatork-test:0.1.5.6")
+    testImplementation("io.github.fajrbahr:mediatork-test:0.1.6")
 }
 ```
 
 **Gradle (Groovy)**
 ```groovy
 dependencies {
-    testImplementation 'io.github.fajrbahr:mediatork-test:0.1.5.6'
+    testImplementation 'io.github.fajrbahr:mediatork-test:0.1.6'
 }
 ```
 
