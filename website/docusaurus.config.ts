@@ -12,7 +12,7 @@ const config: Config = {
   },
 
   url: 'https://fajrbahr.github.io',
-  baseUrl: '/MediatorK/',
+  baseUrl: '/mediatorK/',
 
   organizationName: 'fajrbahr',
   projectName: 'MediatorK',
