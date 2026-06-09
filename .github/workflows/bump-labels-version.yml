@@ -1,4 +1,4 @@
-name: Bump Docs Version
+name: Bump Labels Version
 
 on:
   workflow_dispatch:
