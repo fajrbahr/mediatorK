@@ -27,36 +27,32 @@ dependencies {
 
 ## Define a Koin module
 
+Declare each registrar and behavior as its own binding, then use `getAll<T>()` to collect them automatically — no manual list construction needed:
+
 ```kotlin
 val mediatorModule = module {
 
-    // Handlers
-    factory { GetUserHandler(get()) }
-    factory { CreateOrderHandler(get()) }
-    factory { DeleteAccountHandler(get()) }
+    // Registrars
+    single<MediatorRegistrar> { UserRegistrar(get()) }
+    single<MediatorRegistrar> { OrderRegistrar(get()) }
 
-    // Registrar collects all handlers
-    single {
-        object : MediatorRegistrar {
-            override fun register(registry: HandlerRegistry) {
-                registry.scope {
-                    +get<GetUserHandler>()
-                    +get<CreateOrderHandler>()
-                    +get<DeleteAccountHandler>()
-                }
-            }
-        }
-    }
+    // Pipeline behaviors
+    single<PipelineBehavior> { LoggingBehavior() }
+    single<PipelineBehavior> { ValidationBehavior(getAll()) }
 
-    // Mediator singleton
+    // Mediator singleton — getAll<T>() collects every binding of that type
     single {
+        val registrars = getAll<MediatorRegistrar>()
         MediatorFactory.create(
-            registrars = listOf(get<MediatorRegistrar>()),
-            pipelineBehaviors = listOf(LoggingBehavior()),
+            registrars = registrars,
+            pipelineBehaviors = getAll<PipelineBehavior>(),
+            notificationPublisher = ParallelNotificationPublisher(),
         )
     }
 }
 ```
+
+`getAll<T>()` resolves every Koin binding for the given type, so adding a new registrar or behavior is a one-line change — the mediator picks it up automatically.
 
 ---
 
