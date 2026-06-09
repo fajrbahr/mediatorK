@@ -110,6 +110,12 @@ First and above all — **الحمد لله** (Alhamdulillah). This library was 
 
 **Ahmed Akilan** — our CTO, whose technical mentorship and trust made it possible to grow as an engineer and ship something worth sharing.
 
+**[Philipp Lackner](https://www.youtube.com/@PhilippLackner)** — for his Android and Kotlin content on YouTube, which has been an invaluable learning resource.
+
+**[Dr. Venkat Subramaniam](https://www.agiledeveloper.com/)** — for his exceptional teaching of Kotlin, functional programming, and software design. His talks and courses shaped the way this library thinks about clean code.
+
+**[droidcon](https://www.droidcon.com/)** — for the talks, conferences, and community that keep Android and Kotlin engineering moving forward.
+
 ---
 
 Released under [CC0 1.0 Universal](LICENSE) — public domain. No attribution required.
