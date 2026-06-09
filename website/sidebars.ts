@@ -6,7 +6,7 @@ const sidebars: SidebarsConfig = {
             type: 'category',
             label: 'Getting Started',
             collapsed: false,
-            items: ['intro', 'the-promise', 'installation'],
+            items: ['intro', 'the-promise', 'vertical-slice', 'installation'],
         },
         {
             type: 'category',
