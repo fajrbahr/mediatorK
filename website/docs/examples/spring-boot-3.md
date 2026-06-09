@@ -1,3 +1,9 @@
+---
+id: spring-boot-3
+title: Spring Boot Example
+sidebar_label: Spring Boot
+---
+
 # Spring Boot Example
 
 A complete CRUD API using MediatorK with Spring Boot (WebFlux + coroutines).
@@ -109,7 +115,9 @@ class MediatorConfig(private val registrars: List<MediatorRegistrar>) {
 }
 ```
 
-> Spring injects all `MediatorRegistrar` beans automatically — no manual wiring needed.
+:::tip
+Spring injects all `MediatorRegistrar` beans automatically — no manual wiring needed.
+:::
 
 ---
 

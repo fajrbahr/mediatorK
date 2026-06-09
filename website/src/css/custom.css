@@ -1,0 +1,213 @@
+/* MediatorK — dark-only theme */
+
+:root,
+[data-theme='dark'] {
+  /* Kotlin/JetBrains inspired purple-violet accent */
+  --ifm-color-primary: #a97cf8;
+  --ifm-color-primary-dark: #9260f6;
+  --ifm-color-primary-darker: #8752f5;
+  --ifm-color-primary-darkest: #6a2cf2;
+  --ifm-color-primary-light: #bc98fa;
+  --ifm-color-primary-lighter: #c7a6fb;
+  --ifm-color-primary-lightest: #dcc8fd;
+
+  /* Background / surface */
+  --ifm-background-color: #0f1117;
+  --ifm-background-surface-color: #161b27;
+  --ifm-navbar-background-color: #0d1016;
+  --ifm-footer-background-color: #0d1016;
+
+  /* Text */
+  --ifm-font-color-base: #e2e8f0;
+  --ifm-heading-color: #f1f5f9;
+
+  /* Code */
+  --ifm-code-font-size: 93%;
+  --ifm-code-background: #1e2433;
+  --docusaurus-highlighted-code-line-bg: rgba(169, 124, 248, 0.12);
+
+  /* Borders */
+  --ifm-toc-border-color: #2a3045;
+  --ifm-hr-border-color: #2a3045;
+  --ifm-table-border-color: #2a3045;
+
+  /* Sidebar */
+  --ifm-menu-color: #94a3b8;
+  --ifm-menu-color-active: #a97cf8;
+
+  /* Admonitions */
+  --ifm-color-info: #60a5fa;
+  --ifm-color-warning: #fbbf24;
+  --ifm-color-danger: #f87171;
+  --ifm-color-success: #34d399;
+}
+
+/* Navbar */
+.navbar {
+  border-bottom: 1px solid #2a3045;
+  box-shadow: none;
+}
+
+.navbar__title {
+  font-weight: 700;
+  font-size: 1.1rem;
+  background: linear-gradient(135deg, #a97cf8, #60a5fa);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Hero landing page */
+.hero--primary {
+  background: linear-gradient(135deg, #0f1117 0%, #161b27 50%, #1a1030 100%);
+  border-bottom: 1px solid #2a3045;
+}
+
+.hero__title {
+  font-size: 3.5rem;
+  font-weight: 800;
+  background: linear-gradient(135deg, #a97cf8 0%, #60a5fa 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.hero__subtitle {
+  color: #94a3b8;
+  font-size: 1.3rem;
+}
+
+/* Feature cards */
+.features {
+  padding: 4rem 0;
+  background: #0f1117;
+}
+
+.featureCard {
+  background: #161b27;
+  border: 1px solid #2a3045;
+  border-radius: 12px;
+  padding: 1.5rem;
+  transition: border-color 0.2s, transform 0.2s;
+}
+
+.featureCard:hover {
+  border-color: #a97cf8;
+  transform: translateY(-2px);
+}
+
+.featureIcon {
+  font-size: 2.2rem;
+  margin-bottom: 0.75rem;
+}
+
+.featureTitle {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #f1f5f9;
+  margin-bottom: 0.5rem;
+}
+
+.featureDesc {
+  color: #94a3b8;
+  font-size: 0.95rem;
+  line-height: 1.6;
+}
+
+/* Tables */
+table {
+  border-collapse: collapse;
+  width: 100%;
+}
+
+th {
+  background: #1e2433 !important;
+  color: #a97cf8 !important;
+  font-weight: 600;
+}
+
+tr:nth-child(even) {
+  background: #161b27;
+}
+
+/* Sidebar */
+.menu__link--active {
+  color: #a97cf8 !important;
+}
+
+.menu__link:hover {
+  color: #a97cf8;
+  background: rgba(169, 124, 248, 0.08);
+}
+
+/* Admonition blocks */
+.admonition {
+  border-radius: 8px;
+  border-left-width: 4px;
+}
+
+/* Code blocks */
+.prism-code {
+  border-radius: 8px !important;
+  border: 1px solid #2a3045;
+}
+
+/* Badges in hero */
+.badge-row {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  justify-content: center;
+  margin: 1.5rem 0;
+}
+
+.badge-row img {
+  height: 22px;
+}
+
+/* Buttons */
+.button--primary {
+  background: linear-gradient(135deg, #a97cf8, #8752f5);
+  border: none;
+  font-weight: 600;
+}
+
+.button--primary:hover {
+  background: linear-gradient(135deg, #bc98fa, #9260f6);
+  color: #fff;
+}
+
+.button--secondary {
+  border-color: #a97cf8;
+  color: #a97cf8;
+}
+
+.button--secondary:hover {
+  background: rgba(169, 124, 248, 0.1);
+  color: #bc98fa;
+  border-color: #bc98fa;
+}
+
+/* Footer */
+.footer {
+  border-top: 1px solid #2a3045;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: #0f1117;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #2a3045;
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #a97cf8;
+}

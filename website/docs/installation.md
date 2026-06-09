@@ -1,3 +1,9 @@
+---
+id: installation
+title: Installation
+sidebar_label: Installation
+---
+
 # Installation
 
 ## Kotlin JVM
@@ -20,7 +26,9 @@ dependencies {
 
 **Maven**
 
-> Maven does not resolve Kotlin Multiplatform metadata — use the `-jvm` artifact ID.
+:::info
+Maven does not resolve Kotlin Multiplatform metadata — use the `-jvm` artifact ID.
+:::
 
 ```xml
 <dependency>

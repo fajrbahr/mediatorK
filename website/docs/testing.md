@@ -1,3 +1,9 @@
+---
+id: testing
+title: Testing
+sidebar_label: Testing
+---
+
 # Testing
 
 MediatorK ships a companion test utilities artifact — `mediatork-test` — that helps you catch missing handler registrations at test time instead of as a runtime crash.
@@ -22,7 +28,9 @@ dependencies {
 }
 ```
 
-> `mediatork-test` is a JVM-only artifact. It works for Android (unit tests), JVM, and KMP projects that have a JVM or Android test source set.
+:::info
+`mediatork-test` is a JVM-only artifact. It works for Android (unit tests), JVM, and KMP projects that have a JVM or Android test source set.
+:::
 
 ---
 
