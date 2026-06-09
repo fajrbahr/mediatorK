@@ -63,13 +63,14 @@ val mediator = MediatorFactory.create(
 
 ## Parameters
 
-| Parameter               | Type                         | Default                           | Description                                                  |
-|-------------------------|------------------------------|-----------------------------------|--------------------------------------------------------------|
-| `registrars`            | `List<MediatorRegistrar>`    | `emptyList()`                     | Contribute handlers to the registry at startup               |
-| `pipelineBehaviors`     | `List<PipelineBehavior>`     | `emptyList()`                     | Cross-cutting decorators; sorted by `order` at dispatch time |
-| `preProcessors`         | `List<RequestPreProcessor>`  | `emptyList()`                     | Run before the handler; sorted by `order`                    |
-| `postProcessors`        | `List<RequestPostProcessor>` | `emptyList()`                     | Run after the handler; sorted by `order`                     |
-| `notificationPublisher` | `NotificationPublisher`      | `ParallelNotificationPublisher()` | Strategy for delivering notifications to handlers            |
+| Parameter               | Type                         | Default                           | Description                                                                                         |
+|-------------------------|------------------------------|-----------------------------------|-----------------------------------------------------------------------------------------------------|
+| `registrars`            | `List<MediatorRegistrar>`    | `emptyList()`                     | Contribute handlers to the registry at startup                                                      |
+| `pipelineBehaviors`     | `List<PipelineBehavior>`     | `emptyList()`                     | Cross-cutting decorators; sorted by `order` at dispatch time                                        |
+| `preProcessors`         | `List<RequestPreProcessor>`  | `emptyList()`                     | Run before the handler; sorted by `order`                                                           |
+| `postProcessors`        | `List<RequestPostProcessor>` | `emptyList()`                     | Run after the handler; sorted by `order`                                                            |
+| `notificationPublisher` | `NotificationPublisher`      | `ParallelNotificationPublisher()` | Strategy for delivering notifications to handlers                                                   |
+| `verifyHandlers`        | `Boolean`                    | `true`                            | When `true`, logs a warning for every request type with no handler after all registrars have run    |
 
 ---
 
