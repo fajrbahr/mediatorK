@@ -10,9 +10,11 @@ package com.fajrbahr.mediatork
  * ```kotlin
  * class OrderRegistrar : MediatorRegistrar {
  *     override fun register(registry: HandlerRegistry) {
- *         registry register PlaceOrderHandler()
- *         registry register CancelOrderHandler()
- *         registry registerNotification OrderShippedHandler()
+ *         registry.scope {
+ *             +PlaceOrderHandler()
+ *             +CancelOrderHandler()
+ *             +OrderShippedHandler()
+ *         }
  *     }
  * }
  * ```
