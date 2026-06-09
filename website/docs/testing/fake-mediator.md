@@ -105,11 +105,27 @@ val mediator = FakeMediator {
 Handlers can also be added mid-test — useful for changing behaviour between calls in the same test:
 
 ```kotlin
-val mediator = FakeMediator()
+@Test
+fun `error is cleared on next call`() = runTest {
+    val mediator = FakeMediator()
+    val vm = OrderViewModel(mediator)
 
-mediator.register(fakeHandler<CreateOrderCommand, OrderResult> { _, _, _ ->
-    OrderResult(orderId = "ORD-1")
-})
+    mediator.register(fakeHandler<CreateOrderCommand, OrderResult> { _, _, _ ->
+        throw RuntimeException("first failure")
+    })
+    vm.createOrder("1", 10.0)
+    advanceUntilIdle()
+    assertNotNull(vm.stateFlow.value.error)
+
+    mediator.register(fakeHandler<CreateOrderCommand, OrderResult> { _, _, _ ->
+        OrderResult(orderId = "ORD-2")
+    })
+    vm.createOrder("2", 20.0)
+    advanceUntilIdle()
+
+    assertNull(vm.stateFlow.value.error)
+    assertEquals("ORD-2", vm.stateFlow.value.orderResult?.orderId)
+}
 ```
 
 Calling `register` again for the same request type silently replaces the previous handler.
@@ -130,18 +146,39 @@ val mediator = FakeMediator(
 `fakeHandler` builds a `RequestHandler` from a suspend lambda. The type arguments pin the request and result types — no anonymous object boilerplate.
 
 ```kotlin
-val handler = fakeHandler<CreateOrderCommand, OrderResult> { mediator, ctx, request ->
-    OrderResult(orderId = request.id)
+@Test
+fun `createOrder returns expected result`() = runTest {
+    val mediator = FakeMediator()
+    val vm = OrderViewModel(mediator)
+
+    mediator.register(fakeHandler<CreateOrderCommand, OrderResult> { _, _, request ->
+        OrderResult(orderId = request.id)
+    })
+
+    vm.createOrder("ORD-1", 99.0)
+    advanceUntilIdle()
+
+    assertEquals("ORD-1", vm.stateFlow.value.orderResult?.orderId)
 }
-mediator.register(handler)
 ```
 
 Throw from the lambda to simulate failures:
 
 ```kotlin
-mediator.register(fakeHandler<CreateOrderCommand, OrderResult> { _, _, _ ->
-    throw RuntimeException("Network unavailable")
-})
+@Test
+fun `createOrder failure sets error`() = runTest {
+    val mediator = FakeMediator()
+    val vm = OrderViewModel(mediator)
+
+    mediator.register(fakeHandler<CreateOrderCommand, OrderResult> { _, _, _ ->
+        throw RuntimeException("Network unavailable")
+    })
+
+    vm.createOrder("1", 99.0)
+    advanceUntilIdle()
+
+    assertEquals("Network unavailable", vm.stateFlow.value.error)
+}
 ```
 
 ---
@@ -169,79 +206,7 @@ assertEquals("ORD-1", captured.first().orderId)
 
 ## ViewModel testing
 
-The following pattern covers the full ViewModel lifecycle — success, failure, loading state, event emission — with no mocking library.
-
-`setUp` creates a fresh `FakeMediator` and `ViewModel` before each test. Each test registers the handler it needs, then drives the ViewModel:
-
-```kotlin
-@OptIn(ExperimentalCoroutinesApi::class)
-class OrderViewModelTest {
-
-    private val testDispatcher = StandardTestDispatcher()
-    private lateinit var fakeMediator: FakeMediator
-    private lateinit var vm: OrderViewModel
-
-    @BeforeTest
-    fun setUp() {
-        Dispatchers.setMain(testDispatcher)
-        fakeMediator = FakeMediator()
-        vm = OrderViewModel(fakeMediator)
-    }
-
-    @AfterTest
-    fun tearDown() {
-        Dispatchers.resetMain()
-    }
-
-    @Test
-    fun `createOrder success updates stateFlow`() = runTest {
-        val expected = OrderResult(orderId = "ORD-1", responseIme = 10)
-        fakeMediator.register(fakeHandler<CreateOrderCommand, OrderResult> { _, _, _ -> expected })
-
-        vm.createOrder("1", 99.0)
-        advanceUntilIdle()
-
-        val state = vm.stateFlow.value
-        assertEquals(expected, state.orderResult)
-        assertFalse(state.isLoading)
-        assertNull(state.error)
-    }
-
-    @Test
-    fun `createOrder failure sets error`() = runTest {
-        fakeMediator.register(fakeHandler<CreateOrderCommand, OrderResult> { _, _, _ ->
-            throw RuntimeException("Network unavailable")
-        })
-
-        vm.createOrder("1", 99.0)
-        advanceUntilIdle()
-
-        assertEquals("Network unavailable", vm.stateFlow.value.error)
-    }
-
-    @Test
-    fun `error is cleared on the next call`() = runTest {
-        fakeMediator.register(fakeHandler<CreateOrderCommand, OrderResult> { _, _, _ ->
-            throw RuntimeException("first failure")
-        })
-        vm.createOrder("1", 10.0)
-        advanceUntilIdle()
-        assertNotNull(vm.stateFlow.value.error)
-
-        // re-register to change behaviour for the next call
-        fakeMediator.register(fakeHandler<CreateOrderCommand, OrderResult> { _, _, _ ->
-            OrderResult(orderId = "ORD-2", responseIme = 2)
-        })
-        vm.createOrder("2", 20.0)
-        advanceUntilIdle()
-
-        assertNull(vm.stateFlow.value.error)
-        assertEquals("ORD-2", vm.stateFlow.value.orderResult?.orderId)
-    }
-}
-```
-
-The full runnable version lives at [`sample/src/test/kotlin/sample/OrderViewModelTest.kt`](https://github.com/fajrbahr/MediatorK/blob/main/sample/src/test/kotlin/sample/OrderViewModelTest.kt).
+Full runnable example: [`sample/src/test/kotlin/sample/OrderViewModelTest.kt`](https://github.com/fajrbahr/MediatorK/blob/main/sample/src/test/kotlin/sample/OrderViewModelTest.kt).
 
 ---
 
