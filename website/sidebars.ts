@@ -31,6 +31,7 @@ const sidebars: SidebarsConfig = {
         'integration/jvm',
         'integration/kmp',
         'integration/spring',
+        'integration/ktor',
         'integration/koin',
       ],
     },

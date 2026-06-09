@@ -6,7 +6,7 @@ sidebar_label: Kotlin JVM
 
 # Kotlin JVM
 
-Use MediatorK in any JVM project — Spring Boot, Ktor, CLI tools, or plain Kotlin.
+Use MediatorK in any JVM project — CLI tools, plain Kotlin, or as the foundation for framework-specific integrations.
 
 See [Installation](../installation.md) for dependency coordinates.
 
@@ -24,32 +24,6 @@ fun main() {
     runBlocking {
         val user = mediator.send(GetUserQuery("user-1"))
         println(user)
-    }
-}
-```
-
----
-
-## Ktor
-
-```kotlin
-fun Application.configureRouting(mediator: Mediator) {
-    routing {
-        get("/users/{id}") {
-            val user = mediator.send(GetUserQuery(call.parameters["id"]!!))
-            call.respond(user)
-        }
-    }
-}
-```
-
-Register the mediator as a singleton in your DI module:
-
-```kotlin
-val appModule = module {
-    single { AppRegistrar(get()) }
-    single {
-        MediatorFactory.create(registrars = listOf(get<AppRegistrar>()))
     }
 }
 ```
