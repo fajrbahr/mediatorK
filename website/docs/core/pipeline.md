@@ -48,7 +48,9 @@ Call `next(request)` to continue. Return without calling it to short-circuit.
 Restrict a behavior to specific request types without modifying handler code:
 
 ```kotlin
-class AuthBehavior : PipelineBehavior {
+class AuthBehavior(
+    private val auth0Enabled: Boolean = false,
+) : PipelineBehavior {
     override val order = 10
 
     override fun appliesTo(request: Request<*>): Boolean =
@@ -59,12 +61,16 @@ class AuthBehavior : PipelineBehavior {
         next: RequestHandlerDelegate<TReq, TRes>,
         request: TReq,
     ): TRes {
-        val token = requestContext.getMetaDate<String>("token")
-            ?: throw UnauthorizedException()
+        if (auth0Enabled) {
+            requestContext.getMetaDate<String>("token")
+                ?: throw UnauthorizedException()
+        }
         return next(request)
     }
 }
 ```
+
+Pass `auth0Enabled = true` when Auth0 is configured in your environment — the behavior skips token validation entirely when it is `false`.
 
 ---
 
