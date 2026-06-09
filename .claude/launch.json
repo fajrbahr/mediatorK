@@ -6,6 +6,13 @@
       "runtimeExecutable": "/usr/bin/python3",
       "runtimeArgs": ["/tmp/mediatork_serve.py"],
       "port": 3030
+    },
+    {
+      "name": "docusaurus",
+      "runtimeExecutable": "/usr/local/bin/npm",
+      "runtimeArgs": ["run", "start", "--", "--port", "3002", "--no-open"],
+      "cwd": "/Users/hf/Desktop/MediatorK/website",
+      "port": 3002
     }
   ]
 }

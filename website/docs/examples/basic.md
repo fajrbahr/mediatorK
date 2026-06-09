@@ -1,3 +1,9 @@
+---
+id: basic
+title: Basic Kotlin Example
+sidebar_label: Basic Kotlin
+---
+
 # Basic Example
 
 A complete end-to-end example using MediatorK in a plain Kotlin project.
