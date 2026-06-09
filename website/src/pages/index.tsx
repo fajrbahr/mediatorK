@@ -67,7 +67,7 @@ export default function Home(): ReactNode {
       {/* Hero */}
       <header className={clsx('hero hero--primary', styles.heroBanner)}>
         <div className="container">
-          <div className={styles.heroLogo}>MK</div>
+          <img src="img/mediator-logo.png" alt="MediatorK" className={styles.heroLogo} />
           <h1 className="hero__title">MediatorK</h1>
           <p className="hero__subtitle">
             Coroutine-first Mediator for Kotlin &amp; Kotlin Multiplatform

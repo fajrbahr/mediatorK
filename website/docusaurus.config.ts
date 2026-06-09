@@ -52,7 +52,7 @@ const config: Config = {
       title: 'MediatorK',
       logo: {
         alt: 'MediatorK Logo',
-        src: 'img/logo.svg',
+        src: 'img/mediator-logo.png',
       },
       items: [
         {
