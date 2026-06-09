@@ -8,9 +8,8 @@ import com.fajrbahr.mediatork.Request
 /**
  * A no-op [Mediator] for tests that don't need any handler behaviour.
  *
- * [send] silently returns without doing anything (result is `Unit` cast to `TResult`).
- * [publish] does nothing. Use this when you only need a [Mediator] instance to satisfy a
- * constructor and never actually send requests in the test.
+ * [send] silently returns, [publish] does nothing. Use this when you only need a [Mediator]
+ * to satisfy a constructor and never actually call [send] in the test.
  *
  * ```kotlin
  * val vm = OrderViewModel(DummyMediator())
@@ -24,4 +23,3 @@ class DummyMediator : Mediator {
     override suspend fun <T : Notification> publish(notification: T) = Unit
     override suspend fun <T : Notification> publish(notification: T, publisher: NotificationPublisher) = Unit
 }
-
