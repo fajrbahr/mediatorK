@@ -21,13 +21,13 @@ No kotlin-reflect. No annotation processing. No framework required.
 
 ## Why MediatorK?
 
-| Feature | Description |
-|---|---|
-| ⚡ **Coroutine-native** | `suspend` all the way down — no callbacks, no blocking |
-| 🧩 **KMP ready** | Works on JVM, Android, and iOS from a single `commonMain` dependency |
-| 🔌 **Framework-agnostic** | Works with Spring Boot, Ktor, KMM, or plain Kotlin |
-| 🪶 **Zero magic** | No kotlin-reflect, no code generation, no annotation processors |
-| 🧪 **Testable by design** | Swap real handlers for fakes — no mocking library needed |
+| Feature                   | Description                                                          |
+|---------------------------|----------------------------------------------------------------------|
+| ⚡ **Coroutine-native**    | `suspend` all the way down — no callbacks, no blocking               |
+| 🧩 **KMP ready**          | Works on JVM, Android, and iOS from a single `commonMain` dependency |
+| 🔌 **Framework-agnostic** | Works with Spring Boot, Ktor, KMM, or plain Kotlin                   |
+| 🪶 **Zero magic**         | No kotlin-reflect, no code generation, no annotation processors      |
+| 🧪 **Testable by design** | Swap real handlers for fakes — no mocking library needed             |
 
 ---
 
@@ -63,12 +63,12 @@ val user = mediator.send(GetUserQuery("user-1"))
 
 ## Supported Targets
 
-| Platform | Target |
-|---|---|
-| JVM / Spring Boot / Ktor | `jvm` |
-| Android | `androidTarget` |
-| iOS Device | `iosArm64` |
+| Platform                      | Target              |
+|-------------------------------|---------------------|
+| JVM / Spring Boot / Ktor      | `jvm`               |
+| Android                       | `androidTarget`     |
+| iOS Device                    | `iosArm64`          |
 | iOS Simulator (Apple Silicon) | `iosSimulatorArm64` |
-| iOS Simulator (Intel) | `iosX64` |
+| iOS Simulator (Intel)         | `iosX64`            |
 
 Ready to start? Head to [Installation →](installation.md)

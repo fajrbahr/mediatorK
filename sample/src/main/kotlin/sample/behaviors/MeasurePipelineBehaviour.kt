@@ -15,11 +15,11 @@ class MeasurePipelineBehaviour : PipelineBehavior {
         return request is FetchUserQueryId
     }
 
-    override suspend fun <TReq : Request<TRes>, TRes> process(
+    override suspend fun <TRequest : Request<TResult>, TResult> process(
         requestContext: RequestContext,
-        next: RequestHandlerDelegate<TReq, TRes>,
-        request: TReq
-    ): TRes {
+        next: RequestHandlerDelegate<TRequest, TResult>,
+        request: TRequest
+    ): TResult {
         val start = System.currentTimeMillis()
         val response = next(request)
         val end = System.currentTimeMillis()

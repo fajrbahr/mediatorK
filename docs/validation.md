@@ -1,6 +1,7 @@
 # Validation
 
-MediatorK ships a lightweight validation API in the `com.fajrbahr.mediatork.validator` package — no annotation processing, no reflection, no external dependencies.
+MediatorK ships a lightweight validation API in the `com.fajrbahr.mediatork.validator` package — no annotation
+processing, no reflection, no external dependencies.
 
 ---
 
@@ -59,7 +60,8 @@ class CreateTodoValidator : RequestValidator<CreateTodoCommand> {
 
 ## Wiring validation into the pipeline
 
-Validators are invoked by a `PipelineBehavior` you write — this keeps the decision of how to handle failures in your code:
+Validators are invoked by a `PipelineBehavior` you write — this keeps the decision of how to handle failures in your
+code:
 
 ```kotlin
 class ValidationBehavior(
@@ -68,14 +70,14 @@ class ValidationBehavior(
     override val order = -50 // run early
 
     @Suppress("UNCHECKED_CAST")
-    override suspend fun <TReq : Request<TRes>, TRes> process(
+    override suspend fun <TRequest : Request<TResult>, TResult> process(
         requestContext: RequestContext,
-        next: RequestHandlerDelegate<TReq, TRes>,
-        request: TReq,
-    ): TRes {
+        next: RequestHandlerDelegate<TRequest, TResult>,
+        request: TRequest,
+    ): TResult {
         val validator = validators.firstOrNull {
             it.requestClass.isInstance(request)
-        } as? RequestValidator<TReq>
+        } as? RequestValidator<TRequest>
 
         val result = validator?.validate(request)
         if (result != null && !result.isValid)

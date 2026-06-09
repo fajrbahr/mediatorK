@@ -1,15 +1,15 @@
 ---
 id: dump-mediator
-title: DumpMediator
-sidebar_label: DumpMediator
+title: DummyMediator
+sidebar_label: DummyMediator
 ---
 
-# DumpMediator
+# DummyMediator
 
-`DumpMediator` is a no-op `Mediator` included in the library for use in tests.
+`DummyMediator` is a no-op `Mediator` included in `mediatork-test` for use in tests.
 
 - `publish` does nothing — fire and forget, no handlers called.
-- `send` throws `NotImplementedError` by default — override it to return whatever the test needs.
+- `send` returns silently — no exception, no result processing.
 
 No fake class to write, no mocking library needed.
 
@@ -17,48 +17,37 @@ No fake class to write, no mocking library needed.
 
 ## Usage
 
-Override only the behaviour your test cares about:
+Use it when a test needs a `Mediator` to satisfy a constructor but never actually calls `send`:
 
 ```kotlin
-val mediator = object : DumpMediator() {
-    override suspend fun <TReq : Request<TRes>, TRes> send(request: TReq): TRes {
-        @Suppress("UNCHECKED_CAST")
-        return OrderResult(orderId = "order-123") as TRes
-    }
-}
-
-val vm = OrderViewModel(mediator)
+val vm = OrderViewModel(DummyMediator())
 ```
 
-To simulate a failure, throw from `send`:
+To simulate a failure, use `FakeMediator` with a `fakeHandler` that throws:
 
 ```kotlin
-val mediator = object : DumpMediator() {
-    override suspend fun <TReq : Request<TRes>, TRes> send(request: TReq): TRes =
-        throw RuntimeException("Network unavailable")
-}
+val mediator = FakeMediator()
+mediator.register(fakeHandler<CreateOrderCommand, OrderResult> { _, _, _ ->
+    throw RuntimeException("Network unavailable")
+})
 ```
 
-To capture what was sent:
+To capture what was sent, use `FakeMediator` with a `fakeHandler` that records:
 
 ```kotlin
 val captured = mutableListOf<Any>()
 
-val mediator = object : DumpMediator() {
-    override suspend fun <TReq : Request<TRes>, TRes> send(request: TReq): TRes {
-        captured += request
-        @Suppress("UNCHECKED_CAST")
-        return Unit as TRes
-    }
-}
+val mediator = FakeMediator()
+mediator.register(fakeHandler<CreateOrderCommand, OrderResult> { _, _, request ->
+    captured += request
+    OrderResult(orderId = request.id)
+})
 ```
 
 ---
 
 ## Import
 
-`DumpMediator` lives in the main library — no extra dependency needed:
-
 ```kotlin
-import com.fajrbahr.mediatork.DumpMediator
+import com.fajrbahr.mediatork.test.DummyMediator
 ```

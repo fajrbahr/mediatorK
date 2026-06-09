@@ -11,11 +11,11 @@ class PipelineBehaviorTest {
     private fun loggingBehavior(order: Int, label: String, log: MutableList<String>) =
         object : PipelineBehavior {
             override val order = order
-            override suspend fun <TReq : Request<TRes>, TRes> process(
+            override suspend fun <TRequest : Request<TResult>, TResult> process(
                 requestContext: RequestContext,
-                next: RequestHandlerDelegate<TReq, TRes>,
-                request: TReq,
-            ): TRes {
+                next: RequestHandlerDelegate<TRequest, TResult>,
+                request: TRequest,
+            ): TResult {
                 log += "$label-before"
                 return next(request).also { log += "$label-after" }
             }
@@ -60,11 +60,11 @@ class PipelineBehaviorTest {
         var ran = false
         val selective = object : PipelineBehavior {
             override fun appliesTo(request: Request<*>) = false
-            override suspend fun <TReq : Request<TRes>, TRes> process(
+            override suspend fun <TRequest : Request<TResult>, TResult> process(
                 requestContext: RequestContext,
-                next: RequestHandlerDelegate<TReq, TRes>,
-                request: TReq,
-            ): TRes {
+                next: RequestHandlerDelegate<TRequest, TResult>,
+                request: TRequest,
+            ): TResult {
                 ran = true; return next(request)
             }
         }
@@ -80,11 +80,11 @@ class PipelineBehaviorTest {
         var ran = false
         val b = object : PipelineBehavior {
             override fun appliesTo(request: Request<*>) = true
-            override suspend fun <TReq : Request<TRes>, TRes> process(
+            override suspend fun <TRequest : Request<TResult>, TResult> process(
                 requestContext: RequestContext,
-                next: RequestHandlerDelegate<TReq, TRes>,
-                request: TReq,
-            ): TRes {
+                next: RequestHandlerDelegate<TRequest, TResult>,
+                request: TRequest,
+            ): TResult {
                 ran = true; return next(request)
             }
         }
@@ -98,11 +98,11 @@ class PipelineBehaviorTest {
         var ran = false
         val disabled = object : PipelineBehavior {
             override val isEnabled = false
-            override suspend fun <TReq : Request<TRes>, TRes> process(
+            override suspend fun <TRequest : Request<TResult>, TResult> process(
                 requestContext: RequestContext,
-                next: RequestHandlerDelegate<TReq, TRes>,
-                request: TReq,
-            ): TRes {
+                next: RequestHandlerDelegate<TRequest, TResult>,
+                request: TRequest,
+            ): TResult {
                 ran = true; return next(request)
             }
         }
@@ -114,11 +114,11 @@ class PipelineBehaviorTest {
     @Test
     fun `behavior can read and write request context`() = runTest {
         val b = object : PipelineBehavior {
-            override suspend fun <TReq : Request<TRes>, TRes> process(
+            override suspend fun <TRequest : Request<TResult>, TResult> process(
                 requestContext: RequestContext,
-                next: RequestHandlerDelegate<TReq, TRes>,
-                request: TReq,
-            ): TRes {
+                next: RequestHandlerDelegate<TRequest, TResult>,
+                request: TRequest,
+            ): TResult {
                 requestContext.put("from-behavior", "injected")
                 return next(request)
             }
@@ -144,11 +144,11 @@ class PipelineBehaviorTest {
         var handlerRan = false
         val shortCircuit = object : PipelineBehavior {
             @Suppress("UNCHECKED_CAST")
-            override suspend fun <TReq : Request<TRes>, TRes> process(
+            override suspend fun <TRequest : Request<TResult>, TResult> process(
                 requestContext: RequestContext,
-                next: RequestHandlerDelegate<TReq, TRes>,
-                request: TReq,
-            ): TRes = "short-circuited" as TRes
+                next: RequestHandlerDelegate<TRequest, TResult>,
+                request: TRequest,
+            ): TResult = "short-circuited" as TResult
         }
         val handler = object : RequestHandler<PingQuery, String> {
             override suspend fun handle(
@@ -171,11 +171,11 @@ class PipelineBehaviorTest {
         var ranForPing = false
         val pingOnly = object : PipelineBehavior {
             override fun appliesTo(request: Request<*>) = request is PingQuery
-            override suspend fun <TReq : Request<TRes>, TRes> process(
+            override suspend fun <TRequest : Request<TResult>, TResult> process(
                 requestContext: RequestContext,
-                next: RequestHandlerDelegate<TReq, TRes>,
-                request: TReq,
-            ): TRes {
+                next: RequestHandlerDelegate<TRequest, TResult>,
+                request: TRequest,
+            ): TResult {
                 ranForPing = true; return next(request)
             }
         }

@@ -8,7 +8,8 @@ sidebar_label: Kotlin Multiplatform
 
 MediatorK is a pure KMP library — all APIs live in `commonMain` and work identically on JVM, Android, and iOS.
 
-See [Installation](../installation.md) for dependency coordinates. Add to `commonMain` — Gradle resolves the right platform artifact automatically.
+See [Installation](../installation.md) for dependency coordinates. Add to `commonMain` — Gradle resolves the right
+platform artifact automatically.
 
 ---
 

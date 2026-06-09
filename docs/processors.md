@@ -1,6 +1,7 @@
 # Pre / Post Processors
 
-Processors are lightweight hooks that run before or after every handler — simpler than pipeline behaviors when you don't need to wrap or short-circuit, just observe or enrich.
+Processors are lightweight hooks that run before or after every handler — simpler than pipeline behaviors when you don't
+need to wrap or short-circuit, just observe or enrich.
 
 ---
 
@@ -60,13 +61,13 @@ val mediator = MediatorFactory.create(
 
 ## Pre-processor vs Pipeline behavior
 
-| | Pre/Post Processor | Pipeline Behavior |
-|---|---|---|
-| Can wrap the handler | No | Yes |
-| Can short-circuit | Throw only | Yes (return without calling `next`) |
-| Can modify response | No | Yes |
-| Applies to specific requests | No | Yes (`appliesTo`) |
-| Typical use | Enrich context, observe | Retry, cache, auth, transform |
+|                              | Pre/Post Processor      | Pipeline Behavior                   |
+|------------------------------|-------------------------|-------------------------------------|
+| Can wrap the handler         | No                      | Yes                                 |
+| Can short-circuit            | Throw only              | Yes (return without calling `next`) |
+| Can modify response          | No                      | Yes                                 |
+| Applies to specific requests | No                      | Yes (`appliesTo`)                   |
+| Typical use                  | Enrich context, observe | Retry, cache, auth, transform       |
 
 ---
 

@@ -6,7 +6,8 @@ sidebar_label: Ktor
 
 # Ktor
 
-MediatorK works naturally with Ktor — register the mediator as a singleton in your DI module and inject it into your route configuration.
+MediatorK works naturally with Ktor — register the mediator as a singleton in your DI module and inject it into your
+route configuration.
 
 See [Installation](../installation.md) for dependency coordinates.
 

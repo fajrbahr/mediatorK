@@ -8,11 +8,11 @@ import com.fajrbahr.mediatork.RequestHandlerDelegate
 class LoggingBehavior : PipelineBehavior {
     override val order: Int = 1
 
-    override suspend fun <TReq : Request<TRes>, TRes> process(
+    override suspend fun <TRequest : Request<TResult>, TResult> process(
         requestContext: RequestContext,
-        next: RequestHandlerDelegate<TReq, TRes>,
-        request: TReq
-    ): TRes {
+        next: RequestHandlerDelegate<TRequest, TResult>,
+        request: TRequest
+    ): TResult {
         println("[LOG] --> ${request::class.simpleName}")
         val result = next(request)
         println("[LOG] <-- ${request::class.simpleName} result: $result")

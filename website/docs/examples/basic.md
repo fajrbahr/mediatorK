@@ -129,11 +129,11 @@ Behaviors wrap every request — useful for logging, retry, auth, etc.
 class LoggingBehavior : PipelineBehavior {
     override val order = 0
 
-    override suspend fun <TReq : Request<TRes>, TRes> process(
+    override suspend fun <TRequest : Request<TResult>, TResult> process(
         requestContext: RequestContext,
-        next: RequestHandlerDelegate<TReq, TRes>,
-        request: TReq,
-    ): TRes {
+        next: RequestHandlerDelegate<TRequest, TResult>,
+        request: TRequest,
+    ): TResult {
         println("→ ${request::class.simpleName}")
         val result = next(request)
         println("← ${request::class.simpleName}")

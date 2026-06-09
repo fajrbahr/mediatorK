@@ -1,198 +1,217 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <title>MediatorK — Kotlin Multiplatform Mediator</title>
-  <meta name="description" content="Coroutine-first Mediator library for Kotlin and KMP. CQRS, pipeline behaviors, notifications." />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0" />
+    <meta charset="UTF-8"/>
+    <title>MediatorK — Kotlin Multiplatform Mediator</title>
+    <meta content="Coroutine-first Mediator library for Kotlin and KMP. CQRS, pipeline behaviors, notifications."
+          name="description"/>
+    <meta content="width=device-width, initial-scale=1.0, minimum-scale=1.0" name="viewport"/>
 
-  <!-- Dark theme base -->
-  <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/docsify-themeable@0/dist/css/theme-simple-dark.css" />
+    <!-- Dark theme base -->
+    <link href="//cdn.jsdelivr.net/npm/docsify-themeable@0/dist/css/theme-simple-dark.css" rel="stylesheet"/>
 
-  <style>
-    :root {
-      --theme-color: #7c3aed;
+    <style>
+        :root {
+            --theme-color: #7c3aed;
 
-      /* Background */
-      --base-background-color: #0d0d14;
-      --sidebar-background: #0a0a10;
-      --navbar-background: #0a0a10;
+            /* Background */
+            --base-background-color: #0d0d14;
+            --sidebar-background: #0a0a10;
+            --navbar-background: #0a0a10;
 
-      /* Sidebar */
-      --sidebar-width: 270px;
-      --sidebar-nav-link-color: #a78bfa;
-      --sidebar-nav-link-color--active: #fff;
-      --sidebar-nav-link-background--active: rgba(124,58,237,.3);
-      --sidebar-nav-link-border-radius: 6px;
-      --sidebar-name-color: #fff;
-      --sidebar-name-font-size: 1.05rem;
-      --sidebar-name-font-weight: 700;
-      --sidebar-border-color: rgba(124,58,237,.2);
+            /* Sidebar */
+            --sidebar-width: 270px;
+            --sidebar-nav-link-color: #a78bfa;
+            --sidebar-nav-link-color--active: #fff;
+            --sidebar-nav-link-background--active: rgba(124, 58, 237, .3);
+            --sidebar-nav-link-border-radius: 6px;
+            --sidebar-name-color: #fff;
+            --sidebar-name-font-size: 1.05rem;
+            --sidebar-name-font-weight: 700;
+            --sidebar-border-color: rgba(124, 58, 237, .2);
 
-      /* Cover */
-      --cover-background-color: linear-gradient(135deg, #0d0d14 0%, #1a1040 60%, #3b1a7a 100%);
-      --cover-heading-color: #fff;
-      --cover-blockquote-color: #c4b5fd;
-      --cover-link-color: #a78bfa;
+            /* Cover */
+            --cover-background-color: linear-gradient(135deg, #0d0d14 0%, #1a1040 60%, #3b1a7a 100%);
+            --cover-heading-color: #fff;
+            --cover-blockquote-color: #c4b5fd;
+            --cover-link-color: #a78bfa;
 
-      /* Body text */
-      --base-color: #e2e8f0;
-      --base-font-family: 'Inter', system-ui, sans-serif;
-      --base-line-height: 1.75;
-      --heading-color: #f1f5f9;
-      --link-color: #a78bfa;
-      --link-color--hover: #c4b5fd;
+            /* Body text */
+            --base-color: #e2e8f0;
+            --base-font-family: 'Inter', system-ui, sans-serif;
+            --base-line-height: 1.75;
+            --heading-color: #f1f5f9;
+            --link-color: #a78bfa;
+            --link-color--hover: #c4b5fd;
 
-      /* Code */
-      --code-theme-background: #13111f;
-      --code-theme-text: #e2e8f0;
-      --code-inline-background: #1e1a2e;
-      --code-inline-color: #c4b5fd;
+            /* Code */
+            --code-theme-background: #13111f;
+            --code-theme-text: #e2e8f0;
+            --code-inline-background: #1e1a2e;
+            --code-inline-color: #c4b5fd;
 
-      /* Blockquote */
-      --blockquote-border-color: #7c3aed;
-      --blockquote-background: #13111f;
-      --blockquote-color: #c4b5fd;
+            /* Blockquote */
+            --blockquote-border-color: #7c3aed;
+            --blockquote-background: #13111f;
+            --blockquote-color: #c4b5fd;
 
-      /* Table */
-      --table-head-background: #1e1a2e;
-      --table-row-odd-background: #13111f;
-      --table-row-even-background: #0d0d14;
-      --table-cell-border-color: rgba(124,58,237,.2);
+            /* Table */
+            --table-head-background: #1e1a2e;
+            --table-row-odd-background: #13111f;
+            --table-row-even-background: #0d0d14;
+            --table-cell-border-color: rgba(124, 58, 237, .2);
 
-      /* Misc */
-      --border-color: rgba(124,58,237,.2);
-    }
+            /* Misc */
+            --border-color: rgba(124, 58, 237, .2);
+        }
 
-    /* Cover buttons */
-    .cover-main > p:last-child a {
-      border-radius: 8px;
-      font-weight: 600;
-      padding: 0.65em 1.5em;
-    }
-    .cover-main > p:last-child a:first-child {
-      background: #7c3aed;
-      border: 2px solid #7c3aed;
-      color: #fff;
-    }
-    .cover-main > p:last-child a:last-child {
-      border: 2px solid rgba(255,255,255,.3);
-      color: #fff;
-    }
-    .cover-main > p:last-child a:hover {
-      opacity: .85;
-    }
+        /* Cover buttons */
+        .cover-main > p:last-child a {
+            border-radius: 8px;
+            font-weight: 600;
+            padding: 0.65em 1.5em;
+        }
 
-    /* Sidebar nav items */
-    .sidebar .sidebar-nav a {
-      padding: 4px 12px;
-      display: block;
-      border-radius: 6px;
-      transition: background .15s;
-    }
+        .cover-main > p:last-child a:first-child {
+            background: #7c3aed;
+            border: 2px solid #7c3aed;
+            color: #fff;
+        }
 
-    /* Headings with divider */
-    .markdown-section h1,
-    .markdown-section h2 {
-      border-bottom: 1px solid rgba(124,58,237,.35);
-      padding-bottom: .3em;
-      color: #f1f5f9;
-    }
-    .markdown-section h3,
-    .markdown-section h4 {
-      color: #e2e8f0;
-    }
+        .cover-main > p:last-child a:last-child {
+            border: 2px solid rgba(255, 255, 255, .3);
+            color: #fff;
+        }
 
-    /* Inline code */
-    .markdown-section code {
-      border-radius: 4px;
-      padding: 2px 6px;
-      background: #1e1a2e;
-      color: #c4b5fd;
-      font-size: .9em;
-    }
-    .markdown-section pre code {
-      background: transparent;
-      color: inherit;
-      padding: 0;
-    }
-    .markdown-section pre {
-      background: #13111f !important;
-      border: 1px solid rgba(124,58,237,.2);
-      border-radius: 8px;
-    }
+        .cover-main > p:last-child a:hover {
+            opacity: .85;
+        }
 
-    /* Table */
-    .markdown-section table th {
-      background: #1e1a2e;
-      color: #c4b5fd;
-      border-color: rgba(124,58,237,.3);
-    }
-    .markdown-section table td {
-      border-color: rgba(124,58,237,.15);
-    }
-    .markdown-section table tr:nth-child(2n) {
-      background: #13111f;
-    }
+        /* Sidebar nav items */
+        .sidebar .sidebar-nav a {
+            padding: 4px 12px;
+            display: block;
+            border-radius: 6px;
+            transition: background .15s;
+        }
 
-    /* Blockquote */
-    .markdown-section blockquote {
-      border-left: 4px solid #7c3aed;
-      background: #13111f;
-      border-radius: 0 6px 6px 0;
-      padding: 1em 1.2em;
-      color: #c4b5fd;
-    }
+        /* Headings with divider */
+        .markdown-section h1,
+        .markdown-section h2 {
+            border-bottom: 1px solid rgba(124, 58, 237, .35);
+            padding-bottom: .3em;
+            color: #f1f5f9;
+        }
 
-    /* Scrollbar */
-    ::-webkit-scrollbar { width: 6px; height: 6px; }
-    ::-webkit-scrollbar-track { background: #0a0a10; }
-    ::-webkit-scrollbar-thumb { background: #4c1d95; border-radius: 3px; }
-  </style>
+        .markdown-section h3,
+        .markdown-section h4 {
+            color: #e2e8f0;
+        }
+
+        /* Inline code */
+        .markdown-section code {
+            border-radius: 4px;
+            padding: 2px 6px;
+            background: #1e1a2e;
+            color: #c4b5fd;
+            font-size: .9em;
+        }
+
+        .markdown-section pre code {
+            background: transparent;
+            color: inherit;
+            padding: 0;
+        }
+
+        .markdown-section pre {
+            background: #13111f !important;
+            border: 1px solid rgba(124, 58, 237, .2);
+            border-radius: 8px;
+        }
+
+        /* Table */
+        .markdown-section table th {
+            background: #1e1a2e;
+            color: #c4b5fd;
+            border-color: rgba(124, 58, 237, .3);
+        }
+
+        .markdown-section table td {
+            border-color: rgba(124, 58, 237, .15);
+        }
+
+        .markdown-section table tr:nth-child(2n) {
+            background: #13111f;
+        }
+
+        /* Blockquote */
+        .markdown-section blockquote {
+            border-left: 4px solid #7c3aed;
+            background: #13111f;
+            border-radius: 0 6px 6px 0;
+            padding: 1em 1.2em;
+            color: #c4b5fd;
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #0a0a10;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #4c1d95;
+            border-radius: 3px;
+        }
+    </style>
 </head>
 <body>
-  <div id="app"></div>
+<div id="app"></div>
 
-  <script>
+<script>
     window.$docsify = {
-      name: 'MediatorK',
-      repo: 'fajrbahr/MediatorK',
-      coverpage: '_coverpage.md',
-      loadSidebar: true,
-      loadNavbar: true,
-      subMaxLevel: 2,
-      auto2top: true,
-      homepage: 'README.md',
-      alias: {
-        '/*/_sidebar.md': '/_sidebar.md',
-        '/*/_navbar.md':  '/_navbar.md',
-      },
-      search: {
-        placeholder: 'Search…',
-        noData: 'No results.',
-        depth: 3,
-      },
-      copyCode: {
-        buttonText: 'Copy',
-        errorText:  'Error',
-        successText: 'Copied!',
-      },
-      pagination: {
-        previousText: '← Previous',
-        nextText: 'Next →',
-        crossChapter: true,
-      },
+        name: 'MediatorK',
+        repo: 'fajrbahr/MediatorK',
+        coverpage: '_coverpage.md',
+        loadSidebar: true,
+        loadNavbar: true,
+        subMaxLevel: 2,
+        auto2top: true,
+        homepage: 'README.md',
+        alias: {
+            '/*/_sidebar.md': '/_sidebar.md',
+            '/*/_navbar.md': '/_navbar.md',
+        },
+        search: {
+            placeholder: 'Search…',
+            noData: 'No results.',
+            depth: 3,
+        },
+        copyCode: {
+            buttonText: 'Copy',
+            errorText: 'Error',
+            successText: 'Copied!',
+        },
+        pagination: {
+            previousText: '← Previous',
+            nextText: 'Next →',
+            crossChapter: true,
+        },
     }
-  </script>
+</script>
 
-  <script src="//cdn.jsdelivr.net/npm/docsify@4/lib/docsify.min.js"></script>
-  <script src="//cdn.jsdelivr.net/npm/docsify/lib/plugins/emoji.min.js"></script>
-  <script src="//cdn.jsdelivr.net/npm/docsify-copy-code@2/dist/docsify-copy-code.min.js"></script>
-  <script src="//cdn.jsdelivr.net/npm/docsify@4/lib/plugins/search.min.js"></script>
-  <script src="//cdn.jsdelivr.net/npm/docsify-pagination/dist/docsify-pagination.min.js"></script>
-  <script src="//cdn.jsdelivr.net/npm/prismjs@1/components/prism-kotlin.min.js"></script>
-  <script src="//cdn.jsdelivr.net/npm/prismjs@1/components/prism-groovy.min.js"></script>
-  <script src="//cdn.jsdelivr.net/npm/prismjs@1/components/prism-xml-doc.min.js"></script>
-  <script src="//cdn.jsdelivr.net/npm/docsify-themeable@0/dist/js/docsify-themeable.min.js"></script>
+<script src="//cdn.jsdelivr.net/npm/docsify@4/lib/docsify.min.js"></script>
+<script src="//cdn.jsdelivr.net/npm/docsify/lib/plugins/emoji.min.js"></script>
+<script src="//cdn.jsdelivr.net/npm/docsify-copy-code@2/dist/docsify-copy-code.min.js"></script>
+<script src="//cdn.jsdelivr.net/npm/docsify@4/lib/plugins/search.min.js"></script>
+<script src="//cdn.jsdelivr.net/npm/docsify-pagination/dist/docsify-pagination.min.js"></script>
+<script src="//cdn.jsdelivr.net/npm/prismjs@1/components/prism-kotlin.min.js"></script>
+<script src="//cdn.jsdelivr.net/npm/prismjs@1/components/prism-groovy.min.js"></script>
+<script src="//cdn.jsdelivr.net/npm/prismjs@1/components/prism-xml-doc.min.js"></script>
+<script src="//cdn.jsdelivr.net/npm/docsify-themeable@0/dist/js/docsify-themeable.min.js"></script>
 </body>
 </html>

@@ -6,7 +6,8 @@ sidebar_label: Koin
 
 # Koin
 
-MediatorK works naturally with [Koin](https://insert-koin.io/) for dependency injection in KMP, Android, and iOS projects.
+MediatorK works naturally with [Koin](https://insert-koin.io/) for dependency injection in KMP, Android, and iOS
+projects.
 
 ---
 
@@ -27,7 +28,8 @@ dependencies {
 
 ## Define a Koin module
 
-Declare each registrar and behavior as its own binding, then use `getAll<T>()` to collect them automatically — no manual list construction needed:
+Declare each registrar and behavior as its own binding, then use `getAll<T>()` to collect them automatically — no manual
+list construction needed:
 
 ```kotlin
 val mediatorModule = module {
@@ -52,7 +54,8 @@ val mediatorModule = module {
 }
 ```
 
-`getAll<T>()` resolves every Koin binding for the given type, so adding a new registrar or behavior is a one-line change — the mediator picks it up automatically.
+`getAll<T>()` resolves every Koin binding for the given type, so adding a new registrar or behavior is a one-line
+change — the mediator picks it up automatically.
 
 ---
 

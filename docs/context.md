@@ -1,6 +1,8 @@
 # Request Context
 
-`RequestContext` is a **mutable key-value bag** scoped to a single pipeline execution. A fresh instance is created for every `mediator.send(...)` call — values are never shared between concurrent requests, even when the mediator is a singleton.
+`RequestContext` is a **mutable key-value bag** scoped to a single pipeline execution. A fresh instance is created for
+every `mediator.send(...)` call — values are never shared between concurrent requests, even when the mediator is a
+singleton.
 
 This mirrors per-request scoping in web frameworks (`HttpContext`, `CoroutineContext`, etc.).
 

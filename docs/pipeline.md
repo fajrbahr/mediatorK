@@ -1,6 +1,7 @@
 # Pipeline Behaviors
 
-A **pipeline behavior** wraps every request in a decorator chain — cross-cutting concerns like logging, retry, caching, auth, and timing without touching handler code.
+A **pipeline behavior** wraps every request in a decorator chain — cross-cutting concerns like logging, retry, caching,
+auth, and timing without touching handler code.
 
 ```
 send(request)
@@ -20,11 +21,11 @@ Lower `order` = outermost wrapper = runs first on the way in, last on the way ou
 class LoggingBehavior : PipelineBehavior {
     override val order = -100 // outermost
 
-    override suspend fun <TReq : Request<TRes>, TRes> process(
+    override suspend fun <TRequest : Request<TResult>, TResult> process(
         requestContext: RequestContext,
-        next: RequestHandlerDelegate<TReq, TRes>,
-        request: TReq,
-    ): TRes {
+        next: RequestHandlerDelegate<TRequest, TResult>,
+        request: TRequest,
+    ): TResult {
         println("→ ${request::class.simpleName}")
         val result = next(request)           // advance the chain
         println("← ${request::class.simpleName}")
@@ -48,11 +49,11 @@ class AuthBehavior : PipelineBehavior {
     override fun appliesTo(request: Request<*>): Boolean =
         request is AuthenticatedRequest   // only runs for authenticated requests
 
-    override suspend fun <TReq : Request<TRes>, TRes> process(
+    override suspend fun <TRequest : Request<TResult>, TResult> process(
         requestContext: RequestContext,
-        next: RequestHandlerDelegate<TReq, TRes>,
-        request: TReq,
-    ): TRes {
+        next: RequestHandlerDelegate<TRequest, TResult>,
+        request: TRequest,
+    ): TResult {
         val token = requestContext.getMetaDate<String>("token")
             ?: throw UnauthorizedException()
         return next(request)

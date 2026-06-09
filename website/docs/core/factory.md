@@ -6,7 +6,8 @@ sidebar_label: MediatorFactory
 
 # MediatorFactory
 
-`MediatorFactory.create` is the single entry point for wiring everything together — registrars, pipeline behaviors, processors, validators, and the notification strategy all go here.
+`MediatorFactory.create` is the single entry point for wiring everything together — registrars, pipeline behaviors,
+processors, validators, and the notification strategy all go here.
 
 ---
 
@@ -62,13 +63,13 @@ val mediator = MediatorFactory.create(
 
 ## Parameters
 
-| Parameter | Type | Default | Description |
-|---|---|---|---|
-| `registrars` | `List<MediatorRegistrar>` | `emptyList()` | Contribute handlers to the registry at startup |
-| `pipelineBehaviors` | `List<PipelineBehavior>` | `emptyList()` | Cross-cutting decorators; sorted by `order` at dispatch time |
-| `preProcessors` | `List<RequestPreProcessor>` | `emptyList()` | Run before the handler; sorted by `order` |
-| `postProcessors` | `List<RequestPostProcessor>` | `emptyList()` | Run after the handler; sorted by `order` |
-| `notificationPublisher` | `NotificationPublisher` | `ParallelNotificationPublisher()` | Strategy for delivering notifications to handlers |
+| Parameter               | Type                         | Default                           | Description                                                  |
+|-------------------------|------------------------------|-----------------------------------|--------------------------------------------------------------|
+| `registrars`            | `List<MediatorRegistrar>`    | `emptyList()`                     | Contribute handlers to the registry at startup               |
+| `pipelineBehaviors`     | `List<PipelineBehavior>`     | `emptyList()`                     | Cross-cutting decorators; sorted by `order` at dispatch time |
+| `preProcessors`         | `List<RequestPreProcessor>`  | `emptyList()`                     | Run before the handler; sorted by `order`                    |
+| `postProcessors`        | `List<RequestPostProcessor>` | `emptyList()`                     | Run after the handler; sorted by `order`                     |
+| `notificationPublisher` | `NotificationPublisher`      | `ParallelNotificationPublisher()` | Strategy for delivering notifications to handlers            |
 
 ---
 
@@ -84,18 +85,19 @@ PreProcessors  (ascending order)
 PostProcessors (ascending order)
 ```
 
-`ValidationBehavior` runs at `order = -50` by default, so it executes before logging, tracing, and retry behaviors that typically sit at `order = 0` or above.
+`ValidationBehavior` runs at `order = -50` by default, so it executes before logging, tracing, and retry behaviors that
+typically sit at `order = 0` or above.
 
 ---
 
 ## Notification publishers
 
-| Publisher | Behaviour |
-|---|---|
-| `ParallelNotificationPublisher` | All handlers run concurrently *(default)* |
-| `SequentialNotificationPublisher` | Handlers run one-by-one; stops on first error |
+| Publisher                                  | Behaviour                                                    |
+|--------------------------------------------|--------------------------------------------------------------|
+| `ParallelNotificationPublisher`            | All handlers run concurrently *(default)*                    |
+| `SequentialNotificationPublisher`          | Handlers run one-by-one; stops on first error                |
 | `ContinueOnExceptionNotificationPublisher` | All handlers run; errors collected into `AggregateException` |
-| `FireAndForgetNotificationPublisher` | Returns immediately; handlers run in the background |
+| `FireAndForgetNotificationPublisher`       | Returns immediately; handlers run in the background          |
 
 ---
 
