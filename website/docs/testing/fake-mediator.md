@@ -18,16 +18,6 @@ sidebar_label: FakeMediator
 
 ---
 
-## Installation
-
-```kotlin
-dependencies {
-    testImplementation("io.github.fajrbahr:mediatork-test:0.1.6")
-}
-```
-
----
-
 ## DummyMediator
 
 Use `DummyMediator` when a test needs a `Mediator` instance to satisfy a constructor but never actually calls `send`.

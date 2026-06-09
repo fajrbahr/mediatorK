@@ -11,33 +11,6 @@ registrations at test time instead of as a runtime crash.
 
 ---
 
-## Installation
-
-Add `mediatork-test` as a **test** dependency:
-
-**Gradle (Kotlin DSL)**
-
-```kotlin
-dependencies {
-    testImplementation("io.github.fajrbahr:mediatork-test:0.1.6")
-}
-```
-
-**Gradle (Groovy)**
-
-```groovy
-dependencies {
-    testImplementation 'io.github.fajrbahr:mediatork-test:0.1.6'
-}
-```
-
-:::info
-`mediatork-test` is a JVM-only artifact. It works for Android (unit tests), JVM, and KMP projects that have a JVM or
-Android test source set.
-:::
-
----
-
 ## assertAllHandlersRegistered
 
 `MediatorTestUtils.assertAllHandlersRegistered` scans the classpath for every concrete `RequestHandler` implementation

@@ -47,3 +47,13 @@ val vm = SplashViewModel(FakeMediator())    // register handlers as needed
 ```
 
 The use-cases, analytics trackers, feature-flag observers, and performance trackers are all moved into individual `RequestHandler` implementations. Each handler is tested in isolation. The ViewModel test only verifies how the ViewModel reacts to success or failure — it never needs to know which use-cases exist.
+
+---
+
+## Installation
+
+```kotlin
+dependencies {
+    testImplementation("io.github.fajrbahr:mediatork-test:0.1.6")
+}
+```

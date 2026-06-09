@@ -48,14 +48,6 @@ mediator.register(fakeHandler<CreateOrderCommand, OrderResult> { _, _, request -
 
 ## Import
 
-`DummyMediator` lives in `mediatork-test`:
-
-```kotlin
-dependencies {
-    testImplementation("io.github.fajrbahr:mediatork-test:0.1.6")
-}
-```
-
 ```kotlin
 import com.fajrbahr.mediatork.test.DummyMediator
 ```
