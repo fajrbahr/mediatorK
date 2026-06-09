@@ -8,7 +8,11 @@ sidebar_label: Request Context
 
 `RequestContext` is a **mutable key-value bag** scoped to a single pipeline execution. A fresh instance is created for every `mediator.send(...)` call — values are never shared between concurrent requests, even when the mediator is a singleton.
 
-This mirrors per-request scoping in web frameworks (`HttpContext`, `CoroutineContext`, etc.).
+:::info Why a fresh context per request, not a shared property?
+`MediatorImpl` is a singleton. If `RequestContext` were a class-level property, concurrent `send()` calls — two ViewModels firing at the same time, for example — would overwrite each other's locale, auth token, or any other bag value.
+
+Creating it inside `send()` scopes the context to that single pipeline execution, the same way ASP.NET Core scopes `HttpContext` per HTTP request. Pipeline behaviors (like `LocalePipelineBehavior`) populate it, and handlers consume it — all within one isolated request lifecycle.
+:::
 
 ---
 
@@ -49,9 +53,37 @@ class CreateOrderHandler : RequestHandler<CreateOrderCommand, Order> {
 
 ---
 
+## Typed extension properties
+
+Instead of raw string keys, declare typed extension properties on `RequestContext` for compile-time safety and IDE autocomplete:
+
+```kotlin
+var RequestContext.locale: String
+    get() = getMetaDate("locale") ?: "en"
+    set(value) { put("locale", value) }
+
+var RequestContext.userId: String?
+    get() = getMetaDate("userId")
+    set(value) { if (value != null) put("userId", value) }
+```
+
+Usage is then clean and type-safe:
+
+```kotlin
+// write (in a pre-processor or behavior)
+requestContext.locale = "ar"
+requestContext.userId = currentUser.id
+
+// read (in a handler)
+val lang = requestContext.locale      // "ar"
+val uid  = requestContext.userId      // String?
+```
+
+---
+
 ## Avoiding key collisions
 
-Keys are plain strings. Use constants or fully-qualified names to avoid collisions between unrelated components:
+For teams that prefer raw string keys, use constants or fully-qualified names to avoid collisions between unrelated components:
 
 ```kotlin
 object ContextKeys {
@@ -61,8 +93,11 @@ object ContextKeys {
 
 // write
 requestContext.put(ContextKeys.TRACE_ID, traceId)
+```
 
-// read
+**Option 2** — read back with a typed call:
+
+```kotlin
 val traceId = requestContext.getMetaDate<String>(ContextKeys.TRACE_ID)
 ```
 
