@@ -20,6 +20,7 @@ const sidebars: SidebarsConfig = {
         'core/context',
         'core/exceptions',
         'core/validation',
+        'core/factory',
       ],
     },
     {
