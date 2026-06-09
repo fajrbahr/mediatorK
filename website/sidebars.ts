@@ -46,6 +46,7 @@ const sidebars: SidebarsConfig = {
     'api',
     'about',
     'resources',
+    'sample',
   ],
 };
 
