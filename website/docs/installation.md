@@ -91,7 +91,7 @@ dependencies {
 }
 ```
 
-See [Testing](testing.md) for usage.
+See [Handler Validation](testing/handler-validation.md) for usage.
 
 ---
 
