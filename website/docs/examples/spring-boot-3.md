@@ -13,7 +13,7 @@ A complete CRUD API using MediatorK with Spring Boot (WebFlux + coroutines).
 ```kotlin
 // build.gradle.kts
 dependencies {
-    implementation("io.github.fajrbahr:mediatork:0.1.5")
+    implementation("io.github.fajrbahr:mediatork:0.1.5.6")
     implementation("org.springframework.boot:spring-boot-starter-webflux")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-reactor:1.10.2")
 }
