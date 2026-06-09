@@ -67,6 +67,11 @@ const config: Config = {
           position: 'left',
         },
         {
+          to: '/docs/license',
+          label: 'License',
+          position: 'right',
+        },
+        {
           href: 'https://github.com/fajrbahr/MediatorK',
           label: 'GitHub',
           position: 'right',
