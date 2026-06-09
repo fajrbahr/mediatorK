@@ -79,7 +79,7 @@ export default function Home(): ReactNode {
             <img src="https://img.shields.io/maven-central/v/io.github.fajrbahr/mediatork?color=a97cf8&label=Maven%20Central" alt="Maven Central" />
             <img src="https://img.shields.io/badge/Kotlin-2.0%2B-7F52FF?logo=kotlin&logoColor=white" alt="Kotlin 2.0+" />
             <img src="https://img.shields.io/badge/KMP-ready-60a5fa" alt="KMP ready" />
-            <img src="https://img.shields.io/badge/license-Apache%202.0-34d399" alt="Apache 2.0" />
+            <img src="https://img.shields.io/badge/license-CC0%201.0-34d399" alt="CC0 1.0" />
           </div>
           <div className={styles.buttons}>
             <Link className="button button--primary button--lg" to="/docs/intro">
