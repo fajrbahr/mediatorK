@@ -10,14 +10,28 @@ MediatorK ships a lightweight validation API in the `com.fajrbahr.mediatork.vali
 
 ---
 
+## Typed field identifiers
+
+Use an enum or sealed class so the compiler catches typos and `when` expressions are exhaustive:
+
+```kotlin
+enum class CreateTodoFields : FieldValidator {
+    TITLE, DUE_DATE
+}
+```
+
+`DefaultField` is used when the error isn't tied to a specific field.
+
+---
+
 ## ValidationResult
 
 ```kotlin
 // success
 val ok = ValidationResult.Success
 
-// single error (no specific field)
-val err = ValidationResult.error("Title must not be blank")
+// single field-agnostic error
+val err = ValidationResult.error("Something went wrong")
 
 // error tied to a specific field
 val fieldErr = ValidationResult.error(CreateTodoFields.TITLE, "Title must not be blank")
@@ -33,23 +47,11 @@ val multi = ValidationResult.failure(
 
 ---
 
-## Typed field identifiers
-
-Use a sealed class or enum so the compiler catches typos:
-
-```kotlin
-enum class CreateTodoFields : FieldV {
-    TITLE, DUE_DATE
-}
-```
-
-`DefaultField` is used when the error isn't tied to a specific field.
-
----
-
 ## RequestValidator
 
 ### Basic style
+
+Early-return as soon as the first rule fails:
 
 ```kotlin
 class CreateTodoValidator : RequestValidator<CreateTodoCommand> {
@@ -63,55 +65,65 @@ class CreateTodoValidator : RequestValidator<CreateTodoCommand> {
 }
 ```
 
-### ruleFor / check style
+### rules { } style — collect all errors
 
-Build a small DSL on top of the existing API so each rule reads as one line and **all errors accumulate** before returning:
-
-```kotlin
-// ValidationBuilder.kt — put this anywhere in your project
-fun <T> T.validate(block: ValidationBuilder<T>.() -> Unit): ValidationResult =
-    ValidationBuilder(this).apply(block).build()
-
-class ValidationBuilder<T>(private val request: T) {
-    private val errors = mutableListOf<ValidationError>()
-
-    fun ruleFor(field: FieldV, passes: Boolean) = RuleContext(field, passes, errors)
-
-    fun build(): ValidationResult =
-        if (errors.isEmpty()) ValidationResult.Success
-        else ValidationResult.failure(*errors.toTypedArray())
-}
-
-class RuleContext(
-    private val field: FieldV,
-    private val passes: Boolean,
-    private val errors: MutableList<ValidationError>,
-) {
-    infix fun check(message: String) {
-        if (!passes) errors += ValidationError(field, message)
-    }
-}
-```
-
-Now the validator becomes a flat list of rules — every rule is evaluated and all failures are collected at once:
+`rules { }` evaluates every rule and collects all failures in one pass. Use `ruleFor` to scope checks to a specific field:
 
 ```kotlin
 class CreateTodoValidator : RequestValidator<CreateTodoCommand> {
     override val requestClass = CreateTodoCommand::class
 
-    override fun validate(request: CreateTodoCommand): ValidationResult =
-        request.validate {
-            ruleFor(CreateTodoFields.TITLE,    request.title.isNotBlank())       check "Title must not be blank"
-            ruleFor(CreateTodoFields.DUE_DATE, request.dueDate.isAfter(today())) check "Due date must be in the future"
+    override fun validate(request: CreateTodoCommand): ValidationResult = rules {
+        ruleFor(CreateTodoFields.TITLE, request.title) { value ->
+            check(value.isNotBlank()) { "Title must not be blank" }
+            check(value.length <= 200) { "Title must be 200 characters or fewer" }
         }
+        ruleFor(CreateTodoFields.DUE_DATE, request.dueDate) { value ->
+            check(value.isAfter(today())) { "Due date must be in the future" }
+        }
+    }
+}
+```
+
+### rulesFailFast { } — stop at first error
+
+Use `rulesFailFast { }` when later rules depend on earlier ones being valid (e.g. parse before validate):
+
+```kotlin
+override fun validate(request: CreateTodoCommand): ValidationResult = rulesFailFast {
+    check(request.title.isNotBlank()) { "Title must not be blank" }
+    check(request.title.length <= 200) { "Title must be 200 characters or fewer" }
 }
 ```
 
 ---
 
+## ValidationBehavior
+
+MediatorK ships a ready-to-use `ValidationBehavior` — just pass your validators and register it:
+
+```kotlin
+val mediator = MediatorFactory.create(
+    registrars = listOf(AppRegistrar()),
+    pipelineBehaviors = listOf(
+        ValidationBehavior(
+            validators = listOf(CreateTodoValidator(), UpdateTodoValidator()),
+        ),
+    ),
+)
+```
+
+:::tip
+`ValidationBehavior` runs at `order = -50` by default so it executes before most behaviors. You can override the order, replace it entirely with your own `PipelineBehavior`, or skip it and call validators directly from your handlers — whichever fits your setup.
+:::
+
+When validation fails, `ValidationBehavior` throws `ValidationException`. Catch it to map errors to UI state.
+
+---
+
 ## Handling errors by field type in a ViewModel
 
-Because `FieldV` is a typed interface implemented by your enum, use `when` to dispatch each error to the right UI state — no string comparison needed, and the compiler warns you if you miss a case:
+Because `FieldValidator` is a typed interface implemented by your enum, use `when` to dispatch each error to the right UI state — exhaustive, no string matching:
 
 ```kotlin
 class CreateTodoViewModel(private val mediator: Mediator) : ViewModel() {
@@ -138,49 +150,7 @@ class CreateTodoViewModel(private val mediator: Mediator) : ViewModel() {
 }
 ```
 
-Each `StateFlow` maps directly to one field in the UI — no parsing, no `field == "TITLE"` string matching.
-
----
-
-## Wiring validation into the pipeline
-
-Validators are invoked by a `PipelineBehavior` you write — this keeps the decision of how to handle failures in your code:
-
-```kotlin
-class ValidationBehavior(
-    private val validators: List<RequestValidator<*>>,
-) : PipelineBehavior {
-    override val order = -50 // run early
-
-    @Suppress("UNCHECKED_CAST")
-    override suspend fun <TReq : Request<TRes>, TRes> process(
-        requestContext: RequestContext,
-        next: RequestHandlerDelegate<TReq, TRes>,
-        request: TReq,
-    ): TRes {
-        val validator = validators.firstOrNull {
-            it.requestClass.isInstance(request)
-        } as? RequestValidator<TReq>
-
-        val result = validator?.validate(request)
-        if (result != null && !result.isValid)
-            throw ValidationException(result.errors)
-
-        return next(request)
-    }
-}
-```
-
-Register it with `MediatorFactory`:
-
-```kotlin
-val mediator = MediatorFactory.create(
-    registrars = listOf(AppRegistrar()),
-    pipelineBehaviors = listOf(
-        ValidationBehavior(listOf(CreateTodoValidator())),
-    ),
-)
-```
+Each `StateFlow` maps directly to one field in the UI — no `field == "TITLE"` string comparison.
 
 ---
 
