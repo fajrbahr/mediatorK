@@ -29,6 +29,7 @@ fun main() {
 See the full [Spring Boot example](examples/spring-boot-3.md) for a complete WebFlux CRUD API.
 
 Key points:
+
 - Declare each handler as a `@Service` bean
 - Collect them in a `MediatorRegistrar` `@Component`
 - Expose a `@Bean fun mediator()` in a `@Configuration` class

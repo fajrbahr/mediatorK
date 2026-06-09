@@ -1,202 +1,202 @@
 .heroBanner {
-  padding: 5rem 0 4rem;
-  text-align: center;
-  position: relative;
-  overflow: hidden;
+    padding: 5rem 0 4rem;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
 }
 
 @media screen and (max-width: 996px) {
-  .heroBanner {
-    padding: 3rem 1.5rem;
-  }
+    .heroBanner {
+        padding: 3rem 1.5rem;
+    }
 }
 
 .heroLogo {
-  width: 160px;
-  height: 160px;
-  border-radius: 20px;
-  margin-bottom: 1.25rem;
-  object-fit: cover;
-  box-shadow: 0 0 48px rgba(169, 124, 248, 0.35);
+    width: 160px;
+    height: 160px;
+    border-radius: 20px;
+    margin-bottom: 1.25rem;
+    object-fit: cover;
+    box-shadow: 0 0 48px rgba(169, 124, 248, 0.35);
 }
 
 .heroMeta {
-  color: #64748b;
-  font-size: 0.95rem;
-  letter-spacing: 0.04em;
-  margin-top: -0.5rem;
-  margin-bottom: 1.25rem;
+    color: #64748b;
+    font-size: 0.95rem;
+    letter-spacing: 0.04em;
+    margin-top: -0.5rem;
+    margin-bottom: 1.25rem;
 }
 
 .badgeRow {
-  display: flex;
-  gap: 0.5rem;
-  flex-wrap: wrap;
-  justify-content: center;
-  margin: 0 0 1.75rem;
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    justify-content: center;
+    margin: 0 0 1.75rem;
 }
 
 .badgeRow img {
-  height: 20px;
+    height: 20px;
 }
 
 .buttons {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 1rem;
-  flex-wrap: wrap;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+    flex-wrap: wrap;
 }
 
 /* Quick example */
 .quickExample {
-  padding: 4rem 0;
-  background: #0f1117;
-  text-align: center;
+    padding: 4rem 0;
+    background: #0f1117;
+    text-align: center;
 }
 
 .sectionTitle {
-  font-size: 2rem;
-  font-weight: 700;
-  margin-bottom: 0.5rem;
-  color: #f1f5f9;
+    font-size: 2rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+    color: #f1f5f9;
 }
 
 .sectionSub {
-  color: #94a3b8;
-  margin-bottom: 2rem;
-  font-size: 1.05rem;
+    color: #94a3b8;
+    margin-bottom: 2rem;
+    font-size: 1.05rem;
 }
 
 .codeWrapper {
-  max-width: 720px;
-  margin: 0 auto;
-  text-align: left;
+    max-width: 720px;
+    margin: 0 auto;
+    text-align: left;
 }
 
 .sectionImage {
-  display: block;
-  margin: 2.5rem auto 0;
-  max-width: 560px;
-  width: 100%;
-  border-radius: 16px;
-  box-shadow: 0 0 40px rgba(169, 124, 248, 0.2);
+    display: block;
+    margin: 2.5rem auto 0;
+    max-width: 560px;
+    width: 100%;
+    border-radius: 16px;
+    box-shadow: 0 0 40px rgba(169, 124, 248, 0.2);
 }
 
 /* Features */
 .featuresSection {
-  padding: 4rem 0;
-  background: #161b27;
-  text-align: center;
+    padding: 4rem 0;
+    background: #161b27;
+    text-align: center;
 }
 
 .featuresGrid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 1.25rem;
-  margin-top: 2.5rem;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.25rem;
+    margin-top: 2.5rem;
 }
 
 @media screen and (max-width: 996px) {
-  .featuresGrid {
-    grid-template-columns: repeat(2, 1fr);
-  }
+    .featuresGrid {
+        grid-template-columns: repeat(2, 1fr);
+    }
 }
 
 @media screen and (max-width: 600px) {
-  .featuresGrid {
-    grid-template-columns: 1fr;
-  }
+    .featuresGrid {
+        grid-template-columns: 1fr;
+    }
 }
 
 .featureCard {
-  background: #1e2433;
-  border: 1px solid #2a3045;
-  border-radius: 12px;
-  padding: 1.5rem 1.25rem;
-  text-align: left;
-  transition: border-color 0.2s, transform 0.2s;
+    background: #1e2433;
+    border: 1px solid #2a3045;
+    border-radius: 12px;
+    padding: 1.5rem 1.25rem;
+    text-align: left;
+    transition: border-color 0.2s, transform 0.2s;
 }
 
 .featureCard:hover {
-  border-color: #a97cf8;
-  transform: translateY(-3px);
+    border-color: #a97cf8;
+    transform: translateY(-3px);
 }
 
 .featureIcon {
-  font-size: 2rem;
-  margin-bottom: 0.75rem;
+    font-size: 2rem;
+    margin-bottom: 0.75rem;
 }
 
 .featureTitle {
-  font-size: 1rem;
-  font-weight: 700;
-  color: #f1f5f9;
-  margin-bottom: 0.4rem;
+    font-size: 1rem;
+    font-weight: 700;
+    color: #f1f5f9;
+    margin-bottom: 0.4rem;
 }
 
 .featureDesc {
-  color: #94a3b8;
-  font-size: 0.9rem;
-  line-height: 1.6;
+    color: #94a3b8;
+    font-size: 0.9rem;
+    line-height: 1.6;
 }
 
 /* Platforms */
 .platformSection {
-  padding: 4rem 0;
-  background: #0f1117;
-  text-align: center;
+    padding: 4rem 0;
+    background: #0f1117;
+    text-align: center;
 }
 
 .platformGrid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 1rem;
-  margin-top: 2rem;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1rem;
+    margin-top: 2rem;
 }
 
 @media screen and (max-width: 996px) {
-  .platformGrid {
-    grid-template-columns: repeat(2, 1fr);
-  }
+    .platformGrid {
+        grid-template-columns: repeat(2, 1fr);
+    }
 }
 
 .platformCard {
-  background: #161b27;
-  border: 1px solid #2a3045;
-  border-radius: 10px;
-  padding: 1.25rem 1rem;
+    background: #161b27;
+    border: 1px solid #2a3045;
+    border-radius: 10px;
+    padding: 1.25rem 1rem;
 }
 
 .platformName {
-  font-weight: 700;
-  color: #a97cf8;
-  font-size: 1rem;
-  margin-bottom: 0.35rem;
+    font-weight: 700;
+    color: #a97cf8;
+    font-size: 1rem;
+    margin-bottom: 0.35rem;
 }
 
 .platformDetail {
-  color: #64748b;
-  font-size: 0.82rem;
-  font-family: var(--ifm-font-family-monospace);
+    color: #64748b;
+    font-size: 0.82rem;
+    font-family: var(--ifm-font-family-monospace);
 }
 
 /* CTA */
 .ctaSection {
-  padding: 5rem 0;
-  background: linear-gradient(135deg, #161b27, #1a1030);
-  text-align: center;
-  border-top: 1px solid #2a3045;
+    padding: 5rem 0;
+    background: linear-gradient(135deg, #161b27, #1a1030);
+    text-align: center;
+    border-top: 1px solid #2a3045;
 }
 
 .ctaSection h2 {
-  font-size: 2rem;
-  color: #f1f5f9;
-  margin-bottom: 0.75rem;
+    font-size: 2rem;
+    color: #f1f5f9;
+    margin-bottom: 0.75rem;
 }
 
 .ctaSection p {
-  color: #94a3b8;
-  margin-bottom: 2rem;
-  font-size: 1.05rem;
+    color: #94a3b8;
+    margin-bottom: 2rem;
+    font-size: 1.05rem;
 }

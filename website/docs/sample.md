@@ -6,7 +6,8 @@ sidebar_label: Sample
 
 # Sample
 
-The [`/sample`](https://github.com/fajrbahr/MediatorK/tree/main/sample) module in the repository contains runnable Kotlin code that demonstrates the patterns described in the docs.
+The [`/sample`](https://github.com/fajrbahr/MediatorK/tree/main/sample) module in the repository contains runnable
+Kotlin code that demonstrates the patterns described in the docs.
 
 ---
 

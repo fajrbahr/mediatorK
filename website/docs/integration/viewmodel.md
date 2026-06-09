@@ -40,7 +40,8 @@ viewModel { UserViewModel(get()) }
 
 ## Handling validation errors
 
-When `ValidationBehavior` is in the pipeline, catch `ValidationException` and map each error to its own `StateFlow` by field type — no string matching needed:
+When `ValidationBehavior` is in the pipeline, catch `ValidationException` and map each error to its own `StateFlow` by
+field type — no string matching needed:
 
 ```kotlin
 class CreateTodoViewModel(private val mediator: Mediator) : ViewModel() {

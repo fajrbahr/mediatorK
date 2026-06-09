@@ -6,7 +6,8 @@ sidebar_label: Pipeline Behaviors
 
 # Pipeline Behaviors
 
-A **pipeline behavior** wraps every request in a decorator chain — cross-cutting concerns like logging, retry, caching, auth, and timing without touching handler code.
+A **pipeline behavior** wraps every request in a decorator chain — cross-cutting concerns like logging, retry, caching,
+auth, and timing without touching handler code.
 
 ```
 send(request)
@@ -70,7 +71,8 @@ class AuthBehavior(
 }
 ```
 
-Pass `auth0Enabled = true` when Auth0 is configured in your environment — the behavior skips token validation entirely when it is `false`.
+Pass `auth0Enabled = true` when Auth0 is configured in your environment — the behavior skips token validation entirely
+when it is `false`.
 
 ---
 

@@ -4,7 +4,8 @@ MediatorK is a pure KMP library — all APIs live in `commonMain` and work ident
 
 ---
 
-See [Installation](installation.md) for dependency coordinates. Add to `commonMain` — Gradle resolves the right platform artifact automatically.
+See [Installation](installation.md) for dependency coordinates. Add to `commonMain` — Gradle resolves the right platform
+artifact automatically.
 
 ---
 

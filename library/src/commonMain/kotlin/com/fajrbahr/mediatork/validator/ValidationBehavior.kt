@@ -51,7 +51,7 @@ class ValidationBehavior(
     ): TResult {
         val validator = validators
             .firstOrNull { it.requestClass.isInstance(request) }
-            as? RequestValidator<TRequest>
+                as? RequestValidator<TRequest>
 
         val result = validator?.validate(request)
         if (result != null && !result.isValid) throw ValidationException(result.errors)

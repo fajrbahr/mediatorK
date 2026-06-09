@@ -13,6 +13,7 @@ Quick reference for all public types in `com.fajrbahr.mediatork`.
 ## Core interfaces
 
 ### `Request<out TResponse>`
+
 Marker interface for requests. Implement to declare a message that expects exactly one handler.
 
 ```kotlin
@@ -25,6 +26,7 @@ interface Request<out TResponse>
 ---
 
 ### `RequestHandler<TRequest, TResult>`
+
 Handles a specific `Request` type.
 
 ```kotlin
@@ -36,6 +38,7 @@ interface RequestHandler<in TRequest : Request<TResult>, TResult> {
 ---
 
 ### `Notification`
+
 Marker interface for broadcast events with no response.
 
 ```kotlin
@@ -45,6 +48,7 @@ interface Notification
 ---
 
 ### `NotificationHandler<T>`
+
 Reacts to a `Notification`. Multiple handlers per notification type are allowed.
 
 ```kotlin
@@ -56,18 +60,20 @@ interface NotificationHandler<in T : Notification> {
 ---
 
 ### `PipelineBehavior`
+
 Cross-cutting decorator that wraps each request pipeline.
 
-| Member | Type | Default | Description |
-|---|---|---|---|
-| `order` | `Int` | `0` | Position in chain; lower = outermost |
-| `isEnabled` | `Boolean` | `true` | Skip entirely when `false` |
-| `appliesTo(request)` | `Boolean` | `true` | Opt out for specific request types |
-| `process(ctx, next, req)` | `suspend TResult` | — | Core implementation; must call `next(request)` to continue |
+| Member                    | Type              | Default | Description                                                |
+|---------------------------|-------------------|---------|------------------------------------------------------------|
+| `order`                   | `Int`             | `0`     | Position in chain; lower = outermost                       |
+| `isEnabled`               | `Boolean`         | `true`  | Skip entirely when `false`                                 |
+| `appliesTo(request)`      | `Boolean`         | `true`  | Opt out for specific request types                         |
+| `process(ctx, next, req)` | `suspend TResult` | —       | Core implementation; must call `next(request)` to continue |
 
 ---
 
 ### `RequestPreProcessor`
+
 Hook that runs before the handler.
 
 ```kotlin
@@ -80,6 +86,7 @@ interface RequestPreProcessor {
 ---
 
 ### `RequestPostProcessor`
+
 Hook that runs after the handler.
 
 ```kotlin
@@ -92,6 +99,7 @@ interface RequestPostProcessor {
 ---
 
 ### `RequestExceptionHandler<TRequest, TResponse, TException>`
+
 Converts a specific exception into a valid response.
 
 ```kotlin
@@ -105,17 +113,18 @@ interface RequestExceptionHandler<in TRequest, TResponse, in TException : Throwa
 ## Registry & factory
 
 ### `HandlerRegistry`
+
 Stores all registered handlers. Populated by `MediatorRegistrar` implementations.
 
-| Method | Description |
-|---|---|
-| `register(handler)` | Register a request handler (infix, reified) |
-| `registerNotification(handler)` | Register a notification handler (infix, reified) |
-| `registerExceptionHandler(reqClass, exClass, handler)` | Register an exception handler |
-| `scope { }` | Group registrations for readability |
-| `+handler` | Operator shorthand for `register` / `registerNotification` inside `scope` |
-| `hasHandler(requestType)` | Returns `true` if a handler is registered for the given request type |
-| `registeredRequestTypes()` | Returns the set of all request types that have a registered handler |
+| Method                                                 | Description                                                               |
+|--------------------------------------------------------|---------------------------------------------------------------------------|
+| `register(handler)`                                    | Register a request handler (infix, reified)                               |
+| `registerNotification(handler)`                        | Register a notification handler (infix, reified)                          |
+| `registerExceptionHandler(reqClass, exClass, handler)` | Register an exception handler                                             |
+| `scope { }`                                            | Group registrations for readability                                       |
+| `+handler`                                             | Operator shorthand for `register` / `registerNotification` inside `scope` |
+| `hasHandler(requestType)`                              | Returns `true` if a handler is registered for the given request type      |
+| `registeredRequestTypes()`                             | Returns the set of all request types that have a registered handler       |
 
 ---
 
@@ -133,17 +142,18 @@ object MediatorFactory {
 }
 ```
 
-| Parameter | Default | Description |
-|---|---|---|
-| `registrars` | `emptyList()` | Modules that contribute handlers to the registry |
-| `pipelineBehaviors` | `emptyList()` | Cross-cutting decorators; sorted by `order` |
-| `preProcessors` | `emptyList()` | Hooks that run before the handler; sorted by `order` |
-| `notificationPublisher` | `ParallelNotificationPublisher()` | Strategy for delivering notifications |
-| `postProcessors` | `emptyList()` | Hooks that run after the handler; sorted by `order` |
+| Parameter               | Default                           | Description                                          |
+|-------------------------|-----------------------------------|------------------------------------------------------|
+| `registrars`            | `emptyList()`                     | Modules that contribute handlers to the registry     |
+| `pipelineBehaviors`     | `emptyList()`                     | Cross-cutting decorators; sorted by `order`          |
+| `preProcessors`         | `emptyList()`                     | Hooks that run before the handler; sorted by `order` |
+| `notificationPublisher` | `ParallelNotificationPublisher()` | Strategy for delivering notifications                |
+| `postProcessors`        | `emptyList()`                     | Hooks that run after the handler; sorted by `order`  |
 
 ---
 
 ### `MediatorRegistrar`
+
 Contributes handlers to the registry at startup.
 
 ```kotlin
@@ -160,44 +170,44 @@ interface MediatorRegistrar {
 interface Mediator : Sender, Publisher
 ```
 
-| Method | Description |
-|---|---|
-| `send(request)` | Dispatch a request; returns `TResponse`. Throws `MissingHandlerException` if no handler. |
-| `publish(notification)` | Broadcast a notification to all registered handlers. |
+| Method                  | Description                                                                              |
+|-------------------------|------------------------------------------------------------------------------------------|
+| `send(request)`         | Dispatch a request; returns `TResponse`. Throws `MissingHandlerException` if no handler. |
+| `publish(notification)` | Broadcast a notification to all registered handlers.                                     |
 
 ---
 
 ## Notification publishers
 
-| Class | Behaviour |
-|---|---|
-| `ParallelNotificationPublisher` | All handlers run concurrently *(default)* |
-| `SequentialNotificationPublisher` | Handlers run one-by-one; stops on first error |
+| Class                                      | Behaviour                                                    |
+|--------------------------------------------|--------------------------------------------------------------|
+| `ParallelNotificationPublisher`            | All handlers run concurrently *(default)*                    |
+| `SequentialNotificationPublisher`          | Handlers run one-by-one; stops on first error                |
 | `ContinueOnExceptionNotificationPublisher` | All handlers run; errors collected into `AggregateException` |
-| `FireAndForgetNotificationPublisher` | Returns immediately; handlers run in the background |
+| `FireAndForgetNotificationPublisher`       | Returns immediately; handlers run in the background          |
 
 ---
 
 ## Exceptions
 
-| Class | Description |
-|---|---|
-| `MediatorException` | Base class for all MediatorK errors |
+| Class                     | Description                                           |
+|---------------------------|-------------------------------------------------------|
+| `MediatorException`       | Base class for all MediatorK errors                   |
 | `MissingHandlerException` | No handler registered for the dispatched request type |
-| `AggregateException` | One or more notification handlers failed |
+| `AggregateException`      | One or more notification handlers failed              |
 
 ---
 
 ## Validator package (`com.fajrbahr.mediatork.validator`)
 
-| Type | Description |
-|---|---|
-| `RequestValidator<T>` | Validates a request; returns `ValidationResult` |
-| `ValidationResult` | Holds zero or more `ValidationError`s; `isValid` when empty |
-| `ValidationError` | A single failure with an optional `FieldValidator` field and a message |
-| `FieldValidator` | Marker interface for typed field identifiers |
-| `DefaultField` | Sentinel for errors not tied to a specific field |
-| `ValidationBehavior` | Pre-built `PipelineBehavior` that runs validators and throws `ValidationException` on failure |
-| `ValidationException` | Thrown when validation fails; carries the list of `ValidationError`s |
-| `rules { }` | DSL builder — evaluates all rules and collects every error |
-| `rulesFailFast { }` | DSL builder — stops at the first error |
+| Type                  | Description                                                                                   |
+|-----------------------|-----------------------------------------------------------------------------------------------|
+| `RequestValidator<T>` | Validates a request; returns `ValidationResult`                                               |
+| `ValidationResult`    | Holds zero or more `ValidationError`s; `isValid` when empty                                   |
+| `ValidationError`     | A single failure with an optional `FieldValidator` field and a message                        |
+| `FieldValidator`      | Marker interface for typed field identifiers                                                  |
+| `DefaultField`        | Sentinel for errors not tied to a specific field                                              |
+| `ValidationBehavior`  | Pre-built `PipelineBehavior` that runs validators and throws `ValidationException` on failure |
+| `ValidationException` | Thrown when validation fails; carries the list of `ValidationError`s                          |
+| `rules { }`           | DSL builder — evaluates all rules and collects every error                                    |
+| `rulesFailFast { }`   | DSL builder — stops at the first error                                                        |

@@ -1,6 +1,5 @@
 package sample
 
-import com.fajrbahr.mediatork.*
 import com.fajrbahr.mediatork.test.FakeMediator
 import com.fajrbahr.mediatork.test.fakeHandler
 import kotlinx.coroutines.Dispatchers

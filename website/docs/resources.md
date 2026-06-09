@@ -23,7 +23,8 @@ A deep-dive series on moving from layered architecture to Vertical Slices, writt
 
 **Jimmy Bogard — Vertical Slice Architecture**
 
-The talk that inspired MediatorK — Jimmy Bogard explains why Vertical Slices are a better default than layered architecture.
+The talk that inspired MediatorK — Jimmy Bogard explains why Vertical Slices are a better default than layered
+architecture.
 
 [Watch on YouTube →](https://www.youtube.com/watch?v=oAoaMlS1PWo)
 
@@ -31,4 +32,5 @@ The talk that inspired MediatorK — Jimmy Bogard explains why Vertical Slices a
 
 ## MediatR (.NET)
 
-MediatorK is inspired by [MediatR](https://github.com/LuckyPennySoftware/MediatR) — the most widely-used mediator library in the .NET ecosystem, by Jimmy Bogard.
+MediatorK is inspired by [MediatR](https://github.com/LuckyPennySoftware/MediatR) — the most widely-used mediator
+library in the .NET ecosystem, by Jimmy Bogard.

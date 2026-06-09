@@ -1,6 +1,7 @@
 # Pipeline Behaviors
 
-A **pipeline behavior** wraps every request in a decorator chain — cross-cutting concerns like logging, retry, caching, auth, and timing without touching handler code.
+A **pipeline behavior** wraps every request in a decorator chain — cross-cutting concerns like logging, retry, caching,
+auth, and timing without touching handler code.
 
 ```
 send(request)

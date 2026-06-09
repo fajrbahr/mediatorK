@@ -12,7 +12,8 @@
 [![CI](https://github.com/fajrbahr/mediatorK/actions/workflows/release.yml/badge.svg)](https://github.com/fajrbahr/mediatorK/actions/workflows/release.yml)
 [![License: CC0](https://img.shields.io/badge/License-CC0-brightgreen)](LICENSE)
 
-A coroutine-first Mediator library for Kotlin. Implements the CQRS and Vertical Slice patterns — requests go to exactly one handler, notifications fan out to many, and a pipeline of behaviors sits in between.
+A coroutine-first Mediator library for Kotlin. Implements the CQRS and Vertical Slice patterns — requests go to exactly
+one handler, notifications fan out to many, and a pipeline of behaviors sits in between.
 
 ---
 
@@ -25,6 +26,7 @@ MediatorK is a Kotlin Multiplatform library. Pick the snippet that matches your 
 ### Kotlin JVM (Spring Boot, Ktor, CLI, etc.)
 
 **Gradle Kotlin DSL**
+
 ```kotlin
 // build.gradle.kts
 dependencies {
@@ -33,6 +35,7 @@ dependencies {
 ```
 
 **Gradle Groovy**
+
 ```groovy
 // build.gradle
 dependencies {
@@ -41,7 +44,9 @@ dependencies {
 ```
 
 **Maven** — use the `-jvm` artifact ID, Maven does not resolve KMP metadata
+
 ```xml
+
 <dependency>
     <groupId>io.github.fajrbahr</groupId>
     <artifactId>mediatork-jvm</artifactId>
@@ -84,29 +89,29 @@ kotlin {
 
 **Supported targets**
 
-| Target | Notes |
-|---|---|
-| `jvm` | JVM / Spring Boot / Ktor |
-| `androidTarget` | Android apps and libraries |
-| `iosArm64` | iOS device |
+| Target              | Notes                         |
+|---------------------|-------------------------------|
+| `jvm`               | JVM / Spring Boot / Ktor      |
+| `androidTarget`     | Android apps and libraries    |
+| `iosArm64`          | iOS device                    |
 | `iosSimulatorArm64` | iOS simulator (Apple Silicon) |
-| `iosX64` | iOS simulator (Intel) |
+| `iosX64`            | iOS simulator (Intel)         |
 
 ---
 
 ## Core Concepts
 
-| Concept | Description |
-|---|---|
-| `Request<TResponse>` | A command or query with exactly one handler |
-| `Notification` | An event broadcast to zero or more handlers |
-| `RequestHandler` | Handles one request type, returns a result |
-| `NotificationHandler` | Reacts to one notification type, no return value |
-| `PipelineBehavior` | Middleware that wraps every request (logging, retry, auth…) |
-| `RequestPreProcessor` | Runs before the handler (validation, enrichment…) |
-| `RequestPostProcessor` | Runs after the handler (metrics, audit…) |
-| `RequestExceptionHandler` | Catches exceptions thrown by a specific request |
-| `RequestContext` | Per-request key/value bag (locale, user, trace ID…) |
+| Concept                   | Description                                                 |
+|---------------------------|-------------------------------------------------------------|
+| `Request<TResponse>`      | A command or query with exactly one handler                 |
+| `Notification`            | An event broadcast to zero or more handlers                 |
+| `RequestHandler`          | Handles one request type, returns a result                  |
+| `NotificationHandler`     | Reacts to one notification type, no return value            |
+| `PipelineBehavior`        | Middleware that wraps every request (logging, retry, auth…) |
+| `RequestPreProcessor`     | Runs before the handler (validation, enrichment…)           |
+| `RequestPostProcessor`    | Runs after the handler (metrics, audit…)                    |
+| `RequestExceptionHandler` | Catches exceptions thrown by a specific request             |
+| `RequestContext`          | Per-request key/value bag (locale, user, trace ID…)         |
 
 ---
 
@@ -190,7 +195,8 @@ class OrderEventsRegistrar : MediatorRegistrar {
 }
 ```
 
-> `+Handler()` inside `scope { }` auto-detects whether it is a `RequestHandler` or `NotificationHandler` and registers it correctly.
+> `+Handler()` inside `scope { }` auto-detects whether it is a `RequestHandler` or `NotificationHandler` and registers
+> it correctly.
 
 ### 6 — Create the Mediator
 
@@ -213,10 +219,10 @@ mediator.publish(OrderCreatedEvent("ORD-1"))
 
 ```kotlin
 val mediator = MediatorFactory.create(
-    registrars           = listOf(OrderRegistrar(), UserRegistrar()),
-    pipelineBehaviors    = listOf(LoggingBehavior(), RetryBehavior()),
-    preProcessors        = listOf(AuthPreProcessor()),
-    postProcessors       = listOf(MetricsPostProcessor()),
+    registrars = listOf(OrderRegistrar(), UserRegistrar()),
+    pipelineBehaviors = listOf(LoggingBehavior(), RetryBehavior()),
+    preProcessors = listOf(AuthPreProcessor()),
+    postProcessors = listOf(MetricsPostProcessor()),
     notificationPublisher = ParallelNotificationPublisher()   // default
 )
 ```
@@ -248,11 +254,11 @@ class LoggingBehavior : PipelineBehavior {
 
 **Optional overrides:**
 
-| Property | Default | Purpose |
-|---|---|---|
-| `order` | `0` | Execution order; lower runs first (outermost) |
-| `isEnabled` | `true` | Toggle without removing from the list |
-| `appliesTo(request)` | `true` | Filter which request types this behavior applies to |
+| Property             | Default | Purpose                                             |
+|----------------------|---------|-----------------------------------------------------|
+| `order`              | `0`     | Execution order; lower runs first (outermost)       |
+| `isEnabled`          | `true`  | Toggle without removing from the list               |
+| `appliesTo(request)` | `true`  | Filter which request types this behavior applies to |
 
 **Retry example:**
 
@@ -266,7 +272,10 @@ class RetryBehavior(private val maxRetries: Int = 3) : PipelineBehavior {
         request: TRequest,
     ): TResult {
         repeat(maxRetries - 1) {
-            try { return next(request) } catch (_: Exception) {}
+            try {
+                return next(request)
+            } catch (_: Exception) {
+            }
         }
         return next(request)
     }
@@ -299,7 +308,8 @@ class MetricsPostProcessor : RequestPostProcessor {
 
 ## RequestContext
 
-A per-request key/value bag scoped to a single pipeline execution. Safe under concurrent requests — each `send()` call gets its own isolated instance.
+A per-request key/value bag scoped to a single pipeline execution. Safe under concurrent requests — each `send()` call
+gets its own isolated instance.
 
 ```kotlin
 // Write (typically in a pre-processor or behavior)
@@ -345,11 +355,11 @@ registry.registerExceptionHandler(
 
 Choose how notification handlers are invoked by passing a publisher to `MediatorFactory.create()`.
 
-| Publisher | Behaviour |
-|---|---|
-| `ParallelNotificationPublisher` *(default)* | All handlers run concurrently via `coroutineScope` |
-| `SequentialNotificationPublisher` | Handlers run one by one; stops on first exception |
-| `ContinueOnExceptionNotificationPublisher` | All handlers run even if some fail; errors collected into `AggregateException` |
+| Publisher                                   | Behaviour                                                                            |
+|---------------------------------------------|--------------------------------------------------------------------------------------|
+| `ParallelNotificationPublisher` *(default)* | All handlers run concurrently via `coroutineScope`                                   |
+| `SequentialNotificationPublisher`           | Handlers run one by one; stops on first exception                                    |
+| `ContinueOnExceptionNotificationPublisher`  | All handlers run even if some fail; errors collected into `AggregateException`       |
 | `FireAndForgetNotificationPublisher(scope)` | Returns immediately; handlers run in the background on the provided `CoroutineScope` |
 
 Override per call:
@@ -458,17 +468,17 @@ Swap real handlers for fakes — no mocking library needed:
 ```kotlin
 @Test
 fun `create order returns order`() = runTest {
-    val mediator = MediatorFactory.create(
-        registrars = listOf(object : MediatorRegistrar {
-            override fun register(registry: HandlerRegistry) {
-                registry register FakeCreateOrderHandler()
-            }
-        })
-    )
+        val mediator = MediatorFactory.create(
+            registrars = listOf(object : MediatorRegistrar {
+                override fun register(registry: HandlerRegistry) {
+                    registry register FakeCreateOrderHandler()
+                }
+            })
+        )
 
-    val order = mediator.send(CreateOrderCommand("ORD-1", 99.0))
-    assertEquals("ORD-1", order.id)
-}
+        val order = mediator.send(CreateOrderCommand("ORD-1", 99.0))
+        assertEquals("ORD-1", order.id)
+    }
 ```
 
 ---
@@ -511,10 +521,10 @@ fun create(
 
 ## Exceptions
 
-| Exception | Thrown when |
-|---|---|
-| `MissingHandlerException` | `send()` is called with no handler registered for that request type |
-| `AggregateException` | `ContinueOnExceptionNotificationPublisher` collects one or more handler failures |
+| Exception                 | Thrown when                                                                      |
+|---------------------------|----------------------------------------------------------------------------------|
+| `MissingHandlerException` | `send()` is called with no handler registered for that request type              |
+| `AggregateException`      | `ContinueOnExceptionNotificationPublisher` collects one or more handler failures |
 
 ---
 
@@ -526,16 +536,21 @@ Released under the [CC0 1.0 Universal](LICENSE) — public domain. No attributio
 
 ## Acknowledgements
 
-First and above all — **الحمد لله** (Alhamdulillah). This library was built during a hard time, and every line was written with Allah's help and guidance.
+First and above all — **الحمد لله** (Alhamdulillah). This library was built during a hard time, and every line was
+written with Allah's help and guidance.
 
-**[Jimmy Bogard](https://www.jimmybogard.com/)** — for his talks on Vertical Slice Architecture and MediatR (.NET), which were the direct inspiration for bringing this pattern to Kotlin.
+**[Jimmy Bogard](https://www.jimmybogard.com/)** — for his talks on Vertical Slice Architecture and MediatR (.NET),
+which were the direct inspiration for bringing this pattern to Kotlin.
 
-**[beno.com](https://beno.com)** — the production environment that shaped this library. Real-world usage at scale drove every design decision here.
+**[beno.com](https://beno.com)** — the production environment that shaped this library. Real-world usage at scale drove
+every design decision here.
 
-**Ahmed Akilan** — our CTO, whose technical mentorship and trust made it possible to grow as an engineer and ship something worth sharing.
+**Ahmed Akilan** — our CTO, whose technical mentorship and trust made it possible to grow as an engineer and ship
+something worth sharing.
 
 ---
 
 ## Inspired by MediatR (.NET)
 
-MediatorK is inspired by [MediatR](https://github.com/jbogard/MediatR) by Jimmy Bogard, the most widely-used mediator library in the .NET ecosystem.
+MediatorK is inspired by [MediatR](https://github.com/jbogard/MediatR) by Jimmy Bogard, the most widely-used mediator
+library in the .NET ecosystem.

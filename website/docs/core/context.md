@@ -6,12 +6,18 @@ sidebar_label: Request Context
 
 # Request Context
 
-`RequestContext` is a **mutable key-value bag** scoped to a single pipeline execution. A fresh instance is created for every `mediator.send(...)` call — values are never shared between concurrent requests, even when the mediator is a singleton.
+`RequestContext` is a **mutable key-value bag** scoped to a single pipeline execution. A fresh instance is created for
+every `mediator.send(...)` call — values are never shared between concurrent requests, even when the mediator is a
+singleton.
 
 :::info Why a fresh context per request, not a shared property?
-`MediatorImpl` is a singleton. If `RequestContext` were a class-level property, concurrent `send()` calls — two ViewModels firing at the same time, for example — would overwrite each other's locale, auth token, or any other bag value.
+`MediatorImpl` is a singleton. If `RequestContext` were a class-level property, concurrent `send()` calls — two
+ViewModels firing at the same time, for example — would overwrite each other's locale, auth token, or any other bag
+value.
 
-Creating it inside `send()` scopes the context to that single pipeline execution, the same way ASP.NET Core scopes `HttpContext` per HTTP request. Pipeline behaviors (like `LocalePipelineBehavior`) populate it, and handlers consume it — all within one isolated request lifecycle.
+Creating it inside `send()` scopes the context to that single pipeline execution, the same way ASP.NET Core scopes
+`HttpContext` per HTTP request. Pipeline behaviors (like `LocalePipelineBehavior`) populate it, and handlers consume
+it — all within one isolated request lifecycle.
 :::
 
 ---
@@ -55,7 +61,8 @@ class CreateOrderHandler : RequestHandler<CreateOrderCommand, Order> {
 
 ## Typed extension properties
 
-Instead of raw string keys, declare typed extension properties on `RequestContext` for compile-time safety and IDE autocomplete:
+Instead of raw string keys, declare typed extension properties on `RequestContext` for compile-time safety and IDE
+autocomplete:
 
 ```kotlin
 var RequestContext.locale: String
@@ -83,7 +90,8 @@ val uid  = requestContext.userId      // String?
 
 ## Avoiding key collisions
 
-For teams that prefer raw string keys, use constants or fully-qualified names to avoid collisions between unrelated components:
+For teams that prefer raw string keys, use constants or fully-qualified names to avoid collisions between unrelated
+components:
 
 ```kotlin
 object ContextKeys {

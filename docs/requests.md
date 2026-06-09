@@ -1,6 +1,7 @@
 # Requests & Handlers
 
-A **request** is a message that expects exactly one handler and one response. It models both queries (read data) and commands (perform an action, optionally return a result).
+A **request** is a message that expects exactly one handler and one response. It models both queries (read data) and
+commands (perform an action, optionally return a result).
 
 ---
 
@@ -19,7 +20,8 @@ data class CreateOrderCommand(val cartId: String) : Request<Order>
 data class DeleteAccountCommand(val userId: String) : Request.Unit
 ```
 
-`Request.Unit` is a built-in nested interface that extends `Request<Unit>`, giving commands with no return value a cleaner declaration.
+`Request.Unit` is a built-in nested interface that extends `Request<Unit>`, giving commands with no return value a
+cleaner declaration.
 
 ---
 
@@ -35,7 +37,8 @@ class GetUserHandler(private val db: UserRepository) : RequestHandler<GetUserQue
 }
 ```
 
-The `mediator` parameter lets a handler dispatch secondary requests or publish notifications without creating direct dependencies on other handlers.
+The `mediator` parameter lets a handler dispatch secondary requests or publish notifications without creating direct
+dependencies on other handlers.
 
 ---
 
@@ -75,11 +78,11 @@ mediator.send(DeleteAccountCommand("user-1")) // returns Unit
 
 ## Rules
 
-| Rule | Detail |
-|---|---|
-| One handler per type | Registering a second handler silently replaces the first |
+| Rule                   | Detail                                                          |
+|------------------------|-----------------------------------------------------------------|
+| One handler per type   | Registering a second handler silently replaces the first        |
 | Missing handler throws | `MissingHandlerException` is thrown if no handler is registered |
-| Exactly one response | Use `Notification` when you need fan-out with no response |
+| Exactly one response   | Use `Notification` when you need fan-out with no response       |
 
 ---
 
