@@ -30,27 +30,6 @@ fun main() {
 
 ---
 
-## Spring Boot
-
-See the full [Spring Boot example](../examples/spring-boot-3.md) for a complete WebFlux CRUD API.
-
-Key points:
-- Declare each handler as a `@Service` bean
-- Collect them in a `MediatorRegistrar` `@Component`
-- Expose a `@Bean fun mediator()` in a `@Configuration` class
-
-```kotlin
-@Configuration
-class MediatorConfig(private val registrars: List<MediatorRegistrar>) {
-    @Bean
-    fun mediator(): Mediator = MediatorFactory.create(registrars = registrars)
-}
-```
-
-Spring auto-injects all `MediatorRegistrar` beans — no manual wiring needed.
-
----
-
 ## Ktor
 
 ```kotlin
