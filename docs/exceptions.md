@@ -2,8 +2,10 @@
 
 MediatorK provides two layers of exception handling:
 
-1. **`RequestExceptionHandler`** — intercept a specific exception for a specific request type and convert it into a valid response instead of propagating it.
-2. **`AggregateException`** — thrown by `ContinueOnExceptionNotificationPublisher` when multiple notification handlers fail.
+1. **`RequestExceptionHandler`** — intercept a specific exception for a specific request type and convert it into a
+   valid response instead of propagating it.
+2. **`AggregateException`** — thrown by `ContinueOnExceptionNotificationPublisher` when multiple notification handlers
+   fail.
 
 ---
 
@@ -35,18 +37,19 @@ registry.registerExceptionHandler(
 
 ### Matching rules
 
-- Only one exception handler per `(request type, exception type)` combination is used — the first registered handler whose exception class `isInstance` of the thrown exception wins.
+- Only one exception handler per `(request type, exception type)` combination is used — the first registered handler
+  whose exception class `isInstance` of the thrown exception wins.
 - If no handler matches, the exception propagates normally.
 
 ---
 
 ## Built-in exceptions
 
-| Class | Thrown when |
-|---|---|
-| `MediatorException` | Base class for all MediatorK errors |
-| `MissingHandlerException` | `send()` called for a request type with no registered handler |
-| `AggregateException` | `ContinueOnExceptionNotificationPublisher` — one or more notification handlers failed |
+| Class                     | Thrown when                                                                           |
+|---------------------------|---------------------------------------------------------------------------------------|
+| `MediatorException`       | Base class for all MediatorK errors                                                   |
+| `MissingHandlerException` | `send()` called for a request type with no registered handler                         |
+| `AggregateException`      | `ContinueOnExceptionNotificationPublisher` — one or more notification handlers failed |
 
 ### MissingHandlerException
 

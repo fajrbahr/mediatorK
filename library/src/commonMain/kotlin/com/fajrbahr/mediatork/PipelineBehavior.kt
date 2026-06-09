@@ -7,10 +7,10 @@ package com.fajrbahr.mediatork
  * advances execution to the next behavior, or ultimately to the handler if there
  * are no more behaviors in the chain.
  *
- * @param TReq the request type flowing through the pipeline.
- * @param TRes the response type produced at the end of the pipeline.
+ * @param TRequest the request type flowing through the pipeline.
+ * @param TResult the response type produced at the end of the pipeline.
  */
-typealias RequestHandlerDelegate<TReq, TRes> = suspend (TReq) -> TRes
+typealias RequestHandlerDelegate<TRequest, TResult> = suspend (TRequest) -> TResult
 
 /**
  * Cross-cutting concern that wraps request handling in a decorator-style chain.
@@ -25,11 +25,11 @@ typealias RequestHandlerDelegate<TReq, TRes> = suspend (TReq) -> TRes
  * ```kotlin
  * class LoggingBehavior : PipelineBehavior {
  *     override val order = -100 // runs before other behaviors
- *     override suspend fun <TReq : Request<TRes>, TRes> process(
+ *     override suspend fun <TRequest : Request<TResult>, TResult> process(
  *         requestContext: RequestContext,
- *         next: RequestHandlerDelegate<TReq, TRes>,
- *         request: TReq,
- *     ): TRes {
+ *         next: RequestHandlerDelegate<TRequest, TResult>,
+ *         request: TRequest,
+ *     ): TResult {
  *         println("Handling ${request::class.simpleName}")
  *         val result = next(request)
  *         println("Handled — result: $result")
@@ -76,16 +76,16 @@ interface PipelineBehavior {
      * to continue the chain. Returning without calling [next] short-circuits the
      * remaining behaviors and the handler.
      *
-     * @param TReq the concrete request type.
-     * @param TRes the response type.
+     * @param TRequest the concrete request type.
+     * @param TResult the response type.
      * @param requestContext mutable bag scoped to this pipeline execution.
      * @param next the next step in the pipeline; invoke it to continue processing.
      * @param request the request to process.
      * @return the result produced by [next] (possibly transformed).
      */
-    suspend fun <TReq : Request<TRes>, TRes> process(
+    suspend fun <TRequest : Request<TResult>, TResult> process(
         requestContext: RequestContext,
-        next: RequestHandlerDelegate<TReq, TRes>,
-        request: TReq,
-    ): TRes
+        next: RequestHandlerDelegate<TRequest, TResult>,
+        request: TRequest,
+    ): TResult
 }

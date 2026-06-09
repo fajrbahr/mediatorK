@@ -1,6 +1,7 @@
 # Koin
 
-MediatorK works naturally with [Koin](https://insert-koin.io/) for dependency injection in KMP, Android, and iOS projects.
+MediatorK works naturally with [Koin](https://insert-koin.io/) for dependency injection in KMP, Android, and iOS
+projects.
 
 ---
 

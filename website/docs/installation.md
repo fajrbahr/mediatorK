@@ -11,6 +11,7 @@ sidebar_label: Installation
 For Spring Boot, Ktor, or any plain JVM project.
 
 **Gradle (Kotlin DSL)**
+
 ```kotlin
 dependencies {
     implementation("io.github.fajrbahr:mediatork:0.1.6")
@@ -18,6 +19,7 @@ dependencies {
 ```
 
 **Gradle (Groovy)**
+
 ```groovy
 dependencies {
     implementation 'io.github.fajrbahr:mediatork:0.1.6'
@@ -73,13 +75,13 @@ kotlin {
 
 **Supported targets**
 
-| Target | Platform |
-|---|---|
-| `jvm` | JVM / Spring Boot / Ktor |
-| `androidTarget` | Android |
-| `iosArm64` | iOS device |
+| Target              | Platform                      |
+|---------------------|-------------------------------|
+| `jvm`               | JVM / Spring Boot / Ktor      |
+| `androidTarget`     | Android                       |
+| `iosArm64`          | iOS device                    |
 | `iosSimulatorArm64` | iOS Simulator (Apple Silicon) |
-| `iosX64` | iOS Simulator (Intel) |
+| `iosX64`            | iOS Simulator (Intel)         |
 
 ---
 
@@ -97,8 +99,8 @@ See [Handler Validation](testing/handler-validation.md) for usage.
 
 ## Requirements
 
-| Requirement | Version |
-|---|---|
-| Kotlin | 2.0+ |
-| kotlinx-coroutines | 1.10+ |
-| JVM target | 11+ |
+| Requirement        | Version |
+|--------------------|---------|
+| Kotlin             | 2.0+    |
+| kotlinx-coroutines | 1.10+   |
+| JVM target         | 11+     |

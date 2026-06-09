@@ -20,11 +20,11 @@ interface Sender {
      * 3. The matched [RequestHandler]
      * 4. All [RequestPostProcessor]s (sorted by order)
      *
-     * @param TReq the concrete request type.
-     * @param TRes the response type produced by the handler.
+     * @param TRequest the concrete request type.
+     * @param TResult the response type produced by the handler.
      * @param request the request to dispatch.
      * @return the value returned by the matching [RequestHandler].
-     * @throws MissingHandlerException if no handler is registered for [TReq].
+     * @throws MissingHandlerException if no handler is registered for [TRequest].
      */
-    suspend fun <TReq : Request<TRes>, TRes> send(request: TReq): TRes
+    suspend fun <TRequest : Request<TResult>, TResult> send(request: TRequest): TResult
 }

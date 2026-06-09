@@ -57,12 +57,32 @@ object MediatorFactory {
             }
         }
 
-        return MediatorImpl(
+        return create(
             registry = registry,
             pipelineBehaviors = pipelineBehaviors,
             preProcessors = preProcessors,
             postProcessors = postProcessors,
-            notificationPublisher = notificationPublisher
+            notificationPublisher = notificationPublisher,
         )
     }
+
+    /**
+     * Builds a [Mediator] from a pre-populated [registry].
+     *
+     * Prefer this overload in test helpers that need to hold a reference to the registry
+     * so handlers can be added after construction.
+     */
+    fun create(
+        registry: HandlerRegistry,
+        pipelineBehaviors: List<PipelineBehavior> = emptyList(),
+        preProcessors: List<RequestPreProcessor> = emptyList(),
+        notificationPublisher: NotificationPublisher = ParallelNotificationPublisher(),
+        postProcessors: List<RequestPostProcessor> = emptyList(),
+    ): Mediator = MediatorImpl(
+        registry = registry,
+        pipelineBehaviors = pipelineBehaviors,
+        preProcessors = preProcessors,
+        postProcessors = postProcessors,
+        notificationPublisher = notificationPublisher,
+    )
 }

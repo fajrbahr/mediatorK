@@ -1,15 +1,14 @@
 package sample
 
-import com.fajrbahr.mediatork.Mediator
-import com.fajrbahr.mediatork.Notification
-import com.fajrbahr.mediatork.NotificationPublisher
-import com.fajrbahr.mediatork.Request
+import com.fajrbahr.mediatork.test.FakeMediator
+import com.fajrbahr.mediatork.test.fakeHandler
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.*
 import sample.android.OrderUiState
 import sample.android.OrderViewModel
+import sample.command.CreateOrderCommand
 import sample.command.OrderResult
 import kotlin.test.*
 
@@ -18,7 +17,6 @@ class OrderViewModelTest {
 
     private val testDispatcher = StandardTestDispatcher()
 
-    // Fake mediator — control what send() returns per test
     private lateinit var fakeMediator: FakeMediator
     private lateinit var vm: OrderViewModel
 
@@ -39,7 +37,7 @@ class OrderViewModelTest {
     @Test
     fun `createOrder success updates stateFlow with result`() = runTest {
         val expected = OrderResult(orderId = "ORD-1", responseIme = 10)
-        fakeMediator.result = expected
+        fakeMediator.register(fakeHandler<CreateOrderCommand, OrderResult> { _, _, _ -> expected })
 
         vm.createOrder("1", 99.0)
         advanceUntilIdle()
@@ -52,7 +50,9 @@ class OrderViewModelTest {
 
     @Test
     fun `createOrder success emits success event`() = runTest {
-        fakeMediator.result = OrderResult(orderId = "ORD-1", responseIme = 5)
+        fakeMediator.register(fakeHandler<CreateOrderCommand, OrderResult> { _, _, _ ->
+            OrderResult(orderId = "ORD-1", responseIme = 5)
+        })
 
         val events = mutableListOf<String>()
         backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) {
@@ -65,11 +65,28 @@ class OrderViewModelTest {
         assertTrue(events.any { it.contains("successfully", ignoreCase = true) })
     }
 
+    // ── fakeHandler usage ─────────────────────────────────────────────────────
+
+    @Test
+    fun `fakeHandler can be registered and used`() = runTest {
+        val expected = OrderResult(orderId = "ORD-1", responseIme = 10)
+
+        val handler = fakeHandler<CreateOrderCommand, OrderResult> { _, _, _ -> expected }
+        fakeMediator.register(handler)
+
+        vm.createOrder("1", 99.0)
+        advanceUntilIdle()
+
+        assertEquals(expected, vm.stateFlow.value.orderResult)
+    }
+
     // ── loading state ─────────────────────────────────────────────────────────
 
     @Test
     fun `isLoading is false after success`() = runTest {
-        fakeMediator.result = OrderResult(orderId = "ORD-1", responseIme = 1)
+        fakeMediator.register(fakeHandler<CreateOrderCommand, OrderResult> { _, _, _ ->
+            OrderResult(orderId = "ORD-1", responseIme = 1)
+        })
 
         vm.createOrder("1", 50.0)
         advanceUntilIdle()
@@ -79,7 +96,9 @@ class OrderViewModelTest {
 
     @Test
     fun `isLoading is false after failure`() = runTest {
-        fakeMediator.result = RuntimeException("server down")
+        fakeMediator.register(fakeHandler<CreateOrderCommand, OrderResult> { _, _, _ ->
+            throw RuntimeException("server down")
+        })
 
         vm.createOrder("1", 50.0)
         advanceUntilIdle()
@@ -91,7 +110,9 @@ class OrderViewModelTest {
 
     @Test
     fun `createOrder failure sets error in stateFlow`() = runTest {
-        fakeMediator.result = RuntimeException("Network unavailable")
+        fakeMediator.register(fakeHandler<CreateOrderCommand, OrderResult> { _, _, _ ->
+            throw RuntimeException("Network unavailable")
+        })
 
         vm.createOrder("1", 99.0)
         advanceUntilIdle()
@@ -104,7 +125,9 @@ class OrderViewModelTest {
 
     @Test
     fun `createOrder failure emits error event`() = runTest {
-        fakeMediator.result = RuntimeException("timeout")
+        fakeMediator.register(fakeHandler<CreateOrderCommand, OrderResult> { _, _, _ ->
+            throw RuntimeException("timeout")
+        })
 
         val events = mutableListOf<String>()
         backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) {
@@ -121,12 +144,16 @@ class OrderViewModelTest {
 
     @Test
     fun `error is cleared on the next createOrder call`() = runTest {
-        fakeMediator.result = RuntimeException("first failure")
+        fakeMediator.register(fakeHandler<CreateOrderCommand, OrderResult> { _, _, _ ->
+            throw RuntimeException("first failure")
+        })
         vm.createOrder("1", 10.0)
         advanceUntilIdle()
         assertNotNull(vm.stateFlow.value.error)
 
-        fakeMediator.result = OrderResult(orderId = "ORD-2", responseIme = 2)
+        fakeMediator.register(fakeHandler<CreateOrderCommand, OrderResult> { _, _, _ ->
+            OrderResult(orderId = "ORD-2", responseIme = 2)
+        })
         vm.createOrder("2", 20.0)
         advanceUntilIdle()
 
@@ -138,20 +165,4 @@ class OrderViewModelTest {
     fun `initial state is empty and not loading`() {
         assertEquals(OrderUiState(), vm.stateFlow.value)
     }
-}
-
-// ─── Fake Mediator ────────────────────────────────────────────────────────────
-
-private class FakeMediator : Mediator {
-    var result: Any? = OrderResult(orderId = "ORD-default", responseIme = 0)
-
-    @Suppress("UNCHECKED_CAST")
-    override suspend fun <TReq : Request<TRes>, TRes> send(request: TReq): TRes {
-        val r = result
-        if (r is Throwable) throw r
-        return r as TRes
-    }
-
-    override suspend fun <T : Notification> publish(notification: T) = Unit
-    override suspend fun <T : Notification> publish(notification: T, publisher: NotificationPublisher) = Unit
 }

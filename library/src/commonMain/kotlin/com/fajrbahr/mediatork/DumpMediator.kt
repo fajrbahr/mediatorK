@@ -8,15 +8,15 @@ package com.fajrbahr.mediatork
  *
  * ```kotlin
  * val mediator = object : DumpMediator() {
- *     override suspend fun <TReq : Request<TRes>, TRes> send(request: TReq): TRes {
+ *     override suspend fun <TRequest : Request<TResult>, TResult> send(request: TRequest): TResult {
  *         @Suppress("UNCHECKED_CAST")
- *         return OrderResult(orderId = "test-1") as TRes
+ *         return OrderResult(orderId = "test-1") as TResult
  *     }
  * }
  * ```
  */
 open class DumpMediator : Mediator {
-    override suspend fun <TReq : Request<TRes>, TRes> send(request: TReq): TRes =
+    override suspend fun <TRequest : Request<TResult>, TResult> send(request: TRequest): TResult =
         throw NotImplementedError("DumpMediator.send not implemented for ${request::class.simpleName}")
 
     override suspend fun <T : Notification> publish(notification: T) = Unit

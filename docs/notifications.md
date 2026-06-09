@@ -1,6 +1,7 @@
 # Notifications
 
-A **notification** is a broadcast event: the publisher fires it and doesn't care who — or how many — handlers react. Zero handlers is fine; no exception is thrown.
+A **notification** is a broadcast event: the publisher fires it and doesn't care who — or how many — handlers react.
+Zero handlers is fine; no exception is thrown.
 
 Use notifications when something *happened* and other parts of the system should react independently.
 
@@ -65,12 +66,12 @@ mediator.publish(BookingPurchasedNotification(bookingId = "b-1", amount = 250.0)
 
 Control how handlers are invoked by passing a `NotificationPublisher` to `MediatorFactory.create`:
 
-| Strategy | Behaviour |
-|---|---|
-| `ParallelNotificationPublisher` | All handlers run concurrently *(default)* |
-| `SequentialNotificationPublisher` | Handlers run one-by-one; stops on first error |
+| Strategy                                   | Behaviour                                                                      |
+|--------------------------------------------|--------------------------------------------------------------------------------|
+| `ParallelNotificationPublisher`            | All handlers run concurrently *(default)*                                      |
+| `SequentialNotificationPublisher`          | Handlers run one-by-one; stops on first error                                  |
 | `ContinueOnExceptionNotificationPublisher` | All handlers run even if some fail; errors collected into `AggregateException` |
-| `FireAndForgetNotificationPublisher` | Returns immediately; handlers run in the background |
+| `FireAndForgetNotificationPublisher`       | Returns immediately; handlers run in the background                            |
 
 ```kotlin
 val mediator = MediatorFactory.create(

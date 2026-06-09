@@ -6,7 +6,8 @@ sidebar_label: Validation
 
 # Validation
 
-MediatorK ships a lightweight validation API in the `com.fajrbahr.mediatork.validator` package — no annotation processing, no reflection, no external dependencies.
+MediatorK ships a lightweight validation API in the `com.fajrbahr.mediatork.validator` package — no annotation
+processing, no reflection, no external dependencies.
 
 ---
 
@@ -67,7 +68,8 @@ class CreateTodoValidator : RequestValidator<CreateTodoCommand> {
 
 ### rules { } style — collect all errors
 
-`rules { }` evaluates every rule and collects all failures in one pass. Use `ruleFor` to scope checks to a specific field:
+`rules { }` evaluates every rule and collects all failures in one pass. Use `ruleFor` to scope checks to a specific
+field:
 
 ```kotlin
 class CreateTodoValidator : RequestValidator<CreateTodoCommand> {
@@ -114,7 +116,9 @@ val mediator = MediatorFactory.create(
 ```
 
 :::tip
-`ValidationBehavior` runs at `order = -50` by default so it executes before most behaviors. You can override the order, replace it entirely with your own `PipelineBehavior`, or skip it and call validators directly from your handlers — whichever fits your setup.
+`ValidationBehavior` runs at `order = -50` by default so it executes before most behaviors. You can override the order,
+replace it entirely with your own `PipelineBehavior`, or skip it and call validators directly from your handlers —
+whichever fits your setup.
 :::
 
 When validation fails, `ValidationBehavior` throws `ValidationException`. Catch it to map errors to UI state.
@@ -123,7 +127,8 @@ When validation fails, `ValidationBehavior` throws `ValidationException`. Catch 
 
 ## Handling errors by field type in a ViewModel
 
-Because `FieldValidator` is a typed interface implemented by your enum, use `when` to dispatch each error to the right UI state — exhaustive, no string matching:
+Because `FieldValidator` is a typed interface implemented by your enum, use `when` to dispatch each error to the right
+UI state — exhaustive, no string matching:
 
 ```kotlin
 class CreateTodoViewModel(private val mediator: Mediator) : ViewModel() {
