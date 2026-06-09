@@ -197,3 +197,7 @@ interface Mediator : Sender, Publisher
 | `ValidationError` | A single failure with an optional `FieldValidator` field and a message |
 | `FieldValidator` | Marker interface for typed field identifiers |
 | `DefaultField` | Sentinel for errors not tied to a specific field |
+| `ValidationBehavior` | Pre-built `PipelineBehavior` that runs validators and throws `ValidationException` on failure |
+| `ValidationException` | Thrown when validation fails; carries the list of `ValidationError`s |
+| `rules { }` | DSL builder — evaluates all rules and collects every error |
+| `rulesFailFast { }` | DSL builder — stops at the first error |
