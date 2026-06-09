@@ -398,7 +398,7 @@ ValidationResult.failure(error1, error2)
 ### Custom field markers
 
 ```kotlin
-enum class OrderField : FieldV { Id, Amount, CustomerId }
+enum class OrderField : FieldValidator { Id, Amount, CustomerId }
 
 ruleFor(OrderField.Amount, request.amount) {
     check(it > 0) { "Must be greater than 0" }

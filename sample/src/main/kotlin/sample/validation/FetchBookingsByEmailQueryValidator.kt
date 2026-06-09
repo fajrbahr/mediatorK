@@ -1,6 +1,6 @@
 package sample.validation
 
-import com.fajrbahr.mediatork.validator.FieldV
+import com.fajrbahr.mediatork.validator.FieldValidator
 import com.fajrbahr.mediatork.validator.RequestValidator
 import com.fajrbahr.mediatork.validator.ValidationResult
 import com.fajrbahr.mediatork.validator.rulesFailFast
@@ -22,7 +22,7 @@ class FetchBookingsByEmailQueryValidator : RequestValidator<FetchUserQueryId> {
     }
 }
 
-sealed class FetchBookingsByEmailQueryValidatorField : FieldV {
+sealed class FetchBookingsByEmailQueryValidatorField : FieldValidator {
     object BookingId : FetchBookingsByEmailQueryValidatorField()
     object UserEmail : FetchBookingsByEmailQueryValidatorField()
 }

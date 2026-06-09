@@ -10,13 +10,13 @@ package com.fajrbahr.mediatork.validator
  * @see DefaultField
  * @see ValidationError
  */
-interface FieldV
+interface FieldValidator
 
 /**
  * Sentinel field identifier used when a [ValidationError] is not associated with
  * any specific field — for example, a cross-field constraint violation.
  */
-object DefaultField : FieldV
+object DefaultField : FieldValidator
 
 /**
  * Describes a single validation failure, optionally tied to a specific [field].
@@ -26,7 +26,7 @@ object DefaultField : FieldV
  * @property message a human-readable description of the validation failure.
  */
 data class ValidationError(
-    val field: FieldV = DefaultField,
+    val field: FieldValidator = DefaultField,
     val message: String
 )
 
@@ -61,7 +61,7 @@ data class ValidationResult(
          * @param field the field that failed.
          * @param message the error description.
          */
-        fun error(field: FieldV, message: String) = ValidationResult(listOf(ValidationError(field, message)))
+        fun error(field: FieldValidator, message: String) = ValidationResult(listOf(ValidationError(field, message)))
 
         /**
          * Creates a result from an arbitrary set of [ValidationError]s.
