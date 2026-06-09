@@ -100,6 +100,8 @@ val mediator = MediatorFactory.create(
 
 Behaviors are sorted by `order` at dispatch time — registration order doesn't matter.
 
+![MediatorK pipeline behaviors — neon dispatch](../../static/img/mediator-night.png)
+
 ---
 
 ## Next
