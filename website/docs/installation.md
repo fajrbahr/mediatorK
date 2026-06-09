@@ -26,6 +26,26 @@ dependencies {
 }
 ```
 
+**Gradle Version Catalog (TOML)**
+
+Add to `gradle/libs.versions.toml`:
+
+```toml
+[versions]
+mediatork = "0.6.0"
+
+[libraries]
+mediatork = { module = "io.github.fajrbahr:mediatork", version.ref = "mediatork" }
+```
+
+Then in your `build.gradle.kts`:
+
+```kotlin
+dependencies {
+    implementation(libs.mediatork)
+}
+```
+
 **Maven**
 
 :::info

@@ -124,7 +124,7 @@ const config: Config = {
         prism: {
             theme: prismThemes.vsDark,
             darkTheme: prismThemes.vsDark,
-            additionalLanguages: ['kotlin', 'groovy', 'bash'],
+            additionalLanguages: ['kotlin', 'groovy', 'bash', 'toml'],
         },
         docs: {
             sidebar: {
