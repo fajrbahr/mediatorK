@@ -32,7 +32,7 @@ val multi = ValidationResult.failure(
 Use a sealed class or enum so the compiler catches typos:
 
 ```kotlin
-enum class CreateTodoFields : FieldV {
+enum class CreateTodoFields : FieldValidator {
     TITLE, DUE_DATE
 }
 ```

@@ -1,6 +1,6 @@
 package sample.validation
 
-import com.fajrbahr.mediatork.validator.FieldV
+import com.fajrbahr.mediatork.validator.FieldValidator
 import com.fajrbahr.mediatork.validator.RequestValidator
 import com.fajrbahr.mediatork.validator.ValidationResult
 import com.fajrbahr.mediatork.validator.rulesFailFast
@@ -23,7 +23,7 @@ class GetOrderQueryValidator : RequestValidator<GetOrderQuery> {
     }
 }
 
-sealed class GetOrderField : FieldV {
+sealed class GetOrderField : FieldValidator {
     object OrderId : GetOrderField()
     object CustomerId : GetOrderField()
 }

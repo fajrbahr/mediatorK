@@ -64,19 +64,19 @@ class FailFastValidationBuilder {
     }
 
     /**
-     * Applies [block] to [value] using a [FieldValidator] scoped to [fieldName].
+     * Applies [block] to [value] using a [FieldValidatoralidator] scoped to [fieldName].
      * Skipped entirely if an error was already recorded.
      *
      * @param V the type of the field value.
-     * @param fieldName the [FieldV] identifier for the field being validated.
+     * @param fieldName the [FieldValidator] identifier for the field being validated.
      * @param value the field value to validate.
-     * @param block validation rules applied to [value] via [FieldValidator].
+     * @param block validation rules applied to [value] via [FieldValidatoralidator].
      */
-    fun <V> ruleFor(fieldName: FieldV, value: V, block: FieldValidator<V>.(V) -> Unit) {
+    fun <V> ruleFor(fieldName: FieldValidator, value: V, block: FieldValidatoralidator<V>.(V) -> Unit) {
         if (errors.isNotEmpty()) return
-        val fieldValidator = FieldValidator<V>(fieldName, failFast = true)
-        fieldValidator.block(value)
-        errors += fieldValidator.collectErrors()
+        val FieldValidatoralidator = FieldValidatoralidator<V>(fieldName, failFast = true)
+        FieldValidatoralidator.block(value)
+        errors += FieldValidatoralidator.collectErrors()
     }
 
     /** Finalises and returns the [ValidationResult]. */
@@ -102,18 +102,18 @@ class ValidationRulesBuilder {
     }
 
     /**
-     * Applies [block] to [value] using a [FieldValidator] scoped to [fieldName],
+     * Applies [block] to [value] using a [FieldValidatoralidator] scoped to [fieldName],
      * collecting all errors the block produces.
      *
      * @param V the type of the field value.
-     * @param fieldName the [FieldV] identifier for the field being validated.
+     * @param fieldName the [FieldValidator] identifier for the field being validated.
      * @param value the field value to validate.
-     * @param block validation rules applied to [value] via [FieldValidator].
+     * @param block validation rules applied to [value] via [FieldValidatoralidator].
      */
-    fun <V> ruleFor(fieldName: FieldV, value: V, block: FieldValidator<V>.(V) -> Unit) {
-        val fieldValidator = FieldValidator<V>(fieldName)
-        fieldValidator.block(value)
-        errors += fieldValidator.collectErrors()
+    fun <V> ruleFor(fieldName: FieldValidator, value: V, block: FieldValidatoralidator<V>.(V) -> Unit) {
+        val FieldValidatoralidator = FieldValidatoralidator<V>(fieldName)
+        FieldValidatoralidator.block(value)
+        errors += FieldValidatoralidator.collectErrors()
     }
 
     /** Finalises and returns the [ValidationResult]. */
@@ -127,7 +127,7 @@ class ValidationRulesBuilder {
  *
  * @param V the type of the value being validated.
  */
-class FieldValidator<V>(private val fieldName: FieldV, private val failFast: Boolean = false) {
+class FieldValidatoralidator<V>(private val fieldName: FieldValidator, private val failFast: Boolean = false) {
     private val errors = mutableListOf<ValidationError>()
 
     /**

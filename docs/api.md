@@ -188,6 +188,6 @@ interface Mediator : Sender, Publisher
 |---|---|
 | `RequestValidator<T>` | Validates a request; returns `ValidationResult` |
 | `ValidationResult` | Holds zero or more `ValidationError`s; `isValid` when empty |
-| `ValidationError` | A single failure with an optional `FieldV` field and a message |
-| `FieldV` | Marker interface for typed field identifiers |
+| `ValidationError` | A single failure with an optional `FieldValidator` field and a message |
+| `FieldValidator` | Marker interface for typed field identifiers |
 | `DefaultField` | Sentinel for errors not tied to a specific field |
