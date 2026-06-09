@@ -29,11 +29,11 @@ const sidebars: SidebarsConfig = {
       collapsed: false,
       items: [
         'integration/jvm',
-        'integration/kmp',
-        'integration/spring',
-        'integration/ktor',
-        'integration/koin',
         'integration/viewmodel',
+        'integration/kmp',
+        'integration/ktor',
+        'integration/spring',
+        'integration/koin',
       ],
     },
     {
