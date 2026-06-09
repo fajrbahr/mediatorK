@@ -72,30 +72,6 @@ class MyApp : Application() {
 
 ---
 
-## KMP shared module
-
-Declare the mediator in `commonMain` and inject platform repositories:
-
-```kotlin
-// commonMain
-val sharedModule = module {
-    single<ProductRepository> { ProductRepositoryImpl(get()) }
-    single {
-        MediatorFactory.create(
-            registrars = listOf(
-                object : MediatorRegistrar {
-                    override fun register(registry: HandlerRegistry) {
-                        registry register GetProductHandler(get())
-                    }
-                }
-            )
-        )
-    }
-}
-```
-
----
-
 ## Next
 
 → [API Reference](../api.md)
