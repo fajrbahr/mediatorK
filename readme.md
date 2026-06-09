@@ -22,7 +22,7 @@ A coroutine-first Mediator library for Kotlin. Implements the CQRS and Vertical 
 
 ```kotlin
 dependencies {
-    implementation("io.github.fajrbahr:mediatork:0.1.6")
+    implementation("io.github.fajrbahr:mediatork:0.1.7")
 }
 ```
 
