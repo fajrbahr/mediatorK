@@ -30,9 +30,9 @@ class TracingPipelineBehavior(val tracker: FirebasePerformance = FirebasePerform
 
     override val order: Int = 3
 
-    override suspend fun <TReq : Request<TRes>, TRes> process(
-        requestContext: RequestContext, next: RequestHandlerDelegate<TReq, TRes>, request: TReq
-    ): TRes {
+    override suspend fun <TRequest : Request<TResult>, TResult> process(
+        requestContext: RequestContext, next: RequestHandlerDelegate<TRequest, TResult>, request: TRequest
+    ): TResult {
 
         val requestName = request::class.simpleName ?: "UnknownRequest"
 

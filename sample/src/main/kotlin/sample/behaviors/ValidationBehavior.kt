@@ -11,13 +11,13 @@ class ValidationBehavior(
     private val validators: List<RequestValidator<*>>
 ) : PipelineBehavior {
 
-    override suspend fun <TReq : Request<TRes>, TRes> process(
+    override suspend fun <TRequest : Request<TResult>, TResult> process(
         requestContext: RequestContext,
-        next: RequestHandlerDelegate<TReq, TRes>,
-        request: TReq
-    ): TRes {
-        val validator: RequestValidator<TReq>? =
-            validators.find { it.requestClass == request::class } as? RequestValidator<TReq>
+        next: RequestHandlerDelegate<TRequest, TResult>,
+        request: TRequest
+    ): TResult {
+        val validator: RequestValidator<TRequest>? =
+            validators.find { it.requestClass == request::class } as? RequestValidator<TRequest>
 
         validator?.validate(request)?.let { result ->
             if (!result.isValid) {

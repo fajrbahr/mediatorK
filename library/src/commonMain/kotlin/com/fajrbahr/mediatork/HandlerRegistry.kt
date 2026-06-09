@@ -53,19 +53,19 @@ class HandlerRegistry {
     }
 
     /**
-     * Registers [handler] as the sole handler for request type [TReq].
+     * Registers [handler] as the sole handler for request type [TRequest].
      *
-     * If a handler is already registered for [TReq], it is silently replaced.
+     * If a handler is already registered for [TRequest], it is silently replaced.
      *
-     * @param TReq the request type to associate with [handler].
-     * @param TRes the response type produced by the handler.
+     * @param TRequest the request type to associate with [handler].
+     * @param TResult the response type produced by the handler.
      * @param handler the handler to register.
      * @return this registry, for chaining.
      */
-    inline infix fun <reified TReq : Request<TRes>, TRes> register(
-        handler: RequestHandler<TReq, TRes>
+    inline infix fun <reified TRequest : Request<TResult>, TResult> register(
+        handler: RequestHandler<TRequest, TResult>
     ): HandlerRegistry {
-        requestHandlers[TReq::class] = handler
+        requestHandlers[TRequest::class] = handler
         return this
     }
 
@@ -88,24 +88,24 @@ class HandlerRegistry {
 
     /**
      * Registers [handler] to intercept exceptions of type [TEx] thrown while
-     * handling requests of type [TReq].
+     * handling requests of type [TRequest].
      *
      * If multiple exception handlers are registered for the same request type,
      * the first one whose exception class [KClass.isInstance] matches the thrown
      * exception is used.
      *
-     * @param TReq the request type this handler guards.
-     * @param TRes the response type; must match [TReq]'s response parameter.
+     * @param TRequest the request type this handler guards.
+     * @param TResult the response type; must match [TRequest]'s response parameter.
      * @param TEx the exception type this handler intercepts.
      * @param requestClass [KClass] of the request type.
      * @param exceptionClass [KClass] of the exception type.
      * @param handler the exception handler to register.
      * @return this registry, for chaining.
      */
-    fun <TReq : Request<TRes>, TRes, TEx : Throwable> registerExceptionHandler(
-        requestClass: KClass<TReq>,
+    fun <TRequest : Request<TResult>, TResult, TEx : Throwable> registerExceptionHandler(
+        requestClass: KClass<TRequest>,
         exceptionClass: KClass<TEx>,
-        handler: RequestExceptionHandler<TReq, TRes, TEx>,
+        handler: RequestExceptionHandler<TRequest, TResult, TEx>,
     ): HandlerRegistry {
         exceptionHandlers.getOrPut(requestClass) { mutableListOf() }.add(Pair(exceptionClass, handler))
         return this
@@ -116,7 +116,7 @@ class HandlerRegistry {
      *
      * Allows the `+handler` syntax inside a [scope] block.
      */
-    inline operator fun <reified TReq : Request<TRes>, TRes> RequestHandler<TReq, TRes>.unaryPlus() {
+    inline operator fun <reified TRequest : Request<TResult>, TResult> RequestHandler<TRequest, TResult>.unaryPlus() {
         register(this)
     }
 
@@ -145,8 +145,8 @@ class HandlerRegistry {
      * @throws MissingHandlerException if no handler is registered for the request type.
      */
     @Suppress("UNCHECKED_CAST")
-    internal fun <TReq : Request<TRes>, TRes> resolveHandler(request: TReq): RequestHandler<TReq, TRes> =
-        requestHandlers[request::class] as? RequestHandler<TReq, TRes>
+    internal fun <TRequest : Request<TResult>, TResult> resolveHandler(request: TRequest): RequestHandler<TRequest, TResult> =
+        requestHandlers[request::class] as? RequestHandler<TRequest, TResult>
             ?: throw MissingHandlerException(
                 requestTypeName = request::class.simpleName ?: "Unknown",
                 registered = requestHandlers.keys.mapNotNull { it.simpleName },
@@ -168,12 +168,12 @@ class HandlerRegistry {
      *   none is registered for the combination of request type and exception type.
      */
     @Suppress("UNCHECKED_CAST")
-    internal fun <TReq : Request<TRes>, TRes> resolveExceptionHandler(
-        request: TReq,
+    internal fun <TRequest : Request<TResult>, TResult> resolveExceptionHandler(
+        request: TRequest,
         exception: Throwable,
-    ): RequestExceptionHandler<TReq, TRes, Throwable>? {
+    ): RequestExceptionHandler<TRequest, TResult, Throwable>? {
         val entries = exceptionHandlers[request::class] ?: return null
         val entry = entries.firstOrNull { (exClass, _) -> exClass.isInstance(exception) }
-        return entry?.second as? RequestExceptionHandler<TReq, TRes, Throwable>
+        return entry?.second as? RequestExceptionHandler<TRequest, TResult, Throwable>
     }
 }

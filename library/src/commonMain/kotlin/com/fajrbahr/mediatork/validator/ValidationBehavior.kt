@@ -44,14 +44,14 @@ class ValidationBehavior(
 ) : PipelineBehavior {
 
     @Suppress("UNCHECKED_CAST")
-    override suspend fun <TReq : Request<TRes>, TRes> process(
+    override suspend fun <TRequest : Request<TResult>, TResult> process(
         requestContext: RequestContext,
-        next: RequestHandlerDelegate<TReq, TRes>,
-        request: TReq,
-    ): TRes {
+        next: RequestHandlerDelegate<TRequest, TResult>,
+        request: TRequest,
+    ): TResult {
         val validator = validators
             .firstOrNull { it.requestClass.isInstance(request) }
-            as? RequestValidator<TReq>
+            as? RequestValidator<TRequest>
 
         val result = validator?.validate(request)
         if (result != null && !result.isValid) throw ValidationException(result.errors)

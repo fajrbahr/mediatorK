@@ -21,9 +21,9 @@ Override only the behaviour your test cares about:
 
 ```kotlin
 val mediator = object : DumpMediator() {
-    override suspend fun <TReq : Request<TRes>, TRes> send(request: TReq): TRes {
+    override suspend fun <TRequest : Request<TResult>, TResult> send(request: TRequest): TResult {
         @Suppress("UNCHECKED_CAST")
-        return OrderResult(orderId = "order-123") as TRes
+        return OrderResult(orderId = "order-123") as TResult
     }
 }
 
@@ -34,7 +34,7 @@ To simulate a failure, throw from `send`:
 
 ```kotlin
 val mediator = object : DumpMediator() {
-    override suspend fun <TReq : Request<TRes>, TRes> send(request: TReq): TRes =
+    override suspend fun <TRequest : Request<TResult>, TResult> send(request: TRequest): TResult =
         throw RuntimeException("Network unavailable")
 }
 ```
@@ -45,10 +45,10 @@ To capture what was sent:
 val captured = mutableListOf<Any>()
 
 val mediator = object : DumpMediator() {
-    override suspend fun <TReq : Request<TRes>, TRes> send(request: TReq): TRes {
+    override suspend fun <TRequest : Request<TResult>, TResult> send(request: TRequest): TResult {
         captured += request
         @Suppress("UNCHECKED_CAST")
-        return Unit as TRes
+        return Unit as TResult
     }
 }
 ```

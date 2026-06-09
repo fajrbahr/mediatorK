@@ -80,11 +80,11 @@ class MediatorTest {
 
         val outer = object : PipelineBehavior {
             override val order = -10
-            override suspend fun <TReq : Request<TRes>, TRes> process(
+            override suspend fun <TRequest : Request<TResult>, TResult> process(
                 requestContext: RequestContext,
-                next: RequestHandlerDelegate<TReq, TRes>,
-                request: TReq,
-            ): TRes {
+                next: RequestHandlerDelegate<TRequest, TResult>,
+                request: TRequest,
+            ): TResult {
                 log += "outer-before"
                 return next(request).also { log += "outer-after" }
             }
@@ -92,11 +92,11 @@ class MediatorTest {
 
         val inner = object : PipelineBehavior {
             override val order = 10
-            override suspend fun <TReq : Request<TRes>, TRes> process(
+            override suspend fun <TRequest : Request<TResult>, TResult> process(
                 requestContext: RequestContext,
-                next: RequestHandlerDelegate<TReq, TRes>,
-                request: TReq,
-            ): TRes {
+                next: RequestHandlerDelegate<TRequest, TResult>,
+                request: TRequest,
+            ): TResult {
                 log += "inner-before"
                 return next(request).also { log += "inner-after" }
             }
@@ -120,11 +120,11 @@ class MediatorTest {
         var ran = false
         val selective = object : PipelineBehavior {
             override fun appliesTo(request: Request<*>) = false
-            override suspend fun <TReq : Request<TRes>, TRes> process(
+            override suspend fun <TRequest : Request<TResult>, TResult> process(
                 requestContext: RequestContext,
-                next: RequestHandlerDelegate<TReq, TRes>,
-                request: TReq,
-            ): TRes {
+                next: RequestHandlerDelegate<TRequest, TResult>,
+                request: TRequest,
+            ): TResult {
                 ran = true; return next(request)
             }
         }

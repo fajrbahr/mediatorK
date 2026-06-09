@@ -63,7 +63,7 @@ Cross-cutting decorator that wraps each request pipeline.
 | `order` | `Int` | `0` | Position in chain; lower = outermost |
 | `isEnabled` | `Boolean` | `true` | Skip entirely when `false` |
 | `appliesTo(request)` | `Boolean` | `true` | Opt out for specific request types |
-| `process(ctx, next, req)` | `suspend TRes` | — | Core implementation; must call `next(request)` to continue |
+| `process(ctx, next, req)` | `suspend TResult` | — | Core implementation; must call `next(request)` to continue |
 
 ---
 

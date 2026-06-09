@@ -14,11 +14,11 @@ class RetryPipelineBehavior(
 
     override val order: Int = 1
 
-    override suspend fun <TReq : Request<TRes>, TRes> process(
+    override suspend fun <TRequest : Request<TResult>, TResult> process(
         requestContext: RequestContext,
-        next: RequestHandlerDelegate<TReq, TRes>,
-        request: TReq
-    ): TRes {
+        next: RequestHandlerDelegate<TRequest, TResult>,
+        request: TRequest
+    ): TResult {
 
         var lastError: Throwable? = null
 

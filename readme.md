@@ -233,11 +233,11 @@ Behaviors wrap every request in order. Implement `PipelineBehavior`:
 class LoggingBehavior : PipelineBehavior {
     override val order: Int = 0   // lower = outer
 
-    override suspend fun <TReq : Request<TRes>, TRes> process(
+    override suspend fun <TRequest : Request<TResult>, TResult> process(
         requestContext: RequestContext,
-        next: RequestHandlerDelegate<TReq, TRes>,
-        request: TReq,
-    ): TRes {
+        next: RequestHandlerDelegate<TRequest, TResult>,
+        request: TRequest,
+    ): TResult {
         println("-> ${request::class.simpleName}")
         val result = next(request)
         println("<- ${request::class.simpleName}")
@@ -260,11 +260,11 @@ class LoggingBehavior : PipelineBehavior {
 class RetryBehavior(private val maxRetries: Int = 3) : PipelineBehavior {
     override val order = 10
 
-    override suspend fun <TReq : Request<TRes>, TRes> process(
+    override suspend fun <TRequest : Request<TResult>, TResult> process(
         requestContext: RequestContext,
-        next: RequestHandlerDelegate<TReq, TRes>,
-        request: TReq,
-    ): TRes {
+        next: RequestHandlerDelegate<TRequest, TResult>,
+        request: TRequest,
+    ): TResult {
         repeat(maxRetries - 1) {
             try { return next(request) } catch (_: Exception) {}
         }
@@ -478,7 +478,7 @@ fun `create order returns order`() = runTest {
 ### `Mediator`
 
 ```kotlin
-suspend fun <TReq : Request<TRes>, TRes> send(request: TReq): TRes
+suspend fun <TRequest : Request<TResult>, TResult> send(request: TRequest): TResult
 suspend fun <T : Notification> publish(notification: T)
 suspend fun <T : Notification> publish(notification: T, publisher: NotificationPublisher)
 ```
@@ -486,9 +486,9 @@ suspend fun <T : Notification> publish(notification: T, publisher: NotificationP
 ### `HandlerRegistry`
 
 ```kotlin
-infix fun <TReq, TRes> register(handler: RequestHandler<TReq, TRes>): HandlerRegistry
+infix fun <TRequest, TResult> register(handler: RequestHandler<TRequest, TResult>): HandlerRegistry
 infix fun <T : Notification> registerNotification(handler: NotificationHandler<T>): HandlerRegistry
-fun <TReq, TRes, TEx : Throwable> registerExceptionHandler(...): HandlerRegistry
+fun <TRequest, TResult, TEx : Throwable> registerExceptionHandler(...): HandlerRegistry
 fun scope(block: HandlerRegistry.() -> Unit)
 operator fun RequestHandler<*, *>.unaryPlus()
 operator fun NotificationHandler<*>.unaryPlus()
