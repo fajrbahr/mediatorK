@@ -42,7 +42,12 @@ const sidebars: SidebarsConfig = {
       collapsed: false,
       items: ['examples/basic', 'examples/spring-boot-3'],
     },
-    'testing',
+    {
+      type: 'category',
+      label: 'Testing',
+      collapsed: false,
+      items: ['testing/dump-mediator', 'testing/handler-validation'],
+    },
     'api',
     'about',
     'resources',

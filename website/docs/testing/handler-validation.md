@@ -1,10 +1,10 @@
 ---
-id: testing
-title: Testing
-sidebar_label: Testing
+id: handler-validation
+title: Handler Validation
+sidebar_label: Handler Validation
 ---
 
-# Testing
+# Handler Validation
 
 MediatorK ships a companion test utilities artifact — `mediatork-test` — that helps you catch missing handler registrations at test time instead of as a runtime crash.
 
