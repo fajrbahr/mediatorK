@@ -13,7 +13,7 @@ A complete end-to-end example using MediatorK in a plain Kotlin project.
 ```kotlin
 // build.gradle.kts
 dependencies {
-    implementation("io.github.fajrbahr:mediatork:0.1.6")
+    implementation("io.github.fajrbahr:mediatork:0.1.7")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.10.2")
 }
 ```

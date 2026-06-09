@@ -14,7 +14,7 @@ For Spring Boot, Ktor, or any plain JVM project.
 
 ```kotlin
 dependencies {
-    implementation("io.github.fajrbahr:mediatork:0.1.6")
+    implementation("io.github.fajrbahr:mediatork:0.1.7")
 }
 ```
 
@@ -22,7 +22,7 @@ dependencies {
 
 ```groovy
 dependencies {
-    implementation 'io.github.fajrbahr:mediatork:0.1.6'
+    implementation 'io.github.fajrbahr:mediatork:0.1.7'
 }
 ```
 
@@ -36,7 +36,7 @@ Maven does not resolve Kotlin Multiplatform metadata — use the `-jvm` artifact
 <dependency>
     <groupId>io.github.fajrbahr</groupId>
     <artifactId>mediatork-jvm</artifactId>
-    <version>0.1.6</version>
+    <version>0.1.7</version>
 </dependency>
 ```
 
@@ -47,7 +47,7 @@ Maven does not resolve Kotlin Multiplatform metadata — use the `-jvm` artifact
 ```kotlin
 // app/build.gradle.kts
 dependencies {
-    implementation("io.github.fajrbahr:mediatork:0.1.6")
+    implementation("io.github.fajrbahr:mediatork:0.1.7")
 }
 ```
 
@@ -67,7 +67,7 @@ kotlin {
 
     sourceSets {
         commonMain.dependencies {
-            implementation("io.github.fajrbahr:mediatork:0.1.6")
+            implementation("io.github.fajrbahr:mediatork:0.1.7")
         }
     }
 }
@@ -89,7 +89,7 @@ kotlin {
 
 ```kotlin
 dependencies {
-    testImplementation("io.github.fajrbahr:mediatork-test:0.1.6")
+    testImplementation("io.github.fajrbahr:mediatork-test:0.1.7")
 }
 ```
 
