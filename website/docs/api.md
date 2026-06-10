@@ -138,17 +138,19 @@ object MediatorFactory {
         preProcessors: List<RequestPreProcessor> = emptyList(),
         notificationPublisher: NotificationPublisher = ParallelNotificationPublisher(),
         postProcessors: List<RequestPostProcessor> = emptyList(),
+        verifyHandlers: Boolean = true,
     ): Mediator
 }
 ```
 
-| Parameter               | Default                           | Description                                          |
-|-------------------------|-----------------------------------|------------------------------------------------------|
-| `registrars`            | `emptyList()`                     | Modules that contribute handlers to the registry     |
-| `pipelineBehaviors`     | `emptyList()`                     | Cross-cutting decorators; sorted by `order`          |
-| `preProcessors`         | `emptyList()`                     | Hooks that run before the handler; sorted by `order` |
-| `notificationPublisher` | `ParallelNotificationPublisher()` | Strategy for delivering notifications                |
-| `postProcessors`        | `emptyList()`                     | Hooks that run after the handler; sorted by `order`  |
+| Parameter               | Default                           | Description                                                                                             |
+|-------------------------|-----------------------------------|---------------------------------------------------------------------------------------------------------|
+| `registrars`            | `emptyList()`                     | Modules that contribute handlers to the registry                                                        |
+| `pipelineBehaviors`     | `emptyList()`                     | Cross-cutting decorators; sorted by `order`                                                             |
+| `preProcessors`         | `emptyList()`                     | Hooks that run before the handler; sorted by `order`                                                    |
+| `notificationPublisher` | `ParallelNotificationPublisher()` | Strategy for delivering notifications                                                                   |
+| `postProcessors`        | `emptyList()`                     | Hooks that run after the handler; sorted by `order`                                                     |
+| `verifyHandlers`        | `true`                            | When `true`, logs a warning for every request type with no handler after all registrars have run        |
 
 ---
 
