@@ -1,4 +1,5 @@
 package com.fajrbahr.mediatork
+import com.fajrbahr.mediatork.notification.*
 
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
@@ -34,9 +35,11 @@ class NotificationTest {
     }
 
     @Test
-    fun `publish with no handlers does not throw`() = runTest {
+    fun `publish with no handlers throws by default`() = runTest {
         val m = mediator { }
-        m.publish(PingNotification("silent"))
+        assertFailsWith<MissingNotificationHandlerException> {
+            m.publish(PingNotification("silent"))
+        }
     }
 
     @Test
@@ -221,5 +224,58 @@ class NotificationTest {
         val pub = FireAndForgetNotificationPublisher(scope)
         pub.publish(PingNotification("ff2"), listOf(h))
         assertEquals(listOf("ff2"), ran)
+    }
+
+    // ── ThrowMissingNotificationHandlerStrategy ───────────────────────────────
+
+    @Test
+    fun `ThrowMissingNotificationHandlerStrategy throws when no handlers registered`() = runTest {
+        val m = mediator(
+            missingNotificationHandler = ThrowMissingNotificationHandler()
+        ) { }
+        assertFailsWith<MissingNotificationHandlerException> {
+            m.publish(PingNotification("x"))
+        }
+    }
+
+    @Test
+    fun `ThrowMissingNotificationHandlerStrategy exception contains notification type name`() = runTest {
+        val m = mediator(
+            missingNotificationHandler = ThrowMissingNotificationHandler()
+        ) { }
+        val ex = assertFailsWith<MissingNotificationHandlerException> {
+            m.publish(PingNotification("x"))
+        }
+        assertTrue(ex.message!!.contains("PingNotification"))
+    }
+
+    @Test
+    fun `ThrowMissingNotificationHandlerStrategy does not throw when handlers are registered`() = runTest {
+        val h = RecordingNotificationHandler()
+        val m = mediator(
+            missingNotificationHandler = ThrowMissingNotificationHandler()
+        ) { registerNotification(h) }
+        m.publish(PingNotification("ok"))
+        assertEquals(listOf("ok"), h.received)
+    }
+
+    // ── SilentMissingNotificationHandlerStrategy ──────────────────────────────
+
+    @Test
+    fun `SilentMissingNotificationHandlerStrategy does not throw when no handlers registered`() = runTest {
+        val m = mediator(
+            missingNotificationHandler = SilentMissingNotificationHandler()
+        ) { }
+        m.publish(PingNotification("dropped"))
+    }
+
+    @Test
+    fun `SilentMissingNotificationHandlerStrategy still delivers when handlers are registered`() = runTest {
+        val h = RecordingNotificationHandler()
+        val m = mediator(
+            missingNotificationHandler = SilentMissingNotificationHandler()
+        ) { registerNotification(h) }
+        m.publish(PingNotification("ok"))
+        assertEquals(listOf("ok"), h.received)
     }
 }

@@ -18,6 +18,9 @@ include("mediatork-test")
 
 include("publishMaven")
 
+include("mediatork-ksp-annotations")
+include("mediatork-ksp")
+
 dependencyResolutionManagement {
     repositories {
         google()

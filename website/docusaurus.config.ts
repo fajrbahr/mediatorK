@@ -25,6 +25,26 @@ const config: Config = {
         locales: ['en'],
     },
 
+    plugins: [
+        function rawLoaderPlugin() {
+            return {
+                name: 'raw-loader-plugin',
+                configureWebpack() {
+                    return {
+                        module: {
+                            rules: [
+                                {
+                                    test: /\.kt$/,
+                                    use: ['raw-loader'],
+                                },
+                            ],
+                        },
+                    };
+                },
+            };
+        },
+    ],
+
     presets: [
         [
             'classic',

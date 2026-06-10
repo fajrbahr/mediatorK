@@ -1,4 +1,6 @@
 package com.fajrbahr.mediatork
+import com.fajrbahr.mediatork.notification.*
+import com.fajrbahr.mediatork.pipeline.*
 
 import com.fajrbahr.mediatork.MediatorFactory.create
 
@@ -46,6 +48,7 @@ object MediatorFactory {
         notificationPublisher: NotificationPublisher = ParallelNotificationPublisher(),
         postProcessors: List<RequestPostProcessor> = emptyList(),
         verifyHandlers: Boolean = true,
+        missingNotificationHandler: NotificationHandler<Notification> = ThrowMissingNotificationHandler(),
     ): Mediator {
         val registry = HandlerRegistry()
 
@@ -63,6 +66,7 @@ object MediatorFactory {
             preProcessors = preProcessors,
             postProcessors = postProcessors,
             notificationPublisher = notificationPublisher,
+            missingNotificationHandler = missingNotificationHandler,
         )
     }
 
@@ -78,11 +82,13 @@ object MediatorFactory {
         preProcessors: List<RequestPreProcessor> = emptyList(),
         notificationPublisher: NotificationPublisher = ParallelNotificationPublisher(),
         postProcessors: List<RequestPostProcessor> = emptyList(),
+        missingNotificationHandler: NotificationHandler<Notification> = ThrowMissingNotificationHandler(),
     ): Mediator = MediatorImpl(
         registry = registry,
         pipelineBehaviors = pipelineBehaviors,
         preProcessors = preProcessors,
         postProcessors = postProcessors,
         notificationPublisher = notificationPublisher,
+        missingNotificationHandler = missingNotificationHandler,
     )
 }

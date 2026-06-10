@@ -1,0 +1,48 @@
+package com.fajrbahr.mediatork.handler
+
+/**
+ * Tries each handler in [handlers] in order, returning the first successful result.
+ * If a handler throws, the exception is swallowed and the next handler is tried.
+ * Re-throws the last handler's exception if every handler fails.
+ *
+ * Compose with [otherwise] rather than constructing directly:
+ * ```kotlin
+ * registry register (PrimaryHandler() otherwise SecondaryHandler() otherwise TertiaryHandler())
+ * ```
+ */
+class FallbackRequestHandler<TRequest : Request<TResult>, TResult>(
+    private val handlers: List<RequestHandler<TRequest, TResult>>,
+) : RequestHandler<TRequest, TResult> {
+
+    override suspend fun handle(
+        mediator: Mediator,
+        requestContext: RequestContext,
+        request: TRequest,
+    ): TResult {
+        var lastException: Throwable? = null
+        for (handler in handlers) {
+            try {
+                return handler.handle(mediator, requestContext, request)
+            } catch (e: Throwable) {
+                lastException = e
+            }
+        }
+        throw lastException ?: IllegalStateException("FallbackRequestHandler has no handlers")
+    }
+
+    internal fun withFallback(handler: RequestHandler<TRequest, TResult>): FallbackRequestHandler<TRequest, TResult> =
+        FallbackRequestHandler(handlers + handler)
+}
+
+/**
+ * Returns a handler that tries `this` first, then [fallback] if `this` throws.
+ *
+ * Chains naturally: `a otherwise b otherwise c` produces a single [FallbackRequestHandler]
+ * with three candidates tried in order.
+ */
+infix fun <TRequest : Request<TResult>, TResult> RequestHandler<TRequest, TResult>.otherwise(
+    fallback: RequestHandler<TRequest, TResult>,
+): FallbackRequestHandler<TRequest, TResult> = when (this) {
+    is FallbackRequestHandler -> withFallback(fallback)
+    else -> FallbackRequestHandler(listOf(this, fallback))
+}

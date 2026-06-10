@@ -1,4 +1,7 @@
 package com.fajrbahr.mediatork
+import com.fajrbahr.mediatork.handler.*
+import com.fajrbahr.mediatork.notification.*
+import com.fajrbahr.mediatork.pipeline.*
 
 // ── Request / Notification types ─────────────────────────────────────────────
 
@@ -54,6 +57,7 @@ fun mediator(
     preProcessors: List<RequestPreProcessor> = emptyList(),
     postProcessors: List<RequestPostProcessor> = emptyList(),
     notificationPublisher: NotificationPublisher = ParallelNotificationPublisher(),
+    missingNotificationHandler: NotificationHandler<Notification> = ThrowMissingNotificationHandler(),
     block: HandlerRegistry.() -> Unit,
 ): Mediator = MediatorFactory.create(
     registrars = listOf(object : MediatorRegistrar {
@@ -65,4 +69,5 @@ fun mediator(
     preProcessors = preProcessors,
     postProcessors = postProcessors,
     notificationPublisher = notificationPublisher,
+    missingNotificationHandler = missingNotificationHandler,
 )

@@ -1,4 +1,5 @@
 package com.fajrbahr.mediatork
+import com.fajrbahr.mediatork.notification.*
 
 /**
  * Base class for all exceptions thrown by the MediatorK library.
@@ -29,6 +30,16 @@ class MissingHandlerException(
         if (registered.isNotEmpty()) append(". Registered: ${registered.joinToString()}")
     }
 )
+
+/**
+ * Thrown by [ThrowMissingNotificationHandlerStrategy] when [Publisher.publish] is called
+ * for a notification type that has no registered handlers.
+ *
+ * @param notificationTypeName simple name of the notification type that had no handlers.
+ */
+class MissingNotificationHandlerException(
+    notificationTypeName: String,
+) : MediatorException("No handler registered for notification '$notificationTypeName'")
 
 /**
  * Thrown by [ContinueOnExceptionNotificationPublisher] when one or more notification

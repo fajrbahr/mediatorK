@@ -1,9 +1,11 @@
 package com.fajrbahr.mediatork
+import com.fajrbahr.mediatork.handler.*
 
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
+import kotlin.test.assertFalse
 
 class ExceptionHandlerTest {
 
@@ -138,6 +140,61 @@ class ExceptionHandlerTest {
             })
         )
         assertFailsWith<RuntimeException> { m.send(PingQuery("x")) }
+    }
+
+    @Test
+    fun `pre-processor exception propagates and is NOT caught by exception handler`() = runTest {
+        val pre = object : RequestPreProcessor {
+            override suspend fun process(requestContext: RequestContext, request: Request<*>) {
+                throw IllegalStateException("pre-fail")
+            }
+        }
+        val exHandler = object : RequestExceptionHandler<PingQuery, String, IllegalStateException> {
+            override suspend fun handle(
+                requestContext: RequestContext,
+                request: PingQuery,
+                exception: IllegalStateException,
+            ) = "should-not-reach"
+        }
+        val m = MediatorFactory.create(
+            registrars = listOf(object : MediatorRegistrar {
+                override fun register(registry: HandlerRegistry) {
+                    registry.register(failingPingHandler(RuntimeException("handler-fail")))
+                    registry.registerExceptionHandler(PingQuery::class, IllegalStateException::class, exHandler)
+                }
+            }),
+            preProcessors = listOf(pre)
+        )
+        // pre-processor exceptions bypass the exception handler
+        assertFailsWith<IllegalStateException> { m.send(PingQuery("x")) }
+    }
+
+    @Test
+    fun `post-processor runs with recovered result after exception handler`() = runTest {
+        var postResponse: Any? = "not-set"
+        val post = object : RequestPostProcessor {
+            override suspend fun process(requestContext: RequestContext, request: Request<*>, response: Any?) {
+                postResponse = response
+            }
+        }
+        val exHandler = object : RequestExceptionHandler<PingQuery, String, RuntimeException> {
+            override suspend fun handle(
+                requestContext: RequestContext,
+                request: PingQuery,
+                exception: RuntimeException,
+            ) = "recovered"
+        }
+        val m = MediatorFactory.create(
+            registrars = listOf(object : MediatorRegistrar {
+                override fun register(registry: HandlerRegistry) {
+                    registry.register(failingPingHandler(RuntimeException("boom")))
+                    registry.registerExceptionHandler(PingQuery::class, RuntimeException::class, exHandler)
+                }
+            }),
+            postProcessors = listOf(post)
+        )
+        m.send(PingQuery("x"))
+        assertEquals("recovered", postResponse)
     }
 
     @Test

@@ -56,6 +56,7 @@ val mediator = MediatorFactory.create(
         MetricsPostProcessor(),
     ),
     notificationPublisher = ParallelNotificationPublisher(),
+    missingNotificationHandler = ThrowMissingNotificationHandler(),
 )
 ```
 
@@ -71,6 +72,7 @@ val mediator = MediatorFactory.create(
 | `postProcessors`        | `List<RequestPostProcessor>` | `emptyList()`                     | Run after the handler; sorted by `order`                                                            |
 | `notificationPublisher` | `NotificationPublisher`      | `ParallelNotificationPublisher()` | Strategy for delivering notifications to handlers                                                   |
 | `verifyHandlers`        | `Boolean`                    | `true`                            | When `true`, logs a warning for every request type with no handler after all registrars have run    |
+| `missingNotificationHandler` | `NotificationHandler<Notification>` | `ThrowMissingNotificationHandler()` | Called when a notification is published with no registered handlers. Built-in: `ThrowMissingNotificationHandler`, `SilentMissingNotificationHandler`, or provide your own |
 
 ---
 
@@ -99,6 +101,32 @@ typically sit at `order = 0` or above.
 | `SequentialNotificationPublisher`          | Handlers run one-by-one; stops on first error                |
 | `ContinueOnExceptionNotificationPublisher` | All handlers run; errors collected into `AggregateException` |
 | `FireAndForgetNotificationPublisher`       | Returns immediately; handlers run in the background          |
+
+---
+
+## Verifier limitations
+
+`verifyHandlers = true` enables startup verification, but it has known limitations:
+
+:::warning
+**The verifier can only see what was registered — it cannot detect what was never registered.**
+
+A missing handler is invisible at startup. It only surfaces at runtime when `send()` or
+`publish()` is called for a type with no handler.
+:::
+
+| What the verifier can detect | What it cannot detect |
+|---|---|
+| Duplicate request handler registrations (last one wins silently) | A `Request` type that was never registered at all |
+| Notification handlers registered for a type with an empty handler list | A `NotificationHandler` whose notification is never published |
+| Misconfigured registrars that run but register nothing | Unsatisfied constructor dependencies inside a handler |
+
+**Unsatisfied dependencies** (e.g. a null `Repository` injected into a handler) are outside
+MediatorK's scope — that is your DI container's responsibility (Koin, Hilt, etc.).
+
+**Future improvement:** a more descriptive verifier that cross-references notification
+publishers and handler registrations is planned. Until then, prefer integration tests
+that exercise each handler at least once to catch missing registrations early.
 
 ---
 

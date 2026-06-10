@@ -1,4 +1,7 @@
 package com.fajrbahr.mediatork
+import com.fajrbahr.mediatork.handler.*
+import com.fajrbahr.mediatork.notification.*
+import com.fajrbahr.mediatork.pipeline.*
 
 /**
  * Default [Mediator] implementation produced by [MediatorFactory.create].
@@ -23,6 +26,7 @@ internal class MediatorImpl(
     private val preProcessors: List<RequestPreProcessor>,
     private val postProcessors: List<RequestPostProcessor>,
     private val notificationPublisher: NotificationPublisher,
+    private val missingNotificationHandler: NotificationHandler<Notification> = ThrowMissingNotificationHandler(),
 ) : Mediator {
 
     /**
@@ -41,6 +45,10 @@ internal class MediatorImpl(
      */
     override suspend fun <T : Notification> publish(notification: T) {
         val handlers = registry.resolveNotificationHandlers(notification)
+        if (handlers.isEmpty()) {
+            missingNotificationHandler.handle(notification)
+            return
+        }
         notificationPublisher.publish(notification, handlers)
     }
 

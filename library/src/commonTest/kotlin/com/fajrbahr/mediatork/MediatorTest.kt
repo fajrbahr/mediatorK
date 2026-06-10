@@ -1,4 +1,7 @@
 package com.fajrbahr.mediatork
+import com.fajrbahr.mediatork.handler.*
+import com.fajrbahr.mediatork.notification.*
+import com.fajrbahr.mediatork.pipeline.*
 
 import kotlinx.coroutines.test.runTest
 import kotlin.test.*
@@ -69,9 +72,11 @@ class MediatorTest {
     }
 
     @Test
-    fun `publish with no handlers does not throw`() = runTest {
+    fun `publish with no handlers throws MissingNotificationHandlerException`() = runTest {
         val m = mediator { }
-        m.publish(PingNotification("silent")) // must not throw
+        assertFailsWith<MissingNotificationHandlerException> {
+            m.publish(PingNotification("silent"))
+        }
     }
 
     @Test
