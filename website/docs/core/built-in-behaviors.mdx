@@ -1,0 +1,431 @@
+---
+id: built-in-behaviors
+title: Built-in Pipeline Behaviors
+sidebar_label: Built-in Behaviors
+---
+
+import CodeBlock from '@theme/CodeBlock';
+import LoggingSource from '../../../library/src/commonMain/kotlin/com/fajrbahr/mediatork/LoggingPipelineBehavior.kt';
+import RetrySource from '../../../library/src/commonMain/kotlin/com/fajrbahr/mediatork/RetryPipelineBehavior.kt';
+import TimeoutSource from '../../../library/src/commonMain/kotlin/com/fajrbahr/mediatork/TimeoutPipelineBehavior.kt';
+import CounterSource from '../../../library/src/commonMain/kotlin/com/fajrbahr/mediatork/RequestCounterPipelineBehavior.kt';
+import CachingSource from '../../../library/src/commonMain/kotlin/com/fajrbahr/mediatork/CachingPipelineBehavior.kt';
+import DeduplicationSource from '../../../library/src/commonMain/kotlin/com/fajrbahr/mediatork/DeduplicationPipelineBehavior.kt';
+import RateLimitSource from '../../../library/src/commonMain/kotlin/com/fajrbahr/mediatork/RateLimitPipelineBehavior.kt';
+import TimingSource from '../../../library/src/commonMain/kotlin/com/fajrbahr/mediatork/TimingPipelineBehavior.kt';
+import ErrorTrackingSource from '../../../library/src/commonMain/kotlin/com/fajrbahr/mediatork/ErrorTrackingPipelineBehavior.kt';
+import AuthorizationSource from '../../../library/src/commonMain/kotlin/com/fajrbahr/mediatork/AuthorizationPipelineBehavior.kt';
+import CircuitBreakerSource from '../../../library/src/commonMain/kotlin/com/fajrbahr/mediatork/CircuitBreakerPipelineBehavior.kt';
+
+# Built-in Pipeline Behaviors
+
+MediatorK ships four ready-to-use pipeline behaviors. Drop them into `MediatorFactory.create` — no boilerplate required.
+
+---
+
+## LoggingPipelineBehavior
+
+Logs each request as it enters and exits the pipeline. Accepts any `(String) -> Unit` logger so it works on every platform.
+
+### KMP / common (println)
+
+```kotlin
+val mediator = MediatorFactory.create(
+    registrars = listOf(AppRegistrar()),
+    pipelineBehaviors = listOf(
+        LoggingPipelineBehavior(logger = ::println),
+    ),
+)
+```
+
+Output:
+```
+→ GetUserQuery
+← GetUserQuery
+```
+
+### JVM — SLF4J
+
+```kotlin
+import org.slf4j.LoggerFactory
+
+val log = LoggerFactory.getLogger("Mediator")
+
+LoggingPipelineBehavior(logger = log::info)
+```
+
+### Android — Logcat
+
+```kotlin
+LoggingPipelineBehavior(logger = { msg -> Log.d("Mediator", msg) })
+```
+
+### JS / browser — console
+
+```kotlin
+LoggingPipelineBehavior(logger = { msg -> console.log(msg) })
+```
+
+### Log the result too
+
+```kotlin
+LoggingPipelineBehavior(logger = ::println, logResult = true)
+// ← GetUserQuery result=User(id=1, name=Alice)
+```
+
+### Parameters
+
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `logger` | `(String) -> Unit` | `::println` | Function that receives each log line |
+| `logResult` | `Boolean` | `false` | Append the result to the exit log line |
+| `order` | `Int` | `-100` | Outermost by default — logs before any other behavior |
+
+### Source
+
+<CodeBlock language="kotlin" title="LoggingPipelineBehavior.kt">{LoggingSource}</CodeBlock>
+
+---
+
+## RetryPipelineBehavior
+
+Retries the downstream pipeline when it throws, with an optional delay between attempts.
+
+```kotlin
+val mediator = MediatorFactory.create(
+    registrars = listOf(AppRegistrar()),
+    pipelineBehaviors = listOf(
+        RetryPipelineBehavior(
+            maxRetries = 3,
+            delayMillis = 200,
+            retryOn = { it is IOException },
+        ),
+    ),
+)
+```
+
+On each failure, if the thrown exception satisfies `retryOn`, the behavior waits `delayMillis` ms and tries again.
+Once `maxRetries` attempts are exhausted, the last exception is rethrown.
+
+### Parameters
+
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `maxRetries` | `Int` | `3` | Retry attempts after the first failure. Total attempts = `maxRetries + 1` |
+| `delayMillis` | `Long` | `0` | Milliseconds to wait between attempts |
+| `retryOn` | `(Throwable) -> Boolean` | `{ true }` | Predicate — return `false` to rethrow immediately |
+| `order` | `Int` | `0` | Position in the behavior chain |
+
+### Source
+
+<CodeBlock language="kotlin" title="RetryPipelineBehavior.kt">{RetrySource}</CodeBlock>
+
+---
+
+## TimeoutPipelineBehavior
+
+Cancels the downstream pipeline if it does not complete within the given deadline.
+Throws `TimeoutCancellationException` (a `CancellationException`) when the deadline is exceeded.
+
+```kotlin
+val mediator = MediatorFactory.create(
+    registrars = listOf(AppRegistrar()),
+    pipelineBehaviors = listOf(
+        TimeoutPipelineBehavior(timeoutMillis = 5_000),
+    ),
+)
+```
+
+### Combining retry + timeout
+
+Put `TimeoutPipelineBehavior` at a lower `order` (outermost) so it wraps each individual attempt:
+
+```kotlin
+pipelineBehaviors = listOf(
+    TimeoutPipelineBehavior(timeoutMillis = 3_000, order = -1),
+    RetryPipelineBehavior(maxRetries = 3, delayMillis = 500, order = 0),
+)
+```
+
+### Parameters
+
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `timeoutMillis` | `Long` | — | Maximum allowed duration per dispatch. Must be > 0 |
+| `order` | `Int` | `0` | Position in the behavior chain |
+
+### Source
+
+<CodeBlock language="kotlin" title="TimeoutPipelineBehavior.kt">{TimeoutSource}</CodeBlock>
+
+---
+
+## RequestCounterPipelineBehavior
+
+Counts how many times each request type has passed through the pipeline.
+
+```kotlin
+val counter = RequestCounterPipelineBehavior()
+
+val mediator = MediatorFactory.create(
+    registrars = listOf(AppRegistrar()),
+    pipelineBehaviors = listOf(counter),
+)
+
+mediator.send(GetUserQuery(id = 1))
+mediator.send(GetUserQuery(id = 2))
+mediator.send(CreateOrderCommand(...))
+
+counter.countFor(GetUserQuery::class)       // 2
+counter.countFor(CreateOrderCommand::class) // 1
+counter.snapshot()                          // {"GetUserQuery" to 2, "CreateOrderCommand" to 1}
+```
+
+### API
+
+| Member | Description |
+|--------|-------------|
+| `countFor(KClass<*>)` | Returns the dispatch count for a specific request class |
+| `snapshot()` | Returns a copy of all counts as `Map<String, Long>` |
+| `reset()` | Clears all counters |
+
+### Parameters
+
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `order` | `Int` | `0` | Position in the behavior chain |
+
+### Source
+
+<CodeBlock language="kotlin" title="RequestCounterPipelineBehavior.kt">{CounterSource}</CodeBlock>
+
+---
+
+## CachingPipelineBehavior
+
+Caches handler results by request key for a configurable TTL. On a cache hit the handler is skipped entirely. Best suited for **query** requests whose results change infrequently.
+
+```kotlin
+CachingPipelineBehavior(
+    ttlMs = 30_000,                      // cache for 30 seconds
+    keyFor = { req -> req.toString() },  // default: full toString
+)
+```
+
+| API | Description |
+|-----|-------------|
+| `invalidate(key)` | Remove a single entry |
+| `clear()` | Remove all entries |
+| `size()` | Count of cached entries |
+
+### Parameters
+
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `ttlMs` | `Long` | `60_000` | Time-to-live per entry in milliseconds |
+| `keyFor` | `(Request<*>) -> String` | `toString()` | Cache key function |
+| `order` | `Int` | `0` | Position in the behavior chain |
+
+### Source
+
+<CodeBlock language="kotlin" title="CachingPipelineBehavior.kt">{CachingSource}</CodeBlock>
+
+---
+
+## DeduplicationPipelineBehavior
+
+When two `send` calls arrive with the same key while the first is still executing, the second call awaits the first result instead of running a second pipeline. Prevents duplicate network calls caused by concurrent ViewModels or rapid user interactions.
+
+```kotlin
+DeduplicationPipelineBehavior(
+    // default: dedup by class name — all concurrent calls of the same type share one result
+    keyFor = { req -> "${req::class.simpleName}:${req}" } // or include identity
+)
+```
+
+### Parameters
+
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `keyFor` | `(Request<*>) -> String` | class simple name | Deduplication key function |
+| `order` | `Int` | `0` | Position in the behavior chain |
+
+### Source
+
+<CodeBlock language="kotlin" title="DeduplicationPipelineBehavior.kt">{DeduplicationSource}</CodeBlock>
+
+---
+
+## RateLimitPipelineBehavior
+
+Enforces a maximum dispatch rate per request type using a sliding window. Requests that exceed the limit throw `RateLimitExceededException` immediately — they are never queued.
+
+```kotlin
+RateLimitPipelineBehavior(maxRequests = 5, windowMs = 1_000) // 5 req/s per type
+```
+
+### Parameters
+
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `maxRequests` | `Int` | — | Max dispatches allowed per window. Must be ≥ 1 |
+| `windowMs` | `Long` | — | Sliding window duration in milliseconds |
+| `order` | `Int` | `0` | Position in the behavior chain |
+
+### Source
+
+<CodeBlock language="kotlin" title="RateLimitPipelineBehavior.kt">{RateLimitSource}</CodeBlock>
+
+---
+
+## TimingPipelineBehavior
+
+Measures how long each request takes and reports it via a callback. Timing is always reported — even when the handler throws.
+
+```kotlin
+// KMP / println
+TimingPipelineBehavior(onTiming = { name, ms -> println("$name took ${ms}ms") })
+
+// Android — Firebase Performance
+TimingPipelineBehavior(onTiming = { name, ms ->
+    FirebasePerformance.getInstance().newTrace(name).also { it.start(); it.stop() }
+})
+
+// JVM — Micrometer
+TimingPipelineBehavior(onTiming = { name, ms ->
+    meterRegistry.timer(name).record(ms, TimeUnit.MILLISECONDS)
+})
+```
+
+### Parameters
+
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `onTiming` | `(String, Long) -> Unit` | — | Callback with `(requestName, durationMs)` |
+| `order` | `Int` | `0` | Position in the behavior chain |
+
+### Source
+
+<CodeBlock language="kotlin" title="TimingPipelineBehavior.kt">{TimingSource}</CodeBlock>
+
+---
+
+## ErrorTrackingPipelineBehavior
+
+Intercepts every unhandled exception, forwards it to a callback, then rethrows. Use this to wire crash-reporting services without touching handler code.
+
+```kotlin
+// Android — Firebase Crashlytics
+ErrorTrackingPipelineBehavior { request, error ->
+    FirebaseCrashlytics.getInstance().recordException(error)
+}
+
+// KMP — Sentry
+ErrorTrackingPipelineBehavior { request, error ->
+    Sentry.captureException(error)
+}
+```
+
+### Parameters
+
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `order` | `Int` | `Int.MAX_VALUE` | Innermost by default — fires closest to the handler |
+| `onError` | `(Request<*>, Throwable) -> Unit` | — | Callback with the request and the exception |
+
+### Source
+
+<CodeBlock language="kotlin" title="ErrorTrackingPipelineBehavior.kt">{ErrorTrackingSource}</CodeBlock>
+
+---
+
+## AuthorizationPipelineBehavior
+
+Runs an authorization check for every request that implements the `AuthenticatedRequest` marker interface. Non-authenticated requests pass through untouched.
+
+```kotlin
+// Mark requests that need auth
+data class GetOrderQuery(val id: String) : Request<Order>, AuthenticatedRequest
+
+// Wire the behavior
+AuthorizationPipelineBehavior(authorize = { context, request ->
+    val token = context.getMetaDate<String>("token")
+        ?: throw UnauthorizedException("No token")
+    if (!tokenValidator.isValid(token)) throw UnauthorizedException("Invalid token")
+})
+```
+
+### Parameters
+
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `order` | `Int` | `-10` | Runs early — after logging, before business logic |
+| `authorize` | `suspend (RequestContext, Request<*>) -> Unit` | — | Throw to deny; return to allow |
+
+### Source
+
+<CodeBlock language="kotlin" title="AuthorizationPipelineBehavior.kt">{AuthorizationSource}</CodeBlock>
+
+---
+
+## CircuitBreakerPipelineBehavior
+
+Implements the circuit-breaker resilience pattern. After `failureThreshold` consecutive failures the circuit opens and subsequent requests are rejected immediately with `CircuitOpenException`. After `resetTimeoutMs` one probe request is allowed through — success closes the circuit, failure re-opens it.
+
+```
+CLOSED ──(threshold reached)──► OPEN
+  ▲                                │
+  └──── probe success ◄─ HALF_OPEN ◄─(timeout expired)
+                         │
+                   probe failure → re-OPEN
+```
+
+```kotlin
+CircuitBreakerPipelineBehavior(
+    failureThreshold = 5,
+    resetTimeoutMs = 10_000,
+    onStateChange = { state -> println("Circuit: $state") },
+)
+```
+
+| API | Description |
+|-----|-------------|
+| `currentState` | Current `CircuitState` (CLOSED / OPEN / HALF_OPEN) |
+| `reset()` | Manually close the circuit and clear the failure counter |
+
+### Parameters
+
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `failureThreshold` | `Int` | `5` | Consecutive failures before tripping |
+| `resetTimeoutMs` | `Long` | `10_000` | Milliseconds to stay OPEN before trying HALF_OPEN |
+| `onStateChange` | `((CircuitState) -> Unit)?` | `null` | Optional callback on state transitions |
+| `order` | `Int` | `0` | Position in the behavior chain |
+
+### Source
+
+<CodeBlock language="kotlin" title="CircuitBreakerPipelineBehavior.kt">{CircuitBreakerSource}</CodeBlock>
+
+---
+
+## Registering multiple built-in behaviors
+
+```kotlin
+val counter = RequestCounterPipelineBehavior()
+
+val mediator = MediatorFactory.create(
+    registrars = listOf(AppRegistrar()),
+    pipelineBehaviors = listOf(
+        LoggingPipelineBehavior(logger = ::println, order = -100),
+        TimeoutPipelineBehavior(timeoutMillis = 5_000, order = -1),
+        RetryPipelineBehavior(maxRetries = 3, delayMillis = 200, order = 0),
+        counter,
+    ),
+)
+```
+
+---
+
+## Next
+
+→ [Pre / Post Processors](processors.md)

@@ -1,4 +1,5 @@
 package com.fajrbahr.mediatork
+import com.fajrbahr.mediatork.notification.*
 
 /**
  * A request that expects exactly one handler and a response.

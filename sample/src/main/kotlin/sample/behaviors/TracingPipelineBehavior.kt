@@ -1,6 +1,7 @@
 package sample.behaviors
+import com.fajrbahr.mediatork.handler.*
 
-import com.fajrbahr.mediatork.PipelineBehavior
+import com.fajrbahr.mediatork.pipeline.PipelineBehavior
 import com.fajrbahr.mediatork.Request
 import com.fajrbahr.mediatork.RequestContext
 import com.fajrbahr.mediatork.RequestHandlerDelegate

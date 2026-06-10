@@ -1,4 +1,5 @@
 package com.fajrbahr.mediatork
+import com.fajrbahr.mediatork.handler.*
 
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
@@ -168,6 +169,26 @@ class PrePostProcessorTest {
         val m = mediator(postProcessors = listOf(second, first)) { register(PingHandler()) }
         m.send(PingQuery("x"))
         assertEquals(listOf("first", "second"), order)
+    }
+
+    @Test
+    fun `post-processor does not run when handler throws unhandled exception`() = runTest {
+        var postRan = false
+        val post = object : RequestPostProcessor {
+            override suspend fun process(requestContext: RequestContext, request: Request<*>, response: Any?) {
+                postRan = true
+            }
+        }
+        val failingHandler = object : RequestHandler<PingQuery, String> {
+            override suspend fun handle(
+                mediator: Mediator,
+                requestContext: RequestContext,
+                request: PingQuery,
+            ): String = throw RuntimeException("boom")
+        }
+        val m = mediator(postProcessors = listOf(post)) { register(failingHandler) }
+        assertFailsWith<RuntimeException> { m.send(PingQuery("x")) }
+        assertFalse(postRan)
     }
 
     @Test

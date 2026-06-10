@@ -1,4 +1,6 @@
 package com.fajrbahr.mediatork
+import com.fajrbahr.mediatork.handler.*
+import com.fajrbahr.mediatork.notification.*
 
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
@@ -78,10 +80,11 @@ class MissingHandlerTest {
     // ── publish() with no notification handler ────────────────────────────────
 
     @Test
-    fun `publish is silent when no notification handler registered`() = runTest {
+    fun `publish throws when no notification handler registered`() = runTest {
         val mediator = MediatorFactory.create()
-        // Must not throw
-        mediator.publish(OrderPlaced)
+        assertFailsWith<MissingNotificationHandlerException> {
+            mediator.publish(OrderPlaced)
+        }
     }
 
     @Test
@@ -143,7 +146,9 @@ class MissingHandlerTest {
             })
         )
 
-        mediator.publish(UserCreated) // different type — handler must not fire
+        assertFailsWith<MissingNotificationHandlerException> {
+            mediator.publish(UserCreated) // different type — handler must not fire
+        }
         assertTrue(received.isEmpty())
     }
 

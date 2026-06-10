@@ -16,6 +16,7 @@ dependencies {
     implementation(project(":mediatork"))
     implementation("io.github.classgraph:classgraph:4.8.179")
     implementation(kotlin("test"))
+    testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.10.2")
 }
 
 kotlin {

@@ -81,6 +81,23 @@ mediator.send(DeleteAccountCommand("user-1")) // returns Unit
 
 ---
 
+## Fallback chain
+
+Register multiple handlers for the same request type with the `otherwise` infix operator. Handlers are tried in order;
+the first one that succeeds wins.
+
+```kotlin
+registry register (
+    CreateOrderHandler(liveApi)
+        otherwise CreateOrderHandler(stagingApi)
+        otherwise CreateOrderStubHandler()
+)
+```
+
+→ See [Fallback Chains](fallback.md) for the full guide.
+
+---
+
 ## Rules
 
 | Rule                   | Detail                                                          |

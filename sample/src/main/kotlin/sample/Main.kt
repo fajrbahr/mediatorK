@@ -1,5 +1,8 @@
 package sample
+import com.fajrbahr.mediatork.handler.*
+import com.fajrbahr.mediatork.notification.*
 
+import com.fajrbahr.mediatork.ContinueOnExceptionNotificationPublisher
 import com.fajrbahr.mediatork.MediatorFactory
 import com.fajrbahr.mediatork.ParallelNotificationPublisher
 import com.fajrbahr.mediatork.SequentialNotificationPublisher
@@ -7,6 +10,11 @@ import com.fajrbahr.mediatork.validator.RequestValidator
 import sample.behaviors.*
 import sample.command.CreateOrderCommand
 import sample.command.OrderRegistrar
+import sample.fallback.FallbackRegistrar
+import sample.fallback.OrderShippedNotification
+import sample.exceptions.ShipOrderCommand
+import sample.exceptions.ShipOrderRegistrar
+import sample.exceptions.demoContinueOnException
 import sample.notification.OrderCreatedNotification
 import sample.notification.OrderNotificationRegistrar
 import sample.query.*
@@ -137,6 +145,73 @@ suspend fun main() {
         ),
         SequentialNotificationPublisher(),
     )
+
+    // ── Exception handling demos ───────────────────────────────────────────────
+
+    println("\n=== TEST 9: RequestExceptionHandler — OrderNotFoundException recovered ===")
+    // ShipOrderRegistrar registers two exception handlers:
+    //   • OrderNotFoundExceptionHandler  → catches OrderNotFoundException
+    //   • OutOfStockExceptionHandler     → catches OutOfStockException
+    // Neither exception reaches the caller; each is converted to a ShipmentResult.
+    val exMediator = MediatorFactory.create(
+        registrars = listOf(ShipOrderRegistrar()),
+        notificationPublisher = SequentialNotificationPublisher(),
+    )
+
+    val notFoundResult = exMediator.send(ShipOrderCommand(orderId = "MISSING", warehouseId = "WH-1"))
+    println("Result: $notFoundResult")
+
+    println("\n=== TEST 10: RequestExceptionHandler — OutOfStockException recovered ===")
+    val outOfStockResult = exMediator.send(ShipOrderCommand(orderId = "ORD-42", warehouseId = "WH-EMPTY"))
+    println("Result: $outOfStockResult")
+
+    println("\n=== TEST 11: AggregateException — ContinueOnExceptionNotificationPublisher ===")
+    // Two of the four notification handlers are configured to fail.
+    // ContinueOnExceptionNotificationPublisher runs ALL handlers regardless, then
+    // bundles every failure into a single AggregateException.
+    val failingMediator = MediatorFactory.create(
+        registrars = listOf(ShipOrderRegistrar(pushFails = true, analyticsFails = true)),
+        notificationPublisher = ContinueOnExceptionNotificationPublisher(),
+    )
+    demoContinueOnException(failingMediator)
+
+    println("\n=== TEST 12: Unhandled exception propagates as-is ===")
+    // When no exception handler is registered for the thrown type, the exception
+    // bubbles out of send() untouched — callers must handle it themselves.
+    val bareMediator = MediatorFactory.create(
+        registrars = listOf(ShipOrderRegistrar()),
+        notificationPublisher = SequentialNotificationPublisher(),
+    )
+    runCatching {
+        // "MISSING" triggers OrderNotFoundException; no handler registered in bareMediator
+        // for this demo — we re-create without exception handlers to show propagation.
+        val noExHandlerMediator = MediatorFactory.create(
+            registrars = listOf(object : com.fajrbahr.mediatork.MediatorRegistrar {
+                override fun register(registry: com.fajrbahr.mediatork.HandlerRegistry) {
+                    registry.register(sample.exceptions.ShipOrderHandler())
+                }
+            }),
+        )
+        noExHandlerMediator.send(ShipOrderCommand(orderId = "MISSING", warehouseId = "WH-1"))
+    }.onFailure { throwable ->
+        println("❌ Unhandled ${throwable::class.simpleName}: ${throwable.message}")
+        println("   (No RequestExceptionHandler registered — exception propagates to caller)")
+    }
+
+    // ── Fallback chain demos ───────────────────────────────────────────────────
+
+    val fallbackMediator = MediatorFactory.create(
+        registrars = listOf(FallbackRegistrar()),
+    )
+
+    println("\n=== TEST 13: Request fallback chain — live API down, served from cache ===")
+    // LiveCreateOrderHandler throws → CachedCreateOrderHandler succeeds
+    val fallbackOrder = fallbackMediator.send(CreateOrderCommand(id = "ORD-FB-1", amount = 99.0))
+    println("Result: $fallbackOrder")
+
+    println("\n=== TEST 14: Notification fallback chain — push down, falls back to email ===")
+    // PushShippedHandler throws → EmailShippedHandler succeeds
+    fallbackMediator.publish(OrderShippedNotification(orderId = "ORD-FB-1", userId = "USR-1"))
 
     println("\ndone.")
 }

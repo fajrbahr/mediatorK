@@ -1,6 +1,9 @@
 package com.fajrbahr.mediatork.test
+import com.fajrbahr.mediatork.handler.*
+import com.fajrbahr.mediatork.notification.*
 
 import com.fajrbahr.mediatork.*
+import com.fajrbahr.mediatork.pipeline.*
 
 /**
  * A test-only [Mediator] backed by a real [HandlerRegistry] and [MediatorFactory].
@@ -107,3 +110,4 @@ inline fun <reified T : Notification> FakeMediator.captureNotifications(): List<
     registry.registerNotification(fakeNotificationHandler<T> { captured += it })
     return captured
 }
+

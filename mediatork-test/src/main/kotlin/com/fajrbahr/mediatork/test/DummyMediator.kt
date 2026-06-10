@@ -1,4 +1,5 @@
 package com.fajrbahr.mediatork.test
+import com.fajrbahr.mediatork.notification.*
 
 import com.fajrbahr.mediatork.Mediator
 import com.fajrbahr.mediatork.Notification
