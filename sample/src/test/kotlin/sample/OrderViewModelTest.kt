@@ -1,6 +1,7 @@
 package sample
 
 import com.fajrbahr.mediatork.test.FakeMediator
+import com.fajrbahr.mediatork.test.captureNotifications
 import com.fajrbahr.mediatork.test.fakeHandler
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -10,6 +11,7 @@ import sample.android.OrderUiState
 import sample.android.OrderViewModel
 import sample.command.CreateOrderCommand
 import sample.command.OrderResult
+import sample.notification.OrderCreatedNotification
 import kotlin.test.*
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -24,6 +26,7 @@ class OrderViewModelTest {
     fun setUp() {
         Dispatchers.setMain(testDispatcher)
         fakeMediator = FakeMediator()
+        fakeMediator.captureNotifications<OrderCreatedNotification>()
         vm = OrderViewModel(fakeMediator)
     }
 

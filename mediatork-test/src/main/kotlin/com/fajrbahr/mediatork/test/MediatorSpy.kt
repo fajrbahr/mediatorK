@@ -1,10 +1,9 @@
 package com.fajrbahr.mediatork.test
-import com.fajrbahr.mediatork.notification.*
 
 import com.fajrbahr.mediatork.Mediator
-import com.fajrbahr.mediatork.Notification
-import com.fajrbahr.mediatork.NotificationPublisher
 import com.fajrbahr.mediatork.Request
+import com.fajrbahr.mediatork.notification.Notification
+import com.fajrbahr.mediatork.notification.NotificationPublisher
 import kotlin.test.assertTrue
 
 /**

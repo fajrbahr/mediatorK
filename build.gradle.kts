@@ -1,5 +1,5 @@
 plugins {
-    kotlin("multiplatform") version "2.3.21" apply false
-    kotlin("jvm") version "2.3.21" apply false
-    id("com.android.library") version "8.7.3" apply false
+    alias(libs.plugins.kotlin.multiplatform) apply false
+    alias(libs.plugins.kotlin.jvm) apply false
+    alias(libs.plugins.android.library) apply false
 }

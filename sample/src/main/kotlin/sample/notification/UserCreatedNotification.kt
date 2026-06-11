@@ -2,8 +2,8 @@ package sample.notification
 
 import com.fajrbahr.mediatork.HandlerRegistry
 import com.fajrbahr.mediatork.MediatorRegistrar
-import com.fajrbahr.mediatork.Notification
-import com.fajrbahr.mediatork.NotificationHandler
+import com.fajrbahr.mediatork.notification.Notification
+import com.fajrbahr.mediatork.notification.NotificationHandler
 
 data class OrderCreatedNotification(
     val orderId: String,

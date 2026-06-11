@@ -1,8 +1,14 @@
 package sample.fallback
-import com.fajrbahr.mediatork.handler.*
-import com.fajrbahr.mediatork.notification.*
 
-import com.fajrbahr.mediatork.*
+import com.fajrbahr.mediatork.HandlerRegistry
+import com.fajrbahr.mediatork.Mediator
+import com.fajrbahr.mediatork.MediatorRegistrar
+import com.fajrbahr.mediatork.RequestContext
+import com.fajrbahr.mediatork.handler.RequestHandler
+import com.fajrbahr.mediatork.handler.otherwise
+import com.fajrbahr.mediatork.notification.Notification
+import com.fajrbahr.mediatork.notification.NotificationHandler
+import com.fajrbahr.mediatork.notification.otherwise
 import sample.command.CreateOrderCommand
 import sample.command.OrderResult
 
@@ -27,17 +33,29 @@ class CachedOrderApi {
 // ── Request handlers ──────────────────────────────────────────────────────────
 
 class LiveCreateOrderHandler(private val api: LiveOrderApi) : RequestHandler<CreateOrderCommand, OrderResult> {
-    override suspend fun handle(mediator: Mediator, requestContext: RequestContext, request: CreateOrderCommand): OrderResult =
+    override suspend fun handle(
+        mediator: Mediator,
+        requestContext: RequestContext,
+        request: CreateOrderCommand
+    ): OrderResult =
         api.createOrder(request.id)
 }
 
 class CachedCreateOrderHandler(private val api: CachedOrderApi) : RequestHandler<CreateOrderCommand, OrderResult> {
-    override suspend fun handle(mediator: Mediator, requestContext: RequestContext, request: CreateOrderCommand): OrderResult =
+    override suspend fun handle(
+        mediator: Mediator,
+        requestContext: RequestContext,
+        request: CreateOrderCommand
+    ): OrderResult =
         api.createOrder(request.id)
 }
 
 class StubCreateOrderHandler : RequestHandler<CreateOrderCommand, OrderResult> {
-    override suspend fun handle(mediator: Mediator, requestContext: RequestContext, request: CreateOrderCommand): OrderResult {
+    override suspend fun handle(
+        mediator: Mediator,
+        requestContext: RequestContext,
+        request: CreateOrderCommand
+    ): OrderResult {
         println("  [StubCreateOrderHandler] ✅ stub response")
         return OrderResult(orderId = "${request.id}-stub", responseIme = 0)
     }
@@ -80,15 +98,16 @@ class FallbackRegistrar : MediatorRegistrar {
         registry.scope {
             // Request fallback chain — live API → cache → stub
             +(
-                LiveCreateOrderHandler(LiveOrderApi())
-                    otherwise CachedCreateOrderHandler(CachedOrderApi())
-                    otherwise StubCreateOrderHandler()
-            )
+                    LiveCreateOrderHandler(LiveOrderApi())
+                            otherwise CachedCreateOrderHandler(CachedOrderApi())
+                            otherwise StubCreateOrderHandler()
+                    )
 
             // Notification fallback chain — push → email → SMS
             registerNotification<OrderShippedNotification>(
                 PushShippedHandler()
-                    otherwise EmailShippedHandler()
+                        otherwise EmailShippedHandler()
+                        otherwise SmsShippedHandler()
             )
         }
     }

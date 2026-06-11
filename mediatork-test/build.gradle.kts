@@ -1,8 +1,8 @@
 plugins {
-    kotlin("jvm")
+    alias(libs.plugins.kotlin.jvm)
+    alias(libs.plugins.nmcp)
     `maven-publish`
     signing
-    id("com.gradleup.nmcp") version "1.5.0"
 }
 
 group = "io.github.fajrbahr"
@@ -14,13 +14,13 @@ repositories {
 
 dependencies {
     implementation(project(":mediatork"))
-    implementation("io.github.classgraph:classgraph:4.8.179")
+    implementation(libs.classgraph)
     implementation(kotlin("test"))
-    testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.10.2")
+    testImplementation(libs.coroutines.test)
 }
 
 kotlin {
-    jvmToolchain(21)
+    jvmToolchain(libs.versions.jvmToolchain.get().toInt())
 }
 
 val javadocJar by tasks.registering(Jar::class) {

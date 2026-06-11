@@ -18,8 +18,9 @@ include("mediatork-test")
 
 include("publishMaven")
 
-include("mediatork-ksp-annotations")
-include("mediatork-ksp")
+include("mediatork-ksp-koin")
+
+include("kmm")
 
 dependencyResolutionManagement {
     repositories {
