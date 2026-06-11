@@ -49,7 +49,12 @@ const FEATURES = [
     {
         icon: '🧪',
         title: 'Testable by design',
-        desc: 'Swap real handlers for fakes — no mocking library needed.',
+        desc: 'Test ViewModels without a mock library — swap real handlers for fakes.',
+    },
+    {
+        icon: '🤖',
+        title: 'Android ViewModel Testing',
+        desc: 'Test Android ViewModels with zero mocking library — inject fake handlers directly.',
     },
     {
         icon: '🛡️',
