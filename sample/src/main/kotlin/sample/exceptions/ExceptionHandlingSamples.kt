@@ -1,18 +1,11 @@
 package sample.exceptions
-import com.fajrbahr.mediatork.handler.*
-import com.fajrbahr.mediatork.notification.*
 
-import com.fajrbahr.mediatork.AggregateException
-import com.fajrbahr.mediatork.ContinueOnExceptionNotificationPublisher
-import com.fajrbahr.mediatork.HandlerRegistry
-import com.fajrbahr.mediatork.Mediator
-import com.fajrbahr.mediatork.MediatorRegistrar
-import com.fajrbahr.mediatork.Notification
-import com.fajrbahr.mediatork.NotificationHandler
-import com.fajrbahr.mediatork.Request
-import com.fajrbahr.mediatork.RequestContext
-import com.fajrbahr.mediatork.RequestExceptionHandler
-import com.fajrbahr.mediatork.RequestHandler
+import com.fajrbahr.mediatork.*
+import com.fajrbahr.mediatork.handler.RequestExceptionHandler
+import com.fajrbahr.mediatork.handler.RequestHandler
+import com.fajrbahr.mediatork.notification.ContinueOnExceptionNotificationPublisher
+import com.fajrbahr.mediatork.notification.Notification
+import com.fajrbahr.mediatork.notification.NotificationHandler
 
 // ── Domain types ──────────────────────────────────────────────────────────────
 
@@ -133,7 +126,11 @@ class ShipOrderRegistrar(
             +ShipOrderHandler()
 
             // Exception handlers — registered in specificity order (most specific first)
-            registerExceptionHandler(ShipOrderCommand::class, OrderNotFoundException::class, OrderNotFoundExceptionHandler())
+            registerExceptionHandler(
+                ShipOrderCommand::class,
+                OrderNotFoundException::class,
+                OrderNotFoundExceptionHandler()
+            )
             registerExceptionHandler(ShipOrderCommand::class, OutOfStockException::class, OutOfStockExceptionHandler())
 
             // Notification handlers
@@ -180,6 +177,7 @@ suspend fun demoContinueOnException(mediator: Mediator) {
                 println("❌ AggregateException caught:")
                 println("   ${throwable.message}")
             }
+
             else -> println("Unexpected error: ${throwable.message}")
         }
     }

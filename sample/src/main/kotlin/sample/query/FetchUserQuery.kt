@@ -1,7 +1,7 @@
 package sample.query
-import com.fajrbahr.mediatork.handler.*
 
 import com.fajrbahr.mediatork.*
+import com.fajrbahr.mediatork.handler.RequestHandler
 
 
 data class FetchUserQuery(

@@ -8,6 +8,14 @@ sidebar_label: API Reference
 
 Quick reference for all public types in `com.fajrbahr.mediatork`.
 
+| Subpackage                              | Contents                                    |
+|-----------------------------------------|---------------------------------------------|
+| `com.fajrbahr.mediatork`               | Core: `Mediator`, `Request`, `HandlerRegistry`, `MediatorFactory`, processors, exceptions |
+| `com.fajrbahr.mediatork.handler`       | `RequestHandler`, `FallbackRequestHandler`, `RequestExceptionHandler` |
+| `com.fajrbahr.mediatork.notification`  | `Notification`, `NotificationHandler`, all publisher implementations, missing-handler strategies |
+| `com.fajrbahr.mediatork.pipeline`      | `PipelineBehavior` and all built-in behaviors (logging, retry, caching, auth, circuit-breaker, etc.) |
+| `com.fajrbahr.mediatork.validator`     | `RequestValidator`, `ValidationBehavior`, `ValidationResult`, DSL builders |
+
 ---
 
 ## Core interfaces
@@ -25,7 +33,7 @@ interface Request<out TResponse>
 
 ---
 
-### `RequestHandler<TRequest, TResult>`
+### `RequestHandler<TRequest, TResult>` · `com.fajrbahr.mediatork.handler`
 
 Handles a specific `Request` type.
 
@@ -37,7 +45,7 @@ interface RequestHandler<in TRequest : Request<TResult>, TResult> {
 
 ---
 
-### `Notification`
+### `Notification` · `com.fajrbahr.mediatork.notification`
 
 Marker interface for broadcast events with no response.
 
@@ -47,7 +55,7 @@ interface Notification
 
 ---
 
-### `NotificationHandler<T>`
+### `NotificationHandler<T>` · `com.fajrbahr.mediatork.notification`
 
 Reacts to a `Notification`. Multiple handlers per notification type are allowed.
 
@@ -59,7 +67,7 @@ interface NotificationHandler<in T : Notification> {
 
 ---
 
-### `PipelineBehavior`
+### `PipelineBehavior` · `com.fajrbahr.mediatork.pipeline`
 
 Cross-cutting decorator that wraps each request pipeline.
 
@@ -98,7 +106,7 @@ interface RequestPostProcessor {
 
 ---
 
-### `RequestExceptionHandler<TRequest, TResponse, TException>`
+### `RequestExceptionHandler<TRequest, TResponse, TException>` · `com.fajrbahr.mediatork.handler`
 
 Converts a specific exception into a valid response.
 
@@ -179,7 +187,7 @@ interface Mediator : Sender, Publisher
 
 ---
 
-## Notification publishers
+## Notification publishers · `com.fajrbahr.mediatork.notification`
 
 | Class                                      | Behaviour                                                    |
 |--------------------------------------------|--------------------------------------------------------------|

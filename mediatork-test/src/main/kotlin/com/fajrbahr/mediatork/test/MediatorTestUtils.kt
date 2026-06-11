@@ -1,9 +1,8 @@
 package com.fajrbahr.mediatork.test
-import com.fajrbahr.mediatork.handler.*
 
 import com.fajrbahr.mediatork.HandlerRegistry
 import com.fajrbahr.mediatork.MediatorRegistrar
-import com.fajrbahr.mediatork.RequestHandler
+import com.fajrbahr.mediatork.handler.RequestHandler
 import io.github.classgraph.ClassGraph
 import kotlin.test.assertTrue
 

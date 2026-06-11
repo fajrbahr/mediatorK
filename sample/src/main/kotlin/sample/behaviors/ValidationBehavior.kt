@@ -1,10 +1,9 @@
 package sample.behaviors
-import com.fajrbahr.mediatork.handler.*
 
-import com.fajrbahr.mediatork.pipeline.PipelineBehavior
 import com.fajrbahr.mediatork.Request
 import com.fajrbahr.mediatork.RequestContext
-import com.fajrbahr.mediatork.RequestHandlerDelegate
+import com.fajrbahr.mediatork.pipeline.PipelineBehavior
+import com.fajrbahr.mediatork.pipeline.RequestHandlerDelegate
 import com.fajrbahr.mediatork.validator.RequestValidator
 import com.fajrbahr.mediatork.validator.ValidationError
 

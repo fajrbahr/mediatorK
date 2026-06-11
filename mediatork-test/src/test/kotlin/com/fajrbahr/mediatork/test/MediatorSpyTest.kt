@@ -1,10 +1,15 @@
 package com.fajrbahr.mediatork.test
-import com.fajrbahr.mediatork.handler.*
-import com.fajrbahr.mediatork.notification.*
 
-import com.fajrbahr.mediatork.*
+import com.fajrbahr.mediatork.Mediator
+import com.fajrbahr.mediatork.Request
+import com.fajrbahr.mediatork.RequestContext
+import com.fajrbahr.mediatork.handler.RequestHandler
+import com.fajrbahr.mediatork.notification.Notification
+import com.fajrbahr.mediatork.notification.NotificationHandler
 import kotlinx.coroutines.test.runTest
-import kotlin.test.*
+import kotlin.test.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
 
 // ── Fixtures ──────────────────────────────────────────────────────────────────
 
@@ -24,7 +29,11 @@ class MediatorSpyTest {
                     "user:${request.id}"
             })
             register(object : RequestHandler<CreateOrderCommand, String> {
-                override suspend fun handle(mediator: Mediator, requestContext: RequestContext, request: CreateOrderCommand) =
+                override suspend fun handle(
+                    mediator: Mediator,
+                    requestContext: RequestContext,
+                    request: CreateOrderCommand
+                ) =
                     "order:${request.id}"
             })
             registerNotification(object : NotificationHandler<OrderPlacedEvent> {
