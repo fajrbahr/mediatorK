@@ -8,7 +8,6 @@
         <option name="modules">
           <set>
             <option value="$PROJECT_DIR$" />
-            <option value="$PROJECT_DIR$/kmm" />
             <option value="$PROJECT_DIR$/library" />
             <option value="$PROJECT_DIR$/mediatork-ksp-koin" />
             <option value="$PROJECT_DIR$/mediatork-test" />

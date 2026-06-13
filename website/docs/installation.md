@@ -14,7 +14,7 @@ For Spring Boot, Ktor, or any plain JVM project.
 
 ```kotlin
 dependencies {
-    implementation("io.github.fajrbahr:mediatork:0.6.1")
+    implementation("io.github.fajrbahr:mediatork:0.6.2")
 }
 ```
 
@@ -22,7 +22,7 @@ dependencies {
 
 ```groovy
 dependencies {
-    implementation 'io.github.fajrbahr:mediatork:0.6.1'
+    implementation 'io.github.fajrbahr:mediatork:0.6.2'
 }
 ```
 
@@ -32,7 +32,7 @@ Add to `gradle/libs.versions.toml`:
 
 ```toml
 [versions]
-mediatork = "0.6.1"
+mediatork = "0.6.2"
 
 [libraries]
 mediatork = { module = "io.github.fajrbahr:mediatork", version.ref = "mediatork" }
@@ -56,7 +56,7 @@ Maven does not resolve Kotlin Multiplatform metadata — use the `-jvm` artifact
 <dependency>
     <groupId>io.github.fajrbahr</groupId>
     <artifactId>mediatork-jvm</artifactId>
-    <version>0.6.1</version>
+    <version>0.6.2</version>
 </dependency>
 ```
 
@@ -67,7 +67,7 @@ Maven does not resolve Kotlin Multiplatform metadata — use the `-jvm` artifact
 ```kotlin
 // app/build.gradle.kts
 dependencies {
-    implementation("io.github.fajrbahr:mediatork:0.6.1")
+    implementation("io.github.fajrbahr:mediatork:0.6.2")
 }
 ```
 
@@ -87,7 +87,7 @@ kotlin {
 
     sourceSets {
         commonMain.dependencies {
-            implementation("io.github.fajrbahr:mediatork:0.6.1")
+            implementation("io.github.fajrbahr:mediatork:0.6.2")
         }
     }
 }
@@ -109,7 +109,7 @@ kotlin {
 
 ```kotlin
 dependencies {
-    testImplementation("io.github.fajrbahr:mediatork-test:0.6.1")
+    testImplementation("io.github.fajrbahr:mediatork-test:0.6.2")
 }
 ```
 
