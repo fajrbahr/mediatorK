@@ -20,8 +20,6 @@ include("publishMaven")
 
 include("mediatork-ksp-koin")
 
-include("kmm")
-
 dependencyResolutionManagement {
     repositories {
         google()
