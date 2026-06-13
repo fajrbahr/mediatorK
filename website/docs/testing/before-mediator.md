@@ -54,6 +54,6 @@ The use-cases, metrics reporters, toggle observers, and performance trackers are
 
 ```kotlin
 dependencies {
-    testImplementation("io.github.fajrbahr:mediatork-test:0.6.0")
+    testImplementation("io.github.fajrbahr:mediatork-test:0.6.1")
 }
 ```
