@@ -102,10 +102,10 @@ internal class MediatorImpl(
             result
         }
 
-        val pips: RequestHandlerDelegate<TRequest, TResult> = sorted.foldRight(finalDelegate) { processer, next ->
-            { req -> processer.process(requestContext, next, req) }
+        val pipeline: RequestHandlerDelegate<TRequest, TResult> = sorted.foldRight(finalDelegate) { behavior, next ->
+            { req -> behavior.process(requestContext, next, req) }
         }
 
-        return pips(request)
+        return pipeline(request)
     }
 }
