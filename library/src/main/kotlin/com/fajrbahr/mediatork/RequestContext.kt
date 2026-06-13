@@ -15,7 +15,7 @@ package com.fajrbahr.mediatork
  */
 class RequestContext {
     /** Internal storage for arbitrary metadata keyed by name. */
-    private val metaDate = mutableMapOf<String, Any?>()
+    private val metadata = mutableMapOf<String, Any?>()
 
     /**
      * Retrieves a value from the context, casting it to [T].
@@ -27,7 +27,7 @@ class RequestContext {
      * @return the cast value, or `null` if the key is absent or the cast fails.
      */
     @Suppress("UNCHECKED_CAST")
-    fun <T> getMetaDate(key: String): T? = metaDate[key] as? T
+    fun <T> getMetaDate(key: String): T? = metadata[key] as? T
 
     /**
      * Stores [value] under [key], replacing any previously stored value.
@@ -36,6 +36,6 @@ class RequestContext {
      * @param value the value to store; may be `null`.
      */
     fun put(key: String, value: Any?) {
-        metaDate[key] = value
+        metadata[key] = value
     }
 }

@@ -25,9 +25,8 @@ class HandlerRegistry {
 
     /**
      * Maps each request [KClass] to its single registered [RequestHandler].
-     * Marked `@PublishedApi` so that inline functions can access this internal map.
-     * Still marked internal — IDEs hide it from autocomplete, it doesn't appear in generated docs, and it signals "don't use this directly"
-     * Consumers can technically access it if they try, but it's clearly marked as not intended for use
+     * `@PublishedApi` allows inline functions to access this map; `internal` keeps it
+     * out of the public API surface.
      */
     @PublishedApi
     internal val requestHandlers: MutableMap<KClass<*>, RequestHandler<*, *>> = mutableMapOf()
