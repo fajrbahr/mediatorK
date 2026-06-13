@@ -72,7 +72,6 @@ kotlin {
     sourceSets {
         commonMain.dependencies {
             api(project(":mediatork"))
-            implementation(libs.coroutines.core)
         }
         commonTest.dependencies {
             implementation(kotlin("test"))
