@@ -1,18 +1,22 @@
 ---
 id: sample
 title: Sample
-sidebar_label: Sample
+sidebar_label: Android
 ---
 
 # Sample
 
-MediatorK ships with two runnable samples: a **Kotlin/JVM** module under [`/sample`](https://github.com/fajrbahr/MediatorK/tree/main/sample) and a full **Android** app under [`/sample-android`](https://github.com/fajrbahr/MediatorK/tree/main/sample-android).
+MediatorK ships with two runnable samples: a **Kotlin/JVM** module under [
+`/sample`](https://github.com/fajrbahr/MediatorK/tree/main/sample) and a full **Android** app under [
+`/sample-android`](https://github.com/fajrbahr/MediatorK/tree/main/sample-android).
 
 ---
 
 ## Android Sample — Prayer Times
 
-The Android sample is a standalone Jetpack Compose app that fetches daily prayer times and Islamic calendar months from the [Aladhan API](https://aladhan.com/prayer-times-api). It is structured in three layers to show the *before* and *after* story of adopting MediatorK — and a third *after super* layer that adds every built-in pipeline behavior.
+The Android sample is a standalone Jetpack Compose app that fetches daily prayer times and Islamic calendar months from
+the [Aladhan API](https://aladhan.com/prayer-times-api). It is structured in three layers to show the *before* and
+*after* story of adopting MediatorK — and a third *after super* layer that adds every built-in pipeline behavior.
 
 ### Open in Android Studio
 
@@ -21,7 +25,8 @@ The Android sample is a standalone Jetpack Compose app that fetches daily prayer
 File → Open → <repo-root>/sample-android
 ```
 
-The folder contains its own `settings.gradle.kts` and `build.gradle.kts`, so Android Studio treats it as a standalone project. The library is pulled from Maven Central — no local build of the root project is needed.
+The folder contains its own `settings.gradle.kts` and `build.gradle.kts`, so Android Studio treats it as a standalone
+project. The library is pulled from Maven Central — no local build of the root project is needed.
 
 ---
 
@@ -43,7 +48,8 @@ before/
     BeforePrayerTimesScreen.kt
 ```
 
-The ViewModel calls `GetPrayerTimesUseCase` directly. Adding a second feature means adding another use-case parameter to the constructor.
+The ViewModel calls `GetPrayerTimesUseCase` directly. Adding a second feature means adding another use-case parameter to
+the constructor.
 
 ```kotlin
 class BeforePrayerTimesViewModel(
@@ -53,10 +59,12 @@ class BeforePrayerTimesViewModel(
         flow {
             emit(BeforeUiState.Loading)
             val result = runCatching { getPrayerTimes() }
-            emit(result.fold(
-                onSuccess = { BeforeUiState.Success(it) },
-                onFailure = { BeforeUiState.Error(it.message ?: "Error") },
-            ))
+            emit(
+                result.fold(
+                    onSuccess = { BeforeUiState.Success(it) },
+                    onFailure = { BeforeUiState.Error(it.message ?: "Error") },
+                )
+            )
         }
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), BeforeUiState.Loading)
 }
@@ -83,7 +91,8 @@ after/
     AfterPrayerTimesScreen.kt
 ```
 
-The ViewModel sends a typed `Request` through the `Mediator`. Adding a second feature means adding a new handler — the ViewModel constructor stays the same.
+The ViewModel sends a typed `Request` through the `Mediator`. Adding a second feature means adding a new handler — the
+ViewModel constructor stays the same.
 
 ```kotlin
 class AfterPrayerTimesViewModel(
@@ -93,10 +102,12 @@ class AfterPrayerTimesViewModel(
         flow {
             emit(AfterUiState.Loading)
             val result = runCatching { mediator.send(GetPrayerTimesRequest()) }
-            emit(result.fold(
-                onSuccess = { AfterUiState.Success(it) },
-                onFailure = { AfterUiState.Error(it.message ?: "Error") },
-            ))
+            emit(
+                result.fold(
+                    onSuccess = { AfterUiState.Success(it) },
+                    onFailure = { AfterUiState.Error(it.message ?: "Error") },
+                )
+            )
         }
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), AfterUiState.Loading)
 
@@ -117,7 +128,8 @@ class AfterPrayerTimesViewModel(
 
 ### After Super — pipeline behaviors
 
-The same `After` setup, extended with all six built-in pipeline behaviors. Logs are captured into a shared buffer and rendered inside the screen as a terminal-style card.
+The same `After` setup, extended with all six built-in pipeline behaviors. Logs are captured into a shared buffer and
+rendered inside the screen as a terminal-style card.
 
 ```kotlin
 MediatorFactory.create(
@@ -143,14 +155,14 @@ MediatorFactory.create(
 
 **Pipeline execution order** (lower `order` = outermost):
 
-| Order | Behavior | Role |
-|-------|----------|------|
-| −200 | `RetryPipelineBehavior` | Retries the entire pipeline on failure |
-| −100 | `LoggingPipelineBehavior` | Logs `→ Request` and `← Response` |
-| 0 | `TimingPipelineBehavior` | Measures handler execution time |
-| 10 | `TimeoutPipelineBehavior` | Cancels if handler exceeds 10 s |
-| 20 | `RequestCounterPipelineBehavior` | Counts requests per type |
-| MAX | `ErrorTrackingPipelineBehavior` | Captures unhandled exceptions |
+| Order | Behavior                         | Role                                   |
+|-------|----------------------------------|----------------------------------------|
+| −200  | `RetryPipelineBehavior`          | Retries the entire pipeline on failure |
+| −100  | `LoggingPipelineBehavior`        | Logs `→ Request` and `← Response`      |
+| 0     | `TimingPipelineBehavior`         | Measures handler execution time        |
+| 10    | `TimeoutPipelineBehavior`        | Cancels if handler exceeds 10 s        |
+| 20    | `RequestCounterPipelineBehavior` | Counts requests per type               |
+| MAX   | `ErrorTrackingPipelineBehavior`  | Captures unhandled exceptions          |
 
 Logs from each pipeline pass appear live in the screen and in Logcat under the tag `MediatorK`.
 
@@ -158,11 +170,17 @@ Logs from each pipeline pass appear live in the screen and in Logcat under the t
 
 ## Kotlin/JVM Sample
 
-The [`/sample`](https://github.com/fajrbahr/MediatorK/tree/main/sample) module shows commands, queries, notifications, and pipeline behaviors in plain Kotlin/JVM with no UI framework:
+The [`/sample`](https://github.com/fajrbahr/MediatorK/tree/main/sample) module shows commands, queries, notifications,
+and pipeline behaviors in plain Kotlin/JVM with no UI framework:
 
-- **ViewModel before & after** — [OrderViewModelBefore.kt](https://github.com/fajrbahr/MediatorK/blob/main/sample/src/main/kotlin/sample/android/OrderViewModelBefore.kt) vs [OrderViewModelAfter.kt](https://github.com/fajrbahr/MediatorK/blob/main/sample/src/main/kotlin/sample/android/OrderViewModelAfter.kt)
-- **Commands, Queries, Notifications** — [command/](https://github.com/fajrbahr/MediatorK/tree/main/sample/src/main/kotlin/sample/command), [query/](https://github.com/fajrbahr/MediatorK/tree/main/sample/src/main/kotlin/sample/query), [notification/](https://github.com/fajrbahr/MediatorK/tree/main/sample/src/main/kotlin/sample/notification)
-- **Pipeline behaviors** — logging, auth, retry, validation, tracing, metrics: [behaviors/](https://github.com/fajrbahr/MediatorK/tree/main/sample/src/main/kotlin/sample/behaviors)
-- **Tests** — handler and ViewModel tests with no mocking library: [SampleHandlerTest.kt](https://github.com/fajrbahr/MediatorK/blob/main/sample/src/test/kotlin/sample/SampleHandlerTest.kt)
+- **ViewModel before & after
+  ** — [OrderViewModelBefore.kt](https://github.com/fajrbahr/MediatorK/blob/main/sample/src/main/kotlin/sample/android/OrderViewModelBefore.kt)
+  vs [OrderViewModelAfter.kt](https://github.com/fajrbahr/MediatorK/blob/main/sample/src/main/kotlin/sample/android/OrderViewModelAfter.kt)
+- **Commands, Queries, Notifications
+  ** — [command/](https://github.com/fajrbahr/MediatorK/tree/main/sample/src/main/kotlin/sample/command), [query/](https://github.com/fajrbahr/MediatorK/tree/main/sample/src/main/kotlin/sample/query), [notification/](https://github.com/fajrbahr/MediatorK/tree/main/sample/src/main/kotlin/sample/notification)
+- **Pipeline behaviors** — logging, auth, retry, validation, tracing,
+  metrics: [behaviors/](https://github.com/fajrbahr/MediatorK/tree/main/sample/src/main/kotlin/sample/behaviors)
+- **Tests** — handler and ViewModel tests with no mocking
+  library: [SampleHandlerTest.kt](https://github.com/fajrbahr/MediatorK/blob/main/sample/src/test/kotlin/sample/SampleHandlerTest.kt)
 
 Browse the full module on [GitHub →](https://github.com/fajrbahr/MediatorK/tree/main/sample)
