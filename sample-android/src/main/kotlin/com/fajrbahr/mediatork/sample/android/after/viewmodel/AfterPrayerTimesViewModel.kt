@@ -1,0 +1,62 @@
+package com.fajrbahr.mediatork.sample.android.after.viewmodel
+
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import androidx.lifecycle.viewmodel.initializer
+import androidx.lifecycle.viewmodel.viewModelFactory
+import com.fajrbahr.mediatork.Mediator
+import com.fajrbahr.mediatork.MediatorFactory
+import com.fajrbahr.mediatork.sample.android.after.data.cache.AladhanCacheDataSource
+import com.fajrbahr.mediatork.sample.android.after.domain.GetPrayerTimesRequest
+import com.fajrbahr.mediatork.sample.android.after.domain.PrayerTimesRegistrar
+import com.fajrbahr.mediatork.sample.android.after.model.TodayPrayerTimes
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.launch
+
+class AfterPrayerTimesViewModel(private val mediator: Mediator) : ViewModel() {
+
+    private val refreshTrigger = MutableSharedFlow<Unit>(replay = 1).also { it.tryEmit(Unit) }
+
+    val uiState: StateFlow<AfterUiState> = refreshTrigger
+        .flatMapLatest {
+            flow {
+                emit(AfterUiState.Loading)
+                emit(
+                    runCatching { mediator.send(GetPrayerTimesRequest()) }
+                        .fold(
+                            onSuccess = { AfterUiState.Success(it) },
+                            onFailure = { AfterUiState.Error(it.message ?: "Failed to load prayer times") },
+                        )
+                )
+            }
+        }
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5_000),
+            initialValue = AfterUiState.Loading,
+        )
+
+    fun retry() { viewModelScope.launch { refreshTrigger.emit(Unit) } }
+
+    companion object {
+        val Factory = viewModelFactory {
+            initializer {
+                val cache = AladhanCacheDataSource()
+                AfterPrayerTimesViewModel(
+                    MediatorFactory.create(registrars = listOf(PrayerTimesRegistrar(cache)))
+                )
+            }
+        }
+    }
+}
+
+sealed interface AfterUiState {
+    data object Loading : AfterUiState
+    data class Success(val prayerTimes: TodayPrayerTimes) : AfterUiState
+    data class Error(val message: String) : AfterUiState
+}
