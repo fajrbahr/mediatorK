@@ -70,11 +70,11 @@ fun AfterSuperIslamicMonthsScreen(
         },
     ) { padding ->
         Column(modifier = Modifier.fillMaxSize().padding(padding)) {
-            Surface(color = Color(0xFFEDE7F6)) {
+            Surface(color = Color(0xFF1E1032)) {
                 Text(
                     "After Super  —  Logging · Timing · Retry · Timeout · Counter · ErrorTracking",
                     style = MaterialTheme.typography.labelMedium,
-                    color = Color(0xFF4527A0),
+                    color = Color(0xFFCE93D8),
                     modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp),
                 )
             }

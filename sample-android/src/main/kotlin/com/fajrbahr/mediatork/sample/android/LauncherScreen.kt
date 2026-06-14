@@ -60,8 +60,8 @@ fun LauncherScreen(
                 description = "Android architecture — no MediatorK\n" +
                     "RemoteDataSource  →  Repository (+ cache)  →  ViewModel\n" +
                     "ViewModel calls Repository directly",
-                containerColor = Color(0xFFFFF3CD),
-                titleColor = Color(0xFF856404),
+                containerColor = Color(0xFF2C1F00),
+                titleColor = Color(0xFFFFD54F),
                 onClick = onBeforePrayerTimesClick,
             )
 
@@ -70,18 +70,18 @@ fun LauncherScreen(
                 description = "Android architecture + MediatorK handlers\n" +
                     "ViewModel → Mediator → Handler (inline HTTP + cache)\n" +
                     "No repository or data source layer",
-                containerColor = Color(0xFFD4EDDA),
-                titleColor = Color(0xFF155724),
+                containerColor = Color(0xFF0D2415),
+                titleColor = Color(0xFF81C784),
                 onClick = onAfterPrayerTimesClick,
             )
 
             SampleCard(
                 title = "After Super",
                 description = "After + pipeline behaviors\n" +
-                    "LoggingPipelineBehavior + TimingPipelineBehavior\n" +
-                    "Pipeline logs shown inline in the screen",
-                containerColor = Color(0xFFEDE7F6),
-                titleColor = Color(0xFF4527A0),
+                    "Logging · Timing · Retry · Timeout · Counter · ErrorTracking\n" +
+                    "Pipeline logs captured and shown inline in the screen",
+                containerColor = Color(0xFF1E1032),
+                titleColor = Color(0xFFCE93D8),
                 onClick = onAfterSuperPrayerTimesClick,
             )
 
@@ -93,8 +93,8 @@ fun LauncherScreen(
                 description = "Android architecture — no MediatorK\n" +
                     "RemoteDataSource  →  Repository (+ cache)  →  ViewModel\n" +
                     "ViewModel calls getIslamicMonths() directly",
-                containerColor = Color(0xFFFFF3CD),
-                titleColor = Color(0xFF856404),
+                containerColor = Color(0xFF2C1F00),
+                titleColor = Color(0xFFFFD54F),
                 onClick = onBeforeIslamicMonthsClick,
             )
 
@@ -103,18 +103,18 @@ fun LauncherScreen(
                 description = "Android architecture + MediatorK handlers\n" +
                     "ViewModel → Mediator → Handler (inline HTTP + cache)\n" +
                     "No repository or data source layer",
-                containerColor = Color(0xFFD4EDDA),
-                titleColor = Color(0xFF155724),
+                containerColor = Color(0xFF0D2415),
+                titleColor = Color(0xFF81C784),
                 onClick = onAfterIslamicMonthsClick,
             )
 
             SampleCard(
                 title = "After Super",
                 description = "After + pipeline behaviors\n" +
-                    "LoggingPipelineBehavior + TimingPipelineBehavior\n" +
-                    "Pipeline logs shown inline in the screen",
-                containerColor = Color(0xFFEDE7F6),
-                titleColor = Color(0xFF4527A0),
+                    "Logging · Timing · Retry · Timeout · Counter · ErrorTracking\n" +
+                    "Pipeline logs captured and shown inline in the screen",
+                containerColor = Color(0xFF1E1032),
+                titleColor = Color(0xFFCE93D8),
                 onClick = onAfterSuperIslamicMonthsClick,
             )
 

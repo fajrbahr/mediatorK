@@ -70,11 +70,11 @@ fun BeforePrayerTimesScreen(
         },
     ) { padding ->
         Column(modifier = Modifier.fillMaxSize().padding(padding)) {
-            Surface(color = Color(0xFFFFF3CD)) {
+            Surface(color = Color(0xFF2C1F00)) {
                 Text(
                     "Before  —  ViewModel calls Repository directly (no MediatorK)",
                     style = MaterialTheme.typography.labelMedium,
-                    color = Color(0xFF856404),
+                    color = Color(0xFFFFD54F),
                     modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp),
                 )
             }

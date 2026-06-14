@@ -10,15 +10,15 @@ import sample.notification.OrderCreatedNotification
 import kotlin.time.Duration.Companion.seconds
 import kotlin.time.measureTime
 
+data class CreateOrderCommand(
+    val id: String, val amount: Double
+) : Request<OrderResult>
+
 data class OrderResult(
     val orderId: String = "",
     val cart: List<String> = emptyList(),
     val responseIme: Long
 )
-
-data class CreateOrderCommand(
-    val id: String, val amount: Double
-) : Request<OrderResult>
 
 
 class CreateOrderHandler(

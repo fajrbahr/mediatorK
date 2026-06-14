@@ -1,27 +1,26 @@
 package com.fajrbahr.mediatork.sample.android.ui.theme
 
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.lightColorScheme
+import androidx.compose.material3.darkColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 
-private val Green800 = Color(0xFF1B6B45)
-private val Green100 = Color(0xFFA8F2C6)
-private val Cream = Color(0xFFF5F5EF)
-
-private val colorScheme = lightColorScheme(
-    primary = Green800,
-    onPrimary = Color.White,
-    primaryContainer = Green100,
-    onPrimaryContainer = Color(0xFF002112),
-    surface = Cream,
-    background = Cream,
+private val colorScheme = darkColorScheme(
+    primary = Color(0xFFA6E3A1),
+    onPrimary = Color(0xFF1E1E2E),
+    primaryContainer = Color(0xFF1E3A2F),
+    onPrimaryContainer = Color(0xFFA6E3A1),
+    surface = Color(0xFF313244),
+    onSurface = Color(0xFFCDD6F4),
+    surfaceVariant = Color(0xFF45475A),
+    onSurfaceVariant = Color(0xFFBAC2DE),
+    background = Color(0xFF1E1E2E),
+    onBackground = Color(0xFFCDD6F4),
+    error = Color(0xFFF38BA8),
+    onError = Color(0xFF1E1E2E),
 )
 
 @Composable
 fun PrayerTimesTheme(content: @Composable () -> Unit) {
-    MaterialTheme(
-        colorScheme = colorScheme,
-        content = content,
-    )
+    MaterialTheme(colorScheme = colorScheme, content = content)
 }

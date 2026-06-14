@@ -1,6 +1,7 @@
 package com.fajrbahr.mediatork.sample.android.after.domain
 
 import com.fajrbahr.mediatork.Mediator
+import com.fajrbahr.mediatork.Request
 import com.fajrbahr.mediatork.RequestContext
 import com.fajrbahr.mediatork.handler.RequestHandler
 import com.fajrbahr.mediatork.sample.android.after.data.cache.AladhanCacheDataSource
@@ -11,6 +12,12 @@ import kotlinx.coroutines.withContext
 import org.json.JSONObject
 import java.net.HttpURLConnection
 import java.net.URL
+
+data class GetPrayerTimesRequest(
+    val latitude: Double = 51.5194682,
+    val longitude: Double = -0.1360365,
+    val method: Int = 3,
+) : Request<TodayPrayerTimes>
 
 class GetPrayerTimesHandler(
     private val cache: AladhanCacheDataSource,

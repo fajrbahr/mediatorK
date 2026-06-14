@@ -67,11 +67,11 @@ fun AfterIslamicMonthsScreen(
         },
     ) { padding ->
         Column(modifier = Modifier.fillMaxSize().padding(padding)) {
-            Surface(color = Color(0xFFD4EDDA)) {
+            Surface(color = Color(0xFF0D2415)) {
                 Text(
                     "After  —  MediatorK handlers applied",
                     style = MaterialTheme.typography.labelMedium,
-                    color = Color(0xFF155724),
+                    color = Color(0xFF81C784),
                     modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp),
                 )
             }

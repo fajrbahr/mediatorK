@@ -92,7 +92,7 @@ fun AfterPrayerTimesScreen(
 
 @Composable
 private fun AfterBanner() {
-    Surface(color = Color(0xFFD4EDDA)) {
+    Surface(color = Color(0xFF0D2415)) {
         Row(
             modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp),
             verticalAlignment = Alignment.CenterVertically,
@@ -100,7 +100,7 @@ private fun AfterBanner() {
             Text(
                 "After  —  Android architecture applied",
                 style = MaterialTheme.typography.labelMedium,
-                color = Color(0xFF155724),
+                color = Color(0xFF81C784),
                 modifier = Modifier.weight(1f),
             )
         }

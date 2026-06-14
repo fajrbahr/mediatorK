@@ -1,6 +1,7 @@
 package com.fajrbahr.mediatork.sample.android.after.domain
 
 import com.fajrbahr.mediatork.Mediator
+import com.fajrbahr.mediatork.Request
 import com.fajrbahr.mediatork.RequestContext
 import com.fajrbahr.mediatork.handler.RequestHandler
 import com.fajrbahr.mediatork.sample.android.after.data.cache.AladhanCacheDataSource
@@ -10,6 +11,8 @@ import kotlinx.coroutines.withContext
 import org.json.JSONObject
 import java.net.HttpURLConnection
 import java.net.URL
+
+class GetIslamicMonthsRequest : Request<List<IslamicMonth>>
 
 class GetIslamicMonthsHandler(
     private val cache: AladhanCacheDataSource,
