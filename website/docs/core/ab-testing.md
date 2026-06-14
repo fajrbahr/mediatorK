@@ -7,7 +7,8 @@ sidebar_label: A/B Testing
 # A/B Testing & Feature Flags
 
 MediatorK makes A/B testing straightforward — define one command per variant, register a handler for each, then let the
-caller pick which command to send based on a feature flag. The mediator and handlers stay completely unaware of each other.
+caller pick which command to send based on a feature flag. The mediator and handlers stay completely unaware of each
+other.
 
 ---
 
@@ -75,11 +76,11 @@ class CheckoutViewModel(
 
 ## Why this works well
 
-| | Detail |
-|---|---|
-| No coupling | Handlers know nothing about flags or each other |
-| Easy to clean up | When the experiment ends, delete one command + one handler |
-| Testable | Test each variant independently by sending its command directly |
+|                          | Detail                                                                   |
+|--------------------------|--------------------------------------------------------------------------|
+| No coupling              | Handlers know nothing about flags or each other                          |
+| Easy to clean up         | When the experiment ends, delete one command + one handler               |
+| Testable                 | Test each variant independently by sending its command directly          |
 | Pipeline applies to both | `LoggingBehavior`, `AuthBehavior`, etc. wrap both variants automatically |
 
 ---

@@ -41,8 +41,11 @@ library in the .NET ecosystem, by Jimmy Bogard.
 
 **Never mock in unit tests.**
 
-Unit tests should only verify pure functions. If your code is hard to test without mocking, that's a signal — extract the pure logic and test that directly. Everything else belongs in integration or end-to-end tests.
+Unit tests should only verify pure functions. If your code is hard to test without mocking, that's a signal — extract
+the pure logic and test that directly. Everything else belongs in integration or end-to-end tests.
 
-The testing pyramid puts unit tests at ~70% of your test suite for a reason: they're fast, stable, and reliable. Mocking undermines all of that — it couples your tests to implementation details, makes refactoring painful, and gives you false confidence. Mock libraries make this worse by making mocking feel easy.
+The testing pyramid puts unit tests at ~70% of your test suite for a reason: they're fast, stable, and reliable. Mocking
+undermines all of that — it couples your tests to implementation details, makes refactoring painful, and gives you false
+confidence. Mock libraries make this worse by making mocking feel easy.
 
 - [Mocking is a Code Smell](https://medium.com/javascript-scene/mocking-is-a-code-smell-944a70c90a6a) — Eric Elliott

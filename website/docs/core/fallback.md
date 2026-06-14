@@ -98,13 +98,13 @@ class NotificationRegistrar(
 
 ## Behaviour at a glance
 
-| Scenario                          | Result                                        |
-|-----------------------------------|-----------------------------------------------|
-| First handler succeeds            | Returns immediately, rest are skipped         |
-| First throws, second succeeds     | Second result returned                        |
-| All handlers throw                | Last exception re-thrown                      |
-| Single `otherwise` call           | Creates a `FallbackRequestHandler` with two candidates |
-| Chained `otherwise` calls         | All candidates collected into one handler — no nesting |
+| Scenario                      | Result                                                 |
+|-------------------------------|--------------------------------------------------------|
+| First handler succeeds        | Returns immediately, rest are skipped                  |
+| First throws, second succeeds | Second result returned                                 |
+| All handlers throw            | Last exception re-thrown                               |
+| Single `otherwise` call       | Creates a `FallbackRequestHandler` with two candidates |
+| Chained `otherwise` calls     | All candidates collected into one handler — no nesting |
 
 ---
 

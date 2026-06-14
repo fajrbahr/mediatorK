@@ -14,6 +14,8 @@ dependencies {
     // Format: <kotlin-version>-<ksp-patch>
     // Update this when bumping the Kotlin version in the root build.gradle.kts.
     implementation(libs.ksp.api)
+    implementation(project(":library"))
+    compileOnly("io.insert-koin:koin-core:3.5.6")
 }
 
 // Publish the processor so KSP can pick it up via the service-loader mechanism

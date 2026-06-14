@@ -1,10 +1,12 @@
 # MediatorK Android Sample
 
-A standalone Jetpack Compose app demonstrating MediatorK with real data from the [Aladhan API](https://aladhan.com/prayer-times-api) — daily prayer times and Islamic calendar months.
+A standalone Jetpack Compose app demonstrating MediatorK with real data from
+the [Aladhan API](https://aladhan.com/prayer-times-api) — daily prayer times and Islamic calendar months.
 
 ## Open in Android Studio
 
-This folder is a **self-contained Android project** with its own `settings.gradle.kts`. Open it independently, not as a module of the parent project.
+This folder is a **self-contained Android project** with its own `settings.gradle.kts`. Open it independently, not as a
+module of the parent project.
 
 1. Launch Android Studio
 2. **File → Open**
@@ -37,10 +39,10 @@ sample-android/
 
 ## What each layer shows
 
-| Screen | Architecture |
-|--------|--------------|
-| **Before** | `ViewModel → UseCase → Repository → DataSource` |
-| **After** | `ViewModel → Mediator → Handler` |
+| Screen          | Architecture                                                                    |
+|-----------------|---------------------------------------------------------------------------------|
+| **Before**      | `ViewModel → UseCase → Repository → DataSource`                                 |
+| **After**       | `ViewModel → Mediator → Handler`                                                |
 | **After Super** | After + `Retry · Logging · Timing · Timeout · Counter · ErrorTracking` pipeline |
 
 ## Pipeline behaviors (After Super)

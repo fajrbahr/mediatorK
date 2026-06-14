@@ -43,7 +43,13 @@ class AfterSuperIslamicMonthsViewModel(
                 emit(
                     result.fold(
                         onSuccess = { AfterSuperMonthsUiState.Success(it, logBuffer.toList(), count) },
-                        onFailure = { AfterSuperMonthsUiState.Error(it.message ?: "Failed to load", logBuffer.toList(), count) },
+                        onFailure = {
+                            AfterSuperMonthsUiState.Error(
+                                it.message ?: "Failed to load",
+                                logBuffer.toList(),
+                                count
+                            )
+                        },
                     )
                 )
             }
@@ -54,7 +60,9 @@ class AfterSuperIslamicMonthsViewModel(
             initialValue = AfterSuperMonthsUiState.Loading,
         )
 
-    fun retry() { viewModelScope.launch { refreshTrigger.emit(Unit) } }
+    fun retry() {
+        viewModelScope.launch { refreshTrigger.emit(Unit) }
+    }
 
     companion object {
         val Factory = viewModelFactory {
@@ -67,7 +75,10 @@ class AfterSuperIslamicMonthsViewModel(
                         registrars = listOf(IslamicMonthsRegistrar(cache)),
                         pipelineBehaviors = listOf(
                             RetryPipelineBehavior(maxRetries = 2, delayMillis = 200, order = -200),
-                            LoggingPipelineBehavior(logger = { msg -> logs.add(msg); Log.d("MediatorK", msg) }, order = -100),
+                            LoggingPipelineBehavior(
+                                logger = { msg -> logs.add(msg); Log.d("MediatorK", msg) },
+                                order = -100
+                            ),
                             TimingPipelineBehavior(order = 0) { name, ms ->
                                 val line = "⏱ $name took ${ms}ms"
                                 logs.add(line)
@@ -92,6 +103,9 @@ class AfterSuperIslamicMonthsViewModel(
 
 sealed interface AfterSuperMonthsUiState {
     data object Loading : AfterSuperMonthsUiState
-    data class Success(val months: List<IslamicMonth>, val pipelineLogs: List<String>, val requestCount: Long) : AfterSuperMonthsUiState
-    data class Error(val message: String, val pipelineLogs: List<String>, val requestCount: Long) : AfterSuperMonthsUiState
+    data class Success(val months: List<IslamicMonth>, val pipelineLogs: List<String>, val requestCount: Long) :
+        AfterSuperMonthsUiState
+
+    data class Error(val message: String, val pipelineLogs: List<String>, val requestCount: Long) :
+        AfterSuperMonthsUiState
 }

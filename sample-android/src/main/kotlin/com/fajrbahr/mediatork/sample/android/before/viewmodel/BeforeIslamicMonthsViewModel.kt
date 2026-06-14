@@ -42,7 +42,9 @@ class BeforeIslamicMonthsViewModel(
             initialValue = BeforeMonthsUiState.Loading,
         )
 
-    fun retry() { viewModelScope.launch { refreshTrigger.emit(Unit) } }
+    fun retry() {
+        viewModelScope.launch { refreshTrigger.emit(Unit) }
+    }
 
     companion object {
         val Factory = viewModelFactory {
