@@ -13,9 +13,14 @@ class AladhanRepository(
         latitude: Double = 51.5194682,
         longitude: Double = -0.1360365,
         method: Int = 3,
-    ): TodayPrayerTimes = cache.getPrayerTimes() ?: run {
-        dataSource.getPrayerTimes(latitude, longitude, method).also { cache.savePrayerTimes(it) }
+    ): TodayPrayerTimes = cache.getPrayerTimes("default") ?: run {
+        dataSource.getPrayerTimes(latitude, longitude, method).also { cache.savePrayerTimes("default", it) }
     }
+
+    suspend fun getPrayerTimesByCity(city: String): TodayPrayerTimes =
+        cache.getPrayerTimes(city) ?: run {
+            dataSource.getPrayerTimesByCity(city).also { cache.savePrayerTimes(city, it) }
+        }
 
     suspend fun getIslamicMonths(): List<IslamicMonth> = cache.getIslamicMonths() ?: run {
         dataSource.getIslamicMonths().also { cache.saveIslamicMonths(it) }

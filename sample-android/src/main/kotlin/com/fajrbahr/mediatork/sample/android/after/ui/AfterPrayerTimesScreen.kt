@@ -47,9 +47,12 @@ import java.util.TimeZone
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AfterPrayerTimesScreen(
+    city: String,
     onBack: () -> Unit,
-    // AFTER: viewModel(factory = ...) — ViewModel receives injected Mediator from factory
-    viewModel: AfterPrayerTimesViewModel = viewModel(factory = AfterPrayerTimesViewModel.Factory),
+    viewModel: AfterPrayerTimesViewModel = viewModel(
+        key = city,
+        factory = AfterPrayerTimesViewModel.factory(city),
+    ),
 ) {
     BackHandler(onBack = onBack)
 
@@ -82,8 +85,9 @@ fun AfterPrayerTimesScreen(
                     is AfterUiState.Loading -> CircularProgressIndicator(
                         color = MaterialTheme.colorScheme.primary,
                     )
+
                     is AfterUiState.Error -> ErrorContent(s.message, viewModel::retry)
-                    is AfterUiState.Success -> PrayerTimesContent(s.prayerTimes)
+                    is AfterUiState.Success -> PrayerTimesContent(s.prayerTimes, city)
                 }
             }
         }
@@ -108,14 +112,14 @@ private fun AfterBanner() {
 }
 
 @Composable
-private fun PrayerTimesContent(prayerTimes: TodayPrayerTimes) {
+private fun PrayerTimesContent(prayerTimes: TodayPrayerTimes, city: String) {
     val nextIndex = prayerTimes.prayers.indexOfFirst { !it.isPast() }
     LazyColumn(
         modifier = Modifier.fillMaxSize(),
         contentPadding = PaddingValues(16.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp),
     ) {
-        item { DateHeader(prayerTimes) }
+        item { DateHeader(prayerTimes, city) }
         if (nextIndex >= 0) {
             item {
                 NextPrayerCard(prayerTimes.prayers[nextIndex])
@@ -137,11 +141,19 @@ private fun PrayerTimesContent(prayerTimes: TodayPrayerTimes) {
 }
 
 @Composable
-private fun DateHeader(prayerTimes: TodayPrayerTimes) {
+private fun DateHeader(prayerTimes: TodayPrayerTimes, city: String) {
     Column(modifier = Modifier.padding(bottom = 8.dp)) {
         Text(prayerTimes.gregorianDate, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
-        Text(prayerTimes.hijriDate, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.primary)
-        Text("London · UTC", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.45f))
+        Text(
+            prayerTimes.hijriDate,
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.primary
+        )
+        Text(
+            "$city · UTC",
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.45f)
+        )
     }
 }
 
@@ -153,11 +165,29 @@ private fun NextPrayerCard(prayer: PrayerTime) {
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primary),
     ) {
         Column(modifier = Modifier.padding(20.dp)) {
-            Text("Next Prayer", style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.7f))
+            Text(
+                "Next Prayer",
+                style = MaterialTheme.typography.labelMedium,
+                color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.7f)
+            )
             Spacer(Modifier.height(4.dp))
-            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
-                Text(prayer.name, style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onPrimary)
-                Text(prayer.time.substringBefore(" "), style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onPrimary)
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    prayer.name,
+                    style = MaterialTheme.typography.headlineSmall,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onPrimary
+                )
+                Text(
+                    prayer.time.substringBefore(" "),
+                    style = MaterialTheme.typography.headlineMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onPrimary
+                )
             }
         }
     }
@@ -173,12 +203,31 @@ private fun PrayerRow(prayer: PrayerTime, isNext: Boolean) {
         colors = CardDefaults.cardColors(containerColor = if (isNext) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surface),
         elevation = CardDefaults.cardElevation(defaultElevation = if (isNext) 2.dp else 0.dp),
     ) {
-        Row(modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 14.dp), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
+        Row(
+            modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 14.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
             Row(horizontalArrangement = Arrangement.spacedBy(12.dp), verticalAlignment = Alignment.CenterVertically) {
-                Box(modifier = Modifier.size(8.dp).background(if (isPast) Color.Gray.copy(alpha = 0.25f) else MaterialTheme.colorScheme.primary, RoundedCornerShape(4.dp)))
-                Text(prayer.name, style = MaterialTheme.typography.bodyLarge, fontWeight = if (isNext) FontWeight.SemiBold else FontWeight.Normal, color = MaterialTheme.colorScheme.onSurface.copy(alpha = textAlpha))
+                Box(
+                    modifier = Modifier.size(8.dp).background(
+                        if (isPast) Color.Gray.copy(alpha = 0.25f) else MaterialTheme.colorScheme.primary,
+                        RoundedCornerShape(4.dp)
+                    )
+                )
+                Text(
+                    prayer.name,
+                    style = MaterialTheme.typography.bodyLarge,
+                    fontWeight = if (isNext) FontWeight.SemiBold else FontWeight.Normal,
+                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = textAlpha)
+                )
             }
-            Text(prayer.time.substringBefore(" "), style = MaterialTheme.typography.bodyLarge, fontWeight = if (isNext) FontWeight.Bold else FontWeight.Normal, color = if (isPast) MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f) else MaterialTheme.colorScheme.primary)
+            Text(
+                prayer.time.substringBefore(" "),
+                style = MaterialTheme.typography.bodyLarge,
+                fontWeight = if (isNext) FontWeight.Bold else FontWeight.Normal,
+                color = if (isPast) MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f) else MaterialTheme.colorScheme.primary
+            )
         }
     }
 }
@@ -187,7 +236,11 @@ private fun PrayerRow(prayer: PrayerTime, isNext: Boolean) {
 private fun ErrorContent(message: String, onRetry: () -> Unit) {
     Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(16.dp)) {
         Text("Failed to load", style = MaterialTheme.typography.titleMedium)
-        Text(message, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f))
+        Text(
+            message,
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
+        )
         Button(onClick = onRetry) { Text("Retry") }
     }
 }
@@ -199,5 +252,5 @@ private fun PrayerTime.isPast(): Boolean {
     val prayerMinute = parts[1].toIntOrNull() ?: return false
     val cal = Calendar.getInstance(TimeZone.getTimeZone("UTC"))
     return prayerHour < cal.get(Calendar.HOUR_OF_DAY) ||
-        (prayerHour == cal.get(Calendar.HOUR_OF_DAY) && prayerMinute <= cal.get(Calendar.MINUTE))
+            (prayerHour == cal.get(Calendar.HOUR_OF_DAY) && prayerMinute <= cal.get(Calendar.MINUTE))
 }

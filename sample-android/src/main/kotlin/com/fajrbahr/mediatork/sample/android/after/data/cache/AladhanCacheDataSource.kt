@@ -14,9 +14,13 @@ class AladhanCacheDataSource {
             return "${cal.get(Calendar.YEAR)}-${cal.get(Calendar.DAY_OF_YEAR)}"
         }
 
-    fun getPrayerTimes(): TodayPrayerTimes? = prayerTimesCache[todayKey]
-    fun savePrayerTimes(data: TodayPrayerTimes) { prayerTimesCache[todayKey] = data }
+    fun getPrayerTimes(city: String): TodayPrayerTimes? = prayerTimesCache["$city-$todayKey"]
+    fun savePrayerTimes(city: String, data: TodayPrayerTimes) {
+        prayerTimesCache["$city-$todayKey"] = data
+    }
 
     fun getIslamicMonths(): List<IslamicMonth>? = islamicMonthsCache["months"]
-    fun saveIslamicMonths(data: List<IslamicMonth>) { islamicMonthsCache["months"] = data }
+    fun saveIslamicMonths(data: List<IslamicMonth>) {
+        islamicMonthsCache["months"] = data
+    }
 }

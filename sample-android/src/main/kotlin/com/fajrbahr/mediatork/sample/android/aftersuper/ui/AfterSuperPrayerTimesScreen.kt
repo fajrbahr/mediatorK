@@ -48,8 +48,12 @@ import java.util.TimeZone
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AfterSuperPrayerTimesScreen(
+    city: String,
     onBack: () -> Unit,
-    viewModel: AfterSuperPrayerTimesViewModel = viewModel(factory = AfterSuperPrayerTimesViewModel.Factory),
+    viewModel: AfterSuperPrayerTimesViewModel = viewModel(
+        key = city,
+        factory = AfterSuperPrayerTimesViewModel.factory(city),
+    ),
 ) {
     BackHandler(onBack = onBack)
     val state by viewModel.uiState.collectAsStateWithLifecycle()
@@ -73,7 +77,7 @@ fun AfterSuperPrayerTimesScreen(
         Column(modifier = Modifier.fillMaxSize().padding(padding)) {
             Surface(color = Color(0xFF1E1032)) {
                 Text(
-                    "After Super  —  Logging · Timing · Retry · Timeout · Counter · ErrorTracking",
+                    "After Super  —  Validation · Logging · Timing · Retry · Timeout · Counter · ErrorTracking",
                     style = MaterialTheme.typography.labelMedium,
                     color = Color(0xFFCE93D8),
                     modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp),
@@ -82,8 +86,14 @@ fun AfterSuperPrayerTimesScreen(
             Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                 when (val s = state) {
                     is AfterSuperUiState.Loading -> CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
-                    is AfterSuperUiState.Error -> ErrorContent(s.message, s.pipelineLogs, s.requestCount, viewModel::retry)
-                    is AfterSuperUiState.Success -> PrayerTimesContent(s.prayerTimes, s.pipelineLogs, s.requestCount)
+                    is AfterSuperUiState.Error -> ErrorContent(
+                        s.message,
+                        s.pipelineLogs,
+                        s.requestCount,
+                        viewModel::retry
+                    )
+
+                    is AfterSuperUiState.Success -> PrayerTimesContent(s.prayerTimes, s.pipelineLogs, s.requestCount, city)
                 }
             }
         }
@@ -91,7 +101,7 @@ fun AfterSuperPrayerTimesScreen(
 }
 
 @Composable
-private fun PrayerTimesContent(prayerTimes: TodayPrayerTimes, logs: List<String>, requestCount: Long) {
+private fun PrayerTimesContent(prayerTimes: TodayPrayerTimes, logs: List<String>, requestCount: Long, city: String = "") {
     val nextIndex = prayerTimes.prayers.indexOfFirst { !it.isPast() }
     LazyColumn(
         modifier = Modifier.fillMaxSize(),
@@ -100,9 +110,21 @@ private fun PrayerTimesContent(prayerTimes: TodayPrayerTimes, logs: List<String>
     ) {
         item {
             Column(modifier = Modifier.padding(bottom = 8.dp)) {
-                Text(prayerTimes.gregorianDate, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
-                Text(prayerTimes.hijriDate, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.primary)
-                Text("London · UTC", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.45f))
+                Text(
+                    prayerTimes.gregorianDate,
+                    style = MaterialTheme.typography.titleLarge,
+                    fontWeight = FontWeight.Bold
+                )
+                Text(
+                    prayerTimes.hijriDate,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.primary
+                )
+                Text(
+                    "${city.ifBlank { "UTC" }} · UTC",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.45f)
+                )
             }
         }
         if (nextIndex >= 0) {
@@ -113,11 +135,29 @@ private fun PrayerTimesContent(prayerTimes: TodayPrayerTimes, logs: List<String>
                     colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primary),
                 ) {
                     Column(modifier = Modifier.padding(20.dp)) {
-                        Text("Next Prayer", style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.7f))
+                        Text(
+                            "Next Prayer",
+                            style = MaterialTheme.typography.labelMedium,
+                            color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.7f)
+                        )
                         Spacer(Modifier.height(4.dp))
-                        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
-                            Text(prayerTimes.prayers[nextIndex].name, style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onPrimary)
-                            Text(prayerTimes.prayers[nextIndex].time.substringBefore(" "), style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onPrimary)
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(
+                                prayerTimes.prayers[nextIndex].name,
+                                style = MaterialTheme.typography.headlineSmall,
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.onPrimary
+                            )
+                            Text(
+                                prayerTimes.prayers[nextIndex].time.substringBefore(" "),
+                                style = MaterialTheme.typography.headlineMedium,
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.onPrimary
+                            )
                         }
                     }
                 }
@@ -125,7 +165,12 @@ private fun PrayerTimesContent(prayerTimes: TodayPrayerTimes, logs: List<String>
             }
         }
         item {
-            Text("All Prayers", style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.55f), modifier = Modifier.padding(vertical = 4.dp))
+            Text(
+                "All Prayers",
+                style = MaterialTheme.typography.labelLarge,
+                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.55f),
+                modifier = Modifier.padding(vertical = 4.dp)
+            )
         }
         items(prayerTimes.prayers) { prayer ->
             PrayerRow(prayer, isNext = prayerTimes.prayers.indexOf(prayer) == nextIndex)
@@ -144,12 +189,31 @@ private fun PrayerRow(prayer: PrayerTime, isNext: Boolean) {
         colors = CardDefaults.cardColors(containerColor = if (isNext) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surface),
         elevation = CardDefaults.cardElevation(if (isNext) 2.dp else 0.dp),
     ) {
-        Row(modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 14.dp), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
+        Row(
+            modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 14.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
             Row(horizontalArrangement = Arrangement.spacedBy(12.dp), verticalAlignment = Alignment.CenterVertically) {
-                Box(modifier = Modifier.size(8.dp).background(if (isPast) Color.Gray.copy(0.25f) else MaterialTheme.colorScheme.primary, RoundedCornerShape(4.dp)))
-                Text(prayer.name, style = MaterialTheme.typography.bodyLarge, fontWeight = if (isNext) FontWeight.SemiBold else FontWeight.Normal, color = MaterialTheme.colorScheme.onSurface.copy(alpha = alpha))
+                Box(
+                    modifier = Modifier.size(8.dp).background(
+                        if (isPast) Color.Gray.copy(0.25f) else MaterialTheme.colorScheme.primary,
+                        RoundedCornerShape(4.dp)
+                    )
+                )
+                Text(
+                    prayer.name,
+                    style = MaterialTheme.typography.bodyLarge,
+                    fontWeight = if (isNext) FontWeight.SemiBold else FontWeight.Normal,
+                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = alpha)
+                )
             }
-            Text(prayer.time.substringBefore(" "), style = MaterialTheme.typography.bodyLarge, fontWeight = if (isNext) FontWeight.Bold else FontWeight.Normal, color = if (isPast) MaterialTheme.colorScheme.onSurface.copy(0.38f) else MaterialTheme.colorScheme.primary)
+            Text(
+                prayer.time.substringBefore(" "),
+                style = MaterialTheme.typography.bodyLarge,
+                fontWeight = if (isNext) FontWeight.Bold else FontWeight.Normal,
+                color = if (isPast) MaterialTheme.colorScheme.onSurface.copy(0.38f) else MaterialTheme.colorScheme.primary
+            )
         }
     }
 }
@@ -163,16 +227,39 @@ private fun PipelineLogsCard(logs: List<String>, requestCount: Long = 0L) {
         colors = CardDefaults.cardColors(containerColor = Color(0xFF1E1E2E)),
     ) {
         Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
-            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
-                Text("Pipeline Logs", style = MaterialTheme.typography.labelMedium, color = Color(0xFFCBA6F7), fontWeight = FontWeight.Bold)
-                if (requestCount > 0) Text("sent ${requestCount}×", style = MaterialTheme.typography.labelSmall, color = Color(0xFFA6E3A1))
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    "Pipeline Logs",
+                    style = MaterialTheme.typography.labelMedium,
+                    color = Color(0xFFCBA6F7),
+                    fontWeight = FontWeight.Bold
+                )
+                if (requestCount > 0) Text(
+                    "sent ${requestCount}×",
+                    style = MaterialTheme.typography.labelSmall,
+                    color = Color(0xFFA6E3A1)
+                )
             }
             Spacer(Modifier.height(4.dp))
             if (logs.isEmpty()) {
-                Text("no logs captured", style = MaterialTheme.typography.bodySmall, color = Color(0xFF6C7086), fontFamily = FontFamily.Monospace)
+                Text(
+                    "no logs captured",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = Color(0xFF6C7086),
+                    fontFamily = FontFamily.Monospace
+                )
             } else {
                 logs.forEach { line ->
-                    Text(line, style = MaterialTheme.typography.bodySmall, color = Color(0xFFCDD6F4), fontFamily = FontFamily.Monospace)
+                    Text(
+                        line,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = Color(0xFFCDD6F4),
+                        fontFamily = FontFamily.Monospace
+                    )
                 }
             }
         }
@@ -187,7 +274,11 @@ private fun ErrorContent(message: String, logs: List<String>, requestCount: Long
         verticalArrangement = Arrangement.spacedBy(16.dp),
     ) {
         Text("Failed to load", style = MaterialTheme.typography.titleMedium)
-        Text(message, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f))
+        Text(
+            message,
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
+        )
         Button(onClick = onRetry) { Text("Retry") }
         PipelineLogsCard(logs, requestCount)
     }

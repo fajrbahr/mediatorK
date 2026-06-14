@@ -19,6 +19,7 @@ import kotlinx.coroutines.launch
 
 class BeforePrayerTimesViewModel(
     private val getPrayerTimes: GetPrayerTimesUseCase,
+    private val city: String,
 ) : ViewModel() {
 
     private val refreshTrigger = MutableSharedFlow<Unit>(replay = 1).also { it.tryEmit(Unit) }
@@ -28,7 +29,7 @@ class BeforePrayerTimesViewModel(
             flow {
                 emit(BeforeUiState.Loading)
                 emit(
-                    runCatching { getPrayerTimes() }
+                    runCatching { getPrayerTimes(city) }
                         .fold(
                             onSuccess = { BeforeUiState.Success(it) },
                             onFailure = { BeforeUiState.Error(it.message ?: "Failed to load") },
@@ -42,14 +43,16 @@ class BeforePrayerTimesViewModel(
             initialValue = BeforeUiState.Loading,
         )
 
-    fun retry() { viewModelScope.launch { refreshTrigger.emit(Unit) } }
+    fun retry() {
+        viewModelScope.launch { refreshTrigger.emit(Unit) }
+    }
 
     companion object {
-        val Factory = viewModelFactory {
+        fun factory(city: String) = viewModelFactory {
             initializer {
                 val cache = AladhanCacheDataSource()
                 val repository = AladhanRepository(AladhanRemoteDataSource(), cache)
-                BeforePrayerTimesViewModel(GetPrayerTimesUseCase(repository))
+                BeforePrayerTimesViewModel(GetPrayerTimesUseCase(repository), city)
             }
         }
     }

@@ -14,8 +14,7 @@ import java.net.HttpURLConnection
 import java.net.URL
 
 data class GetPrayerTimesRequest(
-    val latitude: Double = 51.5194682,
-    val longitude: Double = -0.1360365,
+    val city: String,
     val method: Int = 3,
 ) : Request<TodayPrayerTimes>
 
@@ -28,18 +27,15 @@ class GetPrayerTimesHandler(
         requestContext: RequestContext,
         request: GetPrayerTimesRequest,
     ): TodayPrayerTimes {
-        cache.getPrayerTimes()?.let { return it }
+        cache.getPrayerTimes(request.city)?.let { return it }
         return withContext(Dispatchers.IO) {
             val timestamp = System.currentTimeMillis() / 1000
             parse(
                 fetch(
-                    "https://api.aladhan.com/v1/timings/$timestamp" +
-                        "?latitude=${request.latitude}&longitude=${request.longitude}&method=${request.method}" +
-                        "&shafaq=general&tune=5%2C3%2C5%2C7%2C9%2C-1%2C0%2C8%2C-6" +
-                        "&school=0&midnightMode=0&timezonestring=UTC" +
-                        "&latitudeAdjustmentMethod=1&calendarMethod=UAQ&iso8601=false"
+                    "https://api.aladhan.com/v1/timingsByCity/$timestamp" +
+                            "?city=${request.city}&country=&method=${request.method}"
                 )
-            ).also { cache.savePrayerTimes(it) }
+            ).also { cache.savePrayerTimes(request.city, it) }
         }
     }
 
@@ -62,11 +58,11 @@ class GetPrayerTimesHandler(
         fun prayer(key: String) = PrayerTime(key, timings.getString(key))
         return TodayPrayerTimes(
             gregorianDate = "${gregorian.getString("day")} " +
-                "${gregorian.getJSONObject("month").getString("en")} " +
-                gregorian.getString("year"),
+                    "${gregorian.getJSONObject("month").getString("en")} " +
+                    gregorian.getString("year"),
             hijriDate = "${hijri.getString("day")} " +
-                "${hijri.getJSONObject("month").getString("en")} " +
-                "${hijri.getString("year")} AH",
+                    "${hijri.getJSONObject("month").getString("en")} " +
+                    "${hijri.getString("year")} AH",
             fajr = prayer("Fajr"), sunrise = prayer("Sunrise"),
             dhuhr = prayer("Dhuhr"), asr = prayer("Asr"),
             maghrib = prayer("Maghrib"), isha = prayer("Isha"),
