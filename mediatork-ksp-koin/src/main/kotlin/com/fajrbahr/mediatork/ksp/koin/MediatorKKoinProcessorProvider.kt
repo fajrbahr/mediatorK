@@ -1,14 +1,10 @@
-package com.fajrbahr.mediatork.ksp
+package com.fajrbahr.mediatork.ksp.koin
 
 import com.google.devtools.ksp.processing.SymbolProcessor
 import com.google.devtools.ksp.processing.SymbolProcessorEnvironment
 import com.google.devtools.ksp.processing.SymbolProcessorProvider
 
-class MediatorKProcessorProvider : SymbolProcessorProvider {
+class MediatorKKoinProcessorProvider : SymbolProcessorProvider {
     override fun create(environment: SymbolProcessorEnvironment): SymbolProcessor =
-        MediatorKProcessor(
-            codeGenerator = environment.codeGenerator,
-            logger = environment.logger,
-            options = environment.options,
-        )
+        MediatorKKoinProcessor(environment.codeGenerator, environment.logger)
 }

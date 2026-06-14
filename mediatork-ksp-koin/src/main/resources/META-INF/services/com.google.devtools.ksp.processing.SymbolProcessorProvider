@@ -1,1 +1,1 @@
-com.fajrbahr.mediatork.ksp.MediatorKProcessorProvider
+com.fajrbahr.mediatork.ksp.koin.MediatorKKoinProcessorProvider

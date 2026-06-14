@@ -8,7 +8,8 @@ sidebar_label: The Promise
 
 > **From a ViewModel with 12 constructor parameters — down to one.**
 
-This page shows the single concrete promise MediatorK makes: your ViewModel shrinks to a thin dispatcher, every piece of logic moves into a focused handler, and your tests need zero mocking libraries.
+This page shows the single concrete promise MediatorK makes: your ViewModel shrinks to a thin dispatcher, every piece of
+logic moves into a focused handler, and your tests need zero mocking libraries.
 
 ---
 
@@ -33,7 +34,8 @@ class InitialViewModel(
 ) : ViewModel()
 ```
 
-Twelve dependencies. Testing this requires constructing or mocking all twelve, even for a test that only cares about one use-case.
+Twelve dependencies. Testing this requires constructing or mocking all twelve, even for a test that only cares about one
+use-case.
 
 ---
 
@@ -47,6 +49,7 @@ class InitialViewModel(
 ) : ViewModel()
 ```
 
-Every action becomes a `mediator.send(...)` call. The ViewModel no longer knows which use-case, repository, or data source handles the request — it just dispatches.
+Every action becomes a `mediator.send(...)` call. The ViewModel no longer knows which use-case, repository, or data
+source handles the request — it just dispatches.
 
 Next, see how this maps onto [Vertical Slice Architecture →](vertical-slice.md)

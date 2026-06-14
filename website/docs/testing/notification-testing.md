@@ -8,7 +8,8 @@ sidebar_label: Testing Notifications
 
 ## captureNotifications
 
-`captureNotifications<T>()` is the quickest way to assert that a notification was published. Call it on a `FakeMediator` — it registers the handler and returns a live list that fills itself as notifications arrive.
+`captureNotifications<T>()` is the quickest way to assert that a notification was published. Call it on a
+`FakeMediator` — it registers the handler and returns a live list that fills itself as notifications arrive.
 
 ```kotlin
 @Test
@@ -29,7 +30,8 @@ fun `order placed event is published`() = runTest {
 
 ## fakeNotificationHandler
 
-When you need full control over what happens inside the handler — side effects, conditional logic, custom assertions — use `fakeNotificationHandler` directly:
+When you need full control over what happens inside the handler — side effects, conditional logic, custom assertions —
+use `fakeNotificationHandler` directly:
 
 ```kotlin
 @Test

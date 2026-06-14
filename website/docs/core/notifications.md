@@ -94,11 +94,11 @@ val mediator = MediatorFactory.create(
 Control what happens when a notification is published with no registered handlers via
 `missingNotificationHandler` in `MediatorFactory.create`.
 
-| Implementation                      | Behaviour                                                   |
-|-------------------------------------|-------------------------------------------------------------|
-| `ThrowMissingNotificationHandler`   | Throws `MissingNotificationHandlerException` *(default)*    |
-| `SilentMissingNotificationHandler`  | Drops the notification silently                             |
-| Your own implementation             | Anything — dead-letter queue, logging, alerting, etc.       |
+| Implementation                     | Behaviour                                                |
+|------------------------------------|----------------------------------------------------------|
+| `ThrowMissingNotificationHandler`  | Throws `MissingNotificationHandlerException` *(default)* |
+| `SilentMissingNotificationHandler` | Drops the notification silently                          |
+| Your own implementation            | Anything — dead-letter queue, logging, alerting, etc.    |
 
 ```kotlin
 // default — throws if no handler is registered

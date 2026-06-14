@@ -63,16 +63,16 @@ val user = mediator.send(GetUserQuery("user-1"))
 
 ## Supported Targets
 
-| Platform | Targets |
-|---|---|
-| JVM | `jvm` |
-| Android | `androidTarget` · `androidNativeArm32` · `androidNativeArm64` · `androidNativeX64` · `androidNativeX86` |
-| iOS | `iosArm64` · `iosSimulatorArm64` · `iosX64` |
-| macOS | `macosArm64` · `macosX64` |
-| tvOS | `tvosArm64` · `tvosSimulatorArm64` · `tvosX64` |
-| watchOS | `watchosArm32` · `watchosArm64` · `watchosDeviceArm64` · `watchosSimulatorArm64` · `watchosX64` |
-| Linux | `linuxArm64` · `linuxX64` |
-| Windows | `mingwX64` |
-| Web / Wasm | `js` · `wasmJs` · `wasmWasi` |
+| Platform   | Targets                                                                                                 |
+|------------|---------------------------------------------------------------------------------------------------------|
+| JVM        | `jvm`                                                                                                   |
+| Android    | `androidTarget` · `androidNativeArm32` · `androidNativeArm64` · `androidNativeX64` · `androidNativeX86` |
+| iOS        | `iosArm64` · `iosSimulatorArm64` · `iosX64`                                                             |
+| macOS      | `macosArm64` · `macosX64`                                                                               |
+| tvOS       | `tvosArm64` · `tvosSimulatorArm64` · `tvosX64`                                                          |
+| watchOS    | `watchosArm32` · `watchosArm64` · `watchosDeviceArm64` · `watchosSimulatorArm64` · `watchosX64`         |
+| Linux      | `linuxArm64` · `linuxX64`                                                                               |
+| Windows    | `mingwX64`                                                                                              |
+| Web / Wasm | `js` · `wasmJs` · `wasmWasi`                                                                            |
 
 Ready to start? Head to [Installation →](installation.md)

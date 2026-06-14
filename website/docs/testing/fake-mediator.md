@@ -8,13 +8,13 @@ sidebar_label: FakeMediator
 
 `mediatork-test` ships a set of test helpers that let you write handler and ViewModel tests without a mocking library.
 
-| Helper | What it does |
-|---|---|
-| `FakeMediator` | Real mediator backed by a live `HandlerRegistry`. Register handlers at any time. |
-| `DummyMediator` | Zero-arg no-op. `send` silently returns, `publish` does nothing. |
-| `fakeHandler` | Creates a `RequestHandler` from a suspend lambda. |
-| `fakeNotificationHandler` | Creates a `NotificationHandler` from a suspend lambda. |
-| `captureNotifications` | Registers a notification handler and returns the live captured list. |
+| Helper                    | What it does                                                                     |
+|---------------------------|----------------------------------------------------------------------------------|
+| `FakeMediator`            | Real mediator backed by a live `HandlerRegistry`. Register handlers at any time. |
+| `DummyMediator`           | Zero-arg no-op. `send` silently returns, `publish` does nothing.                 |
+| `fakeHandler`             | Creates a `RequestHandler` from a suspend lambda.                                |
+| `fakeNotificationHandler` | Creates a `NotificationHandler` from a suspend lambda.                           |
+| `captureNotifications`    | Registers a notification handler and returns the live captured list.             |
 
 ---
 
@@ -30,13 +30,15 @@ fun `initial state is empty and not loading`() {
 }
 ```
 
-`send` returns `Unit` silently — no exception, no result processing. If your test does call `send` and the result matters, use `FakeMediator` instead.
+`send` returns `Unit` silently — no exception, no result processing. If your test does call `send` and the result
+matters, use `FakeMediator` instead.
 
 ---
 
 ## FakeMediator
 
-`FakeMediator` wraps a real `HandlerRegistry` and a real mediator pipeline. It dispatches requests to whatever handlers you register, giving you the full pipeline (behaviors, pre/post processors) without a running application.
+`FakeMediator` wraps a real `HandlerRegistry` and a real mediator pipeline. It dispatches requests to whatever handlers
+you register, giving you the full pipeline (behaviors, pre/post processors) without a running application.
 
 ### Register handlers at construction
 
@@ -90,7 +92,8 @@ val mediator = FakeMediator(
 
 ## fakeHandler
 
-`fakeHandler` builds a `RequestHandler` from a suspend lambda. The type arguments pin the request and result types — no anonymous object boilerplate.
+`fakeHandler` builds a `RequestHandler` from a suspend lambda. The type arguments pin the request and result types — no
+anonymous object boilerplate.
 
 ```kotlin
 @Test
@@ -132,9 +135,9 @@ fun `createOrder failure sets error`() = runTest {
 
 ## Choosing the right helper
 
-| Situation | Use |
-|---|---|
-| Test only checks initial state, never calls `send` | `DummyMediator()` |
-| Test controls what `send` returns | `FakeMediator` + `fakeHandler` |
-| Test captures published notifications | [`captureNotifications`](notification-testing.md) |
-| Test verifies all handlers are wired up | [`MediatorTestUtils.assertAllHandlersRegistered`](handler-validation.md) |
+| Situation                                          | Use                                                                      |
+|----------------------------------------------------|--------------------------------------------------------------------------|
+| Test only checks initial state, never calls `send` | `DummyMediator()`                                                        |
+| Test controls what `send` returns                  | `FakeMediator` + `fakeHandler`                                           |
+| Test captures published notifications              | [`captureNotifications`](notification-testing.md)                        |
+| Test verifies all handlers are wired up            | [`MediatorTestUtils.assertAllHandlersRegistered`](handler-validation.md) |

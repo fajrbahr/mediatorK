@@ -4,28 +4,12 @@ import com.fajrbahr.mediatork.HandlerRegistry
 import com.fajrbahr.mediatork.MediatorFactory
 import com.fajrbahr.mediatork.MediatorRegistrar
 import com.fajrbahr.mediatork.Request
-import com.fajrbahr.mediatork.notification.ContinueOnExceptionNotificationPublisher
-import com.fajrbahr.mediatork.notification.FireAndForgetNotificationPublisher
-import com.fajrbahr.mediatork.notification.ParallelNotificationPublisher
-import com.fajrbahr.mediatork.notification.SilentMissingNotificationHandler
-import com.fajrbahr.mediatork.notification.SequentialNotificationPublisher
-import com.fajrbahr.mediatork.pipeline.AuthorizationPipelineBehavior
-import com.fajrbahr.mediatork.pipeline.AuthenticatedRequest
-import com.fajrbahr.mediatork.pipeline.CachingPipelineBehavior
-import com.fajrbahr.mediatork.pipeline.CircuitBreakerPipelineBehavior
-import com.fajrbahr.mediatork.pipeline.DeduplicationPipelineBehavior
-import com.fajrbahr.mediatork.pipeline.ErrorTrackingPipelineBehavior
-import com.fajrbahr.mediatork.pipeline.RateLimitPipelineBehavior
-import com.fajrbahr.mediatork.pipeline.RequestCounterPipelineBehavior
-import com.fajrbahr.mediatork.pipeline.TimingPipelineBehavior
-import com.fajrbahr.mediatork.pipeline.UnauthorizedException
+import com.fajrbahr.mediatork.notification.*
+import com.fajrbahr.mediatork.pipeline.*
 import com.fajrbahr.mediatork.validator.RequestValidator
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.async
-import kotlinx.coroutines.coroutineScope
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.*
 import sample.behaviors.*
+import sample.behaviors.RetryPipelineBehavior
 import sample.command.CreateOrderCommand
 import sample.command.OrderRegistrar
 import sample.exceptions.ShipOrderCommand
@@ -387,7 +371,8 @@ class Test17Deduplication {
         val dedupMediator = MediatorFactory.create(
             registrars = listOf(object : MediatorRegistrar {
                 override fun register(registry: HandlerRegistry) {
-                    registry register object : com.fajrbahr.mediatork.handler.RequestHandler<GetOrderQuery, OrderDetails> {
+                    registry register object :
+                        com.fajrbahr.mediatork.handler.RequestHandler<GetOrderQuery, OrderDetails> {
                         override suspend fun handle(
                             mediator: com.fajrbahr.mediatork.Mediator,
                             requestContext: com.fajrbahr.mediatork.RequestContext,
@@ -431,7 +416,8 @@ class Test18CircuitBreaker {
             registrars = listOf(object : MediatorRegistrar {
                 var callCount = 0
                 override fun register(registry: HandlerRegistry) {
-                    registry register object : com.fajrbahr.mediatork.handler.RequestHandler<GetOrderQuery, OrderDetails> {
+                    registry register object :
+                        com.fajrbahr.mediatork.handler.RequestHandler<GetOrderQuery, OrderDetails> {
                         override suspend fun handle(
                             mediator: com.fajrbahr.mediatork.Mediator,
                             requestContext: com.fajrbahr.mediatork.RequestContext,
@@ -495,7 +481,8 @@ class Test20ErrorTracking {
         val trackingMediator = MediatorFactory.create(
             registrars = listOf(object : MediatorRegistrar {
                 override fun register(registry: HandlerRegistry) {
-                    registry register object : com.fajrbahr.mediatork.handler.RequestHandler<GetOrderQuery, OrderDetails> {
+                    registry register object :
+                        com.fajrbahr.mediatork.handler.RequestHandler<GetOrderQuery, OrderDetails> {
                         override suspend fun handle(
                             mediator: com.fajrbahr.mediatork.Mediator,
                             requestContext: com.fajrbahr.mediatork.RequestContext,
@@ -588,13 +575,13 @@ class Test22Authorization {
         runCatching {
             authMediator.send(AuthenticatedGetOrderQuery(orderId = "ORD-AUTH", customerId = "USR-1"))
         }.onSuccess { println("  Authorized  → ${it.status}") }
-         .onFailure { println("  Authorized  → FAILED: ${it.message}") }
+            .onFailure { println("  Authorized  → FAILED: ${it.message}") }
 
         // Unauthorized (no token injected)
         runCatching {
             authMediator.send(AuthenticatedGetOrderQuery(orderId = "ORD-NOAUTH", customerId = "USR-2"))
         }.onSuccess { println("  Unauthorized → OK (unexpected)") }
-         .onFailure { println("  Unauthorized → ${it::class.simpleName}: ${it.message}") }
+            .onFailure { println("  Unauthorized → ${it::class.simpleName}: ${it.message}") }
     }
 
     companion object {

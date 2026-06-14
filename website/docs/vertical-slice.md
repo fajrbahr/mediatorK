@@ -22,7 +22,8 @@ UI
                                └─▶ LocalDataSourceImpl   ──▶ SQLDelight Driver ──▶ DB
 ```
 
-With MediatorK the ViewModel collapses to a single `mediator.send(...)` call. The Handler owns the full slice and wires the concrete clients directly:
+With MediatorK the ViewModel collapses to a single `mediator.send(...)` call. The Handler owns the full slice and wires
+the concrete clients directly:
 
 ```
 UI

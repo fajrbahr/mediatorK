@@ -8,13 +8,17 @@ sidebar_label: Testing Handlers
 
 ## Handlers are glue, not logic
 
-A handler's job is to orchestrate — call a repository, map a result, return a value. It is a glue class, not a business-logic class. The distinction matters because it determines how you test it.
+A handler's job is to orchestrate — call a repository, map a result, return a value. It is a glue class, not a
+business-logic class. The distinction matters because it determines how you test it.
 
-**Integration test the handler.** Wire it against a real (or in-memory) database, a real repository, or a real service. The handler test verifies that the pieces connect correctly.
+**Integration test the handler.** Wire it against a real (or in-memory) database, a real repository, or a real service.
+The handler test verifies that the pieces connect correctly.
 
-**Unit test the business logic.** Keep business rules in pure value classes or domain objects that have no dependencies. Those are trivially testable with no setup at all.
+**Unit test the business logic.** Keep business rules in pure value classes or domain objects that have no dependencies.
+Those are trivially testable with no setup at all.
 
-The goal for unit tests: avoid mocks wherever possible. If a test needs a mock, that is usually a sign that logic which belongs in a pure class is still sitting inside the handler.
+The goal for unit tests: avoid mocks wherever possible. If a test needs a mock, that is usually a sign that logic which
+belongs in a pure class is still sitting inside the handler.
 
 ---
 
@@ -77,7 +81,8 @@ data class ExpirationDate(val value: String) {
 }
 ```
 
-The handler becomes glue — it delegates validation to `ExpirationDate` and touches the repository only when the input is already known-good:
+The handler becomes glue — it delegates validation to `ExpirationDate` and touches the repository only when the input is
+already known-good:
 
 ```kotlin
 class ValidateCardHandler(
@@ -132,7 +137,8 @@ class ExpirationDateTest {
 }
 ```
 
-No `FakeMediator`, no stubbed repository, no coroutine test scope. The rule is: if a test requires a mock, the logic probably belongs somewhere else.
+No `FakeMediator`, no stubbed repository, no coroutine test scope. The rule is: if a test requires a mock, the logic
+probably belongs somewhere else.
 
 ---
 
@@ -166,13 +172,15 @@ class ValidateCardHandlerTest {
 }
 ```
 
-The test is short because there is nothing to fake — the date logic is already proven by `ExpirationDateTest`, and the handler test only checks the paths that require the repository.
+The test is short because there is nothing to fake — the date logic is already proven by `ExpirationDateTest`, and the
+handler test only checks the paths that require the repository.
 
 ---
 
 ## Custom mediator
 
-Remember — you can always extend `Mediator` however you need. `FakeMediator` and `DummyMediator` are conveniences, not constraints. If your test scenario calls for something more specific, implement the interface directly:
+Remember — you can always extend `Mediator` however you need. `FakeMediator` and `DummyMediator` are conveniences, not
+constraints. If your test scenario calls for something more specific, implement the interface directly:
 
 ```kotlin
 class CapturingMediator : Mediator {

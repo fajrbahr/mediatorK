@@ -41,7 +41,9 @@ class AfterIslamicMonthsViewModel(private val mediator: Mediator) : ViewModel() 
             initialValue = AfterMonthsUiState.Loading,
         )
 
-    fun retry() { viewModelScope.launch { refreshTrigger.emit(Unit) } }
+    fun retry() {
+        viewModelScope.launch { refreshTrigger.emit(Unit) }
+    }
 
     companion object {
         val Factory = viewModelFactory {

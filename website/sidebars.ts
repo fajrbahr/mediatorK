@@ -18,7 +18,7 @@ const sidebars: SidebarsConfig = {
                 {
                     type: 'category',
                     label: 'Pipeline Behaviors',
-                    link: { type: 'doc', id: 'core/pipeline' },
+                    link: {type: 'doc', id: 'core/pipeline'},
                     collapsed: false,
                     items: ['core/built-in-behaviors'],
                 },
@@ -46,9 +46,9 @@ const sidebars: SidebarsConfig = {
         },
         {
             type: 'category',
-            label: 'Examples',
+            label: 'Samples',
             collapsed: false,
-            items: ['examples/basic', 'examples/spring-boot-3'],
+            items: ['examples/basic', 'examples/spring-boot-3', 'sample'],
         },
         {
             type: 'category',
@@ -59,7 +59,6 @@ const sidebars: SidebarsConfig = {
         'api',
         'about',
         'resources',
-        'sample',
     ],
 };
 

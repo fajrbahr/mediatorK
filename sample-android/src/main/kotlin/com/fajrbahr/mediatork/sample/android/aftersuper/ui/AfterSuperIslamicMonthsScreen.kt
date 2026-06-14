@@ -81,7 +81,13 @@ fun AfterSuperIslamicMonthsScreen(
             Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                 when (val s = state) {
                     is AfterSuperMonthsUiState.Loading -> CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
-                    is AfterSuperMonthsUiState.Error -> ErrorContent(s.message, s.pipelineLogs, s.requestCount, viewModel::retry)
+                    is AfterSuperMonthsUiState.Error -> ErrorContent(
+                        s.message,
+                        s.pipelineLogs,
+                        s.requestCount,
+                        viewModel::retry
+                    )
+
                     is AfterSuperMonthsUiState.Success -> MonthsContent(s.months, s.pipelineLogs, s.requestCount)
                 }
             }
@@ -97,8 +103,18 @@ private fun MonthsContent(months: List<IslamicMonth>, logs: List<String>, reques
         verticalArrangement = Arrangement.spacedBy(8.dp),
     ) {
         item {
-            Text("Hijri Calendar", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold, modifier = Modifier.padding(bottom = 2.dp))
-            Text("12 months of the Islamic lunar calendar", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f), modifier = Modifier.padding(bottom = 12.dp))
+            Text(
+                "Hijri Calendar",
+                style = MaterialTheme.typography.titleLarge,
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier.padding(bottom = 2.dp)
+            )
+            Text(
+                "12 months of the Islamic lunar calendar",
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
+                modifier = Modifier.padding(bottom = 12.dp)
+            )
         }
         items(months) { month -> MonthRow(month) }
         item { PipelineLogsCard(logs, requestCount) }
@@ -122,11 +138,26 @@ private fun MonthRow(month: IslamicMonth) {
                     modifier = Modifier.size(36.dp).background(MaterialTheme.colorScheme.primaryContainer, CircleShape),
                     contentAlignment = Alignment.Center,
                 ) {
-                    Text(month.number.toString(), style = MaterialTheme.typography.labelMedium, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
+                    Text(
+                        month.number.toString(),
+                        style = MaterialTheme.typography.labelMedium,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.primary
+                    )
                 }
-                Text(month.nameEn, style = MaterialTheme.typography.bodyLarge, color = MaterialTheme.colorScheme.onSurface)
+                Text(
+                    month.nameEn,
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
             }
-            Text(month.nameAr, style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.primary, textAlign = TextAlign.End)
+            Text(
+                month.nameAr,
+                style = MaterialTheme.typography.bodyLarge,
+                fontWeight = FontWeight.SemiBold,
+                color = MaterialTheme.colorScheme.primary,
+                textAlign = TextAlign.End
+            )
         }
     }
 }
@@ -140,16 +171,39 @@ private fun PipelineLogsCard(logs: List<String>, requestCount: Long = 0L) {
         colors = CardDefaults.cardColors(containerColor = Color(0xFF1E1E2E)),
     ) {
         Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
-            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
-                Text("Pipeline Logs", style = MaterialTheme.typography.labelMedium, color = Color(0xFFCBA6F7), fontWeight = FontWeight.Bold)
-                if (requestCount > 0) Text("sent ${requestCount}×", style = MaterialTheme.typography.labelSmall, color = Color(0xFFA6E3A1))
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    "Pipeline Logs",
+                    style = MaterialTheme.typography.labelMedium,
+                    color = Color(0xFFCBA6F7),
+                    fontWeight = FontWeight.Bold
+                )
+                if (requestCount > 0) Text(
+                    "sent ${requestCount}×",
+                    style = MaterialTheme.typography.labelSmall,
+                    color = Color(0xFFA6E3A1)
+                )
             }
             Spacer(Modifier.height(4.dp))
             if (logs.isEmpty()) {
-                Text("no logs captured", style = MaterialTheme.typography.bodySmall, color = Color(0xFF6C7086), fontFamily = FontFamily.Monospace)
+                Text(
+                    "no logs captured",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = Color(0xFF6C7086),
+                    fontFamily = FontFamily.Monospace
+                )
             } else {
                 logs.forEach { line ->
-                    Text(line, style = MaterialTheme.typography.bodySmall, color = Color(0xFFCDD6F4), fontFamily = FontFamily.Monospace)
+                    Text(
+                        line,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = Color(0xFFCDD6F4),
+                        fontFamily = FontFamily.Monospace
+                    )
                 }
             }
         }
@@ -164,7 +218,11 @@ private fun ErrorContent(message: String, logs: List<String>, requestCount: Long
         verticalArrangement = Arrangement.spacedBy(16.dp),
     ) {
         Text("Failed to load", style = MaterialTheme.typography.titleMedium)
-        Text(message, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f))
+        Text(
+            message,
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
+        )
         Button(onClick = onRetry) { Text("Retry") }
         PipelineLogsCard(logs, requestCount)
     }

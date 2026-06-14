@@ -6,7 +6,8 @@ sidebar_label: Testing ViewModels
 
 # Testing ViewModels
 
-Create a fresh `FakeMediator` and `ViewModel` inside each test. Register the handler the test needs, drive the ViewModel, then assert:
+Create a fresh `FakeMediator` and `ViewModel` inside each test. Register the handler the test needs, drive the
+ViewModel, then assert:
 
 ```kotlin
 @Test
@@ -52,4 +53,5 @@ fun `initial state is empty and not loading`() {
 
 ---
 
-Full runnable example: [`sample/src/test/kotlin/sample/OrderViewModelTest.kt`](https://github.com/fajrbahr/MediatorK/blob/main/sample/src/test/kotlin/sample/OrderViewModelTest.kt)
+Full runnable example: [
+`sample/src/test/kotlin/sample/OrderViewModelTest.kt`](https://github.com/fajrbahr/MediatorK/blob/main/sample/src/test/kotlin/sample/OrderViewModelTest.kt)

@@ -46,7 +46,11 @@ class GetIslamicMonthsHandler(
         val data = JSONObject(json).getJSONObject("data")
         return (1..12).map { i ->
             val month = data.getJSONObject(i.toString())
-            IslamicMonth(number = month.getInt("number"), nameEn = month.getString("en"), nameAr = month.getString("ar"))
+            IslamicMonth(
+                number = month.getInt("number"),
+                nameEn = month.getString("en"),
+                nameAr = month.getString("ar")
+            )
         }
     }
 }

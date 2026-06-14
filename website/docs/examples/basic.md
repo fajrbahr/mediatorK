@@ -1,7 +1,7 @@
 ---
 id: basic
 title: Basic Kotlin Example
-sidebar_label: Basic Kotlin
+sidebar_label: Pure Kotlin
 ---
 
 # Basic Example

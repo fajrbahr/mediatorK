@@ -4,7 +4,10 @@
     {
       "name": "docusaurus",
       "runtimeExecutable": "yarn",
-      "runtimeArgs": ["start", "--no-open"],
+      "runtimeArgs": [
+        "start",
+        "--no-open"
+      ],
       "port": 3000
     }
   ]

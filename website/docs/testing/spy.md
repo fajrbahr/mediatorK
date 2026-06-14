@@ -6,9 +6,11 @@ sidebar_label: MediatorSpy
 
 # MediatorSpy
 
-`MediatorSpy` wraps any `Mediator` and records every `send` and `publish` call while still delegating to the real handlers underneath. No mocking library needed.
+`MediatorSpy` wraps any `Mediator` and records every `send` and `publish` call while still delegating to the real
+handlers underneath. No mocking library needed.
 
-Use it when you want to assert *what* was dispatched — which requests were sent, which notifications were published, and how many times — while your actual handler logic still runs and returns real results.
+Use it when you want to assert *what* was dispatched — which requests were sent, which notifications were published, and
+how many times — while your actual handler logic still runs and returns real results.
 
 ---
 
@@ -93,19 +95,19 @@ fun `order placement publishes OrderPlacedEvent`() = runTest {
 
 ## Full spy API
 
-| Member | Description |
-|--------|-------------|
-| `sentRequests` | All requests passed to `send`, in order |
-| `publishedNotifications` | All notifications passed to `publish`, in order |
-| `sentOf<T>()` | Filtered list of sent requests of type `T` |
-| `publishedOf<T>()` | Filtered list of published notifications of type `T` |
-| `assertSent<T>(message?)` | Fails if no request of type `T` was sent |
-| `assertNotSent<T>(message?)` | Fails if any request of type `T` was sent |
-| `assertSentCount<T>(n, message?)` | Fails if sent count ≠ `n` |
-| `assertPublished<T>(message?)` | Fails if no notification of type `T` was published |
-| `assertNotPublished<T>(message?)` | Fails if any notification of type `T` was published |
-| `assertPublishedCount<T>(n, message?)` | Fails if published count ≠ `n` |
-| `reset()` | Clears all recorded sends and publishes |
+| Member                                 | Description                                          |
+|----------------------------------------|------------------------------------------------------|
+| `sentRequests`                         | All requests passed to `send`, in order              |
+| `publishedNotifications`               | All notifications passed to `publish`, in order      |
+| `sentOf<T>()`                          | Filtered list of sent requests of type `T`           |
+| `publishedOf<T>()`                     | Filtered list of published notifications of type `T` |
+| `assertSent<T>(message?)`              | Fails if no request of type `T` was sent             |
+| `assertNotSent<T>(message?)`           | Fails if any request of type `T` was sent            |
+| `assertSentCount<T>(n, message?)`      | Fails if sent count ≠ `n`                            |
+| `assertPublished<T>(message?)`         | Fails if no notification of type `T` was published   |
+| `assertNotPublished<T>(message?)`      | Fails if any notification of type `T` was published  |
+| `assertPublishedCount<T>(n, message?)` | Fails if published count ≠ `n`                       |
+| `reset()`                              | Clears all recorded sends and publishes              |
 
 ---
 
@@ -130,13 +132,13 @@ fun `two independent scenarios in one test`() = runTest {
 
 ## Choosing the right helper
 
-| Situation | Use |
-|---|---|
-| Test only checks initial state, never calls `send` | `DummyMediator` |
-| Test controls what `send` returns | `FakeMediator` + `fakeHandler` |
-| Test asserts *which* requests were sent | `MediatorSpy` |
-| Test captures published notifications | `captureNotifications` or `MediatorSpy` |
-| Test verifies all handlers are wired up | `MediatorTestUtils.assertAllHandlersRegistered` |
+| Situation                                          | Use                                             |
+|----------------------------------------------------|-------------------------------------------------|
+| Test only checks initial state, never calls `send` | `DummyMediator`                                 |
+| Test controls what `send` returns                  | `FakeMediator` + `fakeHandler`                  |
+| Test asserts *which* requests were sent            | `MediatorSpy`                                   |
+| Test captures published notifications              | `captureNotifications` or `MediatorSpy`         |
+| Test verifies all handlers are wired up            | `MediatorTestUtils.assertAllHandlersRegistered` |
 
 ---
 
