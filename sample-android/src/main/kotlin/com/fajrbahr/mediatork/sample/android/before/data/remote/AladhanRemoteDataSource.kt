@@ -22,11 +22,21 @@ class AladhanRemoteDataSource(
         parsePrayerTimes(
             fetch(
                 "https://api.aladhan.com/v1/timings/$timestamp" +
-                    "?latitude=$latitude&longitude=$longitude&method=$method" +
-                    "&shafaq=general&tune=5%2C3%2C5%2C7%2C9%2C-1%2C0%2C8%2C-6" +
-                    "&school=0&midnightMode=0&timezonestring=UTC" +
-                    "&latitudeAdjustmentMethod=1&calendarMethod=UAQ&iso8601=false"
+                        "?latitude=$latitude&longitude=$longitude&method=$method" +
+                        "&shafaq=general&tune=5%2C3%2C5%2C7%2C9%2C-1%2C0%2C8%2C-6" +
+                        "&school=0&midnightMode=0&timezonestring=UTC" +
+                        "&latitudeAdjustmentMethod=1&calendarMethod=UAQ&iso8601=false"
             )
+        )
+    }
+
+    suspend fun getPrayerTimesByCity(
+        city: String,
+        method: Int = 3,
+    ): TodayPrayerTimes = withContext(ioDispatcher) {
+        val timestamp = System.currentTimeMillis() / 1000
+        parsePrayerTimes(
+            fetch("https://api.aladhan.com/v1/timingsByCity/$timestamp?city=$city&country=&method=$method")
         )
     }
 
@@ -56,11 +66,11 @@ class AladhanRemoteDataSource(
         fun prayer(key: String) = PrayerTime(key, timings.getString(key))
         return TodayPrayerTimes(
             gregorianDate = "${gregorian.getString("day")} " +
-                "${gregorian.getJSONObject("month").getString("en")} " +
-                gregorian.getString("year"),
+                    "${gregorian.getJSONObject("month").getString("en")} " +
+                    gregorian.getString("year"),
             hijriDate = "${hijri.getString("day")} " +
-                "${hijri.getJSONObject("month").getString("en")} " +
-                "${hijri.getString("year")} AH",
+                    "${hijri.getJSONObject("month").getString("en")} " +
+                    "${hijri.getString("year")} AH",
             fajr = prayer("Fajr"), sunrise = prayer("Sunrise"),
             dhuhr = prayer("Dhuhr"), asr = prayer("Asr"),
             maghrib = prayer("Maghrib"), isha = prayer("Isha"),
@@ -71,7 +81,11 @@ class AladhanRemoteDataSource(
         val data = JSONObject(json).getJSONObject("data")
         return (1..12).map { i ->
             val month = data.getJSONObject(i.toString())
-            IslamicMonth(number = month.getInt("number"), nameEn = month.getString("en"), nameAr = month.getString("ar"))
+            IslamicMonth(
+                number = month.getInt("number"),
+                nameEn = month.getString("en"),
+                nameAr = month.getString("ar")
+            )
         }
     }
 }

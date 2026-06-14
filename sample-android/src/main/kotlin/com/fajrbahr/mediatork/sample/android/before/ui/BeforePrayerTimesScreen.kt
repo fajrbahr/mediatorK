@@ -47,8 +47,12 @@ import java.util.TimeZone
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun BeforePrayerTimesScreen(
+    city: String,
     onBack: () -> Unit,
-    viewModel: BeforePrayerTimesViewModel = viewModel(factory = BeforePrayerTimesViewModel.Factory),
+    viewModel: BeforePrayerTimesViewModel = viewModel(
+        key = city,
+        factory = BeforePrayerTimesViewModel.factory(city),
+    ),
 ) {
     BackHandler(onBack = onBack)
     val state by viewModel.uiState.collectAsStateWithLifecycle()
@@ -99,9 +103,21 @@ private fun PrayerTimesContent(prayerTimes: TodayPrayerTimes) {
     ) {
         item {
             Column(modifier = Modifier.padding(bottom = 8.dp)) {
-                Text(prayerTimes.gregorianDate, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
-                Text(prayerTimes.hijriDate, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.primary)
-                Text("London · UTC", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.45f))
+                Text(
+                    prayerTimes.gregorianDate,
+                    style = MaterialTheme.typography.titleLarge,
+                    fontWeight = FontWeight.Bold
+                )
+                Text(
+                    prayerTimes.hijriDate,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.primary
+                )
+                Text(
+                    "$city · UTC",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.45f)
+                )
             }
         }
         if (nextIndex >= 0) {
@@ -112,11 +128,29 @@ private fun PrayerTimesContent(prayerTimes: TodayPrayerTimes) {
                     colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primary),
                 ) {
                     Column(modifier = Modifier.padding(20.dp)) {
-                        Text("Next Prayer", style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.7f))
+                        Text(
+                            "Next Prayer",
+                            style = MaterialTheme.typography.labelMedium,
+                            color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.7f)
+                        )
                         Spacer(Modifier.height(4.dp))
-                        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
-                            Text(prayerTimes.prayers[nextIndex].name, style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onPrimary)
-                            Text(prayerTimes.prayers[nextIndex].time.substringBefore(" "), style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onPrimary)
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(
+                                prayerTimes.prayers[nextIndex].name,
+                                style = MaterialTheme.typography.headlineSmall,
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.onPrimary
+                            )
+                            Text(
+                                prayerTimes.prayers[nextIndex].time.substringBefore(" "),
+                                style = MaterialTheme.typography.headlineMedium,
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.onPrimary
+                            )
                         }
                     }
                 }
@@ -124,7 +158,12 @@ private fun PrayerTimesContent(prayerTimes: TodayPrayerTimes) {
             }
         }
         item {
-            Text("All Prayers", style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.55f), modifier = Modifier.padding(vertical = 4.dp))
+            Text(
+                "All Prayers",
+                style = MaterialTheme.typography.labelLarge,
+                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.55f),
+                modifier = Modifier.padding(vertical = 4.dp)
+            )
         }
         items(prayerTimes.prayers) { prayer ->
             PrayerRow(prayer, isNext = prayerTimes.prayers.indexOf(prayer) == nextIndex)
@@ -142,12 +181,31 @@ private fun PrayerRow(prayer: PrayerTime, isNext: Boolean) {
         colors = CardDefaults.cardColors(containerColor = if (isNext) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surface),
         elevation = CardDefaults.cardElevation(if (isNext) 2.dp else 0.dp),
     ) {
-        Row(modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 14.dp), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
+        Row(
+            modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 14.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
             Row(horizontalArrangement = Arrangement.spacedBy(12.dp), verticalAlignment = Alignment.CenterVertically) {
-                Box(modifier = Modifier.size(8.dp).background(if (isPast) Color.Gray.copy(0.25f) else MaterialTheme.colorScheme.primary, RoundedCornerShape(4.dp)))
-                Text(prayer.name, style = MaterialTheme.typography.bodyLarge, fontWeight = if (isNext) FontWeight.SemiBold else FontWeight.Normal, color = MaterialTheme.colorScheme.onSurface.copy(alpha = alpha))
+                Box(
+                    modifier = Modifier.size(8.dp).background(
+                        if (isPast) Color.Gray.copy(0.25f) else MaterialTheme.colorScheme.primary,
+                        RoundedCornerShape(4.dp)
+                    )
+                )
+                Text(
+                    prayer.name,
+                    style = MaterialTheme.typography.bodyLarge,
+                    fontWeight = if (isNext) FontWeight.SemiBold else FontWeight.Normal,
+                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = alpha)
+                )
             }
-            Text(prayer.time.substringBefore(" "), style = MaterialTheme.typography.bodyLarge, fontWeight = if (isNext) FontWeight.Bold else FontWeight.Normal, color = if (isPast) MaterialTheme.colorScheme.onSurface.copy(0.38f) else MaterialTheme.colorScheme.primary)
+            Text(
+                prayer.time.substringBefore(" "),
+                style = MaterialTheme.typography.bodyLarge,
+                fontWeight = if (isNext) FontWeight.Bold else FontWeight.Normal,
+                color = if (isPast) MaterialTheme.colorScheme.onSurface.copy(0.38f) else MaterialTheme.colorScheme.primary
+            )
         }
     }
 }
@@ -156,7 +214,11 @@ private fun PrayerRow(prayer: PrayerTime, isNext: Boolean) {
 private fun ErrorContent(message: String, onRetry: () -> Unit) {
     Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(16.dp)) {
         Text("Failed to load", style = MaterialTheme.typography.titleMedium)
-        Text(message, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f))
+        Text(
+            message,
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
+        )
         Button(onClick = onRetry) { Text("Retry") }
     }
 }

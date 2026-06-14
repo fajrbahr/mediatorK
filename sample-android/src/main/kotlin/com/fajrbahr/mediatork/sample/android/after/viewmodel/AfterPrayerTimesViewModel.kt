@@ -18,7 +18,10 @@ import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
-class AfterPrayerTimesViewModel(private val mediator: Mediator) : ViewModel() {
+class AfterPrayerTimesViewModel(
+    private val mediator: Mediator,
+    private val city: String,
+) : ViewModel() {
 
     private val refreshTrigger = MutableSharedFlow<Unit>(replay = 1).also { it.tryEmit(Unit) }
 
@@ -27,7 +30,7 @@ class AfterPrayerTimesViewModel(private val mediator: Mediator) : ViewModel() {
             flow {
                 emit(AfterUiState.Loading)
                 emit(
-                    runCatching { mediator.send(GetPrayerTimesRequest()) }
+                    runCatching { mediator.send(GetPrayerTimesRequest(city = city)) }
                         .fold(
                             onSuccess = { AfterUiState.Success(it) },
                             onFailure = { AfterUiState.Error(it.message ?: "Failed to load prayer times") },
@@ -41,14 +44,17 @@ class AfterPrayerTimesViewModel(private val mediator: Mediator) : ViewModel() {
             initialValue = AfterUiState.Loading,
         )
 
-    fun retry() { viewModelScope.launch { refreshTrigger.emit(Unit) } }
+    fun retry() {
+        viewModelScope.launch { refreshTrigger.emit(Unit) }
+    }
 
     companion object {
-        val Factory = viewModelFactory {
+        fun factory(city: String) = viewModelFactory {
             initializer {
                 val cache = AladhanCacheDataSource()
                 AfterPrayerTimesViewModel(
-                    MediatorFactory.create(registrars = listOf(PrayerTimesRegistrar(cache)))
+                    MediatorFactory.create(registrars = listOf(PrayerTimesRegistrar(cache))),
+                    city,
                 )
             }
         }
