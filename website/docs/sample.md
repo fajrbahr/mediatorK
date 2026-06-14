@@ -1,14 +1,23 @@
 ---
 id: sample
 title: Sample
-sidebar_label: Android
+sidebar_label: Samples
 ---
 
 # Sample
 
-MediatorK ships with two runnable samples: a **Kotlin/JVM** module under [
-`/sample`](https://github.com/fajrbahr/MediatorK/tree/main/sample) and a full **Android** app under [
-`/sample-android`](https://github.com/fajrbahr/MediatorK/tree/main/sample-android).
+MediatorK ships with four runnable samples:
+
+| Sample | Module | Framework |
+|--------|--------|-----------|
+| [Android](#android-sample--prayer-times) | [`/sample-android`](https://github.com/fajrbahr/MediatorK/tree/main/sample-android) | Jetpack Compose |
+| [Ktor](#ktor-sample--prayer-times) | [`/sample-ktor`](https://github.com/fajrbahr/MediatorK/tree/main/sample-ktor) | Ktor Server |
+| [Spring Boot](#spring-boot-sample--prayer-times) | [`/sample-spring`](https://github.com/fajrbahr/MediatorK/tree/main/sample-spring) | Spring WebFlux |
+| [Kotlin/JVM](#kotlinjvm-sample) | [`/sample`](https://github.com/fajrbahr/MediatorK/tree/main/sample) | Plain JVM |
+
+The Android, Ktor, and Spring samples all use the same **before / after / after super** structure against the
+[Aladhan prayer-times API](https://aladhan.com/prayer-times-api) so the progression is easy to compare across
+platforms.
 
 ---
 
@@ -165,6 +174,169 @@ MediatorFactory.create(
 | MAX   | `ErrorTrackingPipelineBehavior`  | Captures unhandled exceptions          |
 
 Logs from each pipeline pass appear live in the screen and in Logcat under the tag `MediatorK`.
+
+---
+
+---
+
+## Ktor Sample — Prayer Times
+
+The [`/sample-ktor`](https://github.com/fajrbahr/MediatorK/tree/main/sample-ktor) module is a Ktor (Netty) HTTP server
+using the same three-layer structure as the Android sample.
+
+### Run
+
+```bash
+./gradlew :sample-ktor:run
+# Server starts on http://localhost:8080
+```
+
+### Before — standard Ktor architecture
+
+`Route → UseCase → Repository → DataSource`
+
+```
+before/
+  data/
+    AladhanRemoteDataSource.kt   ← raw HTTP call
+    AladhanCacheDataSource.kt    ← in-memory cache
+    AladhanRepository.kt         ← wires remote + cache
+  domain/
+    GetPrayerTimesUseCase.kt
+    GetIslamicMonthsUseCase.kt
+  routes/
+    BeforeRoutes.kt              ← constructs the chain manually
+```
+
+```kotlin
+fun Application.configureBeforeRoutes() {
+    val getPrayerTimes = GetPrayerTimesUseCase(AladhanRepository(...))
+    routing {
+        get("/before/prayer-times/{city}") {
+            call.respond(getPrayerTimes(call.parameters["city"]!!))
+        }
+    }
+}
+```
+
+### After — MediatorK handlers
+
+`Route → Mediator → Handler`
+
+```
+after/
+  data/
+    AladhanCacheDataSource.kt    ← in-memory cache
+  domain/
+    GetPrayerTimesRequest.kt     ← Request<TodayPrayerTimes> + Handler
+    GetIslamicMonthsRequest.kt   ← Request<List<IslamicMonth>> + Handler
+    AppRegistrar.kt              ← MediatorRegistrar
+  routes/
+    AfterRoutes.kt
+```
+
+```kotlin
+fun Application.configureAfterRoutes() {
+    val mediator = MediatorFactory.create(registrars = listOf(AppRegistrar(cache)))
+    routing {
+        get("/after/prayer-times/{city}") {
+            call.respond(mediator.send(GetPrayerTimesRequest(city = call.parameters["city"]!!)))
+        }
+    }
+}
+```
+
+### After Super — pipeline behaviors
+
+Same `After` setup, extended with validation, retry, logging, timing, timeout, counter, and error-tracking behaviors.
+The `AfterSuperPrayerTimesResponse` wraps the data with the request count from `RequestCounterPipelineBehavior`.
+
+```bash
+curl http://localhost:8080/aftersuper/prayer-times/London
+# { "prayerTimes": {...}, "requestCount": 1 }
+```
+
+---
+
+## Spring Boot Sample — Prayer Times
+
+The [`/sample-spring`](https://github.com/fajrbahr/MediatorK/tree/main/sample-spring) module is a Spring Boot WebFlux
+application using the same three-layer structure.
+
+### Run
+
+```bash
+./gradlew :sample-spring:bootRun
+# Server starts on http://localhost:8081
+```
+
+### Before — standard Spring architecture
+
+`Controller → UseCase → Repository → DataSource`
+
+```
+before/
+  data/
+    AladhanRemoteDataSource.kt   ← @Component, raw HTTP call
+    AladhanCacheDataSource.kt    ← @Component, in-memory cache
+    AladhanRepository.kt         ← @Repository, wires remote + cache
+  domain/
+    GetPrayerTimesUseCase.kt     ← @Service
+    GetIslamicMonthsUseCase.kt   ← @Service
+  controller/
+    BeforePrayerTimesController.kt ← @RestController
+```
+
+```kotlin
+@RestController
+@RequestMapping("/before")
+class BeforePrayerTimesController(
+    private val getPrayerTimes: GetPrayerTimesUseCase,
+    private val getIslamicMonths: GetIslamicMonthsUseCase,
+) {
+    @GetMapping("/prayer-times/{city}")
+    suspend fun getPrayerTimes(@PathVariable city: String): TodayPrayerTimes =
+        getPrayerTimes(city)
+}
+```
+
+### After — MediatorK handlers
+
+`Controller → Mediator → Handler`
+
+```
+after/
+  data/
+    AladhanCacheDataSource.kt    ← @Component
+  domain/
+    GetPrayerTimesRequest.kt     ← Request<TodayPrayerTimes> + Handler
+    GetIslamicMonthsRequest.kt   ← Request<List<IslamicMonth>> + Handler
+    AppRegistrar.kt              ← @Component, MediatorRegistrar
+  config/
+    MediatorConfig.kt            ← @Configuration, @Bean mediator
+  controller/
+    AfterPrayerTimesController.kt ← @RestController
+```
+
+```kotlin
+@RestController
+@RequestMapping("/after")
+class AfterPrayerTimesController(@Qualifier("mediator") private val mediator: Mediator) {
+    @GetMapping("/prayer-times/{city}")
+    suspend fun getPrayerTimes(@PathVariable city: String): TodayPrayerTimes =
+        mediator.send(GetPrayerTimesRequest(city = city))
+}
+```
+
+### After Super — pipeline behaviors
+
+The same `After` setup. `MediatorConfig` also exposes a `mediatorWithBehaviors` bean that includes all six pipeline
+behaviors. `AfterSuperPrayerTimesController` injects this bean and responds with the request count.
+
+```bash
+curl http://localhost:8081/aftersuper/prayer-times/London
+# { "prayerTimes": {...}, "requestCount": 1 }
+```
 
 ---
 

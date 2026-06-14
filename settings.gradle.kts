@@ -20,6 +20,9 @@ include("publishMaven")
 
 include("mediatork-ksp-koin")
 
+include("sample-ktor")
+include("sample-spring")
+
 dependencyResolutionManagement {
     repositories {
         google()

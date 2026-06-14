@@ -79,6 +79,32 @@ fun Application.module() {
 
 ---
 
+---
+
+## Sample — Prayer Times API
+
+The [`/sample-ktor`](https://github.com/fajrbahr/MediatorK/tree/main/sample-ktor) module is a runnable Ktor server
+that fetches prayer times and Islamic calendar months from the [Aladhan API](https://aladhan.com/prayer-times-api). It
+mirrors the [Android sample](../sample.md) structure in three layers:
+
+| Layer | Routes | Pattern |
+|-------|--------|---------|
+| **Before** | `/before/prayer-times/{city}` · `/before/islamic-months` | `Route → UseCase → Repository → DataSource` |
+| **After** | `/after/prayer-times/{city}` · `/after/islamic-months` | `Route → Mediator → Handler` |
+| **After Super** | `/aftersuper/prayer-times/{city}` · `/aftersuper/islamic-months` | After + all pipeline behaviors |
+
+```bash
+# Run (from the repo root)
+./gradlew :sample-ktor:run
+
+# Try it
+curl http://localhost:8080/before/prayer-times/London
+curl http://localhost:8080/after/prayer-times/London
+curl http://localhost:8080/aftersuper/prayer-times/London
+```
+
+---
+
 ## Next
 
 → [Kotlin Multiplatform](kmp.md)
