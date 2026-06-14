@@ -12,7 +12,8 @@
 [![CI](https://github.com/fajrbahr/mediatorK/actions/workflows/release.yml/badge.svg)](https://github.com/fajrbahr/mediatorK/actions/workflows/release.yml)
 [![License: CC0](https://img.shields.io/badge/License-CC0-brightgreen)](LICENSE)
 
-A coroutine-first Mediator library for Kotlin. Implements the CQRS and Vertical Slice patterns — requests go to exactly one handler, notifications fan out to many, and a pipeline of behaviors sits in between.
+A coroutine-first Mediator library for Kotlin. Implements the CQRS and Vertical Slice patterns — requests go to exactly
+one handler, notifications fan out to many, and a pipeline of behaviors sits in between.
 
 → **[Full documentation](https://fajrbahr.github.io/mediatorK/)**
 
@@ -102,19 +103,25 @@ val order = mediator.send(CreateOrderCommand("ORD-1", 150.0))
 
 ## Acknowledgements
 
-First and above all — **الحمد لله** (Alhamdulillah). This library was built during a hard time, and every line was written with Allah's help and guidance.
+First and above all — **الحمد لله** (Alhamdulillah). This library was built during a hard time, and every line was
+written with Allah's help and guidance.
 
-**[Jimmy Bogard](https://www.jimmybogard.com/)** — for his talks on Vertical Slice Architecture and MediatR (.NET), which were the direct inspiration for bringing this pattern to Kotlin.
+**[Jimmy Bogard](https://www.jimmybogard.com/)** — for his talks on Vertical Slice Architecture and MediatR (.NET),
+which were the direct inspiration for bringing this pattern to Kotlin.
 
-**[beno.com](https://beno.com)** — the production environment that shaped this library. Real-world usage at scale drove every design decision here.
+**[beno.com](https://beno.com)** — the production environment that shaped this library. Real-world usage at scale drove
+every design decision here.
 
-**Ahmed Akilan** — our CTO, whose technical mentorship and trust made it possible to grow as an engineer and ship something worth sharing.
+**Ahmed Akilan**, **Jacqueline Lim**, and **[Jaewoong Eum (skydoves)](https://github.com/skydoves/)** — Ahmed, our CTO, whose technical mentorship and trust made it possible to grow as an engineer and ship something worth sharing. Jacqueline, whose support and collaboration were invaluable throughout this journey. And Jaewoong — a one-man engineering force whose open-source contributions to the Android community are worth a team of 100 engineers.
 
-**[Philipp Lackner](https://www.youtube.com/@PhilippLackner)** — for his Android and Kotlin content on YouTube, which has been an invaluable learning resource.
+**[Philipp Lackner](https://www.youtube.com/@PhilippLackner)** — for his Android and Kotlin content on YouTube, which
+has been an invaluable learning resource.
 
-**[Dr. Venkat Subramaniam](https://www.agiledeveloper.com/)** — for his exceptional teaching of Kotlin, functional programming, and software design. His talks and courses shaped the way this library thinks about clean code.
+**[Dr. Venkat Subramaniam](https://www.agiledeveloper.com/)** — for his exceptional teaching of Kotlin, functional
+programming, and software design. His talks and courses shaped the way this library thinks about clean code.
 
-**[droidcon](https://www.droidcon.com/)** — for the talks, conferences, and community that keep Android and Kotlin engineering moving forward.
+**[droidcon](https://www.droidcon.com/)** — for the talks, conferences, and community that keep Android and Kotlin
+engineering moving forward.
 
 ---
 
