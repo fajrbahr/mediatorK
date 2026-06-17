@@ -77,43 +77,6 @@
     font-size: 1.3rem;
 }
 
-/* Feature cards */
-.features {
-    padding: 4rem 0;
-    background: #0f1117;
-}
-
-.featureCard {
-    background: #161b27;
-    border: 1px solid #2a3045;
-    border-radius: 12px;
-    padding: 1.5rem;
-    transition: border-color 0.2s, transform 0.2s;
-}
-
-.featureCard:hover {
-    border-color: #a97cf8;
-    transform: translateY(-2px);
-}
-
-.featureIcon {
-    font-size: 2.2rem;
-    margin-bottom: 0.75rem;
-}
-
-.featureTitle {
-    font-size: 1.1rem;
-    font-weight: 700;
-    color: #f1f5f9;
-    margin-bottom: 0.5rem;
-}
-
-.featureDesc {
-    color: #94a3b8;
-    font-size: 0.95rem;
-    line-height: 1.6;
-}
-
 /* Tables */
 table {
     border-collapse: collapse;

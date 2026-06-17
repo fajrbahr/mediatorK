@@ -25,6 +25,25 @@ val mediator = MediatorFactory.create(
 )
 val user: User = mediator.send(GetUserQuery("user-1"))`;
 
+const BEFORE_CODE = `class InitialViewModel(
+    private val applicationMetadata: ApplicationMetadata,
+    private val retrieveAndStoreTogglesUseCase: RetrieveAndStoreTogglesUseCase,
+    watchTogglesUseCase: WatchTogglesUseCase,
+    private val persistCachedInfoUseCase: PersistCachedInfoUseCase,
+    private val fetchActiveUserAndStoreUseCase: FetchActiveUserAndStoreUseCase,
+    fetchPreferredLocaleUseCase: FetchPreferredLocaleUseCase,
+    fetchVisualThemeUseCase: FetchVisualThemeUseCase,
+    private val metricsReporterPort: MetricsReporterPort,
+    val runtimeSettings: RuntimeSettings,
+    val speedMonitor: SpeedMonitor,
+    val cloudPerformanceTracker: PerformanceTraceListener,
+    val simpleLoggingTracker: SimpleLoggingTracker,
+) : ViewModel()`;
+
+const AFTER_CODE = `class InitialViewModel(
+    private val mediator: Mediator,
+) : ViewModel()`;
+
 const FEATURES = [
     {
         icon: '⚡',
@@ -34,7 +53,7 @@ const FEATURES = [
     {
         icon: '🧩',
         title: 'KMP ready',
-        desc: 'Single commonMain dependency. Works on JVM, Android, and iOS.',
+        desc: 'Single commonMain dependency. Works on JVM, Android, iOS, and more.',
     },
     {
         icon: '🔌',
@@ -49,18 +68,24 @@ const FEATURES = [
     {
         icon: '🧪',
         title: 'Testable by design',
-        desc: 'Test ViewModels without a mock library — swap real handlers for fakes.',
-    },
-    {
-        icon: '🤖',
-        title: 'Android ViewModel Testing',
-        desc: 'Test Android ViewModels with zero mocking library — inject fake handlers directly.',
+        desc: 'ViewModel tests need zero mocking — swap real handlers for fakes.',
     },
     {
         icon: '🛡️',
         title: 'Pipeline behaviors',
-        desc: 'Compose cross-cutting concerns: logging, retry, auth, validation.',
+        desc: 'Compose cross-cutting concerns: logging, retry, auth, circuit-breaker.',
     },
+];
+
+const PLATFORMS = [
+    {name: 'JVM', detail: 'Spring Boot · Ktor · CLI'},
+    {name: 'Android', detail: 'androidTarget · native'},
+    {name: 'iOS', detail: 'iosArm64 · iosSimulatorArm64 · iosX64'},
+    {name: 'macOS', detail: 'macosArm64 · macosX64'},
+    {name: 'tvOS', detail: 'tvosArm64 · tvosSimulatorArm64 · tvosX64'},
+    {name: 'watchOS', detail: 'watchosArm32/64 · watchosSimulatorArm64'},
+    {name: 'Linux', detail: 'linuxArm64 · linuxX64'},
+    {name: 'Web / Wasm', detail: 'js · wasmJs · wasmWasi'},
 ];
 
 export default function Home(): ReactNode {
@@ -101,6 +126,35 @@ export default function Home(): ReactNode {
             </header>
 
             <main>
+                {/* The promise — before / after */}
+                <section className={styles.promiseSection}>
+                    <div className="container">
+                        <h2 className={styles.sectionTitle}>The Promise</h2>
+                        <p className={styles.sectionSub}>
+                            From a ViewModel with 12 constructor parameters — down to one.
+                        </p>
+                        <div className={styles.beforeAfterGrid}>
+                            <div className={styles.beforeAfterCard}>
+                                <div className={clsx(styles.beforeAfterLabel, styles.beforeLabel)}>Before</div>
+                                <CodeBlock language="kotlin">{BEFORE_CODE}</CodeBlock>
+                            </div>
+                            <div className={styles.beforeAfterCard}>
+                                <div className={clsx(styles.beforeAfterLabel, styles.afterLabel)}>After</div>
+                                <CodeBlock language="kotlin">{AFTER_CODE}</CodeBlock>
+                                <p className={styles.afterNote}>
+                                    Every action becomes <code>mediator.send(...)</code>. Each use-case moves
+                                    into a focused handler — testable in isolation, no mocking library needed.
+                                </p>
+                            </div>
+                        </div>
+                        <div className={styles.promiseCta}>
+                            <Link className="button button--outline button--primary" to="/docs/the-promise">
+                                See the full story →
+                            </Link>
+                        </div>
+                    </div>
+                </section>
+
                 {/* Quick example */}
                 <section className={styles.quickExample}>
                     <div className="container">
@@ -136,15 +190,13 @@ export default function Home(): ReactNode {
                 <section className={styles.platformSection}>
                     <div className="container">
                         <h2 className={styles.sectionTitle}>Supported Platforms</h2>
+                        <p className={styles.sectionSub}>
+                            All APIs live in <code>commonMain</code> — one dependency, every target.
+                        </p>
                         <div className={styles.platformGrid}>
-                            {[
-                                ['JVM', 'Spring Boot · Ktor · CLI'],
-                                ['Android', 'androidTarget'],
-                                ['iOS Device', 'iosArm64'],
-                                ['iOS Simulator', 'iosSimulatorArm64 · iosX64'],
-                            ].map(([platform, detail]) => (
-                                <div key={platform} className={styles.platformCard}>
-                                    <div className={styles.platformName}>{platform}</div>
+                            {PLATFORMS.map(({name, detail}) => (
+                                <div key={name} className={styles.platformCard}>
+                                    <div className={styles.platformName}>{name}</div>
                                     <div className={styles.platformDetail}>{detail}</div>
                                 </div>
                             ))}
@@ -157,9 +209,14 @@ export default function Home(): ReactNode {
                     <div className="container">
                         <h2>Ready to build?</h2>
                         <p>Add MediatorK to your project in under a minute.</p>
-                        <Link className="button button--primary button--lg" to="/docs/installation">
-                            View Installation Guide →
-                        </Link>
+                        <div className={styles.buttons}>
+                            <Link className="button button--primary button--lg" to="/docs/installation">
+                                View Installation Guide →
+                            </Link>
+                            <Link className="button button--secondary button--lg" to="/docs/sample">
+                                See Samples →
+                            </Link>
+                        </div>
                     </div>
                 </section>
             </main>
