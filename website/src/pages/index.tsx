@@ -126,19 +126,6 @@ export default function Home(): ReactNode {
             </header>
 
             <main>
-                {/* Install one-liner */}
-                <section className={styles.installSection}>
-                    <div className="container">
-                        <div className={styles.installLabel}>Add to your project</div>
-                        <div className={styles.installWrapper}>
-                            <CodeBlock language="kotlin">{'implementation("io.github.fajrbahr:mediatork:0.6.2")'}</CodeBlock>
-                        </div>
-                        <p className={styles.installNote}>
-                            Available on Maven Central · <a href="/docs/installation">Full installation guide →</a>
-                        </p>
-                    </div>
-                </section>
-
                 {/* The promise — before / after */}
                 <section className={styles.promiseSection}>
                     <div className="container">
