@@ -79,8 +79,6 @@ fun Application.module() {
 
 ---
 
----
-
 ## Sample — Prayer Times API
 
 The [`/samples/sample-ktor`](https://github.com/fajrbahr/MediatorK/tree/main/samples/sample-ktor) module is a runnable Ktor server

@@ -69,3 +69,9 @@ class CreateTodoViewModel(private val mediator: Mediator) : ViewModel() {
 ```
 
 See [Validation](../core/validation.md) for how `ValidationBehavior` and `ValidationException` are set up.
+
+---
+
+## Next
+
+→ [Ktor](ktor.md)

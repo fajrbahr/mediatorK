@@ -111,3 +111,9 @@ class OrderViewModel(
 ```
 
 Each feature gets its own `Command`/`Query` + `Handler` — no cross-feature coupling, no shared ViewModel god-class.
+
+---
+
+## Next
+
+→ [Installation](installation.md)
