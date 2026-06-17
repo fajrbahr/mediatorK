@@ -75,4 +75,4 @@ val user = mediator.send(GetUserQuery("user-1"))
 | Windows    | `mingwX64`                                                                                              |
 | Web / Wasm | `js` · `wasmJs` · `wasmWasi`                                                                            |
 
-Ready to start? Head to [Installation →](installation.md)
+Ready to start? [See the promise MediatorK makes →](the-promise.md)

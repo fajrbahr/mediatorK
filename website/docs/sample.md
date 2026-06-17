@@ -177,8 +177,6 @@ Logs from each pipeline pass appear live in the screen and in Logcat under the t
 
 ---
 
----
-
 ## Ktor Sample — Prayer Times
 
 The [`/samples/sample-ktor`](https://github.com/fajrbahr/MediatorK/tree/main/samples/sample-ktor) module is a Ktor (Netty) HTTP server
@@ -345,11 +343,9 @@ curl http://localhost:8081/aftersuper/prayer-times/London
 The [`/samples/sample`](https://github.com/fajrbahr/MediatorK/tree/main/samples/sample) module shows commands, queries, notifications,
 and pipeline behaviors in plain Kotlin/JVM with no UI framework:
 
-- **ViewModel before & after
-  ** — [OrderViewModelBefore.kt](https://github.com/fajrbahr/MediatorK/blob/main/samples/sample/src/main/kotlin/sample/android/OrderViewModelBefore.kt)
+- **ViewModel before & after** — [OrderViewModelBefore.kt](https://github.com/fajrbahr/MediatorK/blob/main/samples/sample/src/main/kotlin/sample/android/OrderViewModelBefore.kt)
   vs [OrderViewModelAfter.kt](https://github.com/fajrbahr/MediatorK/blob/main/samples/sample/src/main/kotlin/sample/android/OrderViewModelAfter.kt)
-- **Commands, Queries, Notifications
-  ** — [command/](https://github.com/fajrbahr/MediatorK/tree/main/samples/sample/src/main/kotlin/sample/command), [query/](https://github.com/fajrbahr/MediatorK/tree/main/samples/sample/src/main/kotlin/sample/query), [notification/](https://github.com/fajrbahr/MediatorK/tree/main/samples/sample/src/main/kotlin/sample/notification)
+- **Commands, Queries, Notifications** — [command/](https://github.com/fajrbahr/MediatorK/tree/main/samples/sample/src/main/kotlin/sample/command), [query/](https://github.com/fajrbahr/MediatorK/tree/main/samples/sample/src/main/kotlin/sample/query), [notification/](https://github.com/fajrbahr/MediatorK/tree/main/samples/sample/src/main/kotlin/sample/notification)
 - **Pipeline behaviors** — logging, auth, retry, validation, tracing,
   metrics: [behaviors/](https://github.com/fajrbahr/MediatorK/tree/main/samples/sample/src/main/kotlin/sample/behaviors)
 - **Tests** — handler and ViewModel tests with no mocking

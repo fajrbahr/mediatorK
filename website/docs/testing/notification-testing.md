@@ -73,3 +73,9 @@ fun `all listeners receive the event`() = runTest {
     assertEquals(1, sms.size)
 }
 ```
+
+---
+
+## Next
+
+→ [Testing Handlers](handler-testing.md)
