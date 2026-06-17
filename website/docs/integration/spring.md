@@ -87,7 +87,7 @@ class UserController(private val mediator: Mediator) {
 
 ## Sample — Prayer Times API
 
-The [`/sample-spring`](https://github.com/fajrbahr/MediatorK/tree/main/sample-spring) module is a runnable Spring Boot
+The [`/samples/sample-spring`](https://github.com/fajrbahr/MediatorK/tree/main/samples/sample-spring) module is a runnable Spring Boot
 WebFlux application that fetches prayer times and Islamic calendar months from the
 [Aladhan API](https://aladhan.com/prayer-times-api). It mirrors the [Android sample](../sample.md) structure in three
 layers:
@@ -100,7 +100,7 @@ layers:
 
 ```bash
 # Run (from the repo root)
-./gradlew :sample-spring:bootRun
+./gradlew :samples:sample-spring:bootRun
 
 # Try it
 curl http://localhost:8081/before/prayer-times/London

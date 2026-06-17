@@ -10,7 +10,6 @@ plugins {
     id("org.gradle.toolchains.foojay-resolver-convention") version "1.0.0"
 }
 rootProject.name = "MediatorK"
-include("sample")
 
 include("library")
 project(":library").name = "mediatork"
@@ -20,8 +19,6 @@ include("publishMaven")
 
 include("mediatork-ksp-koin")
 
-include("sample-ktor")
-include("sample-spring")
 
 dependencyResolutionManagement {
     repositories {

@@ -8,13 +8,13 @@ sidebar_label: API Reference
 
 Quick reference for all public types in `com.fajrbahr.mediatork`.
 
-| Subpackage                            | Contents                                                                                             |
-|---------------------------------------|------------------------------------------------------------------------------------------------------|
-| `com.fajrbahr.mediatork`              | Core: `Mediator`, `Request`, `HandlerRegistry`, `MediatorFactory`, processors, exceptions            |
-| `com.fajrbahr.mediatork.handler`      | `RequestHandler`, `FallbackRequestHandler`, `RequestExceptionHandler`                                |
-| `com.fajrbahr.mediatork.notification` | `Notification`, `NotificationHandler`, all publisher implementations, missing-handler strategies     |
-| `com.fajrbahr.mediatork.pipeline`     | `PipelineBehavior` and all built-in behaviors (logging, retry, caching, auth, circuit-breaker, etc.) |
-| `com.fajrbahr.mediatork.validator`    | `RequestValidator`, `ValidationBehavior`, `ValidationResult`, DSL builders                           |
+| Subpackage                            | Contents                                                                                                                                                         |
+|---------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `com.fajrbahr.mediatork`              | Core: `Mediator`, `Request`, `HandlerRegistry`, `MediatorFactory`, processors, exceptions                                                                        |
+| `com.fajrbahr.mediatork.handler`      | `RequestHandler`, `FallbackRequestHandler` (`otherwise`), `RequestExceptionHandler`                                                                              |
+| `com.fajrbahr.mediatork.notification` | `Notification`, `NotificationHandler`, `FallbackNotificationHandler` (`otherwise`), all publisher implementations, `ThrowMissingNotificationHandler`, `SilentMissingNotificationHandler` |
+| `com.fajrbahr.mediatork.pipeline`     | `PipelineBehavior` and all built-in behaviors (logging, retry, caching, auth, circuit-breaker, etc.)                                                             |
+| `com.fajrbahr.mediatork.validator`    | `RequestValidator`, `ValidationBehavior`, `ValidationResult`, DSL builders                                                                                       |
 
 ---
 
@@ -147,18 +147,20 @@ object MediatorFactory {
         notificationPublisher: NotificationPublisher = ParallelNotificationPublisher(),
         postProcessors: List<RequestPostProcessor> = emptyList(),
         verifyHandlers: Boolean = true,
+        missingNotificationHandler: NotificationHandler<Notification> = ThrowMissingNotificationHandler(),
     ): Mediator
 }
 ```
 
-| Parameter               | Default                           | Description                                                                                      |
-|-------------------------|-----------------------------------|--------------------------------------------------------------------------------------------------|
-| `registrars`            | `emptyList()`                     | Modules that contribute handlers to the registry                                                 |
-| `pipelineBehaviors`     | `emptyList()`                     | Cross-cutting decorators; sorted by `order`                                                      |
-| `preProcessors`         | `emptyList()`                     | Hooks that run before the handler; sorted by `order`                                             |
-| `notificationPublisher` | `ParallelNotificationPublisher()` | Strategy for delivering notifications                                                            |
-| `postProcessors`        | `emptyList()`                     | Hooks that run after the handler; sorted by `order`                                              |
-| `verifyHandlers`        | `true`                            | When `true`, logs a warning for every request type with no handler after all registrars have run |
+| Parameter                      | Default                              | Description                                                                                      |
+|--------------------------------|--------------------------------------|--------------------------------------------------------------------------------------------------|
+| `registrars`                   | `emptyList()`                        | Modules that contribute handlers to the registry                                                 |
+| `pipelineBehaviors`            | `emptyList()`                        | Cross-cutting decorators; sorted by `order`                                                      |
+| `preProcessors`                | `emptyList()`                        | Hooks that run before the handler; sorted by `order`                                             |
+| `notificationPublisher`        | `ParallelNotificationPublisher()`    | Strategy for delivering notifications                                                            |
+| `postProcessors`               | `emptyList()`                        | Hooks that run after the handler; sorted by `order`                                              |
+| `verifyHandlers`               | `true`                               | When `true`, logs a warning for every request type with no handler after all registrars have run |
+| `missingNotificationHandler`   | `ThrowMissingNotificationHandler()`  | What to do when a notification is published with no registered handlers                          |
 
 ---
 
@@ -180,10 +182,11 @@ interface MediatorRegistrar {
 interface Mediator : Sender, Publisher
 ```
 
-| Method                  | Description                                                                              |
-|-------------------------|------------------------------------------------------------------------------------------|
-| `send(request)`         | Dispatch a request; returns `TResponse`. Throws `MissingHandlerException` if no handler. |
-| `publish(notification)` | Broadcast a notification to all registered handlers.                                     |
+| Method                              | Description                                                                              |
+|-------------------------------------|------------------------------------------------------------------------------------------|
+| `send(request)`                     | Dispatch a request; returns `TResponse`. Throws `MissingHandlerException` if no handler. |
+| `publish(notification)`             | Broadcast a notification using the default `NotificationPublisher`.                      |
+| `publish(notification, publisher)`  | Broadcast a notification using the supplied publisher, overriding the default for this call only. |
 
 ---
 
@@ -200,11 +203,12 @@ interface Mediator : Sender, Publisher
 
 ## Exceptions
 
-| Class                     | Description                                           |
-|---------------------------|-------------------------------------------------------|
-| `MediatorException`       | Base class for all MediatorK errors                   |
-| `MissingHandlerException` | No handler registered for the dispatched request type |
-| `AggregateException`      | One or more notification handlers failed              |
+| Class                              | Description                                                         |
+|------------------------------------|---------------------------------------------------------------------|
+| `MediatorException`                | Base class for all MediatorK errors                                 |
+| `MissingHandlerException`          | No handler registered for the dispatched request type               |
+| `MissingNotificationHandlerException` | No handlers registered for a published notification type         |
+| `AggregateException`               | One or more notification handlers failed (from `ContinueOnException…`) |
 
 ---
 

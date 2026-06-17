@@ -10,10 +10,10 @@ MediatorK ships with four runnable samples:
 
 | Sample | Module | Framework |
 |--------|--------|-----------|
-| [Android](#android-sample--prayer-times) | [`/sample-android`](https://github.com/fajrbahr/MediatorK/tree/main/sample-android) | Jetpack Compose |
-| [Ktor](#ktor-sample--prayer-times) | [`/sample-ktor`](https://github.com/fajrbahr/MediatorK/tree/main/sample-ktor) | Ktor Server |
-| [Spring Boot](#spring-boot-sample--prayer-times) | [`/sample-spring`](https://github.com/fajrbahr/MediatorK/tree/main/sample-spring) | Spring WebFlux |
-| [Kotlin/JVM](#kotlinjvm-sample) | [`/sample`](https://github.com/fajrbahr/MediatorK/tree/main/sample) | Plain JVM |
+| [Android](#android-sample--prayer-times) | [`/samples/sample-android`](https://github.com/fajrbahr/MediatorK/tree/main/samples/sample-android) | Jetpack Compose |
+| [Ktor](#ktor-sample--prayer-times) | [`/samples/sample-ktor`](https://github.com/fajrbahr/MediatorK/tree/main/samples/sample-ktor) | Ktor Server |
+| [Spring Boot](#spring-boot-sample--prayer-times) | [`/samples/sample-spring`](https://github.com/fajrbahr/MediatorK/tree/main/samples/sample-spring) | Spring WebFlux |
+| [Kotlin/JVM](#kotlinjvm-sample) | [`/samples/sample`](https://github.com/fajrbahr/MediatorK/tree/main/samples/sample) | Plain JVM |
 
 The Android, Ktor, and Spring samples all use the same **before / after / after super** structure against the
 [Aladhan prayer-times API](https://aladhan.com/prayer-times-api) so the progression is easy to compare across
@@ -30,8 +30,8 @@ the [Aladhan API](https://aladhan.com/prayer-times-api). It is structured in thr
 ### Open in Android Studio
 
 ```
-# Clone the repo, then open sample-android/ as its own project:
-File → Open → <repo-root>/sample-android
+# Clone the repo, then open samples/sample-android/ as its own project:
+File → Open → <repo-root>/samples/sample-android
 ```
 
 The folder contains its own `settings.gradle.kts` and `build.gradle.kts`, so Android Studio treats it as a standalone
@@ -181,13 +181,13 @@ Logs from each pipeline pass appear live in the screen and in Logcat under the t
 
 ## Ktor Sample — Prayer Times
 
-The [`/sample-ktor`](https://github.com/fajrbahr/MediatorK/tree/main/sample-ktor) module is a Ktor (Netty) HTTP server
+The [`/samples/sample-ktor`](https://github.com/fajrbahr/MediatorK/tree/main/samples/sample-ktor) module is a Ktor (Netty) HTTP server
 using the same three-layer structure as the Android sample.
 
 ### Run
 
 ```bash
-./gradlew :sample-ktor:run
+./gradlew :samples:sample-ktor:run
 # Server starts on http://localhost:8080
 ```
 
@@ -260,13 +260,13 @@ curl http://localhost:8080/aftersuper/prayer-times/London
 
 ## Spring Boot Sample — Prayer Times
 
-The [`/sample-spring`](https://github.com/fajrbahr/MediatorK/tree/main/sample-spring) module is a Spring Boot WebFlux
+The [`/samples/sample-spring`](https://github.com/fajrbahr/MediatorK/tree/main/samples/sample-spring) module is a Spring Boot WebFlux
 application using the same three-layer structure.
 
 ### Run
 
 ```bash
-./gradlew :sample-spring:bootRun
+./gradlew :samples:sample-spring:bootRun
 # Server starts on http://localhost:8081
 ```
 
@@ -342,17 +342,17 @@ curl http://localhost:8081/aftersuper/prayer-times/London
 
 ## Kotlin/JVM Sample
 
-The [`/sample`](https://github.com/fajrbahr/MediatorK/tree/main/sample) module shows commands, queries, notifications,
+The [`/samples/sample`](https://github.com/fajrbahr/MediatorK/tree/main/samples/sample) module shows commands, queries, notifications,
 and pipeline behaviors in plain Kotlin/JVM with no UI framework:
 
 - **ViewModel before & after
-  ** — [OrderViewModelBefore.kt](https://github.com/fajrbahr/MediatorK/blob/main/sample/src/main/kotlin/sample/android/OrderViewModelBefore.kt)
-  vs [OrderViewModelAfter.kt](https://github.com/fajrbahr/MediatorK/blob/main/sample/src/main/kotlin/sample/android/OrderViewModelAfter.kt)
+  ** — [OrderViewModelBefore.kt](https://github.com/fajrbahr/MediatorK/blob/main/samples/sample/src/main/kotlin/sample/android/OrderViewModelBefore.kt)
+  vs [OrderViewModelAfter.kt](https://github.com/fajrbahr/MediatorK/blob/main/samples/sample/src/main/kotlin/sample/android/OrderViewModelAfter.kt)
 - **Commands, Queries, Notifications
-  ** — [command/](https://github.com/fajrbahr/MediatorK/tree/main/sample/src/main/kotlin/sample/command), [query/](https://github.com/fajrbahr/MediatorK/tree/main/sample/src/main/kotlin/sample/query), [notification/](https://github.com/fajrbahr/MediatorK/tree/main/sample/src/main/kotlin/sample/notification)
+  ** — [command/](https://github.com/fajrbahr/MediatorK/tree/main/samples/sample/src/main/kotlin/sample/command), [query/](https://github.com/fajrbahr/MediatorK/tree/main/samples/sample/src/main/kotlin/sample/query), [notification/](https://github.com/fajrbahr/MediatorK/tree/main/samples/sample/src/main/kotlin/sample/notification)
 - **Pipeline behaviors** — logging, auth, retry, validation, tracing,
-  metrics: [behaviors/](https://github.com/fajrbahr/MediatorK/tree/main/sample/src/main/kotlin/sample/behaviors)
+  metrics: [behaviors/](https://github.com/fajrbahr/MediatorK/tree/main/samples/sample/src/main/kotlin/sample/behaviors)
 - **Tests** — handler and ViewModel tests with no mocking
-  library: [SampleHandlerTest.kt](https://github.com/fajrbahr/MediatorK/blob/main/sample/src/test/kotlin/sample/SampleHandlerTest.kt)
+  library: [SampleHandlerTest.kt](https://github.com/fajrbahr/MediatorK/blob/main/samples/sample/src/test/kotlin/sample/SampleHandlerTest.kt)
 
-Browse the full module on [GitHub →](https://github.com/fajrbahr/MediatorK/tree/main/sample)
+Browse the full module on [GitHub →](https://github.com/fajrbahr/MediatorK/tree/main/samples/sample)
