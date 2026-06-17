@@ -83,7 +83,7 @@ fun Application.module() {
 
 ## Sample — Prayer Times API
 
-The [`/sample-ktor`](https://github.com/fajrbahr/MediatorK/tree/main/sample-ktor) module is a runnable Ktor server
+The [`/samples/sample-ktor`](https://github.com/fajrbahr/MediatorK/tree/main/samples/sample-ktor) module is a runnable Ktor server
 that fetches prayer times and Islamic calendar months from the [Aladhan API](https://aladhan.com/prayer-times-api). It
 mirrors the [Android sample](../sample.md) structure in three layers:
 
@@ -95,7 +95,7 @@ mirrors the [Android sample](../sample.md) structure in three layers:
 
 ```bash
 # Run (from the repo root)
-./gradlew :sample-ktor:run
+./gradlew :samples:sample-ktor:run
 
 # Try it
 curl http://localhost:8080/before/prayer-times/London

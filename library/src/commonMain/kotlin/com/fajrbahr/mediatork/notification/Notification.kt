@@ -19,7 +19,7 @@ package com.fajrbahr.mediatork.notification
  * // Analytics handler tracks the purchase
  * // Email handler sends a receipt
  * // Badge handler updates the booking count
- * //-none of them respond to the publisher
+ * // none of them respond to the publisher
  * ```
  *
  * The publish strategy controls how handlers are invoked:

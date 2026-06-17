@@ -25,7 +25,7 @@ No kotlin-reflect. No annotation processing. No framework required.
 |---------------------------|----------------------------------------------------------------------|
 | ⚡ **Coroutine-native**    | `suspend` all the way down — no callbacks, no blocking               |
 | 🧩 **KMP ready**          | Works on JVM, Android, and iOS from a single `commonMain` dependency |
-| 🔌 **Framework-agnostic** | Works with Spring Boot, Ktor, KMM, or plain Kotlin                   |
+| 🔌 **Framework-agnostic** | Works with Spring Boot, Ktor, KMP, or plain Kotlin                   |
 | 🪶 **Zero magic**         | No kotlin-reflect, no code generation, no annotation processors      |
 | 🧪 **Testable by design** | Swap real handlers for fakes — no mocking library needed             |
 
