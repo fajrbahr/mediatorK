@@ -66,7 +66,7 @@ const config: Config = {
         colorMode: {
             defaultMode: 'dark',
             disableSwitch: true,
-            respectPrefersColorScheme: false,
+            respectPrefersColorScheme: true,
         },
         navbar: {
             title: 'MediatorK',

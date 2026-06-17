@@ -21,7 +21,7 @@
 }
 
 .heroMeta {
-    color: #64748b;
+    color: var(--mk-color-subtle);
     font-size: 0.95rem;
     letter-spacing: 0.04em;
     margin-top: -0.5rem;
@@ -48,10 +48,39 @@
     flex-wrap: wrap;
 }
 
+/* Install one-liner */
+.installSection {
+    padding: 2rem 0 1.75rem;
+    background: var(--ifm-background-color);
+    text-align: center;
+    border-bottom: 1px solid var(--mk-color-border);
+}
+
+.installLabel {
+    color: var(--mk-color-muted);
+    font-size: 0.82rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 0.75rem;
+}
+
+.installWrapper {
+    max-width: 560px;
+    margin: 0 auto;
+    text-align: left;
+}
+
+.installNote {
+    color: var(--mk-color-subtle);
+    font-size: 0.88rem;
+    margin-top: 0.75rem;
+}
+
 /* The Promise — before / after */
 .promiseSection {
     padding: 4rem 0;
-    background: #161b27;
+    background: var(--ifm-background-surface-color);
     text-align: center;
 }
 
@@ -88,18 +117,18 @@
 
 .beforeLabel {
     background: rgba(251, 191, 36, 0.12);
-    color: #fbbf24;
+    color: var(--ifm-color-warning);
     border: 1px solid rgba(251, 191, 36, 0.3);
 }
 
 .afterLabel {
     background: rgba(52, 211, 153, 0.12);
-    color: #34d399;
+    color: var(--ifm-color-success);
     border: 1px solid rgba(52, 211, 153, 0.3);
 }
 
 .afterNote {
-    color: #94a3b8;
+    color: var(--mk-color-muted);
     font-size: 0.95rem;
     line-height: 1.6;
     margin: 0;
@@ -112,7 +141,7 @@
 /* Quick example */
 .quickExample {
     padding: 4rem 0;
-    background: #0f1117;
+    background: var(--ifm-background-color);
     text-align: center;
 }
 
@@ -120,11 +149,11 @@
     font-size: 2rem;
     font-weight: 700;
     margin-bottom: 0.5rem;
-    color: #f1f5f9;
+    color: var(--ifm-heading-color);
 }
 
 .sectionSub {
-    color: #94a3b8;
+    color: var(--mk-color-muted);
     margin-bottom: 2rem;
     font-size: 1.05rem;
 }
@@ -147,7 +176,7 @@
 /* Features */
 .featuresSection {
     padding: 4rem 0;
-    background: #161b27;
+    background: var(--ifm-background-surface-color);
     text-align: center;
 }
 
@@ -171,8 +200,8 @@
 }
 
 .featureCard {
-    background: #1e2433;
-    border: 1px solid #2a3045;
+    background: var(--mk-color-surface-elevated);
+    border: 1px solid var(--mk-color-border);
     border-radius: 12px;
     padding: 1.5rem 1.25rem;
     text-align: left;
@@ -180,7 +209,7 @@
 }
 
 .featureCard:hover {
-    border-color: #a97cf8;
+    border-color: var(--ifm-color-primary);
     transform: translateY(-3px);
 }
 
@@ -192,12 +221,12 @@
 .featureTitle {
     font-size: 1rem;
     font-weight: 700;
-    color: #f1f5f9;
+    color: var(--ifm-heading-color);
     margin-bottom: 0.4rem;
 }
 
 .featureDesc {
-    color: #94a3b8;
+    color: var(--mk-color-muted);
     font-size: 0.9rem;
     line-height: 1.6;
 }
@@ -205,7 +234,7 @@
 /* Platforms */
 .platformSection {
     padding: 4rem 0;
-    background: #0f1117;
+    background: var(--ifm-background-color);
     text-align: center;
 }
 
@@ -223,21 +252,21 @@
 }
 
 .platformCard {
-    background: #161b27;
-    border: 1px solid #2a3045;
+    background: var(--ifm-background-surface-color);
+    border: 1px solid var(--mk-color-border);
     border-radius: 10px;
     padding: 1.25rem 1rem;
 }
 
 .platformName {
     font-weight: 700;
-    color: #a97cf8;
+    color: var(--ifm-color-primary);
     font-size: 1rem;
     margin-bottom: 0.35rem;
 }
 
 .platformDetail {
-    color: #64748b;
+    color: var(--mk-color-subtle);
     font-size: 0.82rem;
     font-family: var(--ifm-font-family-monospace);
 }
@@ -245,19 +274,19 @@
 /* CTA */
 .ctaSection {
     padding: 5rem 0;
-    background: linear-gradient(135deg, #161b27, #1a1030);
+    background: linear-gradient(135deg, var(--ifm-background-surface-color), #1a1030);
     text-align: center;
-    border-top: 1px solid #2a3045;
+    border-top: 1px solid var(--mk-color-border);
 }
 
 .ctaSection h2 {
     font-size: 2rem;
-    color: #f1f5f9;
+    color: var(--ifm-heading-color);
     margin-bottom: 0.75rem;
 }
 
 .ctaSection p {
-    color: #94a3b8;
+    color: var(--mk-color-muted);
     margin-bottom: 2rem;
     font-size: 1.05rem;
 }
