@@ -2,8 +2,10 @@ package com.fajrbahr.mediatork.test
 
 import com.fajrbahr.mediatork.Mediator
 import com.fajrbahr.mediatork.Request
+import com.fajrbahr.mediatork.StreamRequest
 import com.fajrbahr.mediatork.notification.Notification
 import com.fajrbahr.mediatork.notification.NotificationPublisher
+import kotlinx.coroutines.flow.Flow
 import kotlin.test.assertTrue
 
 /**
@@ -29,6 +31,7 @@ class MediatorSpy(private val delegate: Mediator) : Mediator {
 
     private val _sentRequests = Collections.synchronizedList(mutableListOf<Request<*>>())
     private val _publishedNotifications = Collections.synchronizedList(mutableListOf<Notification>())
+    private val _streamedRequests = Collections.synchronizedList(mutableListOf<StreamRequest<*>>())
 
     /** Every request passed to [send], in dispatch order. */
     val sentRequests: List<Request<*>> get() = _sentRequests.toList()
@@ -36,9 +39,17 @@ class MediatorSpy(private val delegate: Mediator) : Mediator {
     /** Every notification passed to [publish], in dispatch order. */
     val publishedNotifications: List<Notification> get() = _publishedNotifications.toList()
 
+    /** Every request passed to [stream], in dispatch order. */
+    val streamedRequests: List<StreamRequest<*>> get() = _streamedRequests.toList()
+
     override suspend fun <TRequest : Request<TResult>, TResult> send(request: TRequest): TResult {
         _sentRequests.add(request)
         return delegate.send(request)
+    }
+
+    override fun <TRequest : StreamRequest<T>, T> stream(request: TRequest): Flow<T> {
+        _streamedRequests.add(request)
+        return delegate.stream(request)
     }
 
     override suspend fun <T : Notification> publish(notification: T) {
@@ -133,10 +144,42 @@ class MediatorSpy(private val delegate: Mediator) : Mediator {
         )
     }
 
-    /** Clears all recorded sends and publishes. */
+    /** Returns all streamed requests of type [T]. */
+    inline fun <reified T : StreamRequest<*>> streamedOf(): List<T> = streamedRequests.filterIsInstance<T>()
+
+    /** Asserts that at least one stream request of type [T] was dispatched. */
+    inline fun <reified T : StreamRequest<*>> assertStreamed(message: String? = null) {
+        val prefix = if (message != null) "$message: " else ""
+        assertTrue(
+            streamedOf<T>().isNotEmpty(),
+            "${prefix}Expected at least one ${T::class.simpleName} to be streamed, but none was.",
+        )
+    }
+
+    /** Asserts that no stream request of type [T] was dispatched. */
+    inline fun <reified T : StreamRequest<*>> assertNotStreamed(message: String? = null) {
+        val prefix = if (message != null) "$message: " else ""
+        assertTrue(
+            streamedOf<T>().isEmpty(),
+            "${prefix}Expected no ${T::class.simpleName} to be streamed, but ${streamedOf<T>().size} was.",
+        )
+    }
+
+    /** Asserts that exactly [count] stream requests of type [T] were dispatched. */
+    inline fun <reified T : StreamRequest<*>> assertStreamedCount(count: Int, message: String? = null) {
+        val actual = streamedOf<T>().size
+        val prefix = if (message != null) "$message: " else ""
+        assertTrue(
+            actual == count,
+            "${prefix}Expected $count ${T::class.simpleName} to be streamed, but was $actual.",
+        )
+    }
+
+    /** Clears all recorded sends, publishes, and streams. */
     fun reset() {
         _sentRequests.clear()
         _publishedNotifications.clear()
+        _streamedRequests.clear()
     }
 }
 

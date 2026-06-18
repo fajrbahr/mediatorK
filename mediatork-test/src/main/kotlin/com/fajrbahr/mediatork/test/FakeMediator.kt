@@ -2,11 +2,13 @@ package com.fajrbahr.mediatork.test
 
 import com.fajrbahr.mediatork.*
 import com.fajrbahr.mediatork.handler.RequestHandler
+import com.fajrbahr.mediatork.handler.StreamRequestHandler
 import com.fajrbahr.mediatork.notification.Notification
 import com.fajrbahr.mediatork.notification.NotificationHandler
 import com.fajrbahr.mediatork.notification.NotificationPublisher
 import com.fajrbahr.mediatork.notification.ParallelNotificationPublisher
 import com.fajrbahr.mediatork.pipeline.PipelineBehavior
+import kotlinx.coroutines.flow.Flow
 
 /**
  * A test-only [Mediator] backed by a real [HandlerRegistry] and [MediatorFactory].
@@ -52,8 +54,15 @@ class FakeMediator(
         handler: RequestHandler<TRequest, TResult>,
     ) = registry.register(handler)
 
+    inline fun <reified TRequest : StreamRequest<T>, T> registerStream(
+        handler: StreamRequestHandler<TRequest, T>,
+    ) = registry.registerStream(handler)
+
     override suspend fun <TRequest : Request<TResult>, TResult> send(request: TRequest): TResult =
         mediator.send(request)
+
+    override fun <TRequest : StreamRequest<T>, T> stream(request: TRequest): Flow<T> =
+        mediator.stream(request)
 
     override suspend fun <T : Notification> publish(notification: T) =
         mediator.publish(notification)

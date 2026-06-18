@@ -14,7 +14,7 @@ dependencies {
     // Format: <kotlin-version>-<ksp-patch>
     // Update this when bumping the Kotlin version in the root build.gradle.kts.
     implementation(libs.ksp.api)
-    implementation(project(":library"))
+    implementation(project(":mediatork"))
     compileOnly("io.insert-koin:koin-core:3.5.6")
 }
 

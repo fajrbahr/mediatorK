@@ -7,6 +7,7 @@ import com.fajrbahr.mediatork.notification.NotificationPublisher
 import com.fajrbahr.mediatork.notification.ThrowMissingNotificationHandler
 import com.fajrbahr.mediatork.pipeline.PipelineBehavior
 import com.fajrbahr.mediatork.pipeline.RequestHandlerDelegate
+import kotlinx.coroutines.flow.Flow
 
 /**
  * Default [Mediator] implementation produced by [MediatorFactory.create].
@@ -42,6 +43,20 @@ internal class MediatorImpl(
     override suspend fun <TRequest : Request<TResult>, TResult> send(request: TRequest): TResult {
         val handler = registry.resolveHandler(request)
         return executePipeline(request, handler)
+    }
+
+    /**
+     * Resolves the stream handler for [request] and returns a cold [Flow].
+     *
+     * The handler is resolved eagerly; the flow itself is cold — nothing executes
+     * until the caller collects it.
+     *
+     * @throws MissingStreamHandlerException if no handler is registered for the request type.
+     */
+    override fun <TRequest : StreamRequest<T>, T> stream(request: TRequest): Flow<T> {
+        val handler = registry.resolveStreamHandler(request)
+        val requestContext = RequestContext()
+        return handler.handle(this, requestContext, request)
     }
 
     /**

@@ -2,6 +2,7 @@ package com.fajrbahr.mediatork
 
 import com.fajrbahr.mediatork.handler.RequestExceptionHandler
 import com.fajrbahr.mediatork.handler.RequestHandler
+import com.fajrbahr.mediatork.handler.StreamRequestHandler
 import com.fajrbahr.mediatork.notification.Notification
 import com.fajrbahr.mediatork.notification.NotificationHandler
 import com.fajrbahr.mediatork.notification.NotificationPublisher
@@ -45,6 +46,13 @@ class HandlerRegistry {
     @PublishedApi
     internal val exceptionHandlers: MutableMap<KClass<*>, MutableList<Pair<KClass<out Throwable>, RequestExceptionHandler<*, *, *>>>> =
         mutableMapOf()
+
+    /**
+     * Maps each [StreamRequest] [KClass] to its single registered [StreamRequestHandler].
+     * Marked `@PublishedApi` for inline-function access.
+     */
+    @PublishedApi
+    internal val streamHandlers: MutableMap<KClass<*>, StreamRequestHandler<*, *>> = mutableMapOf()
 
     /**
      * Groups a set of registrations into a logical block for readability.
@@ -116,6 +124,23 @@ class HandlerRegistry {
     }
 
     /**
+     * Registers [handler] as the sole stream handler for request type [TRequest].
+     *
+     * If a handler is already registered for [TRequest], it is silently replaced.
+     *
+     * @param TRequest the stream request type to associate with [handler].
+     * @param T the type of each item emitted by the flow.
+     * @param handler the stream handler to register.
+     * @return this registry, for chaining.
+     */
+    inline infix fun <reified TRequest : StreamRequest<T>, T> registerStream(
+        handler: StreamRequestHandler<TRequest, T>,
+    ): HandlerRegistry {
+        streamHandlers[TRequest::class] = handler
+        return this
+    }
+
+    /**
      * DSL operator that registers this [RequestHandler] via [register].
      *
      * Allows the `+handler` syntax inside a [scope] block.
@@ -134,6 +159,15 @@ class HandlerRegistry {
     }
 
     /**
+     * DSL operator that registers this [StreamRequestHandler] via [registerStream].
+     *
+     * Allows the `+handler` syntax inside a [scope] block.
+     */
+    inline operator fun <reified TRequest : StreamRequest<T>, T> StreamRequestHandler<TRequest, T>.unaryPlus() {
+        registerStream(this)
+    }
+
+    /**
      * Returns `true` if a [RequestHandler] is registered for [requestType].
      *
      * @param requestType the [KClass] of the request to check.
@@ -142,6 +176,12 @@ class HandlerRegistry {
 
     /** Returns the set of all request types that have a registered handler. */
     fun registeredRequestTypes(): Set<KClass<*>> = requestHandlers.keys.toSet()
+
+    /** Returns `true` if a [StreamRequestHandler] is registered for [requestType]. */
+    fun hasStreamHandler(requestType: KClass<*>): Boolean = streamHandlers.containsKey(requestType)
+
+    /** Returns the set of all stream request types that have a registered handler. */
+    fun registeredStreamRequestTypes(): Set<KClass<*>> = streamHandlers.keys.toSet()
 
     /**
      * Looks up and returns the handler registered for [request]'s runtime type.
@@ -163,6 +203,19 @@ class HandlerRegistry {
     @Suppress("UNCHECKED_CAST")
     internal fun <T : Notification> resolveNotificationHandlers(notification: T): List<NotificationHandler<T>> =
         (notificationHandlers[notification::class] ?: emptyList()) as List<NotificationHandler<T>>
+
+    /**
+     * Looks up and returns the stream handler registered for [request]'s runtime type.
+     *
+     * @throws MissingStreamHandlerException if no handler is registered for the request type.
+     */
+    @Suppress("UNCHECKED_CAST")
+    internal fun <TRequest : StreamRequest<T>, T> resolveStreamHandler(request: TRequest): StreamRequestHandler<TRequest, T> =
+        streamHandlers[request::class] as? StreamRequestHandler<TRequest, T>
+            ?: throw MissingStreamHandlerException(
+                requestTypeName = request::class.simpleName ?: "Unknown",
+                registered = streamHandlers.keys.mapNotNull { it.simpleName },
+            )
 
     /**
      * Finds the first exception handler registered for [request]'s type whose

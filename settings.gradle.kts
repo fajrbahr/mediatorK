@@ -19,6 +19,7 @@ include("publishMaven")
 
 include("mediatork-ksp-koin")
 
+include("samples:sample")
 
 dependencyResolutionManagement {
     repositories {

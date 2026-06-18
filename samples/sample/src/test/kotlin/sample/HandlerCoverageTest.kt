@@ -4,6 +4,8 @@ import com.fajrbahr.mediatork.test.MediatorTestUtils
 import sample.command.OrderRegistrar
 import sample.exceptions.ShipOrderRegistrar
 import sample.fallback.FallbackRegistrar
+import sample.invoice.InvoiceRegistrar
+import sample.invoice.InvoiceRepository
 import sample.notification.OrderNotificationRegistrar
 import sample.query.FetchUserHandlerRegistrar
 import sample.query.GetOrderRegistrar
@@ -23,6 +25,7 @@ class HandlerCoverageTest {
                 GetOrderRegistrar(),
                 ShipOrderRegistrar(),
                 FallbackRegistrar(),
+                InvoiceRegistrar(InvoiceRepository()),
             ),
             packages = listOf("sample"),
         )
