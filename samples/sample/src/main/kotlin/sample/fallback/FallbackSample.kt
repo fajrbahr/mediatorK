@@ -9,8 +9,8 @@ import com.fajrbahr.mediatork.handler.otherwise
 import com.fajrbahr.mediatork.notification.Notification
 import com.fajrbahr.mediatork.notification.NotificationHandler
 import com.fajrbahr.mediatork.notification.otherwise
-import sample.command.CreateOrderCommand
-import sample.command.OrderResult
+import sample.orders.commands.createorder.CreateOrderCommand
+import sample.orders.commands.createorder.OrderResult
 
 // ── APIs ──────────────────────────────────────────────────────────────────────
 

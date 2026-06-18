@@ -1,9 +1,8 @@
-package sample.invoice
+package sample.invoice.commands.createinvoice
 
 import com.fajrbahr.mediatork.validator.*
+import sample.invoice.InvoiceRepository
 import kotlin.reflect.KClass
-
-// ── REQUEST scope — field format/type checks, runs automatically in the pipeline ──
 
 class CreateInvoiceRequestValidator : RequestValidator<CreateInvoiceCommand> {
     override val requestClass: KClass<CreateInvoiceCommand> = CreateInvoiceCommand::class
@@ -20,35 +19,37 @@ class CreateInvoiceRequestValidator : RequestValidator<CreateInvoiceCommand> {
     }
 }
 
-// ── DOMAIN scope — business-rule checks requiring app state, called by the handler ──
-
 class CreateInvoiceDomainValidator(private val repo: InvoiceRepository) : RequestValidator<CreateInvoiceCommand> {
     override val requestClass: KClass<CreateInvoiceCommand> = CreateInvoiceCommand::class
     override val scope = ValidationScope.DOMAIN
 
-    override fun validate(request: CreateInvoiceCommand): ValidationResult {
-        // Business rule: the same invoice ID cannot be re-submitted
-        return if (repo.findById(request.id) != null) {
+    override fun validate(request: CreateInvoiceCommand): ValidationResult =
+        if (repo.findById(request.id) != null) {
             ValidationResult.error(CreateInvoiceField.Id, "Invoice ${request.id} already exists")
         } else {
             ValidationResult.Success
         }
-    }
 }
-
-// ── PERSISTENCE scope — uniqueness / FK checks, called just before the write ──
 
 class CreateInvoicePersistenceValidator(private val repo: InvoiceRepository) : RequestValidator<CreateInvoiceCommand> {
     override val requestClass: KClass<CreateInvoiceCommand> = CreateInvoiceCommand::class
     override val scope = ValidationScope.PERSISTENCE
 
-    override fun validate(request: CreateInvoiceCommand): ValidationResult {
-        // DB-level check: ID uniqueness (here same as domain, but in production this
-        // would be a SELECT EXISTS query inside the same transaction as the insert)
-        return if (repo.findById(request.id) != null) {
+    override fun validate(request: CreateInvoiceCommand): ValidationResult =
+        if (repo.findById(request.id) != null) {
             ValidationResult.error(CreateInvoiceField.Id, "Duplicate invoice ID — database constraint violated")
         } else {
             ValidationResult.Success
+        }
+}
+
+class CreateInvoiceAmountPolicyValidator : RequestValidator<CreateInvoiceCommand> {
+    override val requestClass: KClass<CreateInvoiceCommand> = CreateInvoiceCommand::class
+    override val scope = ValidationScope.REQUEST
+
+    override fun validate(request: CreateInvoiceCommand): ValidationResult = rules {
+        ruleFor(CreateInvoiceField.Amount, request.amount) {
+            check(it <= 10_000.0) { "Amount exceeds the maximum policy limit of 10,000" }
         }
     }
 }

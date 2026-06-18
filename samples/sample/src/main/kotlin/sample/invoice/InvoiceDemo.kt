@@ -6,6 +6,14 @@ import com.fajrbahr.mediatork.validator.ValidationBehavior
 import com.fajrbahr.mediatork.validator.ValidationException
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.runBlocking
+import sample.invoice.commands.approveinvoice.ApproveInvoiceCommand
+import sample.invoice.commands.createinvoice.CreateInvoiceAmountPolicyValidator
+import sample.invoice.commands.createinvoice.CreateInvoiceCommand
+import sample.invoice.commands.createinvoice.CreateInvoiceDomainValidator
+import sample.invoice.commands.createinvoice.CreateInvoicePersistenceValidator
+import sample.invoice.commands.createinvoice.CreateInvoiceRequestValidator
+import sample.invoice.queries.getinvoice.GetInvoiceQuery
+import sample.invoice.queries.streaminvoices.StreamInvoicesQuery
 
 // ── Test 25: Transaction — commit on success ──────────────────────────────────
 
@@ -103,6 +111,54 @@ class Test28StreamInvoices {
     companion object {
         @JvmStatic
         fun main(args: Array<String>) = runBlocking { Test28StreamInvoices().start() }
+    }
+}
+
+// ── Test 29: Multiple validators — both run, errors merged ───────────────────
+
+class Test29MultipleValidators {
+    suspend fun start() {
+        println("=== TEST 29: Multiple validators for the same command — all run, errors merged ===")
+        val repo = InvoiceRepository()
+        val mediator = MediatorFactory.create(
+            registrars = listOf(InvoiceRegistrar(repo)),
+            pipelineBehaviors = listOf(
+                // Two REQUEST-scope validators registered for CreateInvoiceCommand.
+                // ValidationBehavior runs ALL matching validators and merges their errors.
+                ValidationBehavior(
+                    listOf(
+                        CreateInvoiceRequestValidator(),      // checks id format + amount > 0
+                        CreateInvoiceAmountPolicyValidator(), // checks amount <= 10,000
+                    )
+                ),
+            ),
+        )
+
+        // Both validators fail: bad ID format (v1) + amount over limit (v2) → two errors
+        println("  [BOTH FAIL] bad id + amount over limit:")
+        runCatching {
+            mediator.send(CreateInvoiceCommand(id = "BADINPUT", amount = 15_000.0))
+        }.onFailure { ex ->
+            if (ex is ValidationException) ex.errors.forEach { println("    field=${it.field}, msg=${it.message}") }
+        }
+
+        // Only the policy validator fails: valid id, amount over limit → one error
+        println("  [POLICY ONLY] valid id, amount over limit:")
+        runCatching {
+            mediator.send(CreateInvoiceCommand(id = "INV-099", amount = 20_000.0))
+        }.onFailure { ex ->
+            if (ex is ValidationException) ex.errors.forEach { println("    field=${it.field}, msg=${it.message}") }
+        }
+
+        // Both pass → handler runs
+        println("  [BOTH PASS] valid id + amount within limit:")
+        mediator.send(CreateInvoiceCommand(id = "INV-100", amount = 500.0))
+        println("    Invoice created: ${repo.findById("INV-100")?.id}")
+    }
+
+    companion object {
+        @JvmStatic
+        fun main(args: Array<String>) = runBlocking { Test29MultipleValidators().start() }
     }
 }
 

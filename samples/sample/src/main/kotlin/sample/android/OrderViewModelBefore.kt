@@ -3,8 +3,8 @@ package sample.android
 import com.fajrbahr.mediatork.Mediator
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
-import sample.command.CreateOrderCommand
-import sample.notification.OrderCreatedNotification
+import sample.orders.commands.createorder.CreateOrderCommand
+import sample.orders.commands.createorder.OrderCreatedNotification
 
 class OrderViewModel(
     private val mediator: Mediator

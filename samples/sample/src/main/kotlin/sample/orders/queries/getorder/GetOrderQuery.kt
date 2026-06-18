@@ -1,0 +1,15 @@
+package sample.orders.queries.getorder
+
+import com.fajrbahr.mediatork.Request
+
+data class GetOrderQuery(
+    val orderId: String,
+    val customerId: String,
+) : Request<OrderDetails>
+
+data class OrderDetails(
+    val orderId: String,
+    val customerId: String,
+    val status: String,
+    val totalAmount: Double,
+)

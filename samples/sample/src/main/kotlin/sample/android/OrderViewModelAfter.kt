@@ -2,7 +2,7 @@ package sample.android
 
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
-import sample.command.OrderResult
+import sample.orders.commands.createorder.OrderResult
 
 
 // ---------- Data Layer ----------

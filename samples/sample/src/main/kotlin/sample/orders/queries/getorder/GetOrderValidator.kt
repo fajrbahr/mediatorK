@@ -1,10 +1,9 @@
-package sample.validation
+package sample.orders.queries.getorder
 
 import com.fajrbahr.mediatork.validator.FieldValidator
 import com.fajrbahr.mediatork.validator.RequestValidator
 import com.fajrbahr.mediatork.validator.ValidationResult
 import com.fajrbahr.mediatork.validator.rulesFailFast
-import sample.query.GetOrderQuery
 import kotlin.reflect.KClass
 
 class GetOrderQueryValidator : RequestValidator<GetOrderQuery> {

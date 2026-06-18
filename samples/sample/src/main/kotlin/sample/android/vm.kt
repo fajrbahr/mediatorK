@@ -3,7 +3,7 @@ package sample.android
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
-import sample.command.OrderResult
+import sample.orders.commands.createorder.OrderResult
 
 open class ViewModel {
     val viewModelScope = CoroutineScope(SupervisorJob() + Dispatchers.Main)

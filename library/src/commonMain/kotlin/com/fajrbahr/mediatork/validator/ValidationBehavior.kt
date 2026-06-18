@@ -56,13 +56,12 @@ class ValidationBehavior(
         next: RequestHandlerDelegate<TRequest, TResult>,
         request: TRequest,
     ): TResult {
-        val validator = validators
-            .filter { it.scope == scope }
-            .firstOrNull { it.requestClass.isInstance(request) }
-                as? RequestValidator<TRequest>
+        val allErrors = validators
+            .filter { it.scope == scope && it.requestClass.isInstance(request) }
+            .map { it as RequestValidator<TRequest> }
+            .flatMap { it.validate(request).errors }
 
-        val result = validator?.validate(request)
-        if (result != null && !result.isValid) throw ValidationException(result.errors)
+        if (allErrors.isNotEmpty()) throw ValidationException(allErrors)
 
         return next(request)
     }

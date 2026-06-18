@@ -11,24 +11,31 @@ import com.fajrbahr.mediatork.validator.ValidationException
 import kotlinx.coroutines.*
 import sample.behaviors.*
 import sample.behaviors.RetryPipelineBehavior
-import sample.command.CreateOrderCommand
-import sample.command.OrderRegistrar
+import sample.bookings.queries.fetchbookings.FetchBookingsQuery
+import sample.bookings.queries.fetchbookings.FetchBookingsRegistrar
+import sample.bookings.queries.fetchbookings.FetchBookingsValidator
+import sample.bookings.queries.fetchbookings.FetchBookingsField
 import sample.exceptions.ShipOrderCommand
 import sample.exceptions.ShipOrderHandler
 import sample.exceptions.ShipOrderRegistrar
 import sample.exceptions.demoContinueOnException
 import sample.fallback.FallbackRegistrar
 import sample.fallback.OrderShippedNotification
-import sample.notification.OrderCreatedNotification
-import sample.notification.OrderNotificationRegistrar
-import sample.query.*
-import sample.validation.FetchBookingsByEmailQueryValidator
-import sample.validation.FetchBookingsByEmailQueryValidatorField
-import sample.validation.GetOrderField
-import sample.validation.GetOrderQueryValidator
+import sample.orders.commands.createorder.CreateOrderCommand
+import sample.orders.commands.createorder.OrderCreatedNotification
+import sample.orders.commands.createorder.OrderNotificationRegistrar
+import sample.orders.commands.createorder.OrderRegistrar
+import sample.orders.queries.getorder.GetOrderField
+import sample.orders.queries.getorder.GetOrderHandler
+import sample.orders.queries.getorder.GetOrderQuery
+import sample.orders.queries.getorder.GetOrderQueryValidator
+import sample.orders.queries.getorder.GetOrderRegistrar
+import sample.orders.queries.getorder.OrderDetails
+import sample.users.queries.fetchuser.FetchUserQuery
+import sample.users.queries.fetchuser.UserRegistrar
 
 private val validators: List<RequestValidator<*>> = listOf(
-    FetchBookingsByEmailQueryValidator(),
+    FetchBookingsValidator(),
     GetOrderQueryValidator(),
 )
 
@@ -37,7 +44,7 @@ private val mediator = MediatorFactory.create(
         UserRegistrar(),
         OrderRegistrar(),
         OrderNotificationRegistrar(),
-        FetchUserHandlerRegistrar(),
+        FetchBookingsRegistrar(),
         GetOrderRegistrar(),
     ),
     pipelineBehaviors = listOf(
@@ -86,7 +93,7 @@ class Test2QueryFetchUser {
 class Test3QueryFetchBookingValid {
     suspend fun start() {
         println("=== TEST 3: Query — fetch booking (valid) ===")
-        val booking = mediator.send(FetchUserQueryId(userEmail = "sdasd@gmail.com", bookingId = "bx_booking#3"))
+        val booking = mediator.send(FetchBookingsQuery(userEmail = "sdasd@gmail.com", bookingId = "bx_booking#3"))
         println("Booking: $booking")
     }
 
@@ -100,13 +107,13 @@ class Test4ValidationInvalidBooking {
     suspend fun start() {
         println("=== TEST 4: Query — fetch booking (invalid, expect validation error) ===")
         runCatching {
-            mediator.send(FetchUserQueryId(userEmail = "sdasd@", bookingId = "123"))
+            mediator.send(FetchBookingsQuery(userEmail = "sdasd@", bookingId = "123"))
         }.onFailure { throwable ->
             when (throwable) {
                 is ValidationException -> throwable.errors.forEach { error ->
                     when (error.field) {
-                        is FetchBookingsByEmailQueryValidatorField.BookingId -> println("Booking ID error: ${error.message}")
-                        is FetchBookingsByEmailQueryValidatorField.UserEmail -> println("Email error: ${error.message}")
+                        is FetchBookingsField.BookingId -> println("Booking ID error: ${error.message}")
+                        is FetchBookingsField.UserEmail -> println("Email error: ${error.message}")
                         else -> println("Error: ${error.message}")
                     }
                 }
@@ -516,7 +523,7 @@ class Test21RequestCounter {
         println("=== TEST 21: RequestCounterPipelineBehavior — counts dispatches per type ===")
         val counter = RequestCounterPipelineBehavior()
         val countingMediator = MediatorFactory.create(
-            registrars = listOf(GetOrderRegistrar(), FetchUserHandlerRegistrar()),
+            registrars = listOf(GetOrderRegistrar(), FetchBookingsRegistrar()),
             pipelineBehaviors = listOf(counter),
         )
         repeat(3) { countingMediator.send(GetOrderQuery(orderId = "ORD-$it", customerId = "USR-1")) }

@@ -1,0 +1,25 @@
+package sample.invoice
+
+import com.fajrbahr.mediatork.HandlerRegistry
+import com.fajrbahr.mediatork.MediatorRegistrar
+import sample.invoice.commands.approveinvoice.ApproveInvoiceHandler
+import sample.invoice.commands.createinvoice.CreateInvoiceDomainValidator
+import sample.invoice.commands.createinvoice.CreateInvoiceHandler
+import sample.invoice.commands.createinvoice.CreateInvoicePersistenceValidator
+import sample.invoice.queries.getinvoice.GetInvoiceHandler
+import sample.invoice.queries.streaminvoices.StreamInvoicesHandler
+
+class InvoiceRegistrar(private val repo: InvoiceRepository) : MediatorRegistrar {
+    override fun register(registry: HandlerRegistry) {
+        registry.scope {
+            +CreateInvoiceHandler(
+                repo = repo,
+                domainValidator = CreateInvoiceDomainValidator(repo),
+                persistenceValidator = CreateInvoicePersistenceValidator(repo),
+            )
+            +ApproveInvoiceHandler(repo)
+            +GetInvoiceHandler(repo)
+            registerStream(StreamInvoicesHandler(repo))
+        }
+    }
+}
