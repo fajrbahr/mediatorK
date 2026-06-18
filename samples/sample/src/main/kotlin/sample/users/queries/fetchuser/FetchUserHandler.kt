@@ -1,28 +1,14 @@
-package sample.query
+package sample.users.queries.fetchuser
 
 import com.fajrbahr.mediatork.*
 import com.fajrbahr.mediatork.handler.RequestHandler
-
-
-data class FetchUserQuery(
-    val id: String,
-    val amount: Double
-) : Request<User>
-
-
-data class User(
-    val name: String,
-    val email: String
-)
 
 class FetchUserHandler : RequestHandler<FetchUserQuery, User> {
     override suspend fun handle(
         mediator: Mediator,
         requestContext: RequestContext,
-        request: FetchUserQuery
-    ): User {
-        return User("ali", "ali@gmail.com")
-    }
+        request: FetchUserQuery,
+    ): User = User(name = "ali", email = "ali@gmail.com")
 }
 
 class UserRegistrar : MediatorRegistrar {
@@ -32,4 +18,3 @@ class UserRegistrar : MediatorRegistrar {
         }
     }
 }
-

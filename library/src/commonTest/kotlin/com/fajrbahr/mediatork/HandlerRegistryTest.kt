@@ -3,7 +3,7 @@ package com.fajrbahr.mediatork
 import com.fajrbahr.mediatork.handler.RequestExceptionHandler
 import com.fajrbahr.mediatork.handler.RequestHandler
 import com.fajrbahr.mediatork.notification.Notification
-import com.fajrbahr.mediatork.notification.NotificationPublisher
+import com.fajrbahr.mediatork.notification.NotificationPublishStrategy
 import kotlinx.coroutines.test.runTest
 import kotlin.test.*
 
@@ -20,7 +20,7 @@ class HandlerRegistryTest {
         assertEquals("pong:x", handler.handle(object : Mediator {
             override suspend fun <TRequest : Request<TResult>, TResult> send(request: TRequest): TResult = TODO()
             override suspend fun <T : Notification> publish(notification: T) = TODO()
-            override suspend fun <T : Notification> publish(notification: T, publisher: NotificationPublisher) = TODO()
+            override suspend fun <T : Notification> publish(notification: T, publisher: NotificationPublishStrategy) = TODO()
             override fun <TRequest : StreamRequest<T>, T> stream(request: TRequest): kotlinx.coroutines.flow.Flow<T> = TODO()
         }, RequestContext(), request))
     }

@@ -9,9 +9,9 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.*
 import sample.android.OrderUiState
 import sample.android.OrderViewModel
-import sample.command.CreateOrderCommand
-import sample.command.OrderResult
-import sample.notification.OrderCreatedNotification
+import sample.orders.commands.createorder.CreateOrderCommand
+import sample.orders.commands.createorder.OrderCreatedNotification
+import sample.orders.commands.createorder.OrderResult
 import kotlin.test.*
 
 @OptIn(ExperimentalCoroutinesApi::class)

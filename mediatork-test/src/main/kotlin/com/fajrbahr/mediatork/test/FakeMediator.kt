@@ -5,7 +5,7 @@ import com.fajrbahr.mediatork.handler.RequestHandler
 import com.fajrbahr.mediatork.handler.StreamRequestHandler
 import com.fajrbahr.mediatork.notification.Notification
 import com.fajrbahr.mediatork.notification.NotificationHandler
-import com.fajrbahr.mediatork.notification.NotificationPublisher
+import com.fajrbahr.mediatork.notification.NotificationPublishStrategy
 import com.fajrbahr.mediatork.notification.ParallelNotificationPublisher
 import com.fajrbahr.mediatork.pipeline.PipelineBehavior
 import kotlinx.coroutines.flow.Flow
@@ -33,7 +33,7 @@ class FakeMediator(
     pipelineBehaviors: List<PipelineBehavior> = emptyList(),
     preProcessors: List<RequestPreProcessor> = emptyList(),
     postProcessors: List<RequestPostProcessor> = emptyList(),
-    notificationPublisher: NotificationPublisher = ParallelNotificationPublisher(),
+    notificationPublisher: NotificationPublishStrategy = ParallelNotificationPublisher(),
     init: HandlerRegistry.() -> Unit = {},
 ) : Mediator {
 
@@ -67,7 +67,7 @@ class FakeMediator(
     override suspend fun <T : Notification> publish(notification: T) =
         mediator.publish(notification)
 
-    override suspend fun <T : Notification> publish(notification: T, publisher: NotificationPublisher) =
+    override suspend fun <T : Notification> publish(notification: T, publisher: NotificationPublishStrategy) =
         mediator.publish(notification, publisher)
 }
 

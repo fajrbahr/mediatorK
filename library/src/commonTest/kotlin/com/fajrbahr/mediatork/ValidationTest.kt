@@ -310,7 +310,7 @@ class ValidationBehaviorTest {
     }
 
     @Test
-    fun `multiple validators - only matching one runs`() = runTest {
+    fun `multiple validators for different types - only matching one runs`() = runTest {
         var addValidatorCalled = false
         val pingValidator = validatorFor(ValidationResult.Success)
         val addValidator = object : RequestValidator<AddCommand> {
@@ -327,6 +327,35 @@ class ValidationBehaviorTest {
         }
         m.send(PingQuery("x"))
         assertFalse(addValidatorCalled)
+    }
+
+    @Test
+    fun `two validators for same type - both run and errors are merged`() = runTest {
+        val v1 = object : RequestValidator<PingQuery> {
+            override val requestClass = PingQuery::class
+            override fun validate(request: PingQuery) = ValidationResult.error(Field.Name, "error from v1")
+        }
+        val v2 = object : RequestValidator<PingQuery> {
+            override val requestClass = PingQuery::class
+            override fun validate(request: PingQuery) = ValidationResult.error(Field.Email, "error from v2")
+        }
+        val m = mediator(pipelineBehaviors = listOf(ValidationBehavior(listOf(v1, v2)))) {
+            register(PingHandler())
+        }
+        val ex = assertFailsWith<ValidationException> { m.send(PingQuery("x")) }
+        assertEquals(2, ex.errors.size)
+        assertTrue(ex.errors.any { it.message == "error from v1" })
+        assertTrue(ex.errors.any { it.message == "error from v2" })
+    }
+
+    @Test
+    fun `two validators for same type - both pass - handler is called`() = runTest {
+        val v1 = validatorFor(ValidationResult.Success)
+        val v2 = validatorFor(ValidationResult.Success)
+        val m = mediator(pipelineBehaviors = listOf(ValidationBehavior(listOf(v1, v2)))) {
+            register(PingHandler())
+        }
+        assertEquals("pong:hello", m.send(PingQuery("hello")))
     }
 
     @Test

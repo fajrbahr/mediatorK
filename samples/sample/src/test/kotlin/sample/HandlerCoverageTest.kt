@@ -1,15 +1,15 @@
 package sample
 
 import com.fajrbahr.mediatork.test.MediatorTestUtils
-import sample.command.OrderRegistrar
+import sample.bookings.queries.fetchbookings.FetchBookingsRegistrar
 import sample.exceptions.ShipOrderRegistrar
 import sample.fallback.FallbackRegistrar
 import sample.invoice.InvoiceRegistrar
 import sample.invoice.InvoiceRepository
-import sample.notification.OrderNotificationRegistrar
-import sample.query.FetchUserHandlerRegistrar
-import sample.query.GetOrderRegistrar
-import sample.query.UserRegistrar
+import sample.orders.commands.createorder.OrderNotificationRegistrar
+import sample.orders.commands.createorder.OrderRegistrar
+import sample.orders.queries.getorder.GetOrderRegistrar
+import sample.users.queries.fetchuser.UserRegistrar
 import kotlin.test.Test
 
 class HandlerCoverageTest {
@@ -21,7 +21,7 @@ class HandlerCoverageTest {
                 UserRegistrar(),
                 OrderRegistrar(),
                 OrderNotificationRegistrar(),
-                FetchUserHandlerRegistrar(),
+                FetchBookingsRegistrar(),
                 GetOrderRegistrar(),
                 ShipOrderRegistrar(),
                 FallbackRegistrar(),

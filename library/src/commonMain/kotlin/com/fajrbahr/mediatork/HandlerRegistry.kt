@@ -5,7 +5,7 @@ import com.fajrbahr.mediatork.handler.RequestHandler
 import com.fajrbahr.mediatork.handler.StreamRequestHandler
 import com.fajrbahr.mediatork.notification.Notification
 import com.fajrbahr.mediatork.notification.NotificationHandler
-import com.fajrbahr.mediatork.notification.NotificationPublisher
+import com.fajrbahr.mediatork.notification.NotificationPublishStrategy
 import kotlin.reflect.KClass
 
 /**
@@ -85,7 +85,7 @@ class HandlerRegistry {
      * Appends [handler] to the list of handlers for notification type [T].
      *
      * Multiple handlers may be registered for the same notification type; they
-     * are all invoked in registration order (subject to the active [NotificationPublisher]).
+     * are all invoked in registration order (subject to the active [NotificationPublishStrategy]).
      *
      * @param T the notification type to associate with [handler].
      * @param handler the handler to register.
@@ -165,6 +165,40 @@ class HandlerRegistry {
      */
     inline operator fun <reified TRequest : StreamRequest<T>, T> StreamRequestHandler<TRequest, T>.unaryPlus() {
         registerStream(this)
+    }
+
+    /**
+     * Registers [handler] for [requestClass] without a reified type parameter.
+     *
+     * Intended for DI-framework integrations (e.g. Koin, Hilt) that discover
+     * handlers at runtime and therefore cannot supply a compile-time reified type.
+     * The caller is responsible for ensuring [requestClass] matches the handler's
+     * actual [TRequest] type parameter.
+     */
+    @Suppress("UNCHECKED_CAST")
+    fun registerDynamic(requestClass: KClass<*>, handler: RequestHandler<*, *>): HandlerRegistry {
+        requestHandlers[requestClass] = handler
+        return this
+    }
+
+    /**
+     * Appends [handler] for [notificationClass] without a reified type parameter.
+     *
+     * @see registerDynamic
+     */
+    fun registerNotificationDynamic(notificationClass: KClass<*>, handler: NotificationHandler<*>): HandlerRegistry {
+        notificationHandlers.getOrPut(notificationClass) { mutableListOf() }.add(handler)
+        return this
+    }
+
+    /**
+     * Registers [handler] for [requestClass] without a reified type parameter.
+     *
+     * @see registerDynamic
+     */
+    fun registerStreamDynamic(requestClass: KClass<*>, handler: StreamRequestHandler<*, *>): HandlerRegistry {
+        streamHandlers[requestClass] = handler
+        return this
     }
 
     /**

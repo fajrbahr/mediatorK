@@ -9,10 +9,12 @@
           <set>
             <option value="$PROJECT_DIR$" />
             <option value="$PROJECT_DIR$/library" />
+            <option value="$PROJECT_DIR$/mediatork-koin-refaction" />
             <option value="$PROJECT_DIR$/mediatork-ksp-koin" />
             <option value="$PROJECT_DIR$/mediatork-test" />
             <option value="$PROJECT_DIR$/publishMaven" />
-            <option value="$PROJECT_DIR$/sample" />
+            <option value="$PROJECT_DIR$/samples" />
+            <option value="$PROJECT_DIR$/samples/sample" />
           </set>
         </option>
         <option name="myGradleHome" value="/usr/local/Cellar/gradle/9.4.0/libexec" />

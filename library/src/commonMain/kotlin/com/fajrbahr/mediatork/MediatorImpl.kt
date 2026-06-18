@@ -3,7 +3,7 @@ package com.fajrbahr.mediatork
 import com.fajrbahr.mediatork.handler.RequestHandler
 import com.fajrbahr.mediatork.notification.Notification
 import com.fajrbahr.mediatork.notification.NotificationHandler
-import com.fajrbahr.mediatork.notification.NotificationPublisher
+import com.fajrbahr.mediatork.notification.NotificationPublishStrategy
 import com.fajrbahr.mediatork.notification.ThrowMissingNotificationHandler
 import com.fajrbahr.mediatork.pipeline.PipelineBehavior
 import com.fajrbahr.mediatork.pipeline.RequestHandlerDelegate
@@ -31,7 +31,7 @@ internal class MediatorImpl(
     private val pipelineBehaviors: List<PipelineBehavior>,
     private val preProcessors: List<RequestPreProcessor>,
     private val postProcessors: List<RequestPostProcessor>,
-    private val notificationPublisher: NotificationPublisher,
+    private val notificationPublisher: NotificationPublishStrategy,
     private val missingNotificationHandler: NotificationHandler<Notification> = ThrowMissingNotificationHandler(),
 ) : Mediator {
 
@@ -61,7 +61,7 @@ internal class MediatorImpl(
 
     /**
      * Resolves all notification handlers and delivers [notification] via the
-     * default [com.fajrbahr.mediatork.notification.NotificationPublisher].
+     * default [com.fajrbahr.mediatork.notification.NotificationPublishStrategy].
      */
     override suspend fun <T : Notification> publish(notification: T) {
         val handlers = registry.resolveNotificationHandlers(notification)
@@ -76,9 +76,9 @@ internal class MediatorImpl(
      * Resolves all notification handlers and delivers [notification] via the
      * supplied [publisher], overriding the default for this call only.
      *
-     * @param publisher the strategy to use instead of the default [com.fajrbahr.mediatork.notification.NotificationPublisher].
+     * @param publisher the strategy to use instead of the default [com.fajrbahr.mediatork.notification.NotificationPublishStrategy].
      */
-    override suspend fun <T : Notification> publish(notification: T, publisher: NotificationPublisher) {
+    override suspend fun <T : Notification> publish(notification: T, publisher: NotificationPublishStrategy) {
         val handlers = registry.resolveNotificationHandlers(notification)
         publisher.publish(notification, handlers)
     }

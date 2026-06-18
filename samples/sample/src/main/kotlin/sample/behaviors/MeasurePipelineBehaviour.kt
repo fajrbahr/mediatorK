@@ -4,7 +4,7 @@ import com.fajrbahr.mediatork.Request
 import com.fajrbahr.mediatork.RequestContext
 import com.fajrbahr.mediatork.pipeline.PipelineBehavior
 import com.fajrbahr.mediatork.pipeline.RequestHandlerDelegate
-import sample.query.FetchUserQueryId
+import sample.bookings.queries.fetchbookings.FetchBookingsQuery
 
 
 class MeasurePipelineBehaviour : PipelineBehavior {
@@ -12,7 +12,7 @@ class MeasurePipelineBehaviour : PipelineBehavior {
     override val order: Int = 0
 
     override fun appliesTo(request: Request<*>): Boolean {
-        return request is FetchUserQueryId
+        return request is FetchBookingsQuery
     }
 
     override suspend fun <TRequest : Request<TResult>, TResult> process(

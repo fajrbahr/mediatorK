@@ -1,10 +1,10 @@
 package sample.spring
 
 import com.fajrbahr.mediatork.Mediator
-import sample.command.CreateOrderCommand
-import sample.command.OrderResult
-import sample.query.FetchUserQuery
-import sample.query.User
+import sample.orders.commands.createorder.CreateOrderCommand
+import sample.orders.commands.createorder.OrderResult
+import sample.users.queries.fetchuser.FetchUserQuery
+import sample.users.queries.fetchuser.User
 
 @RestController
 @RequestMapping("/orders")

@@ -6,9 +6,9 @@ import com.fajrbahr.mediatork.notification.NotificationHandler
 import com.fajrbahr.mediatork.pipeline.PipelineBehavior
 import com.fajrbahr.mediatork.pipeline.RequestHandlerDelegate
 import kotlinx.coroutines.test.runTest
-import sample.notification.OrderCreatedNotification
-import sample.query.FetchUserQuery
-import sample.query.User
+import sample.orders.commands.createorder.OrderCreatedNotification
+import sample.users.queries.fetchuser.FetchUserQuery
+import sample.users.queries.fetchuser.User
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith

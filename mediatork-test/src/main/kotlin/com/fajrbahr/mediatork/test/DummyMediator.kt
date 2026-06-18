@@ -4,7 +4,7 @@ import com.fajrbahr.mediatork.Mediator
 import com.fajrbahr.mediatork.Request
 import com.fajrbahr.mediatork.StreamRequest
 import com.fajrbahr.mediatork.notification.Notification
-import com.fajrbahr.mediatork.notification.NotificationPublisher
+import com.fajrbahr.mediatork.notification.NotificationPublishStrategy
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emptyFlow
 
@@ -24,6 +24,6 @@ class DummyMediator : Mediator {
         Unit as TResult
 
     override suspend fun <T : Notification> publish(notification: T) = Unit
-    override suspend fun <T : Notification> publish(notification: T, publisher: NotificationPublisher) = Unit
+    override suspend fun <T : Notification> publish(notification: T, publisher: NotificationPublishStrategy) = Unit
     override fun <TRequest : StreamRequest<T>, T> stream(request: TRequest): Flow<T> = emptyFlow()
 }

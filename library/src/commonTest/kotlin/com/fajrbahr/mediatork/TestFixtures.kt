@@ -57,7 +57,7 @@ fun mediator(
     pipelineBehaviors: List<PipelineBehavior> = emptyList(),
     preProcessors: List<RequestPreProcessor> = emptyList(),
     postProcessors: List<RequestPostProcessor> = emptyList(),
-    notificationPublisher: NotificationPublisher = ParallelNotificationPublisher(),
+    notificationPublisher: NotificationPublishStrategy = ParallelNotificationPublisher(),
     missingNotificationHandler: NotificationHandler<Notification> = ThrowMissingNotificationHandler(),
     block: HandlerRegistry.() -> Unit,
 ): Mediator = MediatorFactory.create(

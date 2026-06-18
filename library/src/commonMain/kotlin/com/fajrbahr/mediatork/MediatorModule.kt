@@ -16,7 +16,7 @@ import com.fajrbahr.mediatork.pipeline.PipelineBehavior
  * @see com.fajrbahr.mediatork.pipeline.PipelineBehavior
  * @see RequestPreProcessor
  * @see RequestPostProcessor
- * @see com.fajrbahr.mediatork.notification.NotificationPublisher
+ * @see com.fajrbahr.mediatork.notification.NotificationPublishStrategy
  */
 object MediatorFactory {
 
@@ -45,7 +45,7 @@ object MediatorFactory {
         registrars: List<MediatorRegistrar> = emptyList(),
         pipelineBehaviors: List<PipelineBehavior> = emptyList(),
         preProcessors: List<RequestPreProcessor> = emptyList(),
-        notificationPublisher: NotificationPublisher = ParallelNotificationPublisher(),
+        notificationPublisher: NotificationPublishStrategy = NotificationPublishStrategy.ParallelNotificationPublisher(),
         postProcessors: List<RequestPostProcessor> = emptyList(),
         verifyHandlers: Boolean = true,
         missingNotificationHandler: NotificationHandler<Notification> = ThrowMissingNotificationHandler(),
@@ -80,7 +80,7 @@ object MediatorFactory {
         registry: HandlerRegistry,
         pipelineBehaviors: List<PipelineBehavior> = emptyList(),
         preProcessors: List<RequestPreProcessor> = emptyList(),
-        notificationPublisher: NotificationPublisher = ParallelNotificationPublisher(),
+        notificationPublisher: NotificationPublishStrategy = NotificationPublishStrategy.ParallelNotificationPublisher(),
         postProcessors: List<RequestPostProcessor> = emptyList(),
         missingNotificationHandler: NotificationHandler<Notification> = ThrowMissingNotificationHandler(),
     ): Mediator = MediatorImpl(

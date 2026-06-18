@@ -1,7 +1,7 @@
 package com.fajrbahr.mediatork.test
 
 import com.fajrbahr.mediatork.*
-import com.fajrbahr.mediatork.notification.NotificationPublisher
+import com.fajrbahr.mediatork.notification.NotificationPublishStrategy
 import com.fajrbahr.mediatork.notification.ParallelNotificationPublisher
 import com.fajrbahr.mediatork.pipeline.PipelineBehavior
 import kotlinx.coroutines.flow.Flow
@@ -103,7 +103,7 @@ fun buildHandlerTestHarness(
     pipelineBehaviors: List<PipelineBehavior> = emptyList(),
     preProcessors: List<RequestPreProcessor> = emptyList(),
     postProcessors: List<RequestPostProcessor> = emptyList(),
-    notificationPublisher: NotificationPublisher = ParallelNotificationPublisher(),
+    notificationPublisher: NotificationPublishStrategy = ParallelNotificationPublisher(),
     registrars: List<MediatorRegistrar> = emptyList(),
     init: HandlerRegistry.() -> Unit = {},
 ): HandlerTestHarness {

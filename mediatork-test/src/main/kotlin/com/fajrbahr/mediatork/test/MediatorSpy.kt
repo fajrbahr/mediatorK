@@ -4,7 +4,7 @@ import com.fajrbahr.mediatork.Mediator
 import com.fajrbahr.mediatork.Request
 import com.fajrbahr.mediatork.StreamRequest
 import com.fajrbahr.mediatork.notification.Notification
-import com.fajrbahr.mediatork.notification.NotificationPublisher
+import com.fajrbahr.mediatork.notification.NotificationPublishStrategy
 import kotlinx.coroutines.flow.Flow
 import kotlin.test.assertTrue
 
@@ -57,7 +57,7 @@ class MediatorSpy(private val delegate: Mediator) : Mediator {
         delegate.publish(notification)
     }
 
-    override suspend fun <T : Notification> publish(notification: T, publisher: NotificationPublisher) {
+    override suspend fun <T : Notification> publish(notification: T, publisher: NotificationPublishStrategy) {
         _publishedNotifications.add(notification)
         delegate.publish(notification, publisher)
     }
