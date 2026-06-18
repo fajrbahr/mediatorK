@@ -10,11 +10,11 @@ Quick reference for all public types in `com.fajrbahr.mediatork`.
 
 | Subpackage                            | Contents                                                                                                                                                         |
 |---------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `com.fajrbahr.mediatork`              | Core: `Mediator`, `Request`, `HandlerRegistry`, `MediatorFactory`, processors, exceptions                                                                        |
-| `com.fajrbahr.mediatork.handler`      | `RequestHandler`, `FallbackRequestHandler` (`otherwise`), `RequestExceptionHandler`                                                                              |
+| `com.fajrbahr.mediatork`              | Core: `Mediator`, `Request`, `StreamRequest`, `HandlerRegistry`, `MediatorFactory`, processors, exceptions                                                       |
+| `com.fajrbahr.mediatork.handler`      | `RequestHandler`, `StreamRequestHandler`, `FallbackRequestHandler` (`otherwise`), `RequestExceptionHandler`                                                      |
 | `com.fajrbahr.mediatork.notification` | `Notification`, `NotificationHandler`, `FallbackNotificationHandler` (`otherwise`), all publisher implementations, `ThrowMissingNotificationHandler`, `SilentMissingNotificationHandler` |
-| `com.fajrbahr.mediatork.pipeline`     | `PipelineBehavior` and all built-in behaviors (logging, retry, caching, auth, circuit-breaker, etc.)                                                             |
-| `com.fajrbahr.mediatork.validator`    | `RequestValidator`, `ValidationBehavior`, `ValidationResult`, DSL builders                                                                                       |
+| `com.fajrbahr.mediatork.pipeline`     | `PipelineBehavior` and all built-in behaviors (logging, retry, caching, auth, circuit-breaker, transaction, etc.)                                                |
+| `com.fajrbahr.mediatork.validator`    | `RequestValidator`, `ValidationBehavior`, `ValidationScope`, `ValidationResult`, DSL builders                                                                    |
 
 ---
 
@@ -42,6 +42,61 @@ interface RequestHandler<in TRequest : Request<TResult>, TResult> {
     suspend fun handle(mediator: Mediator, requestContext: RequestContext, request: TRequest): TResult
 }
 ```
+
+---
+
+### `StreamRequest<T>`
+
+Marker interface for requests that return a lazy `Flow<T>` instead of a single value. Dispatch via `Streamer.stream()`.
+
+```kotlin
+interface StreamRequest<out T>
+```
+
+Use when the response is a sequence produced over time — large result sets, live feeds, cursor-based exports, or anything better consumed incrementally than batched into a list.
+
+---
+
+### `StreamRequestHandler<TRequest, T>` · `com.fajrbahr.mediatork.handler`
+
+Handles a `StreamRequest` and returns a cold `Flow<T>`. The interface is **not** `suspend` — it returns the flow immediately; work begins when the caller collects it.
+
+```kotlin
+interface StreamRequestHandler<in TRequest : StreamRequest<T>, T> {
+    fun handle(mediator: Mediator, requestContext: RequestContext, request: TRequest): Flow<T>
+}
+```
+
+```kotlin
+// Define
+data class StreamInvoicesQuery(val status: InvoiceStatus? = null) : StreamRequest<Invoice>
+
+// Handle
+class StreamInvoicesHandler(private val repo: InvoiceRepository)
+    : StreamRequestHandler<StreamInvoicesQuery, Invoice> {
+    override fun handle(mediator: Mediator, requestContext: RequestContext, request: StreamInvoicesQuery): Flow<Invoice> =
+        repo.all().asFlow().let { flow ->
+            if (request.status != null) flow.filter { it.status == request.status } else flow
+        }
+}
+
+// Dispatch
+mediator.stream(StreamInvoicesQuery(status = InvoiceStatus.APPROVED)).collect { invoice -> ... }
+```
+
+---
+
+### `Streamer`
+
+Capability for dispatching a `StreamRequest` to its handler.
+
+```kotlin
+interface Streamer {
+    fun <TRequest : StreamRequest<T>, T> stream(request: TRequest): Flow<T>
+}
+```
+
+`stream()` is non-suspend. It resolves the handler and returns a cold `Flow` immediately. Each collection starts a fresh `RequestContext`.
 
 ---
 
@@ -127,6 +182,7 @@ Stores all registered handlers. Populated by `MediatorRegistrar` implementations
 | Method                                                 | Description                                                               |
 |--------------------------------------------------------|---------------------------------------------------------------------------|
 | `register(handler)`                                    | Register a request handler (infix, reified)                               |
+| `registerStream(handler)`                              | Register a stream request handler                                         |
 | `registerNotification(handler)`                        | Register a notification handler (infix, reified)                          |
 | `registerExceptionHandler(reqClass, exClass, handler)` | Register an exception handler                                             |
 | `scope { }`                                            | Group registrations for readability                                       |
@@ -179,12 +235,13 @@ interface MediatorRegistrar {
 ## Mediator interface
 
 ```kotlin
-interface Mediator : Sender, Publisher
+interface Mediator : Sender, Streamer, Publisher
 ```
 
 | Method                              | Description                                                                              |
 |-------------------------------------|------------------------------------------------------------------------------------------|
-| `send(request)`                     | Dispatch a request; returns `TResponse`. Throws `MissingHandlerException` if no handler. |
+| `send(request)`                     | Dispatch a `Request`; returns `TResponse`. Throws `MissingHandlerException` if no handler. |
+| `stream(request)`                   | Dispatch a `StreamRequest`; returns a cold `Flow<T>`. Throws `MissingStreamHandlerException` if no handler. |
 | `publish(notification)`             | Broadcast a notification using the default `NotificationPublisher`.                      |
 | `publish(notification, publisher)`  | Broadcast a notification using the supplied publisher, overriding the default for this call only. |
 
@@ -207,6 +264,7 @@ interface Mediator : Sender, Publisher
 |------------------------------------|---------------------------------------------------------------------|
 | `MediatorException`                | Base class for all MediatorK errors                                 |
 | `MissingHandlerException`          | No handler registered for the dispatched request type               |
+| `MissingStreamHandlerException`    | No stream handler registered for the dispatched `StreamRequest` type |
 | `MissingNotificationHandlerException` | No handlers registered for a published notification type         |
 | `AggregateException`               | One or more notification handlers failed (from `ContinueOnException…`) |
 
@@ -216,12 +274,57 @@ interface Mediator : Sender, Publisher
 
 | Type                  | Description                                                                                   |
 |-----------------------|-----------------------------------------------------------------------------------------------|
-| `RequestValidator<T>` | Validates a request; returns `ValidationResult`                                               |
+| `RequestValidator<T>` | Validates a request; returns `ValidationResult`. Declares its `scope`.                        |
+| `ValidationScope`     | `REQUEST` (pipeline, automatic) · `DOMAIN` (in handler, after load) · `PERSISTENCE` (in handler, before write) |
 | `ValidationResult`    | Holds zero or more `ValidationError`s; `isValid` when empty                                   |
 | `ValidationError`     | A single failure with an optional `FieldValidator` field and a message                        |
 | `FieldValidator`      | Marker interface for typed field identifiers                                                  |
 | `DefaultField`        | Sentinel for errors not tied to a specific field                                              |
-| `ValidationBehavior`  | Pre-built `PipelineBehavior` that runs validators and throws `ValidationException` on failure |
+| `ValidationBehavior`  | Pre-built `PipelineBehavior` that runs `ValidationScope.REQUEST` validators automatically    |
 | `ValidationException` | Thrown when validation fails; carries the list of `ValidationError`s                          |
 | `rules { }`           | DSL builder — evaluates all rules and collects every error                                    |
 | `rulesFailFast { }`   | DSL builder — stops at the first error                                                        |
+
+---
+
+## Transaction pipeline · `com.fajrbahr.mediatork.pipeline`
+
+### `TransactionProvider`
+
+Abstraction over a transactional unit of work. Implement once per persistence layer and pass to `TransactionPipelineBehavior`.
+
+```kotlin
+interface TransactionProvider {
+    suspend fun <T> withTransaction(block: suspend () -> T): T
+}
+
+// Room
+val provider = object : TransactionProvider {
+    override suspend fun <T> withTransaction(block: suspend () -> T): T =
+        db.withTransaction { block() }
+}
+
+// Exposed
+val provider = object : TransactionProvider {
+    override suspend fun <T> withTransaction(block: suspend () -> T): T =
+        newSuspendedTransaction { block() }
+}
+```
+
+### `TransactionPipelineBehavior`
+
+Wraps each matching request in a transaction. Commits on success, rolls back and rethrows on any exception.
+
+```kotlin
+TransactionPipelineBehavior(
+    transactionProvider = provider,
+    appliesTo = { it is Request.Unit }, // limit to write commands
+    order = 0,
+)
+```
+
+| Parameter             | Default    | Description                                              |
+|-----------------------|------------|----------------------------------------------------------|
+| `transactionProvider` | —          | Required. The unit-of-work implementation.               |
+| `appliesTo`           | `{ true }` | Predicate to restrict which requests run in a transaction |
+| `order`               | `0`        | Position in the behavior chain                           |

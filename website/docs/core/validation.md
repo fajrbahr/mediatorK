@@ -100,6 +100,89 @@ override fun validate(request: CreateTodoCommand): ValidationResult = rulesFailF
 
 ---
 
+## Validation Scopes
+
+Real-world validation happens at three distinct points in the lifecycle. MediatorK formalises this with `ValidationScope`:
+
+| Scope         | When it runs                          | Automatic?         | What to check                          |
+|---------------|---------------------------------------|--------------------|----------------------------------------|
+| `REQUEST`     | Before the handler, in the pipeline   | Yes (via `ValidationBehavior`) | Field format and type — answerable from the request alone |
+| `DOMAIN`      | Inside the handler, after loading state | No — call explicitly | Business rules that need the loaded aggregate |
+| `PERSISTENCE` | Inside the handler, before writing    | No — call explicitly | DB constraints (uniqueness, FK checks) |
+
+Declare the scope on your validator:
+
+```kotlin
+// REQUEST — runs automatically in the pipeline (never touches the DB)
+class CreateInvoiceRequestValidator : RequestValidator<CreateInvoiceCommand> {
+    override val requestClass = CreateInvoiceCommand::class
+    override val scope = ValidationScope.REQUEST
+
+    override fun validate(request: CreateInvoiceCommand): ValidationResult = rules {
+        ruleFor(CreateInvoiceField.Id, request.id) {
+            check(it.isNotBlank()) { "Invoice ID is required" }
+            check(it.startsWith("INV-")) { "Invoice ID must start with INV-" }
+        }
+        ruleFor(CreateInvoiceField.Amount, request.amount) {
+            check(it > 0) { "Amount must be positive" }
+        }
+    }
+}
+
+// DOMAIN — called by the handler after the aggregate is loaded
+class CreateInvoiceDomainValidator(private val repo: InvoiceRepository)
+    : RequestValidator<CreateInvoiceCommand> {
+    override val requestClass = CreateInvoiceCommand::class
+    override val scope = ValidationScope.DOMAIN
+
+    override fun validate(request: CreateInvoiceCommand): ValidationResult =
+        if (repo.findById(request.id) != null)
+            ValidationResult.error(CreateInvoiceField.Id, "Invoice ${request.id} already exists")
+        else ValidationResult.Success
+}
+
+// PERSISTENCE — called just before the write, ideally inside the transaction
+class CreateInvoicePersistenceValidator(private val repo: InvoiceRepository)
+    : RequestValidator<CreateInvoiceCommand> {
+    override val requestClass = CreateInvoiceCommand::class
+    override val scope = ValidationScope.PERSISTENCE
+
+    override fun validate(request: CreateInvoiceCommand): ValidationResult =
+        if (repo.findById(request.id) != null)
+            ValidationResult.error(CreateInvoiceField.Id, "Duplicate invoice ID — database constraint violated")
+        else ValidationResult.Success
+}
+```
+
+The handler calls DOMAIN and PERSISTENCE validators explicitly at the right moment:
+
+```kotlin
+class CreateInvoiceHandler(
+    private val repo: InvoiceRepository,
+    private val domainValidator: CreateInvoiceDomainValidator,
+    private val persistenceValidator: CreateInvoicePersistenceValidator,
+) : RequestHandler<CreateInvoiceCommand, Unit> {
+
+    override suspend fun handle(mediator: Mediator, requestContext: RequestContext, request: CreateInvoiceCommand) {
+        // DOMAIN — needs the repo, runs after handler entry
+        val domainResult = domainValidator.validate(request)
+        if (!domainResult.isValid) throw ValidationException(domainResult.errors)
+
+        val invoice = Invoice(id = request.id, amount = request.amount)
+
+        // PERSISTENCE — runs just before the write (inside a transaction)
+        val persistenceResult = persistenceValidator.validate(request)
+        if (!persistenceResult.isValid) throw ValidationException(persistenceResult.errors)
+
+        repo.save(invoice)
+    }
+}
+```
+
+`ValidationBehavior` in the pipeline will only run validators whose `scope == ValidationScope.REQUEST` — DOMAIN and PERSISTENCE validators are ignored by the pipeline even if you pass them in.
+
+---
+
 ## ValidationBehavior
 
 MediatorK ships a ready-to-use `ValidationBehavior` — just pass your validators and register it:
@@ -161,4 +244,5 @@ Each `StateFlow` maps directly to one field in the UI — no `field == "TITLE"` 
 
 ## Next
 
+→ [Requests & Handlers](requests.md) — streaming requests, fallback chains  
 → [Kotlin JVM](../integration/jvm.md)
