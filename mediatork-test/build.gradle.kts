@@ -16,6 +16,7 @@ dependencies {
     implementation(project(":mediatork"))
     implementation(libs.classgraph)
     implementation(kotlin("test"))
+    implementation(libs.coroutines.core)
     testImplementation(libs.coroutines.test)
 }
 

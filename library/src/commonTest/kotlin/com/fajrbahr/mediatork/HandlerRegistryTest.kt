@@ -21,6 +21,7 @@ class HandlerRegistryTest {
             override suspend fun <TRequest : Request<TResult>, TResult> send(request: TRequest): TResult = TODO()
             override suspend fun <T : Notification> publish(notification: T) = TODO()
             override suspend fun <T : Notification> publish(notification: T, publisher: NotificationPublisher) = TODO()
+            override fun <TRequest : StreamRequest<T>, T> stream(request: TRequest): kotlinx.coroutines.flow.Flow<T> = TODO()
         }, RequestContext(), request))
     }
 

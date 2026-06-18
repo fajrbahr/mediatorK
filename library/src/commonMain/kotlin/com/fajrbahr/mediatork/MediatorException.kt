@@ -36,6 +36,22 @@ class MissingHandlerException(
  *
  * @param notificationTypeName simple name of the notification type that had no handlers.
  */
+/**
+ * Thrown when [Streamer.stream] is called for a request type that has no registered handler.
+ *
+ * @param requestTypeName simple name of the stream request type that could not be resolved.
+ * @param registered simple names of all currently registered stream request types.
+ */
+class MissingStreamHandlerException(
+    requestTypeName: String,
+    registered: Collection<String> = emptyList(),
+) : MediatorException(
+    buildString {
+        append("No stream handler registered for '$requestTypeName'")
+        if (registered.isNotEmpty()) append(". Registered: ${registered.joinToString()}")
+    }
+)
+
 class MissingNotificationHandlerException(
     notificationTypeName: String,
 ) : MediatorException("No handler registered for notification '$notificationTypeName'")

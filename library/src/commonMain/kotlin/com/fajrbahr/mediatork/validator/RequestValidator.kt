@@ -5,11 +5,18 @@ import kotlin.reflect.KClass
 /**
  * Validates a request object and returns a [ValidationResult] describing any errors.
  *
- * Implement this interface to separate validation logic from handler logic.
- * Validators are typically invoked by a [com.fajrbahr.mediatork.validator.ValidationBehavior]
- * that runs before the handler.
+ * Implement this interface to separate validation logic from handler logic. Declare a
+ * [scope] to indicate when the validator should run:
+ *
+ * - [ValidationScope.REQUEST] validators (default) are run automatically by [ValidationBehavior]
+ *   before the handler. Use them for field-format and type checks.
+ * - [ValidationScope.DOMAIN] validators must be called explicitly inside a handler after the
+ *   domain aggregate has been loaded. Use them for business-rule checks.
+ * - [ValidationScope.PERSISTENCE] validators must be called explicitly inside a handler just
+ *   before a database write. Use them for uniqueness and foreign-key checks.
  *
  * @param TRequest the request type this validator handles.
+ * @see ValidationScope
  * @see ValidationResult
  * @see ValidationRulesBuilder
  */
@@ -19,6 +26,12 @@ interface RequestValidator<TRequest : Any> {
      * Used by a validation pipeline behavior to look up the correct validator.
      */
     val requestClass: KClass<TRequest>
+
+    /**
+     * The lifecycle stage at which this validator should run.
+     * Defaults to [ValidationScope.REQUEST] so existing validators are unaffected.
+     */
+    val scope: ValidationScope get() = ValidationScope.REQUEST
 
     /**
      * Validates [request] and returns a [ValidationResult] containing any errors found.

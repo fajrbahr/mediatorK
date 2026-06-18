@@ -19,6 +19,11 @@ class ValidationException(val errors: List<ValidationError>) :
 /**
  * Pre-built [com.fajrbahr.mediatork.pipeline.PipelineBehavior] that runs registered [RequestValidator]s before the handler.
  *
+ * Only runs validators whose [RequestValidator.scope] matches [scope] (defaults to
+ * [ValidationScope.REQUEST]), so [ValidationScope.DOMAIN] and [ValidationScope.PERSISTENCE]
+ * validators are never accidentally executed in the pipeline before their required context
+ * is available.
+ *
  * Runs early in the pipeline (order = -50) so validation failures short-circuit
  * before any business logic executes. Throws [ValidationException] when the result
  * is invalid — catch it in your ViewModel or an exception handler to map errors to UI.
@@ -36,10 +41,12 @@ class ValidationException(val errors: List<ValidationError>) :
  * ```
  *
  * @param validators the validators to run; each is matched to a request by [RequestValidator.requestClass].
+ * @param scope only validators with this scope are executed; defaults to [ValidationScope.REQUEST].
  * @param order position in the behavior chain; defaults to `-50` (runs before most behaviors).
  */
 class ValidationBehavior(
     private val validators: List<RequestValidator<*>>,
+    private val scope: ValidationScope = ValidationScope.REQUEST,
     override val order: Int = -50,
 ) : PipelineBehavior {
 
@@ -50,6 +57,7 @@ class ValidationBehavior(
         request: TRequest,
     ): TResult {
         val validator = validators
+            .filter { it.scope == scope }
             .firstOrNull { it.requestClass.isInstance(request) }
                 as? RequestValidator<TRequest>
 

@@ -19,4 +19,9 @@ fun HandlerRegistry.verifyHandlers(
             onMissingHandler(requestType.simpleName ?: "UnknownRequest")
         }
     }
+    streamHandlers.keys.forEach { requestType ->
+        if (!hasStreamHandler(requestType)) {
+            onMissingHandler(requestType.simpleName ?: "UnknownStreamRequest")
+        }
+    }
 }
