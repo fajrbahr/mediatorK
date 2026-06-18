@@ -7,6 +7,7 @@ import com.fajrbahr.mediatork.Request
 import com.fajrbahr.mediatork.notification.*
 import com.fajrbahr.mediatork.pipeline.*
 import com.fajrbahr.mediatork.validator.RequestValidator
+import com.fajrbahr.mediatork.validator.ValidationException
 import kotlinx.coroutines.*
 import sample.behaviors.*
 import sample.behaviors.RetryPipelineBehavior

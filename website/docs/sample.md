@@ -348,7 +348,72 @@ and pipeline behaviors in plain Kotlin/JVM with no UI framework:
 - **Commands, Queries, Notifications** — [command/](https://github.com/fajrbahr/MediatorK/tree/main/samples/sample/src/main/kotlin/sample/command), [query/](https://github.com/fajrbahr/MediatorK/tree/main/samples/sample/src/main/kotlin/sample/query), [notification/](https://github.com/fajrbahr/MediatorK/tree/main/samples/sample/src/main/kotlin/sample/notification)
 - **Pipeline behaviors** — logging, auth, retry, validation, tracing,
   metrics: [behaviors/](https://github.com/fajrbahr/MediatorK/tree/main/samples/sample/src/main/kotlin/sample/behaviors)
+- **Invoice slice** — complete vertical slice with transaction, three-layer validation, and streaming: [invoice/](https://github.com/fajrbahr/MediatorK/tree/main/samples/sample/src/main/kotlin/sample/invoice)
 - **Tests** — handler and ViewModel tests with no mocking
   library: [SampleHandlerTest.kt](https://github.com/fajrbahr/MediatorK/blob/main/samples/sample/src/test/kotlin/sample/SampleHandlerTest.kt)
+
+### Invoice Slice — Vertical Slice Showcase
+
+The [`invoice/`](https://github.com/fajrbahr/MediatorK/tree/main/samples/sample/src/main/kotlin/sample/invoice) package is a self-contained vertical slice that demonstrates three advanced features together:
+
+| File | What it shows |
+|------|---------------|
+| [`InvoiceDomain.kt`](https://github.com/fajrbahr/MediatorK/blob/main/samples/sample/src/main/kotlin/sample/invoice/InvoiceDomain.kt) | Domain model, requests (`CreateInvoiceCommand`, `StreamInvoicesQuery`), in-memory repo with `TransactionProvider` |
+| [`InvoiceHandlers.kt`](https://github.com/fajrbahr/MediatorK/blob/main/samples/sample/src/main/kotlin/sample/invoice/InvoiceHandlers.kt) | `RequestHandler` for commands/queries, `StreamRequestHandler` for streaming, `MediatorRegistrar` |
+| [`InvoiceValidators.kt`](https://github.com/fajrbahr/MediatorK/blob/main/samples/sample/src/main/kotlin/sample/invoice/InvoiceValidators.kt) | All three `ValidationScope` levels: REQUEST, DOMAIN, PERSISTENCE |
+| [`InvoiceDemo.kt`](https://github.com/fajrbahr/MediatorK/blob/main/samples/sample/src/main/kotlin/sample/invoice/InvoiceDemo.kt) | Runnable demos (Test25–28): transaction commit/rollback, validation scopes, streaming |
+
+**Test25** — `TransactionPipelineBehavior` commits on success, **Test26** — rolls back on failure:
+
+```kotlin
+val mediator = MediatorFactory.create(
+    registrars = listOf(InvoiceRegistrar(repo)),
+    pipelineBehaviors = listOf(
+        ValidationBehavior(listOf(CreateInvoiceRequestValidator())),
+        TransactionPipelineBehavior(transactionProvider = repo.transactionProvider),
+    ),
+)
+mediator.send(CreateInvoiceCommand(id = "INV-001", amount = 500.0))
+mediator.send(ApproveInvoiceCommand(id = "INV-001"))
+```
+
+**Test27** — `ValidationScope` in action — REQUEST is caught before the handler; DOMAIN is caught inside:
+
+```kotlin
+// REQUEST scope — caught in the pipeline before handler entry
+mediator.send(CreateInvoiceCommand(id = "BADINPUT", amount = 100.0))  // throws ValidationException
+
+// DOMAIN scope — caught inside the handler after loading state
+mediator.send(CreateInvoiceCommand(id = "INV-020", amount = 300.0))   // first call: OK
+mediator.send(CreateInvoiceCommand(id = "INV-020", amount = 300.0))   // duplicate: throws ValidationException
+```
+
+**Test28** — `StreamRequest<Invoice>` — lazy flow, filtered by status:
+
+```kotlin
+mediator.stream(StreamInvoicesQuery(status = InvoiceStatus.APPROVED))
+    .collect { invoice -> println("${invoice.id} — $${invoice.amount}") }
+```
+
+**Integration tests** — [`InvoiceIntegrationTest.kt`](https://github.com/fajrbahr/MediatorK/blob/main/samples/sample/src/test/kotlin/sample/InvoiceIntegrationTest.kt) uses `buildHandlerTestHarness` to test the full slice end-to-end with real handlers and the real pipeline — no mocks:
+
+```kotlin
+val h = buildHandlerTestHarness(
+    pipelineBehaviors = listOf(
+        ValidationBehavior(listOf(CreateInvoiceRequestValidator())),
+        TransactionPipelineBehavior(transactionProvider = repo.transactionProvider),
+    ),
+) {
+    +CreateInvoiceHandler(repo, domainValidator, persistenceValidator)
+    +ApproveInvoiceHandler(repo)
+    +GetInvoiceHandler(repo)
+    registerStream(StreamInvoicesHandler(repo))
+}
+
+h.given(CreateInvoiceCommand(id = "INV-200", amount = 500.0))   // arrange
+h.send(ApproveInvoiceCommand(id = "INV-200"))                    // act
+val invoice = h.query(GetInvoiceQuery(id = "INV-200"))            // assert
+assertEquals(InvoiceStatus.APPROVED, invoice.status)
+```
 
 Browse the full module on [GitHub →](https://github.com/fajrbahr/MediatorK/tree/main/samples/sample)
