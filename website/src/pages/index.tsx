@@ -25,6 +25,51 @@ val mediator = MediatorFactory.create(
 )
 val user: User = mediator.send(GetUserQuery("user-1"))`;
 
+const MOCK_BEFORE_CODE = `@Test
+fun \`place order - notifies user on success\`() {
+    val notificationService = mockk<NotificationService>()
+    val inventoryRepo = mockk<InventoryRepository>()
+    val orderRepo = mockk<OrderRepository>()
+    val paymentGateway = mockk<PaymentGateway>()
+    val emailSender = mockk<EmailSender>()
+    // … 8 more mocks …
+
+    every { inventoryRepo.reserve(any()) } returns true
+    every { orderRepo.save(any()) } returns order
+    every { paymentGateway.charge(any()) } returns receipt
+    every { notificationService.notify(any()) } just Runs
+    // … 12 more stubs …
+
+    val vm = OrderViewModel(
+        notificationService, inventoryRepo,
+        orderRepo, paymentGateway, emailSender, …
+    )
+    vm.placeOrder(cart)
+
+    verify { notificationService.notify(match { it.type == "ORDER_PLACED" }) }
+}`;
+
+const MOCK_AFTER_CODE = `@Test
+fun \`place order - notifies user on success\`() {
+    val fakeNotify = FakePlaceOrderHandler(shouldNotify = true)
+    val mediator = TestMediator(fakeNotify)
+
+    val vm = OrderViewModel(mediator)
+    vm.placeOrder(cart)
+
+    assertTrue(fakeNotify.notified)
+}
+
+// A simple fake — no mocking library needed
+class FakePlaceOrderHandler(val shouldNotify: Boolean)
+  : RequestHandler<PlaceOrderCommand, OrderResult> {
+    var notified = false
+    override suspend fun handle(...): OrderResult {
+        if (shouldNotify) notified = true
+        return OrderResult.Success
+    }
+}`;
+
 const BEFORE_CODE = `class InitialViewModel(
     private val applicationMetadata: ApplicationMetadata,
     private val retrieveAndStoreTogglesUseCase: RetrieveAndStoreTogglesUseCase,
@@ -155,6 +200,30 @@ export default function Home(): ReactNode {
                     </div>
                 </section>
 
+                {/* Hello Mocking */}
+                <section className={styles.mockingSection}>
+                    <div className="container">
+                        <h2 className={styles.sectionTitle}>Hello, Mocking 👋</h2>
+                        <p className={styles.sectionSub}>
+                            No mocking library. No 20-line setup. Just a plain fake handler.
+                        </p>
+                        <div className={styles.beforeAfterGrid}>
+                            <div className={styles.beforeAfterCard}>
+                                <div className={clsx(styles.beforeAfterLabel, styles.beforeLabel)}>Before — Mockk hell</div>
+                                <CodeBlock language="kotlin">{MOCK_BEFORE_CODE}</CodeBlock>
+                            </div>
+                            <div className={styles.beforeAfterCard}>
+                                <div className={clsx(styles.beforeAfterLabel, styles.afterLabel)}>After — Just a fake</div>
+                                <CodeBlock language="kotlin">{MOCK_AFTER_CODE}</CodeBlock>
+                                <p className={styles.afterNote}>
+                                    Each handler is a pure function. Swap it with a fake object in tests —
+                                    no mocking framework, no <code>every/verify</code> incantations.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
                 {/* Quick example */}
                 <section className={styles.quickExample}>
                     <div className="container">
@@ -165,8 +234,11 @@ export default function Home(): ReactNode {
                         <div className={styles.codeWrapper}>
                             <CodeBlock language="kotlin">{QUICK_EXAMPLE}</CodeBlock>
                         </div>
-                        <img src="img/mediator-day.png" alt="MediatorK routing requests"
-                             className={styles.sectionImage}/>
+                        <div className={styles.imageRow}>
+                            <span className={styles.imageArrow}>◀</span>
+                            <img src="img/mediator-day.png" alt="MediatorK routing requests"
+                                 className={styles.sectionImage}/>
+                        </div>
                     </div>
                 </section>
 
