@@ -61,7 +61,7 @@ private val mediator = MediatorFactory.create(
     postProcessors = listOf(
         MetricsPostProcessor(),
     ),
-    notificationPublisher = ParallelNotificationPublisher(),
+    notificationPublisher = NotificationPublishStrategy.DEFAULT,
 )
 
 class Test1Command {
@@ -204,7 +204,7 @@ class Test8NotificationSequential {
                 customerPhone = "+1234567890",
                 totalAmount = 5.56,
             ),
-            SequentialNotificationPublisher(),
+            NotificationPublishStrategy.SEQUENTIAL,
         )
     }
 
@@ -219,7 +219,7 @@ class Test9ExceptionOrderNotFound {
         println("=== TEST 9: RequestExceptionHandler — OrderNotFoundException recovered ===")
         val exMediator = MediatorFactory.create(
             registrars = listOf(ShipOrderRegistrar()),
-            notificationPublisher = SequentialNotificationPublisher(),
+            notificationPublisher = NotificationPublishStrategy.SEQUENTIAL,
         )
         val result = exMediator.send(ShipOrderCommand(orderId = "MISSING", warehouseId = "WH-1"))
         println("Result: $result")
@@ -236,7 +236,7 @@ class Test10ExceptionOutOfStock {
         println("=== TEST 10: RequestExceptionHandler — OutOfStockException recovered ===")
         val exMediator = MediatorFactory.create(
             registrars = listOf(ShipOrderRegistrar()),
-            notificationPublisher = SequentialNotificationPublisher(),
+            notificationPublisher = NotificationPublishStrategy.SEQUENTIAL,
         )
         val result = exMediator.send(ShipOrderCommand(orderId = "ORD-42", warehouseId = "WH-EMPTY"))
         println("Result: $result")
@@ -250,10 +250,10 @@ class Test10ExceptionOutOfStock {
 
 class Test11AggregateException {
     suspend fun start() {
-        println("=== TEST 11: AggregateException — ContinueOnExceptionNotificationPublisher ===")
+        println("=== TEST 11: AggregateException — NotificationPublishStrategy.CONTINUE_ON_EXCEPTION ===")
         val failingMediator = MediatorFactory.create(
             registrars = listOf(ShipOrderRegistrar(pushFails = true, analyticsFails = true)),
-            notificationPublisher = ContinueOnExceptionNotificationPublisher(),
+            notificationPublisher = NotificationPublishStrategy.CONTINUE_ON_EXCEPTION,
         )
         demoContinueOnException(failingMediator)
     }
@@ -600,7 +600,7 @@ class Test22Authorization {
 
 class Test23FireAndForget {
     suspend fun start() {
-        println("=== TEST 23: FireAndForgetNotificationPublisher — returns immediately, handler runs in background ===")
+        println("=== TEST 23: NotificationPublishStrategy.fireAndForget — returns immediately, handler runs in background ===")
         val received = mutableListOf<String>()
         val ffMediator = MediatorFactory.create(
             registrars = listOf(object : MediatorRegistrar {
@@ -615,7 +615,7 @@ class Test23FireAndForget {
                     })
                 }
             }),
-            notificationPublisher = FireAndForgetNotificationPublisher(GlobalScope),
+            notificationPublisher = NotificationPublishStrategy.fireAndForget(GlobalScope),
         )
         ffMediator.publish(OrderCreatedNotification("ORD-FF-1", "a@b.com", "+1", 10.0))
         println("  publish() returned immediately — handler still running")

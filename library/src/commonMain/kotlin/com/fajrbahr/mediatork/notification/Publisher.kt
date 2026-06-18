@@ -7,16 +7,16 @@ package com.fajrbahr.mediatork.notification
  * the notification type, the configured missing-notification handler is invoked —
  * by default [ThrowMissingNotificationHandler], which throws [com.fajrbahr.mediatork.MissingNotificationHandlerException].
  * The delivery strategy (parallel, sequential, fire-and-forget, etc.) is determined
- * by the active [NotificationPublisher].
+ * by the active [NotificationPublishStrategy].
  *
  * @see com.fajrbahr.mediatork.Mediator
  * @see NotificationHandler
- * @see NotificationPublisher
+ * @see NotificationPublishStrategy
  */
 interface Publisher {
     /**
      * Broadcasts [notification] to all registered handlers using the default
-     * [NotificationPublisher] configured at mediator creation time.
+     * [NotificationPublishStrategy] configured at mediator creation time.
      *
      * @param T the concrete notification type.
      * @param notification the notification to broadcast.
@@ -35,5 +35,5 @@ interface Publisher {
      * @param notification the notification to broadcast.
      * @param publisher the strategy to use for this publish call.
      */
-    suspend fun <T : Notification> publish(notification: T, publisher: NotificationPublisher)
+    suspend fun <T : Notification> publish(notification: T, publisher: NotificationPublishStrategy)
 }

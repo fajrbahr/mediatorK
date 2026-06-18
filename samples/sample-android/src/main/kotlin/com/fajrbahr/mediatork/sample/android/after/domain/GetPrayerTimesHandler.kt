@@ -16,6 +16,7 @@ import java.net.URL
 
 data class GetPrayerTimesRequest(
     val city: String,
+    val country: String = "",
     val method: Int = 3,
 ) : Request<TodayPrayerTimes>, AuthenticatedRequest
 
@@ -34,7 +35,7 @@ class GetPrayerTimesHandler(
             parse(
                 fetch(
                     "https://api.aladhan.com/v1/timingsByCity/$timestamp" +
-                            "?city=${request.city}&country=&method=${request.method}"
+                            "?city=${request.city}&country=${request.country}&method=${request.method}"
                 )
             ).also { cache.savePrayerTimes(request.city, it) }
         }

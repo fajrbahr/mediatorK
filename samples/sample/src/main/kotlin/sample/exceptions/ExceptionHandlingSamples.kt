@@ -3,7 +3,7 @@ package sample.exceptions
 import com.fajrbahr.mediatork.*
 import com.fajrbahr.mediatork.handler.RequestExceptionHandler
 import com.fajrbahr.mediatork.handler.RequestHandler
-import com.fajrbahr.mediatork.notification.ContinueOnExceptionNotificationPublisher
+import com.fajrbahr.mediatork.notification.NotificationPublishStrategy
 import com.fajrbahr.mediatork.notification.Notification
 import com.fajrbahr.mediatork.notification.NotificationHandler
 
@@ -145,18 +145,18 @@ class ShipOrderRegistrar(
 // ── Demo helpers ──────────────────────────────────────────────────────────────
 
 /**
- * Shows how [AggregateException] surfaces when [ContinueOnExceptionNotificationPublisher]
+ * Shows how [AggregateException] surfaces when [NotificationPublishStrategy.CONTINUE_ON_EXCEPTION]
  * is used: every handler runs regardless of failures, and all exceptions are bundled
  * into one [AggregateException] at the end.
  *
- * Contrast with [com.fajrbahr.mediatork.SequentialNotificationPublisher], which stops
- * at the first failing handler, or [com.fajrbahr.mediatork.ParallelNotificationPublisher],
- * which surfaces only the first exception from concurrent handlers.
+ * Contrast with [NotificationPublishStrategy.SEQUENTIAL], which stops at the first
+ * failing handler, or [NotificationPublishStrategy.PARALLEL], which surfaces only
+ * the first exception from concurrent handlers.
  */
 suspend fun demoContinueOnException(mediator: Mediator) {
     println(
         """
-        |Strategy: ContinueOnExceptionNotificationPublisher
+        |Strategy: NotificationPublishStrategy.CONTINUE_ON_EXCEPTION
         |  — All handlers run even when some fail.
         |  — Every exception is collected and re-thrown as a single AggregateException.
         """.trimMargin()
@@ -166,7 +166,7 @@ suspend fun demoContinueOnException(mediator: Mediator) {
 
     runCatching {
         // Override the default publisher just for this call so the demo is self-contained.
-        mediator.publish(notification, ContinueOnExceptionNotificationPublisher())
+        mediator.publish(notification, NotificationPublishStrategy.CONTINUE_ON_EXCEPTION)
     }.onSuccess {
         println("✅ All handlers succeeded — no AggregateException thrown")
     }.onFailure { throwable ->

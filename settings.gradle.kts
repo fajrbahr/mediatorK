@@ -18,6 +18,7 @@ include("mediatork-test")
 include("publishMaven")
 
 include("mediatork-ksp-koin")
+include("mediatork-koin-refaction")
 
 include("samples:sample")
 

@@ -43,7 +43,7 @@ class AfterSuperPrayerTimesHandler(
             parse(
                 fetch(
                     "https://api.aladhan.com/v1/timingsByCity/$ts" +
-                            "?city=${request.city}&country=&method=${request.method}"
+                            "?city=${request.city}&country=${request.country}&method=${request.method}"
                 )
             ).also {
                 cache.savePrayerTimes(request.city, it)
