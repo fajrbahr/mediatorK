@@ -23,7 +23,7 @@ one handler, notifications fan out to many, and a pipeline of behaviors sits in 
 
 ```kotlin
 dependencies {
-    implementation("io.github.fajrbahr:mediatork:0.6.2")
+    implementation("io.github.fajrbahr:mediatork:0.6.3")
 }
 ```
 
