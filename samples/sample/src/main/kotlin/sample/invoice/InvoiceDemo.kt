@@ -1,7 +1,7 @@
 package sample.invoice
 
 import com.fajrbahr.mediatork.MediatorFactory
-import com.fajrbahr.mediatork.pipeline.TransactionPipelineBehavior
+import com.fajrbahr.mediatork.pipeline.buildin.TransactionPipelineBehavior
 import com.fajrbahr.mediatork.validator.ValidationBehavior
 import com.fajrbahr.mediatork.validator.ValidationException
 import kotlinx.coroutines.flow.toList
@@ -9,8 +9,6 @@ import kotlinx.coroutines.runBlocking
 import sample.invoice.commands.approveinvoice.ApproveInvoiceCommand
 import sample.invoice.commands.createinvoice.CreateInvoiceAmountPolicyValidator
 import sample.invoice.commands.createinvoice.CreateInvoiceCommand
-import sample.invoice.commands.createinvoice.CreateInvoiceDomainValidator
-import sample.invoice.commands.createinvoice.CreateInvoicePersistenceValidator
 import sample.invoice.commands.createinvoice.CreateInvoiceRequestValidator
 import sample.invoice.queries.getinvoice.GetInvoiceQuery
 import sample.invoice.queries.streaminvoices.StreamInvoicesQuery

@@ -1,6 +1,6 @@
 package com.fajrbahr.mediatork
 
-import com.fajrbahr.mediatork.pipeline.LoggingPipelineBehavior
+import com.fajrbahr.mediatork.pipeline.buildin.LoggingPipelineBehavior
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals

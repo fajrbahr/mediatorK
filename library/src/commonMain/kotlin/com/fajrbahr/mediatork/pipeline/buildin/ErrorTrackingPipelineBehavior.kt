@@ -1,10 +1,12 @@
-package com.fajrbahr.mediatork.pipeline
+package com.fajrbahr.mediatork.pipeline.buildin
 
 import com.fajrbahr.mediatork.Request
 import com.fajrbahr.mediatork.RequestContext
+import com.fajrbahr.mediatork.pipeline.PipelineBehavior
+import com.fajrbahr.mediatork.pipeline.RequestHandlerDelegate
 
 /**
- * A [PipelineBehavior] that intercepts every unhandled exception and forwards it to a
+ * A [com.fajrbahr.mediatork.pipeline.PipelineBehavior] that intercepts every unhandled exception and forwards it to a
  * callback before rethrowing.
  *
  * Use this to wire crash-reporting services (Firebase Crashlytics, Sentry, Bugsnag) into

@@ -1,7 +1,9 @@
-package com.fajrbahr.mediatork.pipeline
+package com.fajrbahr.mediatork.pipeline.buildin
 
 import com.fajrbahr.mediatork.Request
 import com.fajrbahr.mediatork.RequestContext
+import com.fajrbahr.mediatork.pipeline.PipelineBehavior
+import com.fajrbahr.mediatork.pipeline.RequestHandlerDelegate
 
 /**
  * Abstraction over a transactional unit of work.
@@ -28,13 +30,13 @@ interface TransactionProvider {
 }
 
 /**
- * A [PipelineBehavior] that wraps each matching request in a transaction.
+ * A [com.fajrbahr.mediatork.pipeline.PipelineBehavior] that wraps each matching request in a transaction.
  *
  * The transaction commits when the handler returns normally, and rolls back if it throws.
  * The original exception is re-thrown after rollback so callers can handle or log it.
  *
  * Use the [appliesTo] predicate to restrict transactions to write operations. When the
- * [com.fajrbahr.mediatork.Request.Unit] marker is in use, a common pattern is to limit
+ * [Request.Unit] marker is in use, a common pattern is to limit
  * transactions to those requests:
  *
  * ```kotlin

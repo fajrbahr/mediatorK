@@ -1,9 +1,9 @@
 package com.fajrbahr.mediatork
 
 import com.fajrbahr.mediatork.handler.RequestHandler
-import com.fajrbahr.mediatork.pipeline.CircuitBreakerPipelineBehavior
-import com.fajrbahr.mediatork.pipeline.CircuitOpenException
-import com.fajrbahr.mediatork.pipeline.CircuitState
+import com.fajrbahr.mediatork.pipeline.buildin.CircuitBreakerPipelineBehavior
+import com.fajrbahr.mediatork.pipeline.buildin.CircuitOpenException
+import com.fajrbahr.mediatork.pipeline.buildin.CircuitState
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals

@@ -1,13 +1,15 @@
-package com.fajrbahr.mediatork.pipeline
+package com.fajrbahr.mediatork.pipeline.buildin
 
 import com.fajrbahr.mediatork.Request
 import com.fajrbahr.mediatork.RequestContext
+import com.fajrbahr.mediatork.pipeline.PipelineBehavior
+import com.fajrbahr.mediatork.pipeline.RequestHandlerDelegate
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlin.time.TimeSource
 
 /**
- * A [PipelineBehavior] that caches handler results by request key for a configurable TTL.
+ * A [com.fajrbahr.mediatork.pipeline.PipelineBehavior] that caches handler results by request key for a configurable TTL.
  *
  * On a cache hit the handler is skipped entirely and the cached value is returned.
  * On a miss the handler runs and the result is stored. Entries expire after [ttlMs]

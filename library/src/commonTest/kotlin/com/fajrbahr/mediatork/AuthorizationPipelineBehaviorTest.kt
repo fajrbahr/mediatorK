@@ -2,6 +2,9 @@ package com.fajrbahr.mediatork
 
 import com.fajrbahr.mediatork.handler.RequestHandler
 import com.fajrbahr.mediatork.pipeline.*
+import com.fajrbahr.mediatork.pipeline.buildin.AuthenticatedRequest
+import com.fajrbahr.mediatork.pipeline.buildin.AuthorizationPipelineBehavior
+import com.fajrbahr.mediatork.pipeline.buildin.UnauthorizedException
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals

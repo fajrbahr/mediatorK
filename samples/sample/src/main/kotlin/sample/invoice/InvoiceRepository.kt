@@ -1,6 +1,6 @@
 package sample.invoice
 
-import com.fajrbahr.mediatork.pipeline.TransactionProvider
+import com.fajrbahr.mediatork.pipeline.buildin.TransactionProvider
 
 class InvoiceRepository {
 

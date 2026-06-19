@@ -1,11 +1,13 @@
-package com.fajrbahr.mediatork.pipeline
+package com.fajrbahr.mediatork.pipeline.buildin
 
 import com.fajrbahr.mediatork.Request
 import com.fajrbahr.mediatork.RequestContext
+import com.fajrbahr.mediatork.pipeline.PipelineBehavior
+import com.fajrbahr.mediatork.pipeline.RequestHandlerDelegate
 import kotlin.time.TimeSource
 
 /**
- * A [PipelineBehavior] that measures how long each request takes and reports it via a callback.
+ * A [com.fajrbahr.mediatork.pipeline.PipelineBehavior] that measures how long each request takes and reports it via a callback.
  *
  * The callback receives the request's class name and the elapsed duration in milliseconds.
  * Timing is always reported — even when the handler throws — so you get latency data for
