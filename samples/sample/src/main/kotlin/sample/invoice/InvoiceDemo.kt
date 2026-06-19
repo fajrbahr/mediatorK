@@ -3,11 +3,13 @@ package sample.invoice
 import com.fajrbahr.mediatork.MediatorFactory
 import com.fajrbahr.mediatork.pipeline.buildin.TransactionPipelineBehavior
 import com.fajrbahr.mediatork.validator.ValidationException
+import com.fajrbahr.mediatork.validator.bind
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.runBlocking
 import sample.invoice.commands.approveinvoice.ApproveInvoiceCommand
 import sample.invoice.commands.createinvoice.CreateInvoiceAmountPolicyValidator
 import sample.invoice.commands.createinvoice.CreateInvoiceCommand
+import sample.invoice.commands.createinvoice.CreateInvoiceRequestValidator
 import sample.invoice.queries.getinvoice.GetInvoiceQuery
 import sample.invoice.queries.streaminvoices.StreamInvoicesQuery
 
@@ -79,7 +81,7 @@ class Test28StreamInvoices {
         val mediator = MediatorFactory.create(
             registrars = listOf(InvoiceRegistrar(repo)),
             pipelineBehaviors = listOf(
-                ValidationBehavior(listOf(CreateInvoiceRequestValidator())),
+                com.fajrbahr.mediatork.validator.ValidationBehavior(listOf(CreateInvoiceRequestValidator().bind())),
             ),
         )
 
@@ -116,7 +118,7 @@ class Test29MultipleValidators {
             registrars = listOf(InvoiceRegistrar(repo)),
             pipelineBehaviors = listOf(
                 com.fajrbahr.mediatork.validator.ValidationBehavior(
-                    listOf(CreateInvoiceAmountPolicyValidator()) // checks amount <= 10,000; format checks come from handler
+                    listOf(CreateInvoiceAmountPolicyValidator().bind()) // checks amount <= 10,000; format checks come from handler
                 ),
             ),
         )

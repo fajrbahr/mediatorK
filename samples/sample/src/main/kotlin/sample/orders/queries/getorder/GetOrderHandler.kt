@@ -23,6 +23,7 @@ class GetOrderRegistrar : MediatorRegistrar {
     override fun register(registry: HandlerRegistry) {
         registry.scope {
             +GetOrderHandler()
+            +GetOrderQueryValidator()
         }
     }
 }

@@ -5,11 +5,12 @@ import com.fajrbahr.mediatork.api.RequestContext
 import com.fajrbahr.mediatork.api.PipelineBehavior
 import com.fajrbahr.mediatork.api.RequestHandlerDelegate
 import com.fajrbahr.mediatork.api.RequestValidator
+import com.fajrbahr.mediatork.validator.BoundValidator
 import com.fajrbahr.mediatork.validator.ValidationException
 import com.fajrbahr.mediatork.validator.ValidationResult
 
 class ValidationBehavior(
-    private val validators: List<RequestValidator<*>>
+    private val validators: List<BoundValidator<*>>
 ) : PipelineBehavior {
 
     @Suppress("UNCHECKED_CAST")
@@ -20,8 +21,8 @@ class ValidationBehavior(
     ): TResult {
         validators
             .find { it.requestClass.isInstance(request) }
-            ?.let { validator ->
-                val result = (validator as RequestValidator<TRequest>).validate(request)
+            ?.let { bound ->
+                val result = (bound.validator as RequestValidator<TRequest>).validate(request)
                 if (result is ValidationResult.Invalid) throw ValidationException(result.errors)
             }
 

@@ -18,6 +18,7 @@ class FetchBookingsRegistrar : MediatorRegistrar {
     override fun register(registry: HandlerRegistry) {
         registry.scope {
             +FetchBookingsHandler()
+            +FetchBookingsValidator()
         }
     }
 }

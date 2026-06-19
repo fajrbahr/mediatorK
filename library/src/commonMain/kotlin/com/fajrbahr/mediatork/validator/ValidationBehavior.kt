@@ -5,6 +5,7 @@ import com.fajrbahr.mediatork.api.RequestContext
 import com.fajrbahr.mediatork.api.PipelineBehavior
 import com.fajrbahr.mediatork.api.RequestHandlerDelegate
 import com.fajrbahr.mediatork.api.RequestValidator
+import kotlin.reflect.KClass
 
 /**
  * Thrown when validation fails. [errors] contains one or more messages describing what failed.
@@ -16,15 +17,14 @@ class ValidationException(val errors: List<*>, cause: Throwable? = null) :
 }
 
 /**
- * Pre-built [PipelineBehavior] that runs registered [com.fajrbahr.mediatork.api.RequestValidator]s before the handler.
+ * Pre-built [PipelineBehavior] that runs registered [RequestValidator]s before the handler.
  * Throws [ValidationException] if any validator returns [ValidationResult.Invalid].
  *
- *
- * @param validators the validators to run; each is matched to a request by its bound [kotlin.reflect.KClass].
+ * @param validators validators keyed by request [KClass]; only the entry matching the incoming request type runs.
  * @param order position in the behavior chain; defaults to `-50` (runs before most behaviors).
  */
 class ValidationBehavior(
-    private val validators: List<BoundValidator<*>>,
+    private val validators: Map<KClass<*>, List<RequestValidator<*>>>,
     override val order: Int = -50,
 ) : PipelineBehavior {
 
@@ -34,13 +34,10 @@ class ValidationBehavior(
         next: RequestHandlerDelegate<TRequest, TResult>,
         request: TRequest,
     ): TResult {
-        validators
-            .filter { it.requestClass.isInstance(request) }
-            .forEach { bound ->
-                val result = (bound.validator as RequestValidator<TRequest>).validate(request)
-                if (result is ValidationResult.Invalid) throw ValidationException(result.errors)
-            }
-
+        validators[request::class]?.forEach { validator ->
+            val result = (validator as RequestValidator<TRequest>).validate(request)
+            if (result is ValidationResult.Invalid) throw ValidationException(result.errors)
+        }
         return next(request)
     }
 }
