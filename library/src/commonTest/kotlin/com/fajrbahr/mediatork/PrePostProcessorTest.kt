@@ -12,13 +12,13 @@ import kotlin.test.assertFalse
 
 class PrePostProcessorTest {
 
-    // ── Tag.PRE ───────────────────────────────────────────────────────────────
+    // ── Tag.Pre ───────────────────────────────────────────────────────────────
 
     @Test
     fun `PRE behavior runs before handler`() = runTest {
         val order = mutableListOf<String>()
         val pre = object : PipelineBehavior {
-            override val tag = Tag.PRE
+            override val tag = Tag.Pre
             override suspend fun <TRequest : Request<TResult>, TResult> process(
                 requestContext: RequestContext,
                 next: RequestHandlerDelegate<TRequest, TResult>,
@@ -39,7 +39,7 @@ class PrePostProcessorTest {
     fun `PRE behavior can populate request context for handler`() = runTest {
         var captured: String? = null
         val pre = object : PipelineBehavior {
-            override val tag = Tag.PRE
+            override val tag = Tag.Pre
             override suspend fun <TRequest : Request<TResult>, TResult> process(
                 requestContext: RequestContext,
                 next: RequestHandlerDelegate<TRequest, TResult>,
@@ -60,7 +60,7 @@ class PrePostProcessorTest {
     fun `multiple PRE behaviors run in ascending order`() = runTest {
         val order = mutableListOf<String>()
         val first = object : PipelineBehavior {
-            override val tag = Tag.PRE
+            override val tag = Tag.Pre
             override val order = 1
             override suspend fun <TRequest : Request<TResult>, TResult> process(
                 requestContext: RequestContext,
@@ -69,7 +69,7 @@ class PrePostProcessorTest {
             ): TResult { order += "first"; return next(request) }
         }
         val second = object : PipelineBehavior {
-            override val tag = Tag.PRE
+            override val tag = Tag.Pre
             override val order = 2
             override suspend fun <TRequest : Request<TResult>, TResult> process(
                 requestContext: RequestContext,
@@ -86,7 +86,7 @@ class PrePostProcessorTest {
     fun `PRE behavior throwing aborts pipeline`() = runTest {
         var handlerRan = false
         val pre = object : PipelineBehavior {
-            override val tag = Tag.PRE
+            override val tag = Tag.Pre
             override suspend fun <TRequest : Request<TResult>, TResult> process(
                 requestContext: RequestContext,
                 next: RequestHandlerDelegate<TRequest, TResult>,
@@ -103,13 +103,13 @@ class PrePostProcessorTest {
         assertFalse(handlerRan)
     }
 
-    // ── Tag.POST ──────────────────────────────────────────────────────────────
+    // ── Tag.Post ──────────────────────────────────────────────────────────────
 
     @Test
     fun `POST behavior runs after handler`() = runTest {
         val order = mutableListOf<String>()
         val post = object : PipelineBehavior {
-            override val tag = Tag.POST
+            override val tag = Tag.Post
             override suspend fun <TRequest : Request<TResult>, TResult> process(
                 requestContext: RequestContext,
                 next: RequestHandlerDelegate<TRequest, TResult>,
@@ -130,7 +130,7 @@ class PrePostProcessorTest {
     fun `POST behavior receives handler response`() = runTest {
         var captured: Any? = "not-set"
         val post = object : PipelineBehavior {
-            override val tag = Tag.POST
+            override val tag = Tag.Post
             override suspend fun <TRequest : Request<TResult>, TResult> process(
                 requestContext: RequestContext,
                 next: RequestHandlerDelegate<TRequest, TResult>,
@@ -146,7 +146,7 @@ class PrePostProcessorTest {
     fun `POST behavior receives original request`() = runTest {
         var capturedRequest: Request<*>? = null
         val post = object : PipelineBehavior {
-            override val tag = Tag.POST
+            override val tag = Tag.Post
             override suspend fun <TRequest : Request<TResult>, TResult> process(
                 requestContext: RequestContext,
                 next: RequestHandlerDelegate<TRequest, TResult>,
@@ -162,7 +162,7 @@ class PrePostProcessorTest {
     fun `multiple POST behaviors run in ascending order`() = runTest {
         val order = mutableListOf<String>()
         val first = object : PipelineBehavior {
-            override val tag = Tag.POST
+            override val tag = Tag.Post
             override val order = 1
             override suspend fun <TRequest : Request<TResult>, TResult> process(
                 requestContext: RequestContext,
@@ -171,7 +171,7 @@ class PrePostProcessorTest {
             ): TResult { val r = next(request); order += "first"; return r }
         }
         val second = object : PipelineBehavior {
-            override val tag = Tag.POST
+            override val tag = Tag.Post
             override val order = 2
             override suspend fun <TRequest : Request<TResult>, TResult> process(
                 requestContext: RequestContext,
@@ -188,7 +188,7 @@ class PrePostProcessorTest {
     fun `POST behavior does not run when handler throws unhandled exception`() = runTest {
         var postRan = false
         val post = object : PipelineBehavior {
-            override val tag = Tag.POST
+            override val tag = Tag.Post
             override suspend fun <TRequest : Request<TResult>, TResult> process(
                 requestContext: RequestContext,
                 next: RequestHandlerDelegate<TRequest, TResult>,
@@ -208,7 +208,7 @@ class PrePostProcessorTest {
     fun `POST behavior can read context values written by PRE behavior`() = runTest {
         var postSawValue: String? = null
         val pre = object : PipelineBehavior {
-            override val tag = Tag.PRE
+            override val tag = Tag.Pre
             override suspend fun <TRequest : Request<TResult>, TResult> process(
                 requestContext: RequestContext,
                 next: RequestHandlerDelegate<TRequest, TResult>,
@@ -216,7 +216,7 @@ class PrePostProcessorTest {
             ): TResult { requestContext.put("shared", "value"); return next(request) }
         }
         val post = object : PipelineBehavior {
-            override val tag = Tag.POST
+            override val tag = Tag.Post
             override suspend fun <TRequest : Request<TResult>, TResult> process(
                 requestContext: RequestContext,
                 next: RequestHandlerDelegate<TRequest, TResult>,

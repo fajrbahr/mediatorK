@@ -98,9 +98,9 @@ internal class MediatorImpl(
     /**
      * Composes and executes the full behavior chain for a single request dispatch.
      *
-     * Behaviors are grouped by [Tag] phase ([Tag.PRE] → [Tag.DEFAULT] → [Tag.POST])
+     * Behaviors are grouped by [Tag] phase ([Tag.Pre] → [Tag.Default] → [Tag.Post])
      * and sorted by [PipelineBehavior.order] within each phase. Lower order is outermost
-     * within a phase; [Tag.PRE] behaviors always wrap [Tag.DEFAULT], which always wrap [Tag.POST].
+     * within a phase; [Tag.Pre] behaviors always wrap [Tag.Default], which always wrap [Tag.Post].
      *
      * @param request the incoming request.
      * @param handler the resolved handler for this request type.
@@ -112,10 +112,10 @@ internal class MediatorImpl(
     ): TResult {
         val requestContext = RequestContext()
         val active = pipelineBehaviors.filter { it.isEnabled && it.appliesTo(request) }
-        val sortedPre = active.filter { it.tag == Tag.PRE }.sortedBy { it.order }
-        val sortedDefault = active.filter { it.tag == Tag.DEFAULT }.sortedBy { it.order }
+        val sortedPre = active.filter { it.tag == Tag.Pre }.sortedBy { it.order }
+        val sortedDefault = active.filter { it.tag == Tag.Default }.sortedBy { it.order }
         // POST sorted descending so that lower order = innermost = exits first after handler
-        val sortedPost = active.filter { it.tag == Tag.POST }.sortedByDescending { it.order }
+        val sortedPost = active.filter { it.tag == Tag.Post }.sortedByDescending { it.order }
 
         val finalDelegate: RequestHandlerDelegate<TRequest, TResult> = { req ->
             try {

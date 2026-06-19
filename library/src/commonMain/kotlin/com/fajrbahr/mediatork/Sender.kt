@@ -16,9 +16,9 @@ interface Sender {
      * Sends [request] through the full processing pipeline and returns the result.
      *
      * Execution order (outermost to innermost):
-     * 1. [com.fajrbahr.mediatork.pipeline.PipelineBehavior.Tag.PRE] behaviors (sorted by order)
-     * 2. [com.fajrbahr.mediatork.pipeline.PipelineBehavior.Tag.DEFAULT] behaviors (sorted by order)
-     * 3. [com.fajrbahr.mediatork.pipeline.PipelineBehavior.Tag.POST] behaviors (sorted by order)
+     * 1. [com.fajrbahr.mediatork.pipeline.PipelineBehavior.Tag.Pre] behaviors (sorted by order)
+     * 2. [com.fajrbahr.mediatork.pipeline.PipelineBehavior.Tag.Default] behaviors (sorted by order)
+     * 3. [com.fajrbahr.mediatork.pipeline.PipelineBehavior.Tag.Post] behaviors (sorted by order)
      * 4. The matched [com.fajrbahr.mediatork.handler.RequestHandler]
      *
      * @param TRequest the concrete request type.

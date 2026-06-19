@@ -6,7 +6,7 @@ import com.fajrbahr.mediatork.pipeline.PipelineBehavior
 import com.fajrbahr.mediatork.pipeline.RequestHandlerDelegate
 
 class TraceIdBehavior : PipelineBehavior {
-    override val tag = PipelineBehavior.Tag.PRE
+    override val tag = PipelineBehavior.Tag.Pre
     override val order = -1000
 
     override suspend fun <TRequest : Request<TResult>, TResult> process(
@@ -20,7 +20,7 @@ class TraceIdBehavior : PipelineBehavior {
 }
 
 class RequestAuditBehavior : PipelineBehavior {
-    override val tag = PipelineBehavior.Tag.POST
+    override val tag = PipelineBehavior.Tag.Post
     override val order = 0
 
     override suspend fun <TRequest : Request<TResult>, TResult> process(

@@ -19,14 +19,14 @@ typealias RequestHandlerDelegate<TRequest, TResult> = suspend (TRequest) -> TRes
  * Cross-cutting concern that wraps request handling in a decorator-style chain.
  *
  * Behaviors are grouped into three phases by [tag], then sorted by [order] **within** each
- * phase. **Phase always wins over order**: every [Tag.PRE] behavior executes before every
- * [Tag.DEFAULT] behavior, and every [Tag.DEFAULT] before every [Tag.POST] — no matter what
+ * phase. **Phase always wins over order**: every [Tag.Pre] behavior executes before every
+ * [Tag.Default] behavior, and every [Tag.Default] before every [Tag.Post] — no matter what
  * [order] values are assigned. [order] only controls sequencing inside a phase.
  *
  * Typical uses:
- * - [Tag.PRE]: auth token injection, locale setup, tracing context
- * - [Tag.DEFAULT]: logging, retry, caching, timing, circuit-breaking
- * - [Tag.POST]: metrics emission, audit logging, response observation
+ * - [Tag.Pre]: auth token injection, locale setup, tracing context
+ * - [Tag.Default]: logging, retry, caching, timing, circuit-breaking
+ * - [Tag.Post]: metrics emission, audit logging, response observation
  *
  * ```kotlin
  * class LoggingBehavior : PipelineBehavior {
@@ -44,7 +44,7 @@ typealias RequestHandlerDelegate<TRequest, TResult> = suspend (TRequest) -> TRes
  * }
  *
  * class MetricsBehavior : PipelineBehavior {
- *     override val tag = Tag.POST
+ *     override val tag = Tag.Post
  *     override suspend fun <TRequest : Request<TResult>, TResult> process(
  *         requestContext: RequestContext,
  *         next: RequestHandlerDelegate<TRequest, TResult>,
@@ -67,25 +67,29 @@ interface PipelineBehavior {
     /**
      * Phase that determines where this behavior sits in the execution chain.
      *
-     * **Phase takes absolute priority over [order].** Every [Tag.PRE] behavior runs
-     * before every [Tag.DEFAULT] behavior, and every [Tag.DEFAULT] behavior runs before
-     * every [Tag.POST] behavior — regardless of what [order] values are set. [order] only
+     * **Phase takes absolute priority over [order].** Every [Tag.Pre] behavior runs
+     * before every [Tag.Default] behavior, and every [Tag.Default] behavior runs before
+     * every [Tag.Post] behavior — regardless of what [order] values are set. [order] only
      * controls the sequence *within* a phase.
      *
      * | Phase        | Position     | Typical use                                      |
      * |--------------|--------------|--------------------------------------------------|
-     * | [Tag.PRE]    | outermost    | auth injection, locale, trace-id setup           |
-     * | [Tag.DEFAULT]| middle       | logging, retry, caching, circuit-breaking        |
-     * | [Tag.POST]   | innermost    | metrics, audit logging, response observation     |
+     * | [Tag.Pre]    | outermost    | auth injection, locale, trace-id setup           |
+     * | [Tag.Default]| middle       | logging, retry, caching, circuit-breaking        |
+     * | [Tag.Post]   | innermost    | metrics, audit logging, response observation     |
      *
-     * Example: a [Tag.PRE] behavior with `order = 999` still runs **before** a
-     * [Tag.DEFAULT] behavior with `order = -999`.
+     * Example: a [Tag.Pre] behavior with `order = 999` still runs **before** a
+     * [Tag.Default] behavior with `order = -999`.
      *
-     * Defaults to [Tag.DEFAULT].
+     * Defaults to [Tag.Default].
      */
-    enum class Tag { PRE, DEFAULT, POST }
+    sealed class Tag {
+        data object Pre : Tag()
+        data object Default : Tag()
+        data object Post : Tag()
+    }
 
-    val tag: Tag get() = Tag.DEFAULT
+    val tag: Tag get() = Tag.Default
 
     /**
      * Relative position within the [tag] phase. Lower values are outermost (run first on entry).
