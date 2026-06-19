@@ -14,7 +14,8 @@ import org.json.JSONObject
 import java.net.HttpURLConnection
 import java.net.URL
 
-data class GetPrayerTimesRequest(val city: String, val method: Int = 3) : Request<TodayPrayerTimes>, AuthenticatedRequest
+data class GetPrayerTimesRequest(val city: String, val method: Int = 3) : Request<TodayPrayerTimes>,
+    AuthenticatedRequest
 
 class GetPrayerTimesHandler(
     private val cache: AladhanCacheDataSource,
@@ -29,8 +30,10 @@ class GetPrayerTimesHandler(
         return withContext(Dispatchers.IO) {
             val timestamp = System.currentTimeMillis() / 1000
             parse(
-                fetch("https://api.aladhan.com/v1/timingsByCity/$timestamp" +
-                        "?city=${request.city}&country=&method=${request.method}")
+                fetch(
+                    "https://api.aladhan.com/v1/timingsByCity/$timestamp" +
+                            "?city=${request.city}&country=&method=${request.method}"
+                )
             ).also { cache.savePrayerTimes(request.city, it) }
         }
     }

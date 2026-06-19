@@ -40,13 +40,18 @@ class RulesBuilder<T : Any> {
 
 class FailFastRulesBuilder<T : Any> {
     internal var firstError: T? = null
+
     internal class FailFastSignal : Throwable()
 
     fun check(condition: Boolean, message: () -> T) {
-        if (!condition) { firstError = message(); throw FailFastSignal() }
+        if (!condition) {
+            firstError = message(); throw FailFastSignal()
+        }
     }
 
     fun require(condition: Boolean, message: () -> T) {
-        if (!condition) { firstError = message(); throw FailFastSignal() }
+        if (!condition) {
+            firstError = message(); throw FailFastSignal()
+        }
     }
 }

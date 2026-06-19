@@ -1,8 +1,8 @@
 package sample.behaviors
 
+import com.fajrbahr.mediatork.api.PipelineBehavior
 import com.fajrbahr.mediatork.api.Request
 import com.fajrbahr.mediatork.api.RequestContext
-import com.fajrbahr.mediatork.api.PipelineBehavior
 import com.fajrbahr.mediatork.api.RequestHandlerDelegate
 import sample.context.traceNetworkMetrics
 

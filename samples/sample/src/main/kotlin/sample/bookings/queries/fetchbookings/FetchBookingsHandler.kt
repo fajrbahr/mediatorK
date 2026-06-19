@@ -1,6 +1,6 @@
 package sample.bookings.queries.fetchbookings
 
-import com.fajrbahr.mediatork.*
+import com.fajrbahr.mediatork.HandlerRegistry
 import com.fajrbahr.mediatork.api.Mediator
 import com.fajrbahr.mediatork.api.MediatorRegistrar
 import com.fajrbahr.mediatork.api.RequestContext

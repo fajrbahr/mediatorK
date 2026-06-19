@@ -62,13 +62,14 @@ if (repo.findById(request.id) != null)
 
 ## Validation Scopes
 
-Real-world validation happens at three distinct points in the lifecycle. MediatorK formalises this with `ValidationScope`:
+Real-world validation happens at three distinct points in the lifecycle. MediatorK formalises this with
+`ValidationScope`:
 
-| Scope         | When it runs                          | Automatic?         | What to check                          |
-|---------------|---------------------------------------|--------------------|----------------------------------------|
-| `REQUEST`     | Before the handler, in the pipeline   | Yes (via `ValidationBehavior`) | Field format and type — answerable from the request alone |
-| `DOMAIN`      | Inside the handler, after loading state | No — call explicitly | Business rules that need the loaded aggregate |
-| `PERSISTENCE` | Inside the handler, before writing    | No — call explicitly | DB constraints (uniqueness, FK checks) |
+| Scope         | When it runs                            | Automatic?                     | What to check                                             |
+|---------------|-----------------------------------------|--------------------------------|-----------------------------------------------------------|
+| `REQUEST`     | Before the handler, in the pipeline     | Yes (via `ValidationBehavior`) | Field format and type — answerable from the request alone |
+| `DOMAIN`      | Inside the handler, after loading state | No — call explicitly           | Business rules that need the loaded aggregate             |
+| `PERSISTENCE` | Inside the handler, before writing      | No — call explicitly           | DB constraints (uniqueness, FK checks)                    |
 
 Declare the scope on your validator:
 

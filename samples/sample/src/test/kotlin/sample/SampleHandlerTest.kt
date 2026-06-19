@@ -1,14 +1,9 @@
 package sample
 
-import com.fajrbahr.mediatork.*
-import com.fajrbahr.mediatork.api.Mediator
-import com.fajrbahr.mediatork.api.MediatorRegistrar
-import com.fajrbahr.mediatork.api.Request
-import com.fajrbahr.mediatork.api.RequestHandler
-import com.fajrbahr.mediatork.api.NotificationHandler
-import com.fajrbahr.mediatork.api.PipelineBehavior
-import com.fajrbahr.mediatork.api.RequestContext
-import com.fajrbahr.mediatork.api.RequestHandlerDelegate
+import com.fajrbahr.mediatork.HandlerRegistry
+import com.fajrbahr.mediatork.MediatorFactory
+import com.fajrbahr.mediatork.MissingHandlerException
+import com.fajrbahr.mediatork.api.*
 import kotlinx.coroutines.test.runTest
 import sample.orders.commands.createorder.OrderCreatedNotification
 import sample.users.queries.fetchuser.FetchUserQuery

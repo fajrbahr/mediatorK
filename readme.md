@@ -112,7 +112,10 @@ which were the direct inspiration for bringing this pattern to Kotlin.
 **[beno.com](https://beno.com)** — the production environment that shaped this library. Real-world usage at scale drove
 every design decision here.
 
-**Ahmed Akilan**, **Jacqueline Lim**, and **[Jaewoong Eum (skydoves)](https://github.com/skydoves/)** — Ahmed, our CTO, whose technical mentorship and trust made it possible to grow as an engineer and ship something worth sharing. Jacqueline, whose support and collaboration were invaluable throughout this journey. And Jaewoong — a one-man engineering force whose open-source contributions to the Android community are worth a team of 100 engineers.
+**Ahmed Akilan**, **Jacqueline Lim**, and **[Jaewoong Eum (skydoves)](https://github.com/skydoves/)** — Ahmed, our CTO,
+whose technical mentorship and trust made it possible to grow as an engineer and ship something worth sharing.
+Jacqueline, whose support and collaboration were invaluable throughout this journey. And Jaewoong — a one-man
+engineering force whose open-source contributions to the Android community are worth a team of 100 engineers.
 
 **[Philipp Lackner](https://www.youtube.com/@PhilippLackner)** — for his Android and Kotlin content on YouTube, which
 has been an invaluable learning resource.

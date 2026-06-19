@@ -1,13 +1,6 @@
 package com.fajrbahr.mediatork
 
-import com.fajrbahr.mediatork.api.Notification
-import com.fajrbahr.mediatork.api.NotificationHandler
-import com.fajrbahr.mediatork.api.Request
-import com.fajrbahr.mediatork.api.RequestHandler
-import com.fajrbahr.mediatork.api.RequestValidator
-import com.fajrbahr.mediatork.api.StreamRequest
-import com.fajrbahr.mediatork.api.StreamRequestHandler
-import com.fajrbahr.mediatork.notification.NotificationPublishStrategy
+import com.fajrbahr.mediatork.api.*
 import kotlin.reflect.KClass
 
 /**
@@ -107,7 +100,8 @@ class HandlerRegistry {
 
     fun hasHandler(requestType: KClass<*>): Boolean = requestHandlers.containsKey(requestType)
     fun hasStreamHandler(requestType: KClass<*>): Boolean = streamHandlers.containsKey(requestType)
-    fun hasNotificationHandler(notificationType: KClass<*>): Boolean = notificationHandlers.containsKey(notificationType)
+    fun hasNotificationHandler(notificationType: KClass<*>): Boolean =
+        notificationHandlers.containsKey(notificationType)
 
     fun registeredRequestTypes(): Set<KClass<*>> = requestHandlers.keys.toSet()
     fun registeredStreamRequestTypes(): Set<KClass<*>> = streamHandlers.keys.toSet()
@@ -138,4 +132,8 @@ class HandlerRegistry {
     internal fun <T : Notification> resolveNotificationHandlers(notification: T): List<NotificationHandler<T>> =
         (notificationHandlers[notification::class] ?: emptyList()) as List<NotificationHandler<T>>
 
+
 }
+
+internal fun HandlerRegistry.anyValidators(): Map<KClass<*>, List<RequestValidator<*>>> = validatorsHandlers
+

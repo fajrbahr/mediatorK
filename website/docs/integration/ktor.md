@@ -81,15 +81,16 @@ fun Application.module() {
 
 ## Sample — Prayer Times API
 
-The [`/samples/sample-ktor`](https://github.com/fajrbahr/MediatorK/tree/main/samples/sample-ktor) module is a runnable Ktor server
+The [`/samples/sample-ktor`](https://github.com/fajrbahr/MediatorK/tree/main/samples/sample-ktor) module is a runnable
+Ktor server
 that fetches prayer times and Islamic calendar months from the [Aladhan API](https://aladhan.com/prayer-times-api). It
 mirrors the [Android sample](../sample.md) structure in three layers:
 
-| Layer | Routes | Pattern |
-|-------|--------|---------|
-| **Before** | `/before/prayer-times/{city}` · `/before/islamic-months` | `Route → UseCase → Repository → DataSource` |
-| **After** | `/after/prayer-times/{city}` · `/after/islamic-months` | `Route → Mediator → Handler` |
-| **After Super** | `/aftersuper/prayer-times/{city}` · `/aftersuper/islamic-months` | After + all pipeline behaviors |
+| Layer           | Routes                                                           | Pattern                                     |
+|-----------------|------------------------------------------------------------------|---------------------------------------------|
+| **Before**      | `/before/prayer-times/{city}` · `/before/islamic-months`         | `Route → UseCase → Repository → DataSource` |
+| **After**       | `/after/prayer-times/{city}` · `/after/islamic-months`           | `Route → Mediator → Handler`                |
+| **After Super** | `/aftersuper/prayer-times/{city}` · `/aftersuper/islamic-months` | After + all pipeline behaviors              |
 
 ```bash
 # Run (from the repo root)

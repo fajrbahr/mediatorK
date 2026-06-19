@@ -1,17 +1,7 @@
 package com.fajrbahr.mediatork
 
-import com.fajrbahr.mediatork.api.Mediator
-import com.fajrbahr.mediatork.api.Request
-import com.fajrbahr.mediatork.api.RequestHandler
-import com.fajrbahr.mediatork.api.PipelineBehavior
-import com.fajrbahr.mediatork.api.RequestContext
-import com.fajrbahr.mediatork.api.RequestHandlerDelegate
-import com.fajrbahr.mediatork.api.RequestValidator
-import com.fajrbahr.mediatork.validator.ValidationBehavior
-import com.fajrbahr.mediatork.validator.ValidationException
-import com.fajrbahr.mediatork.validator.ValidationResult
-import com.fajrbahr.mediatork.validator.rules
-import com.fajrbahr.mediatork.validator.rulesFailFast
+import com.fajrbahr.mediatork.api.*
+import com.fajrbahr.mediatork.validator.*
 import kotlinx.coroutines.test.runTest
 import kotlin.test.*
 
@@ -167,9 +157,10 @@ class ValidationBehaviorTest {
         val addValidator = object : RequestValidator<AddCommand> {
             override fun validate(request: AddCommand): ValidationResult = ValidationResult.Invalid("add bad")
         }
-        val m = mediator(pipelineBehaviors = listOf(ValidationBehavior(mapOf(AddCommand::class to listOf(addValidator))))) {
-            register(PingHandler())
-        }
+        val m =
+            mediator(pipelineBehaviors = listOf(ValidationBehavior(mapOf(AddCommand::class to listOf(addValidator))))) {
+                register(PingHandler())
+            }
         assertEquals("pong:x", m.send(PingQuery("x")))
     }
 
@@ -226,10 +217,14 @@ class ValidationBehaviorTest {
             }
         }
         val m = mediator(
-            pipelineBehaviors = listOf(ValidationBehavior(mapOf(
-                PingQuery::class to listOf(validatorFor(valid = true)),
-                AddCommand::class to listOf(addValidator),
-            ))),
+            pipelineBehaviors = listOf(
+                ValidationBehavior(
+                    mapOf(
+                        PingQuery::class to listOf(validatorFor(valid = true)),
+                        AddCommand::class to listOf(addValidator),
+                    )
+                )
+            ),
         ) {
             register(PingHandler())
         }
@@ -258,9 +253,13 @@ class ValidationBehaviorTest {
 
     @Test
     fun `two validators for same type - both pass - handler is called`() = runTest {
-        val m = mediator(pipelineBehaviors = listOf(behaviorWith(
-            validatorFor(valid = true), validatorFor(valid = true)
-        ))) {
+        val m = mediator(
+            pipelineBehaviors = listOf(
+                behaviorWith(
+                    validatorFor(valid = true), validatorFor(valid = true)
+                )
+            )
+        ) {
             register(PingHandler())
         }
         assertEquals("pong:hello", m.send(PingQuery("hello")))

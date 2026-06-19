@@ -1,12 +1,6 @@
 package com.fajrbahr.mediatork
 
-import com.fajrbahr.mediatork.api.Mediator
-import com.fajrbahr.mediatork.api.MediatorRegistrar
-import com.fajrbahr.mediatork.api.Request
-import com.fajrbahr.mediatork.api.RequestContext
-import com.fajrbahr.mediatork.api.StreamRequest
-import com.fajrbahr.mediatork.api.RequestHandler
-import com.fajrbahr.mediatork.api.Notification
+import com.fajrbahr.mediatork.api.*
 import com.fajrbahr.mediatork.notification.NotificationPublishStrategy
 import kotlinx.coroutines.test.runTest
 import kotlin.test.*
@@ -24,8 +18,11 @@ class HandlerRegistryTest {
         assertEquals("pong:x", handler.handle(object : Mediator {
             override suspend fun <TRequest : Request<TResult>, TResult> send(request: TRequest): TResult = TODO()
             override suspend fun <T : Notification> publish(notification: T) = TODO()
-            override suspend fun <T : Notification> publish(notification: T, publisher: NotificationPublishStrategy) = TODO()
-            override fun <TRequest : StreamRequest<T>, T> stream(request: TRequest): kotlinx.coroutines.flow.Flow<T> = TODO()
+            override suspend fun <T : Notification> publish(notification: T, publisher: NotificationPublishStrategy) =
+                TODO()
+
+            override fun <TRequest : StreamRequest<T>, T> stream(request: TRequest): kotlinx.coroutines.flow.Flow<T> =
+                TODO()
         }, RequestContext(), request))
     }
 

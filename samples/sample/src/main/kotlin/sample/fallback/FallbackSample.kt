@@ -1,13 +1,8 @@
 package sample.fallback
 
 import com.fajrbahr.mediatork.HandlerRegistry
-import com.fajrbahr.mediatork.api.Mediator
-import com.fajrbahr.mediatork.api.MediatorRegistrar
-import com.fajrbahr.mediatork.api.RequestContext
-import com.fajrbahr.mediatork.api.RequestHandler
+import com.fajrbahr.mediatork.api.*
 import com.fajrbahr.mediatork.handler.otherwise
-import com.fajrbahr.mediatork.api.Notification
-import com.fajrbahr.mediatork.api.NotificationHandler
 import com.fajrbahr.mediatork.notification.otherwise
 import sample.orders.commands.createorder.CreateOrderCommand
 import sample.orders.commands.createorder.OrderResult

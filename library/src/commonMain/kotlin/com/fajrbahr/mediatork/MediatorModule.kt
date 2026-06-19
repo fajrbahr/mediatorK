@@ -1,16 +1,10 @@
 package com.fajrbahr.mediatork
 
 import com.fajrbahr.mediatork.MediatorFactory.create
-import com.fajrbahr.mediatork.api.Mediator
-import com.fajrbahr.mediatork.api.MediatorRegistrar
-import com.fajrbahr.mediatork.api.Notification
-import com.fajrbahr.mediatork.api.NotificationHandler
-import com.fajrbahr.mediatork.api.Request
-import com.fajrbahr.mediatork.api.RequestHandler
-import com.fajrbahr.mediatork.notification.*
+import com.fajrbahr.mediatork.api.*
 import com.fajrbahr.mediatork.handler.ThrowMissingRequestHandler
-import com.fajrbahr.mediatork.api.PipelineBehavior
-import com.fajrbahr.mediatork.api.StreamPipelineBehavior
+import com.fajrbahr.mediatork.notification.NotificationPublishStrategy
+import com.fajrbahr.mediatork.notification.ThrowMissingNotificationHandler
 import com.fajrbahr.mediatork.validator.ValidationBehavior
 
 
@@ -61,7 +55,7 @@ object MediatorFactory {
         registrars.forEach { it.register(registry) }
 
         if (verifyHandlers) {
-            registry.verify{ typeName ->
+            registry.verify { typeName ->
                 println("MEDIATOR WARNING: No handler registered for '$typeName'")
             }
         }
@@ -90,7 +84,7 @@ object MediatorFactory {
         missingNotificationHandler: NotificationHandler<Notification> = ThrowMissingNotificationHandler(),
         missingRequestHandler: RequestHandler<Request<Any?>, Any?> = ThrowMissingRequestHandler(),
     ): Mediator {
-        val handlerValidators = registry.collectValidators()
+        val handlerValidators = registry.anyValidators()
         val allBehaviors = if (handlerValidators.isNotEmpty())
             listOf(ValidationBehavior(handlerValidators)) + pipelineBehaviors
         else
