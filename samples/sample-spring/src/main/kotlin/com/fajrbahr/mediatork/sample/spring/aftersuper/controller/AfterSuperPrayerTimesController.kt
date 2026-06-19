@@ -1,7 +1,7 @@
 package com.fajrbahr.mediatork.sample.spring.aftersuper.controller
 
-import com.fajrbahr.mediatork.Mediator
-import com.fajrbahr.mediatork.pipeline.RequestCounterPipelineBehavior
+import com.fajrbahr.mediatork.api.Mediator
+import com.fajrbahr.mediatork.pipeline.buildin.RequestCounterPipelineBehavior
 import com.fajrbahr.mediatork.sample.spring.after.domain.GetIslamicMonthsRequest
 import com.fajrbahr.mediatork.sample.spring.after.domain.GetPrayerTimesRequest
 import com.fajrbahr.mediatork.sample.spring.aftersuper.model.AfterSuperIslamicMonthsResponse

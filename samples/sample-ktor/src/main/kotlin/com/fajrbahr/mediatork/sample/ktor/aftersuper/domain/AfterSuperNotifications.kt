@@ -1,7 +1,7 @@
 package com.fajrbahr.mediatork.sample.ktor.aftersuper.domain
 
 import com.fajrbahr.mediatork.notification.Notification
-import com.fajrbahr.mediatork.notification.NotificationHandler
+import com.fajrbahr.mediatork.api.NotificationHandler
 
 data class PrayerTimesFetchedNotification(
     val city: String,

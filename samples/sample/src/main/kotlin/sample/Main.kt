@@ -528,7 +528,7 @@ class Test22Authorization {
             }),
             pipelineBehaviors = listOf(
                 object : PipelineBehavior {
-                    override val tag = PipelineBehavior.Tag.Pre
+                    override val stage = Stage.Pre
                     override suspend fun <TRequest : Request<TResult>, TResult> process(
                         requestContext: RequestContext,
                         next: RequestHandlerDelegate<TRequest, TResult>,

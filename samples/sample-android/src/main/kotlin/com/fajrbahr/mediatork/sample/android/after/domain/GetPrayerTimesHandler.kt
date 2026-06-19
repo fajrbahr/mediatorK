@@ -1,10 +1,10 @@
 package com.fajrbahr.mediatork.sample.android.after.domain
 
-import com.fajrbahr.mediatork.Mediator
-import com.fajrbahr.mediatork.Request
-import com.fajrbahr.mediatork.RequestContext
-import com.fajrbahr.mediatork.handler.RequestHandler
-import com.fajrbahr.mediatork.pipeline.AuthenticatedRequest
+import com.fajrbahr.mediatork.api.Mediator
+import com.fajrbahr.mediatork.api.Request
+import com.fajrbahr.mediatork.api.RequestContext
+import com.fajrbahr.mediatork.api.RequestHandler
+import com.fajrbahr.mediatork.pipeline.buildin.AuthenticatedRequest
 import com.fajrbahr.mediatork.sample.android.after.data.cache.AladhanCacheDataSource
 import com.fajrbahr.mediatork.sample.android.after.model.PrayerTime
 import com.fajrbahr.mediatork.sample.android.after.model.TodayPrayerTimes

@@ -1,6 +1,6 @@
 package com.fajrbahr.mediatork.sample.spring.after.controller
 
-import com.fajrbahr.mediatork.Mediator
+import com.fajrbahr.mediatork.api.Mediator
 import com.fajrbahr.mediatork.sample.spring.after.domain.GetIslamicMonthsRequest
 import com.fajrbahr.mediatork.sample.spring.after.domain.GetPrayerTimesRequest
 import com.fajrbahr.mediatork.sample.spring.after.model.IslamicMonth

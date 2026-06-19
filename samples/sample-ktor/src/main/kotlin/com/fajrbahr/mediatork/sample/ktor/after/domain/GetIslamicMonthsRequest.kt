@@ -1,9 +1,9 @@
 package com.fajrbahr.mediatork.sample.ktor.after.domain
 
-import com.fajrbahr.mediatork.Mediator
-import com.fajrbahr.mediatork.Request
-import com.fajrbahr.mediatork.RequestContext
-import com.fajrbahr.mediatork.handler.RequestHandler
+import com.fajrbahr.mediatork.api.Mediator
+import com.fajrbahr.mediatork.api.Request
+import com.fajrbahr.mediatork.api.RequestContext
+import com.fajrbahr.mediatork.api.RequestHandler
 import com.fajrbahr.mediatork.sample.ktor.after.data.cache.AladhanCacheDataSource
 import com.fajrbahr.mediatork.sample.ktor.after.model.IslamicMonth
 import kotlinx.coroutines.Dispatchers

@@ -11,16 +11,9 @@ plugins {
 }
 rootProject.name = "MediatorK"
 
-include("library")
-project(":library").name = "mediatork"
+include("mediatork")
 include("mediatork-test")
-
 include("publishMaven")
-
-include("mediatork-ksp-koin")
-include("mediatork-koin-refaction")
-
-include("samples:sample")
 
 dependencyResolutionManagement {
     repositories {

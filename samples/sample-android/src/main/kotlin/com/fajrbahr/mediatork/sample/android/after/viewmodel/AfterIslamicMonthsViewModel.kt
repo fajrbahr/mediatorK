@@ -4,7 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
-import com.fajrbahr.mediatork.Mediator
+import com.fajrbahr.mediatork.api.Mediator
 import com.fajrbahr.mediatork.MediatorFactory
 import com.fajrbahr.mediatork.sample.android.after.data.cache.AladhanCacheDataSource
 import com.fajrbahr.mediatork.sample.android.after.domain.GetIslamicMonthsRequest
