@@ -172,8 +172,6 @@ class HandlerRegistry {
     /** Returns `true` if at least one [NotificationHandler] is registered for [notificationType]. */
     fun hasNotificationHandler(notificationType: KClass<*>): Boolean = notificationHandlers.containsKey(notificationType)
 
-    /** Returns the set of all stream request types that have a registered handler. */
-    fun registeredStreamRequestTypes(): Set<KClass<*>> = streamHandlers.keys.toSet()
 
     /**
      * Looks up and returns the handler registered for [request]'s runtime type.
@@ -187,11 +185,6 @@ class HandlerRegistry {
                 requestTypeName = request::class.simpleName ?: "Unknown",
                 registered = requestHandlers.keys.mapNotNull { it.simpleName },
             )
-
-    @Suppress("UNCHECKED_CAST")
-    internal fun <TRequest : Request<TResult>, TResult> resolveHandlerOrNull(request: TRequest): RequestHandler<TRequest, TResult>? =
-        requestHandlers[request::class] as? RequestHandler<TRequest, TResult>
-
     /**
      * Returns all notification handlers registered for [notification]'s runtime type.
      * Returns an empty list if none are registered.
