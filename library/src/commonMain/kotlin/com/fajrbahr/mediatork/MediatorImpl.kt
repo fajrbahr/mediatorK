@@ -8,6 +8,7 @@ import com.fajrbahr.mediatork.api.Notification
 import com.fajrbahr.mediatork.api.NotificationHandler
 import com.fajrbahr.mediatork.notification.NotificationPublishStrategy
 import com.fajrbahr.mediatork.notification.ThrowMissingNotificationHandler
+import com.fajrbahr.mediatork.handler.ThrowMissingRequestHandler
 import com.fajrbahr.mediatork.api.PipelineBehavior
 import com.fajrbahr.mediatork.api.PipelineBehavior.Tag
 import com.fajrbahr.mediatork.api.RequestContext
@@ -39,15 +40,17 @@ internal class MediatorImpl(
     private val streamPipelineBehaviors: List<StreamPipelineBehavior>,
     private val notificationPublisher: NotificationPublishStrategy,
     private val missingNotificationHandler: NotificationHandler<Notification> = ThrowMissingNotificationHandler(),
+    private val missingRequestHandler: RequestHandler<Request<Any?>, Any?> = ThrowMissingRequestHandler(),
 ) : Mediator {
 
     /**
      * Resolves the handler for [request] and runs the full pipeline.
-     *
-     * @throws MissingHandlerException if no handler is registered for the request type.
+     * Falls back to [missingRequestHandler] if no handler is registered.
      */
+    @Suppress("UNCHECKED_CAST")
     override suspend fun <TRequest : Request<TResult>, TResult> send(request: TRequest): TResult {
-        val handler = registry.resolveHandler(request)
+        val handler = registry.resolveHandlerOrNull(request)
+            ?: (missingRequestHandler as RequestHandler<TRequest, TResult>)
         return executePipeline(request, handler)
     }
 

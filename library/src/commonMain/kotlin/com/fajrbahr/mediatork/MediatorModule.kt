@@ -5,7 +5,10 @@ import com.fajrbahr.mediatork.api.Mediator
 import com.fajrbahr.mediatork.api.MediatorRegistrar
 import com.fajrbahr.mediatork.api.Notification
 import com.fajrbahr.mediatork.api.NotificationHandler
+import com.fajrbahr.mediatork.api.Request
+import com.fajrbahr.mediatork.api.RequestHandler
 import com.fajrbahr.mediatork.notification.*
+import com.fajrbahr.mediatork.handler.ThrowMissingRequestHandler
 import com.fajrbahr.mediatork.api.PipelineBehavior
 import com.fajrbahr.mediatork.api.StreamPipelineBehavior
 import com.fajrbahr.mediatork.validator.ValidationBehavior
@@ -51,6 +54,7 @@ object MediatorFactory {
         notificationPublisher: NotificationPublishStrategy = NotificationPublishStrategy.ParallelNotificationPublisher(),
         verifyHandlers: Boolean = true,
         missingNotificationHandler: NotificationHandler<Notification> = ThrowMissingNotificationHandler(),
+        missingRequestHandler: RequestHandler<Request<Any?>, Any?> = ThrowMissingRequestHandler(),
     ): Mediator {
         val registry = HandlerRegistry()
 
@@ -68,6 +72,7 @@ object MediatorFactory {
             streamPipelineBehaviors = streamPipelineBehaviors,
             notificationPublisher = notificationPublisher,
             missingNotificationHandler = missingNotificationHandler,
+            missingRequestHandler = missingRequestHandler,
         )
     }
 
@@ -83,6 +88,7 @@ object MediatorFactory {
         streamPipelineBehaviors: List<StreamPipelineBehavior> = emptyList(),
         notificationPublisher: NotificationPublishStrategy = NotificationPublishStrategy.ParallelNotificationPublisher(),
         missingNotificationHandler: NotificationHandler<Notification> = ThrowMissingNotificationHandler(),
+        missingRequestHandler: RequestHandler<Request<Any?>, Any?> = ThrowMissingRequestHandler(),
     ): Mediator {
         val handlerValidators = registry.collectValidators()
         val allBehaviors = if (handlerValidators.isNotEmpty())
@@ -96,6 +102,7 @@ object MediatorFactory {
             streamPipelineBehaviors = streamPipelineBehaviors,
             notificationPublisher = notificationPublisher,
             missingNotificationHandler = missingNotificationHandler,
+            missingRequestHandler = missingRequestHandler,
         )
     }
 }
