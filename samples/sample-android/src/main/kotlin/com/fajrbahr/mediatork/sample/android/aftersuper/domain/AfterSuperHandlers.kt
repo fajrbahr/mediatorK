@@ -2,10 +2,10 @@ package com.fajrbahr.mediatork.sample.android.aftersuper.domain
 
 import android.util.Log
 import com.fajrbahr.mediatork.HandlerRegistry
-import com.fajrbahr.mediatork.Mediator
-import com.fajrbahr.mediatork.MediatorRegistrar
-import com.fajrbahr.mediatork.RequestContext
-import com.fajrbahr.mediatork.handler.RequestHandler
+import com.fajrbahr.mediatork.api.Mediator
+import com.fajrbahr.mediatork.api.MediatorRegistrar
+import com.fajrbahr.mediatork.api.RequestContext
+import com.fajrbahr.mediatork.api.RequestHandler
 import com.fajrbahr.mediatork.handler.otherwise
 import com.fajrbahr.mediatork.notification.otherwise
 import com.fajrbahr.mediatork.sample.android.after.data.cache.AladhanCacheDataSource

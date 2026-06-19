@@ -1,5 +1,6 @@
 package sample.behaviors
 
+import com.fajrbahr.mediatork.api.Stage
 import com.fajrbahr.mediatork.api.PipelineBehavior
 import com.fajrbahr.mediatork.api.Request
 import com.fajrbahr.mediatork.api.RequestContext
@@ -8,7 +9,7 @@ import sample.context.CurrentUser
 import sample.context.currentUser
 
 class AuthBehavior : PipelineBehavior {
-    override val tag = PipelineBehavior.Tag.Pre
+    override val stage = Stage.Pre
 
     override suspend fun <TRequest : Request<TResult>, TResult> process(
         requestContext: RequestContext,

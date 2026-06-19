@@ -1,12 +1,13 @@
 package com.fajrbahr.mediatork.sample.spring.aftersuper.domain
 
-import com.fajrbahr.mediatork.Request
-import com.fajrbahr.mediatork.RequestContext
-import com.fajrbahr.mediatork.pipeline.PipelineBehavior
-import com.fajrbahr.mediatork.pipeline.RequestHandlerDelegate
+import com.fajrbahr.mediatork.api.Request
+import com.fajrbahr.mediatork.api.RequestContext
+import com.fajrbahr.mediatork.api.Stage
+import com.fajrbahr.mediatork.api.PipelineBehavior
+import com.fajrbahr.mediatork.api.RequestHandlerDelegate
 
 class TraceIdBehavior : PipelineBehavior {
-    override val tag = PipelineBehavior.Tag.Pre
+    override val stage = Stage.Pre
     override val order = -1000
 
     override suspend fun <TRequest : Request<TResult>, TResult> process(
@@ -20,7 +21,7 @@ class TraceIdBehavior : PipelineBehavior {
 }
 
 class RequestAuditBehavior : PipelineBehavior {
-    override val tag = PipelineBehavior.Tag.Post
+    override val stage = Stage.Post
     override val order = 0
 
     override suspend fun <TRequest : Request<TResult>, TResult> process(

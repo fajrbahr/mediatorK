@@ -1,12 +1,13 @@
 package sample.behaviors
 
+import com.fajrbahr.mediatork.api.Stage
 import com.fajrbahr.mediatork.api.PipelineBehavior
 import com.fajrbahr.mediatork.api.Request
 import com.fajrbahr.mediatork.api.RequestContext
 import com.fajrbahr.mediatork.api.RequestHandlerDelegate
 
 class MetricsBehavior : PipelineBehavior {
-    override val tag = PipelineBehavior.Tag.Post
+    override val stage = Stage.Post
 
     override suspend fun <TRequest : Request<TResult>, TResult> process(
         requestContext: RequestContext,

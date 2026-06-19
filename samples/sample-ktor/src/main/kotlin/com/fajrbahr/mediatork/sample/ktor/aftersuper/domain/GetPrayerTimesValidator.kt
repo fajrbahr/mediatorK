@@ -1,7 +1,7 @@
 package com.fajrbahr.mediatork.sample.ktor.aftersuper.domain
 
 import com.fajrbahr.mediatork.sample.ktor.after.domain.GetPrayerTimesRequest
-import com.fajrbahr.mediatork.validator.RequestValidator
+import com.fajrbahr.mediatork.api.RequestValidator
 import com.fajrbahr.mediatork.validator.ValidationResult
 import com.fajrbahr.mediatork.validator.rules
 

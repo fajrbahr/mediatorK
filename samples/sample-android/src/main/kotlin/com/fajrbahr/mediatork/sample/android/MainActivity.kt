@@ -31,7 +31,7 @@ private val afterSuperValidator = GetPrayerTimesValidator()
 
 private fun afterSuperCityValidate(city: String): String? {
     val result = afterSuperValidator.validate(GetPrayerTimesRequest(city = city))
-    return if (result is ValidationResult.Invalid) result.errors.firstOrNull()?.toString() else null
+    return if (result is ValidationResult) result.errors.firstOrNull()?.toString() else null
 }
 
 class MainActivity : ComponentActivity() {
