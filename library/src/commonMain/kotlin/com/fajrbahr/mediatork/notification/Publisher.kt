@@ -36,4 +36,23 @@ interface Publisher {
      * @param publisher the strategy to use for this publish call.
      */
     suspend fun <T : Notification> publish(notification: T, publisher: NotificationPublishStrategy)
+
+    /**
+     * Broadcasts [notification] to all registered handlers without compile-time type
+     * information.
+     *
+     * Use this overload only in dynamic/reflection-based scenarios where the concrete
+     * notification type is not known at compile time. Prefer the typed [publish] overload
+     * everywhere else.
+     *
+     * [notification] must implement [Notification]; otherwise [IllegalArgumentException] is thrown.
+     *
+     * @param notification the notification to broadcast; must implement [Notification].
+     * @throws IllegalArgumentException if [notification] does not implement [Notification].
+     */
+    @Suppress("UNCHECKED_CAST")
+    suspend fun publishDynamic(notification: Any) {
+        require(notification is Notification) { "publishDynamic: $notification does not implement Notification" }
+        publish(notification)
+    }
 }

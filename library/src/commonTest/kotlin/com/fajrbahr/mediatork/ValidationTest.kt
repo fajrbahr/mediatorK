@@ -3,139 +3,71 @@ package com.fajrbahr.mediatork
 import com.fajrbahr.mediatork.handler.RequestHandler
 import com.fajrbahr.mediatork.pipeline.PipelineBehavior
 import com.fajrbahr.mediatork.pipeline.RequestHandlerDelegate
-import com.fajrbahr.mediatork.validator.*
+import com.fajrbahr.mediatork.validator.RequestValidator
+import com.fajrbahr.mediatork.validator.ValidationBehavior
+import com.fajrbahr.mediatork.validator.ValidationException
+import com.fajrbahr.mediatork.validator.ValidationResult
+import com.fajrbahr.mediatork.validator.rules
+import com.fajrbahr.mediatork.validator.rulesFailFast
 import kotlinx.coroutines.test.runTest
 import kotlin.reflect.KClass
 import kotlin.test.*
-
-// ── Test fields ───────────────────────────────────────────────────────────────
-
-private enum class Field : FieldValidator { Name, Email, Age }
-
-// ── ValidationResult ──────────────────────────────────────────────────────────
-
-class ValidationResultTest {
-
-    @Test
-    fun `Success is valid with no errors`() {
-        val r = ValidationResult.Success
-        assertTrue(r.isValid)
-        assertTrue(r.errors.isEmpty())
-    }
-
-    @Test
-    fun `error(message) produces invalid result with one error`() {
-        val r = ValidationResult.error("bad input")
-        assertFalse(r.isValid)
-        assertEquals(1, r.errors.size)
-        assertEquals("bad input", r.errors[0].message)
-        assertEquals(DefaultField, r.errors[0].field)
-    }
-
-    @Test
-    fun `error(field, message) associates error with field`() {
-        val r = ValidationResult.error(Field.Email, "invalid email")
-        assertFalse(r.isValid)
-        assertEquals(Field.Email, r.errors[0].field)
-        assertEquals("invalid email", r.errors[0].message)
-    }
-
-    @Test
-    fun `failure(vararg) packs all errors`() {
-        val r = ValidationResult.failure(
-            com.fajrbahr.mediatork.validator.ValidationError(Field.Name, "too short"),
-            com.fajrbahr.mediatork.validator.ValidationError(Field.Email, "missing @"),
-        )
-        assertFalse(r.isValid)
-        assertEquals(2, r.errors.size)
-    }
-
-    @Test
-    fun `ValidationResult with empty list is valid`() {
-        assertTrue(ValidationResult(emptyList()).isValid)
-    }
-
-    @Test
-    fun `ValidationResult with non-empty list is invalid`() {
-        val r = ValidationResult(listOf(com.fajrbahr.mediatork.validator.ValidationError(message = "x")))
-        assertFalse(r.isValid)
-    }
-}
 
 // ── rules DSL ─────────────────────────────────────────────────────────────────
 
 class RulesDslTest {
 
     @Test
-    fun `rules with all checks passing returns Success`() {
-        val r = rules {
+    fun `rules with all checks passing returns Valid`() {
+        val result = rules<String> {
             check(true) { "should not appear" }
-            check(2 + 2 == 4) { "math broken" }
+            require(2 + 2 == 4) { "math broken" }
         }
-        assertTrue(r.isValid)
+        assertIs<ValidationResult.Valid>(result)
     }
 
     @Test
     fun `rules collects all failing checks`() {
-        val r = rules {
+        val result = rules<String> {
             check(false) { "error 1" }
             check(false) { "error 2" }
             check(true) { "should not appear" }
         }
-        assertFalse(r.isValid)
-        assertEquals(2, r.errors.size)
-        assertTrue(r.errors.any { it.message == "error 1" })
-        assertTrue(r.errors.any { it.message == "error 2" })
+        assertIs<ValidationResult.Invalid>(result)
+        assertEquals(2, result.errors.size)
+        assertTrue("error 1" in result.errors)
+        assertTrue("error 2" in result.errors)
+    }
+
+    private enum class TestError { ONE, TWO }
+
+    @Test
+    fun `rules works with non-String error type`() {
+        val result = rules<TestError> {
+            check(false) { TestError.ONE }
+            check(false) { TestError.TWO }
+        }
+        assertIs<ValidationResult.Invalid>(result)
+        assertEquals(2, result.errors.size)
+        assertTrue(TestError.ONE in result.errors)
+        assertTrue(TestError.TWO in result.errors)
     }
 
     @Test
-    fun `rules does not stop at first failure`() {
+    fun `rules evaluates every rule even after first failure`() {
         val evaluated = mutableListOf<Int>()
-        rules {
+        val result = rules<String> {
             check(false) { evaluated += 1; "e1" }
             check(false) { evaluated += 2; "e2" }
             check(false) { evaluated += 3; "e3" }
         }
+        assertIs<ValidationResult.Invalid>(result)
         assertEquals(listOf(1, 2, 3), evaluated)
     }
 
     @Test
-    fun `rules ruleFor attaches errors to named field`() {
-        val r = rules {
-            ruleFor(Field.Name, "") { value ->
-                check(value.isNotBlank()) { "must not be blank" }
-            }
-        }
-        assertFalse(r.isValid)
-        assertEquals(Field.Name, r.errors[0].field)
-        assertEquals("must not be blank", r.errors[0].message)
-    }
-
-    @Test
-    fun `rules ruleFor with passing value produces no error`() {
-        val r = rules {
-            ruleFor(Field.Name, "Alice") { value ->
-                check(value.isNotBlank()) { "must not be blank" }
-            }
-        }
-        assertTrue(r.isValid)
-    }
-
-    @Test
-    fun `rules ruleFor collects multiple field errors`() {
-        val r = rules {
-            ruleFor(Field.Email, "bad") { value ->
-                check(value.contains('@')) { "missing @" }
-                check(value.length > 5) { "too short" }
-            }
-        }
-        assertEquals(2, r.errors.size)
-        assertTrue(r.errors.all { it.field == Field.Email })
-    }
-
-    @Test
-    fun `rules empty block returns Success`() {
-        assertTrue(rules {}.isValid)
+    fun `rules with no failures returns Valid`() {
+        assertIs<ValidationResult.Valid>(rules<String> {})
     }
 }
 
@@ -144,82 +76,65 @@ class RulesDslTest {
 class RulesFailFastDslTest {
 
     @Test
-    fun `rulesFailFast with all checks passing returns Success`() {
-        val r = rulesFailFast {
-            check(true) { "nope" }
-            check(true) { "nope2" }
+    fun `rulesFailFast with all checks passing returns Valid`() {
+        val result = rulesFailFast<String> {
+            check(true) { "no" }
+            require(2 + 2 == 4) { "no" }
         }
-        assertTrue(r.isValid)
+        assertIs<ValidationResult.Valid>(result)
     }
 
     @Test
-    fun `rulesFailFast stops after first failure`() {
+    fun `rulesFailFast returns first failing error only`() {
+        val result = rulesFailFast<String> {
+            check(false) { "error 1" }
+            check(false) { "error 2" }
+        }
+        assertIs<ValidationResult.Invalid>(result)
+        assertEquals(1, result.errors.size)
+        assertTrue("error 1" in result.errors)
+    }
+
+    @Test
+    fun `rulesFailFast skips remaining checks after first failure`() {
         val evaluated = mutableListOf<Int>()
-        rulesFailFast {
-            check(false) { evaluated += 1; "e1" }
-            check(false) { evaluated += 2; "e2" }
+        val result = rulesFailFast<String> {
+            check(true) { evaluated += 1; "no" }
+            check(false) { evaluated += 2; "fail" }
+            check(false) { evaluated += 3; "skipped" }
         }
-        assertEquals(listOf(1), evaluated)
+        assertIs<ValidationResult.Invalid>(result)
+        assertEquals(listOf(2), evaluated)
     }
 
     @Test
-    fun `rulesFailFast returns exactly one error on multiple failures`() {
-        val r = rulesFailFast {
-            check(false) { "first" }
-            check(false) { "second" }
+    fun `rulesFailFast works with non-String error type`() {
+        val result = rulesFailFast<TestError> {
+            check(false) { TestError.ONE }
+            check(false) { TestError.TWO }
         }
-        assertFalse(r.isValid)
-        assertEquals(1, r.errors.size)
-        assertEquals("first", r.errors[0].message)
+        assertIs<ValidationResult.Invalid>(result)
+        assertEquals(1, result.errors.size)
+        assertTrue(TestError.ONE in result.errors)
     }
 
-    @Test
-    fun `rulesFailFast ruleFor stops at first field error`() {
-        val evaluated = mutableListOf<Int>()
-        val r = rulesFailFast {
-            ruleFor(Field.Email, "bad") { value ->
-                check(value.contains('@')) { evaluated += 1; "missing @" }
-                check(value.length > 5) { evaluated += 2; "too short" }
-            }
-        }
-        assertFalse(r.isValid)
-        assertEquals(1, r.errors.size)
-        assertEquals(listOf(1), evaluated)
-    }
-
-    @Test
-    fun `rulesFailFast skips later top-level checks after ruleFor fails`() {
-        val evaluated = mutableListOf<Int>()
-        rulesFailFast {
-            ruleFor(Field.Name, "") { value ->
-                check(value.isNotBlank()) { evaluated += 1; "blank" }
-            }
-            check(false) { evaluated += 2; "should not run" }
-        }
-        assertEquals(listOf(1), evaluated)
-    }
-
-    @Test
-    fun `rulesFailFast empty block returns Success`() {
-        assertTrue(rulesFailFast {}.isValid)
-    }
+    private enum class TestError { ONE, TWO }
 }
 
 // ── ValidationBehavior ────────────────────────────────────────────────────────
 
 class ValidationBehaviorTest {
 
-    private fun validatorFor(
-        result: ValidationResult,
-    ): RequestValidator<PingQuery> = object : RequestValidator<PingQuery> {
-        override val requestClass: KClass<PingQuery> = PingQuery::class
-        override fun validate(request: PingQuery): ValidationResult = result
-    }
+    private fun validatorFor(valid: Boolean, message: String = "validation failed"): RequestValidator<PingQuery> =
+        object : RequestValidator<PingQuery> {
+            override val requestClass: KClass<PingQuery> = PingQuery::class
+            override fun validate(request: PingQuery): ValidationResult =
+                if (valid) ValidationResult.Valid else ValidationResult.Invalid(message)
+        }
 
     @Test
     fun `valid request passes through to handler`() = runTest {
-        val validator = validatorFor(ValidationResult.Success)
-        val m = mediator(pipelineBehaviors = listOf(ValidationBehavior(listOf(validator)))) {
+        val m = mediator(pipelineBehaviors = listOf(ValidationBehavior(listOf(validatorFor(valid = true))))) {
             register(PingHandler())
         }
         assertEquals("pong:hello", m.send(PingQuery("hello")))
@@ -227,47 +142,37 @@ class ValidationBehaviorTest {
 
     @Test
     fun `invalid request throws ValidationException`() = runTest {
-        val validator = validatorFor(ValidationResult.error("bad"))
-        val m = mediator(pipelineBehaviors = listOf(ValidationBehavior(listOf(validator)))) {
+        val m = mediator(pipelineBehaviors = listOf(ValidationBehavior(listOf(validatorFor(valid = false))))) {
             register(PingHandler())
         }
         assertFailsWith<ValidationException> { m.send(PingQuery("x")) }
     }
 
     @Test
-    fun `ValidationException carries the validation errors`() = runTest {
-        val validator = validatorFor(
-            ValidationResult.failure(
-                com.fajrbahr.mediatork.validator.ValidationError(Field.Name, "too short"),
-                com.fajrbahr.mediatork.validator.ValidationError(Field.Email, "invalid"),
-            )
-        )
-        val m = mediator(pipelineBehaviors = listOf(ValidationBehavior(listOf(validator)))) {
+    fun `ValidationException carries the failure message`() = runTest {
+        val m = mediator(pipelineBehaviors = listOf(ValidationBehavior(listOf(validatorFor(valid = false, message = "bad input"))))) {
             register(PingHandler())
         }
         val ex = assertFailsWith<ValidationException> { m.send(PingQuery("x")) }
-        assertEquals(2, ex.errors.size)
-        assertTrue(ex.errors.any { it.field == Field.Name })
-        assertTrue(ex.errors.any { it.field == Field.Email })
+        assertNotNull(ex.message)
+        assertTrue(ex.message!!.contains("bad input"))
     }
 
     @Test
     fun `no validator registered for request type - request passes through`() = runTest {
         val addValidator = object : RequestValidator<AddCommand> {
             override val requestClass: KClass<AddCommand> = AddCommand::class
-            override fun validate(request: AddCommand): ValidationResult = ValidationResult.error("add bad")
+            override fun validate(request: AddCommand): ValidationResult = ValidationResult.Invalid("add bad")
         }
         val m = mediator(pipelineBehaviors = listOf(ValidationBehavior(listOf(addValidator)))) {
             register(PingHandler())
         }
-        // PingQuery has no validator - must not throw
         assertEquals("pong:x", m.send(PingQuery("x")))
     }
 
     @Test
     fun `ValidationBehavior runs before handler - handler not called on invalid request`() = runTest {
         var handlerCalled = false
-        val validator = validatorFor(ValidationResult.error("invalid"))
         val handler = object : RequestHandler<PingQuery, String> {
             override suspend fun handle(
                 mediator: Mediator,
@@ -278,7 +183,7 @@ class ValidationBehaviorTest {
                 return "ok"
             }
         }
-        val m = mediator(pipelineBehaviors = listOf(ValidationBehavior(listOf(validator)))) {
+        val m = mediator(pipelineBehaviors = listOf(ValidationBehavior(listOf(validatorFor(valid = false))))) {
             register(handler)
         }
         assertFailsWith<ValidationException> { m.send(PingQuery("x")) }
@@ -288,9 +193,8 @@ class ValidationBehaviorTest {
     @Test
     fun `ValidationBehavior with custom order participates in pipeline ordering`() = runTest {
         val log = mutableListOf<String>()
-        val validator = validatorFor(ValidationResult.Success)
         val loggingBehavior = object : PipelineBehavior {
-            override val order = -100 // runs before ValidationBehavior default (-50)
+            override val order = -100
             override suspend fun <TRequest : Request<TResult>, TResult> process(
                 requestContext: RequestContext,
                 next: RequestHandlerDelegate<TRequest, TResult>,
@@ -301,7 +205,7 @@ class ValidationBehaviorTest {
             }
         }
         val m = mediator(
-            pipelineBehaviors = listOf(ValidationBehavior(listOf(validator)), loggingBehavior),
+            pipelineBehaviors = listOf(ValidationBehavior(listOf(validatorFor(valid = true))), loggingBehavior),
         ) {
             register(PingHandler())
         }
@@ -312,16 +216,15 @@ class ValidationBehaviorTest {
     @Test
     fun `multiple validators for different types - only matching one runs`() = runTest {
         var addValidatorCalled = false
-        val pingValidator = validatorFor(ValidationResult.Success)
         val addValidator = object : RequestValidator<AddCommand> {
             override val requestClass: KClass<AddCommand> = AddCommand::class
             override fun validate(request: AddCommand): ValidationResult {
                 addValidatorCalled = true
-                return ValidationResult.Success
+                return ValidationResult.Valid
             }
         }
         val m = mediator(
-            pipelineBehaviors = listOf(ValidationBehavior(listOf(pingValidator, addValidator))),
+            pipelineBehaviors = listOf(ValidationBehavior(listOf(validatorFor(valid = true), addValidator))),
         ) {
             register(PingHandler())
         }
@@ -330,43 +233,47 @@ class ValidationBehaviorTest {
     }
 
     @Test
-    fun `two validators for same type - both run and errors are merged`() = runTest {
+    fun `two validators for same type - first failure stops execution`() = runTest {
+        var secondCalled = false
         val v1 = object : RequestValidator<PingQuery> {
             override val requestClass = PingQuery::class
-            override fun validate(request: PingQuery) = ValidationResult.error(Field.Name, "error from v1")
+            override fun validate(request: PingQuery): ValidationResult = ValidationResult.Invalid("first fails")
         }
         val v2 = object : RequestValidator<PingQuery> {
             override val requestClass = PingQuery::class
-            override fun validate(request: PingQuery) = ValidationResult.error(Field.Email, "error from v2")
+            override fun validate(request: PingQuery): ValidationResult {
+                secondCalled = true
+                return ValidationResult.Valid
+            }
         }
         val m = mediator(pipelineBehaviors = listOf(ValidationBehavior(listOf(v1, v2)))) {
             register(PingHandler())
         }
-        val ex = assertFailsWith<ValidationException> { m.send(PingQuery("x")) }
-        assertEquals(2, ex.errors.size)
-        assertTrue(ex.errors.any { it.message == "error from v1" })
-        assertTrue(ex.errors.any { it.message == "error from v2" })
+        assertFailsWith<ValidationException> { m.send(PingQuery("x")) }
+        assertFalse(secondCalled)
     }
 
     @Test
     fun `two validators for same type - both pass - handler is called`() = runTest {
-        val v1 = validatorFor(ValidationResult.Success)
-        val v2 = validatorFor(ValidationResult.Success)
-        val m = mediator(pipelineBehaviors = listOf(ValidationBehavior(listOf(v1, v2)))) {
+        val m = mediator(pipelineBehaviors = listOf(ValidationBehavior(listOf(
+            validatorFor(valid = true), validatorFor(valid = true)
+        )))) {
             register(PingHandler())
         }
         assertEquals("pong:hello", m.send(PingQuery("hello")))
     }
 
     @Test
-    fun `ValidationException message contains field and error info`() = runTest {
-        val validator = validatorFor(ValidationResult.error(Field.Name, "too short"))
+    fun `validator returning Invalid raises ValidationException`() = runTest {
+        val validator = object : RequestValidator<PingQuery> {
+            override val requestClass = PingQuery::class
+            override fun validate(request: PingQuery): ValidationResult = ValidationResult.Invalid("direct")
+        }
         val m = mediator(pipelineBehaviors = listOf(ValidationBehavior(listOf(validator)))) {
             register(PingHandler())
         }
         val ex = assertFailsWith<ValidationException> { m.send(PingQuery("x")) }
-        assertNotNull(ex.message)
-        assertTrue(ex.message!!.contains("too short"))
+        assertEquals("direct", ex.message)
     }
 }
 

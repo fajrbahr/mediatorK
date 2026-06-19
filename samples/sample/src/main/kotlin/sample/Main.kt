@@ -14,7 +14,6 @@ import sample.behaviors.RetryPipelineBehavior
 import sample.bookings.queries.fetchbookings.FetchBookingsQuery
 import sample.bookings.queries.fetchbookings.FetchBookingsRegistrar
 import sample.bookings.queries.fetchbookings.FetchBookingsValidator
-import sample.bookings.queries.fetchbookings.FetchBookingsField
 import sample.exceptions.ShipOrderCommand
 import sample.exceptions.ShipOrderHandler
 import sample.exceptions.ShipOrderRegistrar
@@ -25,7 +24,6 @@ import sample.orders.commands.createorder.CreateOrderCommand
 import sample.orders.commands.createorder.OrderCreatedNotification
 import sample.orders.commands.createorder.OrderNotificationRegistrar
 import sample.orders.commands.createorder.OrderRegistrar
-import sample.orders.queries.getorder.GetOrderField
 import sample.orders.queries.getorder.GetOrderHandler
 import sample.orders.queries.getorder.GetOrderQuery
 import sample.orders.queries.getorder.GetOrderQueryValidator
@@ -48,18 +46,14 @@ private val mediator = MediatorFactory.create(
         GetOrderRegistrar(),
     ),
     pipelineBehaviors = listOf(
+        AuthBehavior(),
+        LocaleBehavior(),
         LoggingBehavior(),
         MeasurePipelineBehaviour(),
         RetryPipelineBehavior(maxRetries = 2),
         TracingPipelineBehavior(),
         ValidationBehavior(validators),
-    ),
-    preProcessors = listOf(
-        AuthPreProcessor(),
-        LocalePreProcessor(),
-    ),
-    postProcessors = listOf(
-        MetricsPostProcessor(),
+        MetricsBehavior(),
     ),
     notificationPublisher = NotificationPublishStrategy.DEFAULT,
 )
@@ -110,13 +104,7 @@ class Test4ValidationInvalidBooking {
             mediator.send(FetchBookingsQuery(userEmail = "sdasd@", bookingId = "123"))
         }.onFailure { throwable ->
             when (throwable) {
-                is ValidationException -> throwable.errors.forEach { error ->
-                    when (error.field) {
-                        is FetchBookingsField.BookingId -> println("Booking ID error: ${error.message}")
-                        is FetchBookingsField.UserEmail -> println("Email error: ${error.message}")
-                        else -> println("Error: ${error.message}")
-                    }
-                }
+                is ValidationException -> println("Validation error: ${throwable.message}")
 
                 else -> println("Unexpected error: ${throwable.message}")
             }
@@ -149,13 +137,7 @@ class Test6GetOrderInvalidId {
             mediator.send(GetOrderQuery(orderId = "9988", customerId = "USR-42"))
         }.onFailure { throwable ->
             when (throwable) {
-                is ValidationException -> throwable.errors.forEach { error ->
-                    when (error.field) {
-                        is GetOrderField.OrderId -> println("Order ID error: ${error.message}")
-                        is GetOrderField.CustomerId -> println("Customer ID error: ${error.message}")
-                        else -> println("Error: ${error.message}")
-                    }
-                }
+                is ValidationException -> println("Validation error: ${throwable.message}")
 
                 else -> println("Unexpected error: ${throwable.message}")
             }
@@ -170,18 +152,12 @@ class Test6GetOrderInvalidId {
 
 class Test7GetOrderBothInvalid {
     suspend fun start() {
-        println("=== TEST 7: GetOrder — both fields invalid (fail-fast stops after first ruleFor fails) ===")
+        println("=== TEST 7: GetOrder — both fields invalid (fail-fast stops after first failure) ===")
         runCatching {
             mediator.send(GetOrderQuery(orderId = "", customerId = ""))
         }.onFailure { throwable ->
             when (throwable) {
-                is ValidationException -> throwable.errors.forEach { error ->
-                    when (error.field) {
-                        is GetOrderField.OrderId -> println("Order ID error: ${error.message}")
-                        is GetOrderField.CustomerId -> println("Customer ID error: ${error.message}")
-                        else -> println("Error: ${error.message}")
-                    }
-                }
+                is ValidationException -> println("Validation error: ${throwable.message}")
 
                 else -> println("Unexpected error: ${throwable.message}")
             }
@@ -560,23 +536,26 @@ class Test22Authorization {
                 }
             }),
             pipelineBehaviors = listOf(
+                object : com.fajrbahr.mediatork.pipeline.PipelineBehavior {
+                    override val tag = com.fajrbahr.mediatork.pipeline.PipelineBehavior.Tag.PRE
+                    override suspend fun <TRequest : com.fajrbahr.mediatork.Request<TResult>, TResult> process(
+                        requestContext: com.fajrbahr.mediatork.RequestContext,
+                        next: com.fajrbahr.mediatork.pipeline.RequestHandlerDelegate<TRequest, TResult>,
+                        request: TRequest,
+                    ): TResult {
+                        // Inject a valid token only for specific test IDs
+                        if (request is AuthenticatedGetOrderQuery && request.orderId == "ORD-AUTH") {
+                            requestContext.put("token", "secret")
+                        }
+                        return next(request)
+                    }
+                },
                 AuthorizationPipelineBehavior { context, _ ->
                     val token = context.getMetaDate<String>("token")
                         ?: throw UnauthorizedException("No token in context")
                     if (token != "secret") throw UnauthorizedException("Invalid token")
                 },
             ),
-            preProcessors = listOf(object : com.fajrbahr.mediatork.RequestPreProcessor {
-                override suspend fun process(
-                    requestContext: com.fajrbahr.mediatork.RequestContext,
-                    request: com.fajrbahr.mediatork.Request<*>,
-                ) {
-                    // Inject a valid token only for specific test IDs
-                    if (request is AuthenticatedGetOrderQuery && request.orderId == "ORD-AUTH") {
-                        requestContext.put("token", "secret")
-                    }
-                }
-            }),
         )
 
         // Authorized

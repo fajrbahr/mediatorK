@@ -3,6 +3,8 @@ package com.fajrbahr.mediatork
 import com.fajrbahr.mediatork.MediatorFactory.create
 import com.fajrbahr.mediatork.notification.*
 import com.fajrbahr.mediatork.pipeline.PipelineBehavior
+import com.fajrbahr.mediatork.pipeline.StreamPipelineBehavior
+import com.fajrbahr.mediatork.validator.ValidationBehavior
 
 
 /**
@@ -14,8 +16,7 @@ import com.fajrbahr.mediatork.pipeline.PipelineBehavior
  *
  * @see MediatorRegistrar
  * @see com.fajrbahr.mediatork.pipeline.PipelineBehavior
- * @see RequestPreProcessor
- * @see RequestPostProcessor
+ * @see com.fajrbahr.mediatork.pipeline.PipelineBehavior.Tag
  * @see com.fajrbahr.mediatork.notification.NotificationPublishStrategy
  */
 object MediatorFactory {
@@ -27,26 +28,23 @@ object MediatorFactory {
      * 1. Each [MediatorRegistrar] in [registrars] is called to populate the [HandlerRegistry].
      * 2. If [verifyHandlers] is `true`, the registry is verified; a warning is printed to stdout
      *    for any request type whose handler is absent after registration.
-     * 3. A [MediatorImpl] is constructed with the assembled registry and processors.
+     * 3. A [MediatorImpl] is constructed with the assembled registry and behaviors.
      *
      * @param registrars modules that contribute handlers to the registry.
      * @param pipelineBehaviors cross-cutting behaviors that wrap each request pipeline.
-     *   Sorted by [com.fajrbahr.mediatork.pipeline.PipelineBehavior.order] at dispatch time; lower order = outermost decorator.
-     * @param preProcessors hooks that run before the handler; sorted by [RequestPreProcessor.order].
+     *   Grouped by [PipelineBehavior.Tag] (PRE → DEFAULT → POST), then sorted by
+     *   [PipelineBehavior.order] within each group; lower order = outermost within a phase.
      * @param notificationPublisher strategy for delivering notifications to their handlers.
      *   Defaults to [com.fajrbahr.mediatork.notification.ParallelNotificationPublisher].
-     * @param postProcessors hooks that run after the handler; sorted by [RequestPostProcessor.order].
      * @param verifyHandlers when `true` (the default), logs a warning for every registered request
-     *   type that has no handler after all registrars have run. Set to `false` to suppress these
-     *   warnings (e.g. in test setups where partial registration is intentional).
+     *   type that has no handler after all registrars have run.
      * @return a ready-to-use [Mediator] instance.
      */
     fun create(
         registrars: List<MediatorRegistrar> = emptyList(),
         pipelineBehaviors: List<PipelineBehavior> = emptyList(),
-        preProcessors: List<RequestPreProcessor> = emptyList(),
+        streamPipelineBehaviors: List<StreamPipelineBehavior> = emptyList(),
         notificationPublisher: NotificationPublishStrategy = NotificationPublishStrategy.ParallelNotificationPublisher(),
-        postProcessors: List<RequestPostProcessor> = emptyList(),
         verifyHandlers: Boolean = true,
         missingNotificationHandler: NotificationHandler<Notification> = ThrowMissingNotificationHandler(),
     ): Mediator {
@@ -63,8 +61,7 @@ object MediatorFactory {
         return create(
             registry = registry,
             pipelineBehaviors = pipelineBehaviors,
-            preProcessors = preProcessors,
-            postProcessors = postProcessors,
+            streamPipelineBehaviors = streamPipelineBehaviors,
             notificationPublisher = notificationPublisher,
             missingNotificationHandler = missingNotificationHandler,
         )
@@ -79,16 +76,22 @@ object MediatorFactory {
     fun create(
         registry: HandlerRegistry,
         pipelineBehaviors: List<PipelineBehavior> = emptyList(),
-        preProcessors: List<RequestPreProcessor> = emptyList(),
+        streamPipelineBehaviors: List<StreamPipelineBehavior> = emptyList(),
         notificationPublisher: NotificationPublishStrategy = NotificationPublishStrategy.ParallelNotificationPublisher(),
-        postProcessors: List<RequestPostProcessor> = emptyList(),
         missingNotificationHandler: NotificationHandler<Notification> = ThrowMissingNotificationHandler(),
-    ): Mediator = MediatorImpl(
-        registry = registry,
-        pipelineBehaviors = pipelineBehaviors,
-        preProcessors = preProcessors,
-        postProcessors = postProcessors,
-        notificationPublisher = notificationPublisher,
-        missingNotificationHandler = missingNotificationHandler,
-    )
+    ): Mediator {
+        val handlerValidators = registry.collectValidators()
+        val allBehaviors = if (handlerValidators.isNotEmpty())
+            listOf(ValidationBehavior(handlerValidators)) + pipelineBehaviors
+        else
+            pipelineBehaviors
+
+        return MediatorImpl(
+            registry = registry,
+            pipelineBehaviors = allBehaviors,
+            streamPipelineBehaviors = streamPipelineBehaviors,
+            notificationPublisher = notificationPublisher,
+            missingNotificationHandler = missingNotificationHandler,
+        )
+    }
 }

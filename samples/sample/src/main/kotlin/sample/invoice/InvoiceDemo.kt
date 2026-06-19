@@ -76,8 +76,6 @@ class Test26TransactionRollback {
     }
 }
 
-// ── Test 27: ValidationScope — REQUEST runs in pipeline, DOMAIN/PERSISTENCE in handler ──
-
 // ── Test 28: StreamRequest — lazy flow, no batching ───────────────────────────
 
 class Test28StreamInvoices {
@@ -123,8 +121,6 @@ class Test29MultipleValidators {
         val mediator = MediatorFactory.create(
             registrars = listOf(InvoiceRegistrar(repo)),
             pipelineBehaviors = listOf(
-                // Two REQUEST-scope validators registered for CreateInvoiceCommand.
-                // ValidationBehavior runs ALL matching validators and merges their errors.
                 ValidationBehavior(
                     listOf(
                         CreateInvoiceRequestValidator(),      // checks id format + amount > 0
@@ -139,7 +135,7 @@ class Test29MultipleValidators {
         runCatching {
             mediator.send(CreateInvoiceCommand(id = "BADINPUT", amount = 15_000.0))
         }.onFailure { ex ->
-            if (ex is ValidationException) ex.errors.forEach { println("    field=${it.field}, msg=${it.message}") }
+            if (ex is ValidationException) println("    ${ex.message}")
         }
 
         // Only the policy validator fails: valid id, amount over limit → one error
@@ -147,7 +143,7 @@ class Test29MultipleValidators {
         runCatching {
             mediator.send(CreateInvoiceCommand(id = "INV-099", amount = 20_000.0))
         }.onFailure { ex ->
-            if (ex is ValidationException) ex.errors.forEach { println("    field=${it.field}, msg=${it.message}") }
+            if (ex is ValidationException) println("    ${ex.message}")
         }
 
         // Both pass → handler runs
@@ -162,47 +158,3 @@ class Test29MultipleValidators {
     }
 }
 
-class Test27ValidationScopes {
-    suspend fun start() {
-        println("=== TEST 27: ValidationScope — three scopes, each at the right layer ===")
-        val repo = InvoiceRepository()
-        val mediator = MediatorFactory.create(
-            registrars = listOf(InvoiceRegistrar(repo)),
-            pipelineBehaviors = listOf(
-                // Only CreateInvoiceRequestValidator runs here — scope == REQUEST
-                ValidationBehavior(
-                    listOf(
-                        CreateInvoiceRequestValidator(),         // REQUEST  → runs in pipeline
-                        CreateInvoiceDomainValidator(repo),      // DOMAIN   → skipped by pipeline
-                        CreateInvoicePersistenceValidator(repo), // PERSISTENCE → skipped by pipeline
-                    )
-                ),
-            ),
-        )
-
-        // REQUEST scope catches this before the handler even starts
-        println("  [REQUEST] missing INV- prefix:")
-        runCatching {
-            mediator.send(CreateInvoiceCommand(id = "BADINPUT", amount = 100.0))
-        }.onFailure { ex ->
-            if (ex is ValidationException) ex.errors.forEach { println("    field=${it.field}, msg=${it.message}") }
-        }
-
-        // Valid request reaches the handler; DOMAIN scope catches duplicate ID
-        mediator.send(CreateInvoiceCommand(id = "INV-020", amount = 300.0))
-        println("  [DOMAIN] duplicate ID:")
-        runCatching {
-            mediator.send(CreateInvoiceCommand(id = "INV-020", amount = 300.0))
-        }.onFailure { ex ->
-            if (ex is ValidationException) ex.errors.forEach { println("    field=${it.field}, msg=${it.message}") }
-        }
-
-        // PERSISTENCE scope would catch any constraint that slipped past domain checks
-        println("  All scopes exercised correctly.")
-    }
-
-    companion object {
-        @JvmStatic
-        fun main(args: Array<String>) = runBlocking { Test27ValidationScopes().start() }
-    }
-}

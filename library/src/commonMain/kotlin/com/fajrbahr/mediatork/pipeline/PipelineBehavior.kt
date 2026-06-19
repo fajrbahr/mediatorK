@@ -18,16 +18,19 @@ typealias RequestHandlerDelegate<TRequest, TResult> = suspend (TRequest) -> TRes
 /**
  * Cross-cutting concern that wraps request handling in a decorator-style chain.
  *
- * Pipeline behaviors are composed using `foldRight`, so behaviors with a **lower**
- * [order] value are the **outermost** decorators and run first on the way in and
- * last on the way out. This mirrors the middleware ordering familiar from frameworks
- * such as ASP.NET Core or Ktor.
+ * Behaviors are grouped into three phases by [tag], then sorted by [order] **within** each
+ * phase. **Phase always wins over order**: every [Tag.PRE] behavior executes before every
+ * [Tag.DEFAULT] behavior, and every [Tag.DEFAULT] before every [Tag.POST] — no matter what
+ * [order] values are assigned. [order] only controls sequencing inside a phase.
  *
- * Typical uses: logging, tracing, retry, caching, timing, and authorization.
+ * Typical uses:
+ * - [Tag.PRE]: auth token injection, locale setup, tracing context
+ * - [Tag.DEFAULT]: logging, retry, caching, timing, circuit-breaking
+ * - [Tag.POST]: metrics emission, audit logging, response observation
  *
  * ```kotlin
  * class LoggingBehavior : PipelineBehavior {
- *     override val order = -100 // runs before other behaviors
+ *     override val order = -100 // outermost among DEFAULT behaviors
  *     override suspend fun <TRequest : Request<TResult>, TResult> process(
  *         requestContext: RequestContext,
  *         next: RequestHandlerDelegate<TRequest, TResult>,
@@ -39,8 +42,22 @@ typealias RequestHandlerDelegate<TRequest, TResult> = suspend (TRequest) -> TRes
  *         return result
  *     }
  * }
+ *
+ * class MetricsBehavior : PipelineBehavior {
+ *     override val tag = Tag.POST
+ *     override suspend fun <TRequest : Request<TResult>, TResult> process(
+ *         requestContext: RequestContext,
+ *         next: RequestHandlerDelegate<TRequest, TResult>,
+ *         request: TRequest,
+ *     ): TResult {
+ *         val result = next(request)
+ *         println("[METRICS] ${request::class.simpleName} completed")
+ *         return result
+ *     }
+ * }
  * ```
  *
+ * @see PipelineBehavior.tag
  * @see PipelineBehavior.order
  * @see PipelineBehavior.isEnabled
  * @see PipelineBehavior.appliesTo
@@ -48,46 +65,51 @@ typealias RequestHandlerDelegate<TRequest, TResult> = suspend (TRequest) -> TRes
 interface PipelineBehavior {
 
     /**
-     * Relative position in the behavior chain. Lower values are outermost (run first).
-     * Defaults to `0`. When two behaviors share the same [order], they run in
-     * registration order — the sort is stable, so whichever was registered first
-     * is outermost. Rely on this only as a tiebreaker; prefer distinct [order]
-     * values for behaviors that must have a guaranteed relative sequence.
+     * Phase that determines where this behavior sits in the execution chain.
+     *
+     * **Phase takes absolute priority over [order].** Every [Tag.PRE] behavior runs
+     * before every [Tag.DEFAULT] behavior, and every [Tag.DEFAULT] behavior runs before
+     * every [Tag.POST] behavior — regardless of what [order] values are set. [order] only
+     * controls the sequence *within* a phase.
+     *
+     * | Phase        | Position     | Typical use                                      |
+     * |--------------|--------------|--------------------------------------------------|
+     * | [Tag.PRE]    | outermost    | auth injection, locale, trace-id setup           |
+     * | [Tag.DEFAULT]| middle       | logging, retry, caching, circuit-breaking        |
+     * | [Tag.POST]   | innermost    | metrics, audit logging, response observation     |
+     *
+     * Example: a [Tag.PRE] behavior with `order = 999` still runs **before** a
+     * [Tag.DEFAULT] behavior with `order = -999`.
+     *
+     * Defaults to [Tag.DEFAULT].
+     */
+    enum class Tag { PRE, DEFAULT, POST }
+
+    val tag: Tag get() = Tag.DEFAULT
+
+    /**
+     * Relative position within the [tag] phase. Lower values are outermost (run first on entry).
+     * Defaults to `0`. Within a phase, behaviors with the same [order] run in registration order.
      */
     val order: Int get() = 0
 
     /**
      * Whether this behavior participates in the pipeline at all.
-     * When `false`, the behavior is skipped entirely, equivalent to not having
-     * registered it. Defaults to `true`.
+     * When `false`, the behavior is skipped entirely. Defaults to `true`.
      */
     val isEnabled: Boolean get() = true
 
     /**
      * Determines whether this behavior should wrap the given [request].
-     *
-     * Override to restrict a behavior to a specific request type or subset of
-     * requests (e.g. only requests that implement a particular interface).
      * Defaults to `true` (applies to every request).
-     *
-     * @param request the request being dispatched.
-     * @return `true` if this behavior should participate in handling [request].
      */
     fun appliesTo(request: Request<*>): Boolean = true
 
     /**
      * Wraps the downstream pipeline step represented by [next].
      *
-     * Implementations must call `next(request)` (or a modified copy of the request)
-     * to continue the chain. Returning without calling [next] short-circuits the
-     * remaining behaviors and the handler.
-     *
-     * @param TRequest the concrete request type.
-     * @param TResult the response type.
-     * @param requestContext mutable bag scoped to this pipeline execution.
-     * @param next the next step in the pipeline; invoke it to continue processing.
-     * @param request the request to process.
-     * @return the result produced by [next] (possibly transformed).
+     * Implementations must call `next(request)` to continue the chain.
+     * Returning without calling [next] short-circuits the remaining behaviors and handler.
      */
     suspend fun <TRequest : Request<TResult>, TResult> process(
         requestContext: RequestContext,

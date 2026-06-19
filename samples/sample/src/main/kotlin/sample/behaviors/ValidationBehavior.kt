@@ -5,30 +5,26 @@ import com.fajrbahr.mediatork.RequestContext
 import com.fajrbahr.mediatork.pipeline.PipelineBehavior
 import com.fajrbahr.mediatork.pipeline.RequestHandlerDelegate
 import com.fajrbahr.mediatork.validator.RequestValidator
-import com.fajrbahr.mediatork.validator.ValidationError
+import com.fajrbahr.mediatork.validator.ValidationException
+import com.fajrbahr.mediatork.validator.ValidationResult
 
 class ValidationBehavior(
     private val validators: List<RequestValidator<*>>
 ) : PipelineBehavior {
 
+    @Suppress("UNCHECKED_CAST")
     override suspend fun <TRequest : Request<TResult>, TResult> process(
         requestContext: RequestContext,
         next: RequestHandlerDelegate<TRequest, TResult>,
         request: TRequest
     ): TResult {
-        val validator: RequestValidator<TRequest>? =
-            validators.find { it.requestClass == request::class } as? RequestValidator<TRequest>
-
-        validator?.validate(request)?.let { result ->
-            if (!result.isValid) {
-                throw ValidationException(result.errors)
+        validators
+            .find { it.requestClass.isInstance(request) }
+            ?.let { validator ->
+                val result = (validator as RequestValidator<TRequest>).validate(request)
+                if (result is ValidationResult.Invalid) throw ValidationException(result.errors)
             }
-        }
 
         return next(request)
     }
 }
-
-class ValidationException(
-    val errors: List<ValidationError>
-) : IllegalArgumentException(errors.joinToString("; ") { it.message })

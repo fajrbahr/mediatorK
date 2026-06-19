@@ -147,13 +147,16 @@ class MediatorTest {
     }
 
     @Test
-    fun `pre-processor runs before handler and can populate context`() = runTest {
+    fun `PRE behavior runs before handler and can populate context`() = runTest {
         var contextValue: String? = null
 
-        val pre = object : RequestPreProcessor {
-            override suspend fun process(requestContext: RequestContext, request: Request<*>) {
-                requestContext.put("key", "injected")
-            }
+        val pre = object : PipelineBehavior {
+            override val tag = PipelineBehavior.Tag.PRE
+            override suspend fun <TRequest : Request<TResult>, TResult> process(
+                requestContext: RequestContext,
+                next: com.fajrbahr.mediatork.pipeline.RequestHandlerDelegate<TRequest, TResult>,
+                request: TRequest,
+            ): TResult { requestContext.put("key", "injected"); return next(request) }
         }
 
         val handler = object : RequestHandler<PingQuery, String> {
@@ -161,10 +164,7 @@ class MediatorTest {
                 mediator: Mediator,
                 requestContext: RequestContext,
                 request: PingQuery
-            ): String {
-                contextValue = requestContext.getMetaDate("key")
-                return "ok"
-            }
+            ): String { contextValue = requestContext.getMetaDate("key"); return "ok" }
         }
 
         val m = MediatorFactory.create(
@@ -173,20 +173,23 @@ class MediatorTest {
                     registry.register(handler)
                 }
             }),
-            preProcessors = listOf(pre),
+            pipelineBehaviors = listOf(pre),
         )
         m.send(PingQuery("x"))
         assertEquals("injected", contextValue)
     }
 
     @Test
-    fun `post-processor runs after handler and receives response`() = runTest {
+    fun `POST behavior runs after handler and receives response`() = runTest {
         var captured: Any? = "not-set"
 
-        val post = object : RequestPostProcessor {
-            override suspend fun process(requestContext: RequestContext, request: Request<*>, response: Any?) {
-                captured = response
-            }
+        val post = object : PipelineBehavior {
+            override val tag = PipelineBehavior.Tag.POST
+            override suspend fun <TRequest : Request<TResult>, TResult> process(
+                requestContext: RequestContext,
+                next: com.fajrbahr.mediatork.pipeline.RequestHandlerDelegate<TRequest, TResult>,
+                request: TRequest,
+            ): TResult { val r = next(request); captured = r; return r }
         }
 
         val m = MediatorFactory.create(
@@ -195,7 +198,7 @@ class MediatorTest {
                     registry.register(PingHandler())
                 }
             }),
-            postProcessors = listOf(post),
+            pipelineBehaviors = listOf(post),
         )
         m.send(PingQuery("world"))
         assertEquals("pong:world", captured)

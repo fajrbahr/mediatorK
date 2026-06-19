@@ -1,11 +1,13 @@
 package com.fajrbahr.mediatork
 
+import com.fajrbahr.mediatork.handler.RequestExceptionAction
 import com.fajrbahr.mediatork.handler.RequestExceptionHandler
 import com.fajrbahr.mediatork.handler.RequestHandler
 import com.fajrbahr.mediatork.handler.StreamRequestHandler
 import com.fajrbahr.mediatork.notification.Notification
 import com.fajrbahr.mediatork.notification.NotificationHandler
 import com.fajrbahr.mediatork.notification.NotificationPublishStrategy
+import com.fajrbahr.mediatork.validator.RequestValidator
 import kotlin.reflect.KClass
 
 /**
@@ -53,6 +55,16 @@ class HandlerRegistry {
      */
     @PublishedApi
     internal val streamHandlers: MutableMap<KClass<*>, StreamRequestHandler<*, *>> = mutableMapOf()
+
+    /**
+     * Maps each request [KClass] to a list of `(exception KClass, action)` pairs for
+     * side-effect-only exception hooks. Unlike [exceptionHandlers], these do not provide
+     * a fallback response — they run their side effect and then let the exception propagate.
+     * Marked `@PublishedApi` for inline-function access.
+     */
+    @PublishedApi
+    internal val exceptionActions: MutableMap<KClass<*>, MutableList<Pair<KClass<out Throwable>, RequestExceptionAction<*, *>>>> =
+        mutableMapOf()
 
     /**
      * Groups a set of registrations into a logical block for readability.
@@ -120,6 +132,34 @@ class HandlerRegistry {
         handler: RequestExceptionHandler<TRequest, TResult, TEx>,
     ): HandlerRegistry {
         exceptionHandlers.getOrPut(requestClass) { mutableListOf() }.add(Pair(exceptionClass, handler))
+        return this
+    }
+
+    /**
+     * Registers [action] to run a side effect when an exception of type [TEx] is thrown
+     * while handling requests of type [TRequest].
+     *
+     * Unlike [registerExceptionHandler], this does **not** provide a fallback response.
+     * The action runs its side effect (logging, telemetry, alerting), then the exception
+     * continues propagating — either to a [RequestExceptionHandler] if one is registered,
+     * or up to the caller.
+     *
+     * Multiple actions may be registered for the same `(request type, exception type)` pair;
+     * all matching actions execute in registration order.
+     *
+     * @param TRequest the request type this action monitors.
+     * @param TEx the exception type this action reacts to.
+     * @param requestClass [KClass] of the request type.
+     * @param exceptionClass [KClass] of the exception type.
+     * @param action the exception action to register.
+     * @return this registry, for chaining.
+     */
+    fun <TRequest : Request<*>, TEx : Throwable> registerExceptionAction(
+        requestClass: KClass<TRequest>,
+        exceptionClass: KClass<TEx>,
+        action: RequestExceptionAction<TRequest, TEx>,
+    ): HandlerRegistry {
+        exceptionActions.getOrPut(requestClass) { mutableListOf() }.add(Pair(exceptionClass, action))
         return this
     }
 
@@ -211,6 +251,10 @@ class HandlerRegistry {
     /** Returns the set of all request types that have a registered handler. */
     fun registeredRequestTypes(): Set<KClass<*>> = requestHandlers.keys.toSet()
 
+    /** Returns all [RequestValidator]s declared on every registered handler via [RequestHandler.validators]. */
+    internal fun collectValidators(): List<RequestValidator<*>> =
+        requestHandlers.values.flatMap { it.validators() }
+
     /** Returns `true` if a [StreamRequestHandler] is registered for [requestType]. */
     fun hasStreamHandler(requestType: KClass<*>): Boolean = streamHandlers.containsKey(requestType)
 
@@ -250,6 +294,24 @@ class HandlerRegistry {
                 requestTypeName = request::class.simpleName ?: "Unknown",
                 registered = streamHandlers.keys.mapNotNull { it.simpleName },
             )
+
+    /**
+     * Returns all exception actions registered for [request]'s type whose exception
+     * class matches [exception] via [KClass.isInstance], in registration order.
+     *
+     * Unlike [resolveExceptionHandler], this returns all matching actions rather than
+     * just the first — all of them are executed as side effects.
+     */
+    @Suppress("UNCHECKED_CAST")
+    internal fun <TRequest : Request<*>> resolveExceptionActions(
+        request: TRequest,
+        exception: Throwable,
+    ): List<RequestExceptionAction<TRequest, Throwable>> {
+        val entries = exceptionActions[request::class] ?: return emptyList()
+        return entries
+            .filter { (exClass, _) -> exClass.isInstance(exception) }
+            .map { (_, action) -> action as RequestExceptionAction<TRequest, Throwable> }
+    }
 
     /**
      * Finds the first exception handler registered for [request]'s type whose

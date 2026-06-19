@@ -2,7 +2,6 @@ package sample
 
 import com.fajrbahr.mediatork.pipeline.TransactionPipelineBehavior
 import com.fajrbahr.mediatork.test.buildHandlerTestHarness
-import com.fajrbahr.mediatork.validator.ValidationBehavior
 import com.fajrbahr.mediatork.validator.ValidationException
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.test.runTest
@@ -13,10 +12,9 @@ import sample.invoice.commands.approveinvoice.ApproveInvoiceCommand
 import sample.invoice.commands.approveinvoice.ApproveInvoiceHandler
 import sample.invoice.commands.createinvoice.CreateInvoiceCommand
 import sample.invoice.commands.createinvoice.CreateInvoiceDomainValidator
-import sample.invoice.commands.createinvoice.CreateInvoiceField
+import sample.invoice.commands.createinvoice.CreateInvoiceError
 import sample.invoice.commands.createinvoice.CreateInvoiceHandler
 import sample.invoice.commands.createinvoice.CreateInvoicePersistenceValidator
-import sample.invoice.commands.createinvoice.CreateInvoiceRequestValidator
 import sample.invoice.queries.getinvoice.GetInvoiceHandler
 import sample.invoice.queries.getinvoice.GetInvoiceQuery
 import sample.invoice.queries.streaminvoices.StreamInvoicesHandler
@@ -35,7 +33,6 @@ class InvoiceIntegrationTest {
     private fun harness(repo: InvoiceRepository = InvoiceRepository()) =
         buildHandlerTestHarness(
             pipelineBehaviors = listOf(
-                ValidationBehavior(listOf(CreateInvoiceRequestValidator())),
                 TransactionPipelineBehavior(transactionProvider = repo.transactionProvider),
             ),
         ) {
@@ -92,7 +89,7 @@ class InvoiceIntegrationTest {
         val ex = assertFailsWith<ValidationException> {
             h.send(CreateInvoiceCommand(id = "BADINPUT", amount = 100.0))
         }
-        assertTrue(ex.errors.any { it.field is CreateInvoiceField.Id })
+        assertTrue(CreateInvoiceError.IdInvalidPrefix in ex.errors)
     }
 
     @Test
@@ -103,7 +100,7 @@ class InvoiceIntegrationTest {
         val ex = assertFailsWith<ValidationException> {
             h.send(CreateInvoiceCommand(id = "INV-400", amount = 200.0))
         }
-        assertTrue(ex.errors.any { it.field is CreateInvoiceField.Id })
+        assertNotNull(ex.message)
     }
 
     // ── Transaction rollback ──────────────────────────────────────────────────

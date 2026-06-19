@@ -19,6 +19,7 @@ import com.fajrbahr.mediatork.sample.android.before.ui.BeforePrayerTimesScreen
 import com.fajrbahr.mediatork.sample.android.aftersuper.ui.AfterSuperIslamicMonthsScreen
 import com.fajrbahr.mediatork.sample.android.aftersuper.ui.AfterSuperPrayerTimesScreen
 import com.fajrbahr.mediatork.sample.android.ui.theme.PrayerTimesTheme
+import com.fajrbahr.mediatork.validator.ValidationResult
 
 private fun basicCityValidate(city: String): String? = when {
     city.length < 2 -> "City must be at least 2 characters"
@@ -28,9 +29,10 @@ private fun basicCityValidate(city: String): String? = when {
 
 private val afterSuperValidator = GetPrayerTimesValidator()
 
-private fun afterSuperCityValidate(city: String): String? =
-    afterSuperValidator.validate(GetPrayerTimesRequest(city = city))
-        .errors.firstOrNull()?.message
+private fun afterSuperCityValidate(city: String): String? {
+    val result = afterSuperValidator.validate(GetPrayerTimesRequest(city = city))
+    return if (result is ValidationResult.Invalid) result.errors.firstOrNull()?.toString() else null
+}
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
