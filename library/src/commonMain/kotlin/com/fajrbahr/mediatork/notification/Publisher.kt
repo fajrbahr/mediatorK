@@ -1,16 +1,18 @@
 package com.fajrbahr.mediatork.notification
 
+import com.fajrbahr.mediatork.api.Notification
+
 /**
- * Capability for broadcasting a [Notification] to all registered handlers.
+ * Capability for broadcasting a [com.fajrbahr.mediatork.api.Notification] to all registered handlers.
  *
- * Unlike [com.fajrbahr.mediatork.Sender], publishing returns no value. When no handlers are registered for
+ * Unlike [com.fajrbahr.mediatork.handler.Sender], publishing returns no value. When no handlers are registered for
  * the notification type, the configured missing-notification handler is invoked —
  * by default [ThrowMissingNotificationHandler], which throws [com.fajrbahr.mediatork.MissingNotificationHandlerException].
  * The delivery strategy (parallel, sequential, fire-and-forget, etc.) is determined
  * by the active [NotificationPublishStrategy].
  *
- * @see com.fajrbahr.mediatork.Mediator
- * @see NotificationHandler
+ * @see com.fajrbahr.mediatork.api.Mediator
+ * @see com.fajrbahr.mediatork.api.NotificationHandler
  * @see NotificationPublishStrategy
  */
 interface Publisher {

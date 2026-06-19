@@ -11,7 +11,7 @@ package com.fajrbahr.mediatork
 open class MediatorException(message: String) : Exception(message)
 
 /**
- * Thrown when [Sender.send] is called for a request type that has no registered handler.
+ * Thrown when [com.fajrbahr.mediatork.handler.Sender.send] is called for a request type that has no registered handler.
  *
  * The message includes the name of the unresolved request type and, when available,
  * the list of request types that do have handlers — making misconfiguration easy to diagnose.
@@ -37,7 +37,7 @@ class MissingHandlerException(
  * @param notificationTypeName simple name of the notification type that had no handlers.
  */
 /**
- * Thrown when [IStreamRequest.stream] is called for a request type that has no registered handler.
+ * Thrown when [com.fajrbahr.mediatork.api.IStreamRequest.stream] is called for a request type that has no registered handler.
  *
  * @param requestTypeName simple name of the stream request type that could not be resolved.
  * @param registered simple names of all currently registered stream request types.

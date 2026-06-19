@@ -1,7 +1,6 @@
 package sample.orders.queries.getorder
 
-import com.fajrbahr.mediatork.validator.RequestValidator
-import com.fajrbahr.mediatork.validator.ValidationResult
+import com.fajrbahr.mediatork.api.RequestValidator
 import com.fajrbahr.mediatork.validator.rulesFailFast
 import kotlin.reflect.KClass
 

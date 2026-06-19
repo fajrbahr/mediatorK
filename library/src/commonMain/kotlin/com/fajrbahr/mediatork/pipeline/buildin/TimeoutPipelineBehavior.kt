@@ -1,14 +1,14 @@
 package com.fajrbahr.mediatork.pipeline.buildin
 
-import com.fajrbahr.mediatork.Request
-import com.fajrbahr.mediatork.RequestContext
-import com.fajrbahr.mediatork.pipeline.PipelineBehavior
-import com.fajrbahr.mediatork.pipeline.RequestHandlerDelegate
+import com.fajrbahr.mediatork.api.Request
+import com.fajrbahr.mediatork.api.RequestContext
+import com.fajrbahr.mediatork.api.PipelineBehavior
+import com.fajrbahr.mediatork.api.RequestHandlerDelegate
 import kotlinx.coroutines.TimeoutCancellationException
 import kotlinx.coroutines.withTimeout
 
 /**
- * A [com.fajrbahr.mediatork.pipeline.PipelineBehavior] that cancels the downstream pipeline if it does not complete
+ * A [PipelineBehavior] that cancels the downstream pipeline if it does not complete
  * within [timeoutMillis] milliseconds.
  *
  * Throws [TimeoutCancellationException] (a [CancellationException]) when the deadline

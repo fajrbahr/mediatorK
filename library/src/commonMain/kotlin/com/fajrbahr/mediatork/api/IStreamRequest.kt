@@ -1,4 +1,4 @@
-package com.fajrbahr.mediatork
+package com.fajrbahr.mediatork.api
 
 import kotlinx.coroutines.flow.Flow
 
@@ -12,7 +12,7 @@ import kotlinx.coroutines.flow.Flow
  *
  * @see Mediator
  * @see StreamRequest
- * @see com.fajrbahr.mediatork.handler.StreamRequestHandler
+ * @see StreamRequestHandler
  */
 interface IStreamRequest {
     /**
@@ -25,7 +25,7 @@ interface IStreamRequest {
      * @param T the type of each emitted item.
      * @param request the stream request to dispatch.
      * @return a cold [Flow] that emits the handler's results when collected.
-     * @throws MissingStreamHandlerException if no handler is registered for [TRequest].
+     * @throws com.fajrbahr.mediatork.MissingStreamHandlerException if no handler is registered for [TRequest].
      */
     fun <TRequest : StreamRequest<T>, T> stream(request: TRequest): Flow<T>
 }

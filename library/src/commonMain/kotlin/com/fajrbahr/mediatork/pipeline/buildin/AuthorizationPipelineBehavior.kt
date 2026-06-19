@@ -1,9 +1,9 @@
 package com.fajrbahr.mediatork.pipeline.buildin
 
-import com.fajrbahr.mediatork.Request
-import com.fajrbahr.mediatork.RequestContext
-import com.fajrbahr.mediatork.pipeline.PipelineBehavior
-import com.fajrbahr.mediatork.pipeline.RequestHandlerDelegate
+import com.fajrbahr.mediatork.api.Request
+import com.fajrbahr.mediatork.api.RequestContext
+import com.fajrbahr.mediatork.api.PipelineBehavior
+import com.fajrbahr.mediatork.api.RequestHandlerDelegate
 
 /**
  * Marker interface for requests that require authorization.
@@ -22,7 +22,7 @@ interface AuthenticatedRequest
 class UnauthorizedException(message: String = "Unauthorized") : Exception(message)
 
 /**
- * A [com.fajrbahr.mediatork.pipeline.PipelineBehavior] that runs an authorization check for every [AuthenticatedRequest].
+ * A [PipelineBehavior] that runs an authorization check for every [AuthenticatedRequest].
  *
  * Requests that do not implement [AuthenticatedRequest] are passed through without any check.
  * Authorization logic lives in [authorize] — throw [UnauthorizedException] (or any exception)
@@ -30,7 +30,7 @@ class UnauthorizedException(message: String = "Unauthorized") : Exception(messag
  *
  *
  * Populate the `RequestContext` with the token or principal from a preceding
- * [com.fajrbahr.mediatork.pipeline.PipelineBehavior] (e.g. one that reads from a `SessionStore` or HTTP header).
+ * [PipelineBehavior] (e.g. one that reads from a `SessionStore` or HTTP header).
  *
  * @param authorize suspend function receiving the [RequestContext] and the request;
  *   throw to deny, return normally to allow.

@@ -1,15 +1,15 @@
 package com.fajrbahr.mediatork.pipeline.buildin
 
-import com.fajrbahr.mediatork.Request
-import com.fajrbahr.mediatork.RequestContext
-import com.fajrbahr.mediatork.pipeline.PipelineBehavior
-import com.fajrbahr.mediatork.pipeline.RequestHandlerDelegate
+import com.fajrbahr.mediatork.api.Request
+import com.fajrbahr.mediatork.api.RequestContext
+import com.fajrbahr.mediatork.api.PipelineBehavior
+import com.fajrbahr.mediatork.api.RequestHandlerDelegate
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlin.reflect.KClass
 
 /**
- * A [com.fajrbahr.mediatork.pipeline.PipelineBehavior] that counts how many times each request type has passed through
+ * A [PipelineBehavior] that counts how many times each request type has passed through
  * the pipeline. Counts survive across multiple `send` calls for the lifetime of this
  * behavior instance.
  *

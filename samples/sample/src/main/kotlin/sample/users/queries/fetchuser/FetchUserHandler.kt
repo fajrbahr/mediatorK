@@ -1,7 +1,10 @@
 package sample.users.queries.fetchuser
 
 import com.fajrbahr.mediatork.*
-import com.fajrbahr.mediatork.handler.RequestHandler
+import com.fajrbahr.mediatork.api.Mediator
+import com.fajrbahr.mediatork.api.MediatorRegistrar
+import com.fajrbahr.mediatork.api.RequestContext
+import com.fajrbahr.mediatork.api.RequestHandler
 
 class FetchUserHandler : RequestHandler<FetchUserQuery, User> {
     override suspend fun handle(

@@ -1,7 +1,10 @@
 package sample.orders.queries.getorder
 
 import com.fajrbahr.mediatork.*
-import com.fajrbahr.mediatork.handler.RequestHandler
+import com.fajrbahr.mediatork.api.Mediator
+import com.fajrbahr.mediatork.api.MediatorRegistrar
+import com.fajrbahr.mediatork.api.RequestContext
+import com.fajrbahr.mediatork.api.RequestHandler
 
 class GetOrderHandler : RequestHandler<GetOrderQuery, OrderDetails> {
     override suspend fun handle(

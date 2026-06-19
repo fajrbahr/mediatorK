@@ -1,7 +1,7 @@
 package sample.invoice
 
 import com.fajrbahr.mediatork.HandlerRegistry
-import com.fajrbahr.mediatork.MediatorRegistrar
+import com.fajrbahr.mediatork.api.MediatorRegistrar
 import sample.invoice.commands.approveinvoice.ApproveInvoiceHandler
 import sample.invoice.commands.createinvoice.CreateInvoiceDomainValidator
 import sample.invoice.commands.createinvoice.CreateInvoiceHandler

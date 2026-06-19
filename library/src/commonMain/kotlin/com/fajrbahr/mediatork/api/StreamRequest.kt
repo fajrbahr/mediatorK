@@ -1,4 +1,4 @@
-package com.fajrbahr.mediatork
+package com.fajrbahr.mediatork.api
 
 import kotlinx.coroutines.flow.Flow
 
@@ -10,12 +10,12 @@ import kotlinx.coroutines.flow.Flow
  * incrementally than batched into a list.
  *
  * The handler produces a cold [Flow]; nothing executes until the caller collects it.
- * Dispatch via [IStreamRequest.stream] — a separate method from [Sender.send] so that
+ * Dispatch via [IStreamRequest.stream] — a separate method from [com.fajrbahr.mediatork.handler.Sender.send] so that
  * streaming and single-value requests are distinct at the call site.
  *
  *
  * @param T the type of each item emitted by the flow.
  * @see IStreamRequest
- * @see com.fajrbahr.mediatork.handler.StreamRequestHandler
+ * @see StreamRequestHandler
  */
 interface StreamRequest<out T>

@@ -1,5 +1,6 @@
 package com.fajrbahr.mediatork
 
+import com.fajrbahr.mediatork.api.NotificationHandler
 import com.fajrbahr.mediatork.notification.*
 
 import kotlinx.coroutines.CoroutineScope

@@ -1,7 +1,4 @@
-package com.fajrbahr.mediatork.pipeline
-
-import com.fajrbahr.mediatork.Request
-import com.fajrbahr.mediatork.RequestContext
+package com.fajrbahr.mediatork.api
 
 /**
  * Suspend function alias for the next step in the request-handling pipeline.

@@ -1,6 +1,6 @@
 package sample.bookings.queries.fetchbookings
 
-import com.fajrbahr.mediatork.Request
+import com.fajrbahr.mediatork.api.Request
 
 data class FetchBookingsQuery(
     val userEmail: String,

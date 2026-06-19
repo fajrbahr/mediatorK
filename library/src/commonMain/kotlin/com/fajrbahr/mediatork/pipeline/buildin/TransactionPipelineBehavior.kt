@@ -1,9 +1,9 @@
 package com.fajrbahr.mediatork.pipeline.buildin
 
-import com.fajrbahr.mediatork.Request
-import com.fajrbahr.mediatork.RequestContext
-import com.fajrbahr.mediatork.pipeline.PipelineBehavior
-import com.fajrbahr.mediatork.pipeline.RequestHandlerDelegate
+import com.fajrbahr.mediatork.api.Request
+import com.fajrbahr.mediatork.api.RequestContext
+import com.fajrbahr.mediatork.api.PipelineBehavior
+import com.fajrbahr.mediatork.api.RequestHandlerDelegate
 
 /**
  * Abstraction over a transactional unit of work.
@@ -17,7 +17,7 @@ interface TransactionProvider {
 }
 
 /**
- * A [com.fajrbahr.mediatork.pipeline.PipelineBehavior] that wraps each matching request in a transaction.
+ * A [PipelineBehavior] that wraps each matching request in a transaction.
  *
  * The transaction commits when the handler returns normally, and rolls back if it throws.
  * The original exception is re-thrown after rollback so callers can handle or log it.

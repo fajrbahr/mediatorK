@@ -1,15 +1,15 @@
 package com.fajrbahr.mediatork.pipeline.buildin
 
-import com.fajrbahr.mediatork.Request
-import com.fajrbahr.mediatork.RequestContext
-import com.fajrbahr.mediatork.pipeline.PipelineBehavior
-import com.fajrbahr.mediatork.pipeline.RequestHandlerDelegate
+import com.fajrbahr.mediatork.api.Request
+import com.fajrbahr.mediatork.api.RequestContext
+import com.fajrbahr.mediatork.api.PipelineBehavior
+import com.fajrbahr.mediatork.api.RequestHandlerDelegate
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlin.time.TimeSource
 
 /**
- * A [com.fajrbahr.mediatork.pipeline.PipelineBehavior] that enforces a maximum dispatch rate per request type.
+ * A [PipelineBehavior] that enforces a maximum dispatch rate per request type.
  *
  * Uses a sliding-window counter: at most [maxRequests] requests of the same type are
  * allowed within any [windowMs]-millisecond window. Requests that exceed the limit

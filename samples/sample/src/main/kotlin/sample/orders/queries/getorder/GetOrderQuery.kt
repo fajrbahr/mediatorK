@@ -1,6 +1,6 @@
 package sample.orders.queries.getorder
 
-import com.fajrbahr.mediatork.Request
+import com.fajrbahr.mediatork.api.Request
 
 data class GetOrderQuery(
     val orderId: String,

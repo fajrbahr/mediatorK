@@ -1,7 +1,5 @@
 package com.fajrbahr.mediatork.notification
 
-import kotlinx.coroutines.CoroutineScope
-
 /** Top-level alias so callers can import via `notification.*` without qualifying the interface name. */
 typealias SequentialNotificationPublisher = NotificationPublishStrategy.SequentialNotificationPublisher
 

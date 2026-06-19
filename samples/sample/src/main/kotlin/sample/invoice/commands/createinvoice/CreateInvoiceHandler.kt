@@ -1,9 +1,9 @@
 package sample.invoice.commands.createinvoice
 
-import com.fajrbahr.mediatork.*
-import com.fajrbahr.mediatork.handler.RequestHandler
-import com.fajrbahr.mediatork.validator.RequestValidator
-import com.fajrbahr.mediatork.validator.ValidationResult
+import com.fajrbahr.mediatork.api.Mediator
+import com.fajrbahr.mediatork.api.RequestContext
+import com.fajrbahr.mediatork.api.RequestHandler
+import com.fajrbahr.mediatork.api.RequestValidator
 import com.fajrbahr.mediatork.validator.rules
 import com.fajrbahr.mediatork.validator.throwIfInvalid
 import sample.invoice.Invoice

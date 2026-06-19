@@ -1,6 +1,6 @@
 package sample.spring
 
-import com.fajrbahr.mediatork.Mediator
+import com.fajrbahr.mediatork.api.Mediator
 import sample.orders.commands.createorder.CreateOrderCommand
 import sample.orders.commands.createorder.OrderResult
 import sample.users.queries.fetchuser.FetchUserQuery

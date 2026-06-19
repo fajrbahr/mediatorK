@@ -1,7 +1,5 @@
-package com.fajrbahr.mediatork.pipeline
+package com.fajrbahr.mediatork.api
 
-import com.fajrbahr.mediatork.RequestContext
-import com.fajrbahr.mediatork.StreamRequest
 import kotlinx.coroutines.flow.Flow
 
 /**
@@ -65,7 +63,7 @@ interface StreamPipelineBehavior {
      * calling [next] short-circuits the remaining behaviors and the handler.
      *
      * This function is intentionally **not** suspend — it returns a cold [Flow]
-     * immediately, consistent with the [com.fajrbahr.mediatork.handler.StreamRequestHandler] contract.
+     * immediately, consistent with the [StreamRequestHandler] contract.
      *
      * @param TRequest the concrete stream request type.
      * @param T the type of each emitted item.

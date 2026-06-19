@@ -1,27 +1,31 @@
 package com.fajrbahr.mediatork
 
-import com.fajrbahr.mediatork.handler.RequestHandler
-import com.fajrbahr.mediatork.notification.Notification
-import com.fajrbahr.mediatork.notification.NotificationHandler
+import com.fajrbahr.mediatork.api.Mediator
+import com.fajrbahr.mediatork.api.Request
+import com.fajrbahr.mediatork.api.StreamRequest
+import com.fajrbahr.mediatork.api.RequestHandler
+import com.fajrbahr.mediatork.api.Notification
+import com.fajrbahr.mediatork.api.NotificationHandler
 import com.fajrbahr.mediatork.notification.NotificationPublishStrategy
 import com.fajrbahr.mediatork.notification.ThrowMissingNotificationHandler
-import com.fajrbahr.mediatork.pipeline.PipelineBehavior
-import com.fajrbahr.mediatork.pipeline.PipelineBehavior.Tag
-import com.fajrbahr.mediatork.pipeline.RequestHandlerDelegate
-import com.fajrbahr.mediatork.pipeline.StreamHandlerDelegate
-import com.fajrbahr.mediatork.pipeline.StreamPipelineBehavior
+import com.fajrbahr.mediatork.api.PipelineBehavior
+import com.fajrbahr.mediatork.api.PipelineBehavior.Tag
+import com.fajrbahr.mediatork.api.RequestContext
+import com.fajrbahr.mediatork.api.RequestHandlerDelegate
+import com.fajrbahr.mediatork.api.StreamHandlerDelegate
+import com.fajrbahr.mediatork.api.StreamPipelineBehavior
 import kotlinx.coroutines.flow.Flow
 
 /**
- * Default [Mediator] implementation produced by [MediatorFactory.create].
+ * Default [com.fajrbahr.mediatork.api.Mediator] implementation produced by [MediatorFactory.create].
  *
  * Intended to be used as an application-wide singleton. Thread-safety comes from
- * the fact that all mutable state is confined to a per-call [RequestContext] that
+ * the fact that all mutable state is confined to a per-call [com.fajrbahr.mediatork.api.RequestContext] that
  * is created fresh inside [executePipeline] — concurrent `send` calls never share
  * context.
  *
- * Why a new [RequestContext] per request and not a class-level property?
- * [MediatorImpl] is a singleton — if [RequestContext] were a shared property,
+ * Why a new [com.fajrbahr.mediatork.api.RequestContext] per request and not a class-level property?
+ * [MediatorImpl] is a singleton — if [com.fajrbahr.mediatork.api.RequestContext] were a shared property,
  * concurrent [send] calls (e.g. two ViewModels firing at the same time) would
  * overwrite each other's locale, auth token, or any other bag value. Creating it
  * inside [executePipeline] scopes the context to a single pipeline execution, the

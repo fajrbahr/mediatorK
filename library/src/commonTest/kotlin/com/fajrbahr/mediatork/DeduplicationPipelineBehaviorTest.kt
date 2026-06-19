@@ -1,6 +1,8 @@
 package com.fajrbahr.mediatork
 
-import com.fajrbahr.mediatork.handler.RequestHandler
+import com.fajrbahr.mediatork.api.Mediator
+import com.fajrbahr.mediatork.api.RequestContext
+import com.fajrbahr.mediatork.api.RequestHandler
 import com.fajrbahr.mediatork.pipeline.buildin.DeduplicationPipelineBehavior
 import kotlinx.coroutines.async
 import kotlinx.coroutines.test.runTest

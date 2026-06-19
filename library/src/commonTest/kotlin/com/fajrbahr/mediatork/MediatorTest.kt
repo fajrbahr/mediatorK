@@ -1,9 +1,13 @@
 package com.fajrbahr.mediatork
 
+import com.fajrbahr.mediatork.api.Mediator
+import com.fajrbahr.mediatork.api.MediatorRegistrar
+import com.fajrbahr.mediatork.api.Request
 import com.fajrbahr.mediatork.handler.RequestExceptionHandler
-import com.fajrbahr.mediatork.handler.RequestHandler
-import com.fajrbahr.mediatork.pipeline.PipelineBehavior
-import com.fajrbahr.mediatork.pipeline.RequestHandlerDelegate
+import com.fajrbahr.mediatork.api.RequestHandler
+import com.fajrbahr.mediatork.api.PipelineBehavior
+import com.fajrbahr.mediatork.api.RequestContext
+import com.fajrbahr.mediatork.api.RequestHandlerDelegate
 import kotlinx.coroutines.test.runTest
 import kotlin.test.*
 
@@ -154,7 +158,7 @@ class MediatorTest {
             override val tag = PipelineBehavior.Tag.Pre
             override suspend fun <TRequest : Request<TResult>, TResult> process(
                 requestContext: RequestContext,
-                next: com.fajrbahr.mediatork.pipeline.RequestHandlerDelegate<TRequest, TResult>,
+                next: RequestHandlerDelegate<TRequest, TResult>,
                 request: TRequest,
             ): TResult { requestContext.put("key", "injected"); return next(request) }
         }
@@ -187,7 +191,7 @@ class MediatorTest {
             override val tag = PipelineBehavior.Tag.Post
             override suspend fun <TRequest : Request<TResult>, TResult> process(
                 requestContext: RequestContext,
-                next: com.fajrbahr.mediatork.pipeline.RequestHandlerDelegate<TRequest, TResult>,
+                next: RequestHandlerDelegate<TRequest, TResult>,
                 request: TRequest,
             ): TResult { val r = next(request); captured = r; return r }
         }

@@ -1,6 +1,6 @@
 package sample.invoice.commands.createinvoice
 
-import com.fajrbahr.mediatork.validator.RequestValidator
+import com.fajrbahr.mediatork.api.RequestValidator
 import com.fajrbahr.mediatork.validator.ValidationResult
 import sample.invoice.InvoiceRepository
 import kotlin.reflect.KClass
