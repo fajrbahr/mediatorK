@@ -9,6 +9,7 @@ import com.fajrbahr.mediatork.api.NotificationHandler
 import com.fajrbahr.mediatork.notification.NotificationPublishStrategy
 import com.fajrbahr.mediatork.notification.ThrowMissingNotificationHandler
 import com.fajrbahr.mediatork.handler.ThrowMissingRequestHandler
+
 import com.fajrbahr.mediatork.api.PipelineBehavior
 import com.fajrbahr.mediatork.api.PipelineBehavior.Tag
 import com.fajrbahr.mediatork.api.RequestContext
@@ -125,16 +126,7 @@ internal class MediatorImpl(
         val sortedPost = active.filter { it.tag == Tag.Post }.sortedByDescending { it.order }
 
         val finalDelegate: RequestHandlerDelegate<TRequest, TResult> = { req ->
-            try {
-                handler.handle(this@MediatorImpl, requestContext, req)
-            } catch (e: Throwable) {
-                val actions = registry.resolveExceptionActions(req, e)
-                actions.forEach { action ->
-                    try { action.execute(requestContext, req, e) } catch (_: Throwable) {}
-                }
-                val exHandler = registry.resolveExceptionHandler(req, e) ?: throw e
-                exHandler.handle(requestContext, req, e)
-            }
+            handler.handle(this@MediatorImpl, requestContext, req)
         }
 
         val withPost = sortedPost.foldRight(finalDelegate) { behavior, next ->

@@ -4,7 +4,6 @@ import com.fajrbahr.mediatork.HandlerRegistry
 import com.fajrbahr.mediatork.Mediator
 import com.fajrbahr.mediatork.MediatorRegistrar
 import com.fajrbahr.mediatork.RequestContext
-import com.fajrbahr.mediatork.handler.RequestExceptionHandler
 import com.fajrbahr.mediatork.handler.RequestHandler
 import com.fajrbahr.mediatork.handler.otherwise
 import com.fajrbahr.mediatork.notification.otherwise
@@ -98,28 +97,10 @@ class AfterSuperPrayerTimesFallbackHandler : RequestHandler<GetPrayerTimesReques
     }
 }
 
-/** Converts unhandled exceptions into a placeholder result — demonstrates RequestExceptionHandler. */
-class PrayerTimesExceptionHandler : RequestExceptionHandler<GetPrayerTimesRequest, TodayPrayerTimes, Exception> {
-    override suspend fun handle(
-        requestContext: RequestContext,
-        request: GetPrayerTimesRequest,
-        exception: Exception,
-    ): TodayPrayerTimes {
-        println("[ExceptionHandler] Error for '${request.city}': ${exception.message}")
-        val err = { name: String -> PrayerTime(name, "N/A") }
-        return TodayPrayerTimes(
-            gregorianDate = "Error", hijriDate = "Error",
-            fajr = err("Fajr"), sunrise = err("Sunrise"), dhuhr = err("Dhuhr"),
-            asr = err("Asr"), maghrib = err("Maghrib"), isha = err("Isha"),
-        )
-    }
-}
-
 /**
  * Registrar for the aftersuper layer. Demonstrates every registration pattern:
  * - [otherwise] for [RequestHandler] → [com.fajrbahr.mediatork.handler.FallbackRequestHandler]
  * - [otherwise] for [com.fajrbahr.mediatork.notification.NotificationHandler] → [com.fajrbahr.mediatork.notification.FallbackNotificationHandler]
- * - [HandlerRegistry.registerExceptionHandler]
  */
 class AfterSuperRegistrar(private val cache: AladhanCacheDataSource) : MediatorRegistrar {
     override fun register(registry: HandlerRegistry) {
@@ -127,11 +108,6 @@ class AfterSuperRegistrar(private val cache: AladhanCacheDataSource) : MediatorR
             +(AfterSuperPrayerTimesHandler(cache) otherwise AfterSuperPrayerTimesFallbackHandler())
             +GetIslamicMonthsHandler(cache)
             registerNotification(LogPrayerTimesFetchedHandler() otherwise AnalyticsPrayerTimesFetchedHandler())
-            registerExceptionHandler(
-                requestClass = GetPrayerTimesRequest::class,
-                exceptionClass = Exception::class,
-                handler = PrayerTimesExceptionHandler(),
-            )
         }
     }
 }

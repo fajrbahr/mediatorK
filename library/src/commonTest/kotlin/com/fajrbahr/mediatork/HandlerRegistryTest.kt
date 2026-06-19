@@ -5,7 +5,6 @@ import com.fajrbahr.mediatork.api.MediatorRegistrar
 import com.fajrbahr.mediatork.api.Request
 import com.fajrbahr.mediatork.api.RequestContext
 import com.fajrbahr.mediatork.api.StreamRequest
-import com.fajrbahr.mediatork.handler.RequestExceptionHandler
 import com.fajrbahr.mediatork.api.RequestHandler
 import com.fajrbahr.mediatork.api.Notification
 import com.fajrbahr.mediatork.notification.NotificationPublishStrategy
@@ -97,30 +96,6 @@ class HandlerRegistryTest {
         val registry = HandlerRegistry()
         val resolved = registry.resolveNotificationHandlers(PingNotification("x"))
         assertTrue(resolved.isEmpty())
-    }
-
-    // ── exception handlers ────────────────────────────────────────────────────
-
-    @Test
-    fun `registerExceptionHandler resolves for matching request and exception`() {
-        val registry = HandlerRegistry()
-        val exHandler = object : RequestExceptionHandler<PingQuery, String, RuntimeException> {
-            override suspend fun handle(
-                requestContext: RequestContext,
-                request: PingQuery,
-                exception: RuntimeException
-            ) = "handled"
-        }
-        registry.registerExceptionHandler(PingQuery::class, RuntimeException::class, exHandler)
-        val resolved = registry.resolveExceptionHandler(PingQuery("x"), RuntimeException("err"))
-        assertNotNull(resolved)
-    }
-
-    @Test
-    fun `resolveExceptionHandler returns null for unregistered combination`() {
-        val registry = HandlerRegistry()
-        val resolved = registry.resolveExceptionHandler(PingQuery("x"), RuntimeException("err"))
-        assertNull(resolved)
     }
 
     // ── DSL operators ─────────────────────────────────────────────────────────

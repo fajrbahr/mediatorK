@@ -5,11 +5,12 @@ import com.fajrbahr.mediatork.api.Mediator
 import com.fajrbahr.mediatork.api.MediatorRegistrar
 import com.fajrbahr.mediatork.api.Request
 import com.fajrbahr.mediatork.api.RequestContext
-import com.fajrbahr.mediatork.handler.RequestExceptionHandler
+import com.fajrbahr.mediatork.api.RequestValidator
 import com.fajrbahr.mediatork.api.RequestHandler
 import com.fajrbahr.mediatork.notification.NotificationPublishStrategy
 import com.fajrbahr.mediatork.api.Notification
 import com.fajrbahr.mediatork.api.NotificationHandler
+import com.fajrbahr.mediatork.validator.ValidationResult
 
 // ── Domain types ──────────────────────────────────────────────────────────────
 
@@ -30,7 +31,25 @@ data class OrderShippedNotification(
     val trackingNumber: String,
 ) : Notification
 
-// ── Handler that throws domain exceptions ─────────────────────────────────────
+// ── Validators ────────────────────────────────────────────────────────────────
+
+class OrderExistsValidator : RequestValidator<ShipOrderCommand> {
+    override fun validate(request: ShipOrderCommand): ValidationResult =
+        if (request.orderId == "MISSING")
+            ValidationResult.Invalid(listOf("Order '${request.orderId}' not found"))
+        else
+            ValidationResult.Valid
+}
+
+class WarehouseInStockValidator : RequestValidator<ShipOrderCommand> {
+    override fun validate(request: ShipOrderCommand): ValidationResult =
+        if (request.warehouseId == "WH-EMPTY")
+            ValidationResult.Invalid(listOf("Warehouse '${request.warehouseId}' is out of stock"))
+        else
+            ValidationResult.Valid
+}
+
+// ── Handler ───────────────────────────────────────────────────────────────────
 
 class ShipOrderHandler : RequestHandler<ShipOrderCommand, ShipmentResult> {
     override suspend fun handle(
@@ -38,48 +57,9 @@ class ShipOrderHandler : RequestHandler<ShipOrderCommand, ShipmentResult> {
         requestContext: RequestContext,
         request: ShipOrderCommand,
     ): ShipmentResult {
-        if (request.orderId == "MISSING") throw OrderNotFoundException(request.orderId)
-        if (request.warehouseId == "WH-EMPTY") throw OutOfStockException(request.warehouseId)
-
         val tracking = "TRK-${request.orderId}-${request.warehouseId}"
         mediator.publish(OrderShippedNotification(request.orderId, tracking))
         return ShipmentResult(trackingNumber = tracking, status = "SHIPPED")
-    }
-}
-
-// ── Exception handlers ────────────────────────────────────────────────────────
-
-/**
- * Converts [OrderNotFoundException] into a graceful "not found" result instead
- * of letting the exception propagate to the caller.
- *
- * Register via [HandlerRegistry.registerExceptionHandler].
- */
-class OrderNotFoundExceptionHandler :
-    RequestExceptionHandler<ShipOrderCommand, ShipmentResult, OrderNotFoundException> {
-    override suspend fun handle(
-        requestContext: RequestContext,
-        request: ShipOrderCommand,
-        exception: OrderNotFoundException,
-    ): ShipmentResult {
-        println("⚠️  OrderNotFoundExceptionHandler: ${exception.message} — returning CANCELLED result")
-        return ShipmentResult(trackingNumber = "N/A", status = "CANCELLED — order not found")
-    }
-}
-
-/**
- * Converts [OutOfStockException] into a "pending" result so the caller can retry
- * once stock is replenished, rather than crashing with an unhandled exception.
- */
-class OutOfStockExceptionHandler :
-    RequestExceptionHandler<ShipOrderCommand, ShipmentResult, OutOfStockException> {
-    override suspend fun handle(
-        requestContext: RequestContext,
-        request: ShipOrderCommand,
-        exception: OutOfStockException,
-    ): ShipmentResult {
-        println("⚠️  OutOfStockExceptionHandler: ${exception.message} — returning PENDING result")
-        return ShipmentResult(trackingNumber = "N/A", status = "PENDING — awaiting restock at ${exception.warehouseId}")
     }
 }
 
@@ -126,16 +106,10 @@ class ShipOrderRegistrar(
 
     override fun register(registry: HandlerRegistry) {
         registry.scope {
-            // Request handler
             +ShipOrderHandler()
 
-            // Exception handlers — registered in specificity order (most specific first)
-            registerExceptionHandler(
-                ShipOrderCommand::class,
-                OrderNotFoundException::class,
-                OrderNotFoundExceptionHandler()
-            )
-            registerExceptionHandler(ShipOrderCommand::class, OutOfStockException::class, OutOfStockExceptionHandler())
+            +OrderExistsValidator()
+            +WarehouseInStockValidator()
 
             // Notification handlers
             registerNotification(EmailShipmentHandler())

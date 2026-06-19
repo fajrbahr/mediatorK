@@ -2,11 +2,8 @@ package sample.bookings.queries.fetchbookings
 
 import com.fajrbahr.mediatork.api.RequestValidator
 import com.fajrbahr.mediatork.validator.rules
-import kotlin.reflect.KClass
 
 class FetchBookingsValidator : RequestValidator<FetchBookingsQuery> {
-    override val requestClass: KClass<FetchBookingsQuery> = FetchBookingsQuery::class
-
     override fun validate(request: FetchBookingsQuery) = rules<String> {
         check(request.bookingId.isNotBlank()) { "Booking ID is required" }
         check(request.bookingId.length > 3) { "Booking ID must be longer than 3 characters" }
