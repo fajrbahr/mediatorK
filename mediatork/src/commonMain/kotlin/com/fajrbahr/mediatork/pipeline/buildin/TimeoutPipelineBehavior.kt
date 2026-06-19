@@ -32,5 +32,5 @@ class TimeoutPipelineBehavior(
         requestContext: RequestContext,
         next: RequestHandlerDelegate<TRequest, TResult>,
         request: TRequest,
-    ): TResult = withTimeout(timeoutMillis) { next(request) }
+    ): TResult = withTimeout(timeoutMillis.milliseconds) { next(request) }
 }
