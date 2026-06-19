@@ -12,20 +12,6 @@ import com.fajrbahr.mediatork.pipeline.RequestHandlerDelegate
  * pass `::println` for KMP/Native, `Log.d` on Android, an SLF4J logger on JVM,
  * or `console::log` on JS/browser.
  *
- * ```kotlin
- * // KMP / multiplatform
- * LoggingPipelineBehavior(logger = ::println)
- *
- * // JVM — SLF4J
- * val log = LoggerFactory.getLogger("Mediator")
- * LoggingPipelineBehavior(logger = log::info)
- *
- * // Android — Logcat
- * LoggingPipelineBehavior(logger = { msg -> Log.d("Mediator", msg) })
- *
- * // JS / browser
- * LoggingPipelineBehavior(logger = { msg -> console.log(msg) })
- * ```
  *
  * @param logger function that receives each log line.
  * @param logResult when `true`, the string representation of the result is appended to the exit log line.

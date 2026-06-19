@@ -13,20 +13,6 @@ import kotlinx.coroutines.flow.Flow
  * Dispatch via [IStreamRequest.stream] — a separate method from [Sender.send] so that
  * streaming and single-value requests are distinct at the call site.
  *
- * ```kotlin
- * // Define
- * data class StreamOrdersQuery(val customerId: String) : StreamRequest<Order>
- *
- * // Handle
- * class StreamOrdersHandler(private val repo: OrderRepository)
- *     : StreamRequestHandler<StreamOrdersQuery, Order> {
- *     override fun handle(..., request: StreamOrdersQuery): Flow<Order> =
- *         repo.streamByCustomer(request.customerId)
- * }
- *
- * // Use
- * mediator.stream(StreamOrdersQuery("USR-1")).collect { order -> process(order) }
- * ```
  *
  * @param T the type of each item emitted by the flow.
  * @see IStreamRequest

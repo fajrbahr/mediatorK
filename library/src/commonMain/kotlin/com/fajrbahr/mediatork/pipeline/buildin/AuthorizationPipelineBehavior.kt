@@ -11,10 +11,6 @@ import com.fajrbahr.mediatork.pipeline.RequestHandlerDelegate
  * Implement this on any [Request] that should be checked by [AuthorizationPipelineBehavior].
  * Requests that do not implement this interface pass through the behavior untouched.
  *
- * ```kotlin
- * data class GetOrderQuery(val orderId: String) : Request<Order>, AuthenticatedRequest
- * data class PublicStatusQuery(val id: String) : Request<Status> // no auth needed
- * ```
  */
 interface AuthenticatedRequest
 
@@ -32,13 +28,6 @@ class UnauthorizedException(message: String = "Unauthorized") : Exception(messag
  * Authorization logic lives in [authorize] — throw [UnauthorizedException] (or any exception)
  * to deny access; return normally to allow.
  *
- * ```kotlin
- * AuthorizationPipelineBehavior { context, request ->
- *     val token = context.getMetaDate<String>("token")
- *         ?: throw UnauthorizedException("No token in context")
- *     if (!tokenValidator.isValid(token)) throw UnauthorizedException("Invalid token")
- * }
- * ```
  *
  * Populate the `RequestContext` with the token or principal from a preceding
  * [com.fajrbahr.mediatork.pipeline.PipelineBehavior] (e.g. one that reads from a `SessionStore` or HTTP header).

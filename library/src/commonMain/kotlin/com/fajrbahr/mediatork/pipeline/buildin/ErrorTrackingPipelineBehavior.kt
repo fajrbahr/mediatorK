@@ -13,22 +13,6 @@ import com.fajrbahr.mediatork.pipeline.RequestHandlerDelegate
  * the pipeline without touching handler code. The callback receives the original request
  * and the throwable — the exception is always rethrown after the callback returns.
  *
- * ```kotlin
- * // Android — Firebase Crashlytics
- * ErrorTrackingPipelineBehavior { request, error ->
- *     FirebaseCrashlytics.getInstance().recordException(error)
- * }
- *
- * // KMP / Sentry
- * ErrorTrackingPipelineBehavior { request, error ->
- *     Sentry.captureException(error)
- * }
- *
- * // Simple logging
- * ErrorTrackingPipelineBehavior { request, error ->
- *     println("ERROR in ${request::class.simpleName}: ${error.message}")
- * }
- * ```
  *
  * @param onError callback invoked on every unhandled exception with `(request, throwable)`.
  * @param order position in the behavior chain. Defaults to `Int.MAX_VALUE` (innermost) so it

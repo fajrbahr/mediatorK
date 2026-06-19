@@ -8,19 +8,10 @@ package com.fajrbahr.mediatork
  * dispatching with no handler throws [com.fajrbahr.mediatork.MissingHandlerException].
  *
  * **Query**-read data, return it:
- * ```kotlin
- * data class FetchUserQuery(val id: String) : Request<User>
- * ```
  *
  * **Command with result**-perform a side effect, return outcome:
- * ```kotlin
- * data class CheckoutCommand(val cartId: String) : Request<Order>
- * ```
  *
  * **Command without result**-perform a side effect, no return value needed:
- * ```kotlin
- * data class DeleteAccountCommand(val userId: String) : Request.Unit
- * ```
  *
  * @see com.fajrbahr.mediatork.notification.Notification for broadcasting events to zero-or-many handlers with no response.
  */

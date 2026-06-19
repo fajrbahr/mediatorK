@@ -13,22 +13,6 @@ import kotlin.reflect.KClass
  * the pipeline. Counts survive across multiple `send` calls for the lifetime of this
  * behavior instance.
  *
- * ```kotlin
- * val counter = RequestCounterPipelineBehavior()
- *
- * val mediator = MediatorFactory.create(
- *     registrars = listOf(AppRegistrar()),
- *     pipelineBehaviors = listOf(counter),
- * )
- *
- * mediator.send(GetUserQuery(id = 1))
- * mediator.send(GetUserQuery(id = 2))
- * mediator.send(CreateOrderCommand(...))
- *
- * counter.countFor(GetUserQuery::class)   // 2
- * counter.countFor(CreateOrderCommand::class) // 1
- * counter.snapshot()  // map of all request names → counts
- * ```
  *
  * Thread-safe: uses a [Mutex] so concurrent `send` calls never race on the counter map.
  *

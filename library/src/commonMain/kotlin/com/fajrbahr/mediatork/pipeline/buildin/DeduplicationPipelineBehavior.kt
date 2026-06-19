@@ -16,11 +16,6 @@ import kotlinx.coroutines.sync.withLock
  * pipeline. This prevents duplicate network calls, DB queries, or expensive computations
  * caused by concurrent ViewModels or rapid user interactions.
  *
- * ```kotlin
- * DeduplicationPipelineBehavior(
- *     keyFor = { req -> "${req::class.simpleName}:${req}" }
- * )
- * ```
  *
  * The default key is the request's class name — which deduplicates all concurrent calls
  * of the same type regardless of field values. Override [keyFor] to deduplicate by both

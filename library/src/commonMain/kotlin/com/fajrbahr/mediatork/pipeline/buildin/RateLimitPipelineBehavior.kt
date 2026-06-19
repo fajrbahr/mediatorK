@@ -15,9 +15,6 @@ import kotlin.time.TimeSource
  * allowed within any [windowMs]-millisecond window. Requests that exceed the limit
  * throw [RateLimitExceededException] immediately — they are never queued.
  *
- * ```kotlin
- * RateLimitPipelineBehavior(maxRequests = 5, windowMs = 1_000) // 5 req/s per type
- * ```
  *
  * @param maxRequests maximum number of allowed dispatches per [windowMs]. Must be ≥ 1.
  * @param windowMs duration of the sliding window in milliseconds. Must be > 0.

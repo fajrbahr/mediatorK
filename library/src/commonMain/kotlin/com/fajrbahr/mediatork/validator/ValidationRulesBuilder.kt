@@ -4,13 +4,6 @@ package com.fajrbahr.mediatork.validator
  * Runs all checks in [block] and returns [ValidationResult.Invalid] with the full error list
  * if any fail, or [ValidationResult.Valid] if all pass.
  *
- * ```kotlin
- * override fun validate(request: CreateInvoiceCommand) = rules<CreateInvoiceError> {
- *     check(request.id.isNotBlank()) { CreateInvoiceError.IdBlank }
- *     check(request.id.startsWith("INV-")) { CreateInvoiceError.IdInvalidPrefix }
- *     check(request.amount > 0) { CreateInvoiceError.AmountNotPositive }
- * }
- * ```
  */
 fun <T : Any> rules(block: RulesBuilder<T>.() -> Unit): ValidationResult =
     RulesBuilder<T>().apply(block).toResult()
@@ -19,12 +12,6 @@ fun <T : Any> rules(block: RulesBuilder<T>.() -> Unit): ValidationResult =
  * Runs checks in [block] and returns [ValidationResult.Invalid] with the **first** failing error,
  * or [ValidationResult.Valid] if all pass. Remaining checks are skipped after the first failure.
  *
- * ```kotlin
- * override fun validate(request: GetOrderQuery) = rulesFailFast<String> {
- *     check(request.orderId.isNotBlank()) { "Order ID is required" }
- *     check(request.orderId.startsWith("ORD-")) { "Order ID must start with ORD-" }
- * }
- * ```
  */
 fun <T : Any> rulesFailFast(block: FailFastRulesBuilder<T>.() -> Unit): ValidationResult {
     val builder = FailFastRulesBuilder<T>()

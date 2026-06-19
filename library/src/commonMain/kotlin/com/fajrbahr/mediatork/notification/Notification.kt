@@ -7,20 +7,8 @@ package com.fajrbahr.mediatork.notification
  * system to react-independently, without the publisher knowing or caring who
  * is listening. Having no handlers registered is silent (no exception).
  *
- * ```kotlin
- * data class BookingPurchasedNotification(
- *     val bookingId: String,
- *     val amount: Double,
- * ) : Notification
- * ```
  *
  * Multiple handlers can react to the same notification:
- * ```kotlin
- * // Analytics handler tracks the purchase
- * // Email handler sends a receipt
- * // Badge handler updates the booking count
- * // none of them respond to the publisher
- * ```
  *
  * The publish strategy controls how handlers are invoked:
  * - [com.fajrbahr.mediatork.notification.ParallelNotificationPublisher] — all handlers run concurrently (default)

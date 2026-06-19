@@ -6,9 +6,6 @@ package com.fajrbahr.mediatork.notification
  * Re-throws the last handler's exception if every handler fails.
  *
  * Compose with [otherwise] rather than constructing directly:
- * ```kotlin
- * registry registerNotification (PrimaryHandler() otherwise SecondaryHandler() otherwise TertiaryHandler())
- * ```
  */
 class FallbackNotificationHandler<T : Notification>(
     private val handlers: List<NotificationHandler<T>>,

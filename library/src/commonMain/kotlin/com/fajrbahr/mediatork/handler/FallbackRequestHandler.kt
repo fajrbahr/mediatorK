@@ -10,9 +10,6 @@ import com.fajrbahr.mediatork.RequestContext
  * Re-throws the last handler's exception if every handler fails.
  *
  * Compose with [otherwise] rather than constructing directly:
- * ```kotlin
- * registry register (PrimaryHandler() otherwise SecondaryHandler() otherwise TertiaryHandler())
- * ```
  */
 class FallbackRequestHandler<TRequest : Request<TResult>, TResult>(
     private val handlers: List<RequestHandler<TRequest, TResult>>,

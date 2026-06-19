@@ -15,19 +15,6 @@ import kotlinx.coroutines.flow.Flow
  * Exactly one handler must be registered per [StreamRequest] type.
  * Dispatching with no handler throws [com.fajrbahr.mediatork.MissingStreamHandlerException].
  *
- * ```kotlin
- * class StreamOrdersHandler(private val repo: OrderRepository)
- *     : StreamRequestHandler<StreamOrdersQuery, Order> {
- *
- *     override fun handle(
- *         mediator: Mediator,
- *         requestContext: RequestContext,
- *         request: StreamOrdersQuery,
- *     ): Flow<Order> = flow {
- *         repo.cursorByCustomer(request.customerId).forEach { emit(it) }
- *     }
- * }
- * ```
  *
  * @param TRequest the stream request type this handler processes.
  * @param T the type of each item emitted.
