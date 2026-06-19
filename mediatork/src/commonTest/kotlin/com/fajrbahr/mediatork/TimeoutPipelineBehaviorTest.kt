@@ -29,7 +29,7 @@ class TimeoutPipelineBehaviorTest {
                 requestContext: RequestContext,
                 request: PingQuery
             ): String {
-                delay(10_000)
+                delay(10_000.milliseconds)
                 return "too late"
             }
         }

@@ -44,7 +44,7 @@ class RetryPipelineBehavior(
             } catch (e: Throwable) {
                 if (attempt >= maxRetries || !retryOn(e)) throw e
                 attempt++
-                if (delayMillis > 0) delay(delayMillis)
+                if (delayMillis > 0) delay(delayMillis.milliseconds)
             }
         }
     }

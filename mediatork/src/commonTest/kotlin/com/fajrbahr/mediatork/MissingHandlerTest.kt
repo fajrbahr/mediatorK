@@ -33,7 +33,7 @@ class MissingHandlerTest {
         val ex = assertFailsWith<MissingHandlerException> {
             mediator.send(PingRequest)
         }
-        assertTrue(ex.message?.contains("PingRequest") == true)
+        assertEquals(ex.message?.contains("PingRequest"), true)
     }
 
     @Test

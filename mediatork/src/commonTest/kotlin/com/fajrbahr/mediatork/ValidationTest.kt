@@ -11,7 +11,7 @@ class RulesDslTest {
 
     @Test
     fun `rules with all checks passing returns Valid`() {
-        val result = rules<String> {
+        val result = rules {
             check(true) { "should not appear" }
             require(2 + 2 == 4) { "math broken" }
         }
@@ -20,7 +20,7 @@ class RulesDslTest {
 
     @Test
     fun `rules collects all failing checks`() {
-        val result = rules<String> {
+        val result = rules {
             check(false) { "error 1" }
             check(false) { "error 2" }
             check(true) { "should not appear" }
@@ -35,7 +35,7 @@ class RulesDslTest {
 
     @Test
     fun `rules works with non-String error type`() {
-        val result = rules<TestError> {
+        val result = rules {
             check(false) { TestError.ONE }
             check(false) { TestError.TWO }
         }
@@ -48,7 +48,7 @@ class RulesDslTest {
     @Test
     fun `rules evaluates every rule even after first failure`() {
         val evaluated = mutableListOf<Int>()
-        val result = rules<String> {
+        val result = rules {
             check(false) { evaluated += 1; "e1" }
             check(false) { evaluated += 2; "e2" }
             check(false) { evaluated += 3; "e3" }
@@ -69,7 +69,7 @@ class RulesFailFastDslTest {
 
     @Test
     fun `rulesFailFast with all checks passing returns Valid`() {
-        val result = rulesFailFast<String> {
+        val result = rulesFailFast {
             check(true) { "no" }
             require(2 + 2 == 4) { "no" }
         }
@@ -78,7 +78,7 @@ class RulesFailFastDslTest {
 
     @Test
     fun `rulesFailFast returns first failing error only`() {
-        val result = rulesFailFast<String> {
+        val result = rulesFailFast {
             check(false) { "error 1" }
             check(false) { "error 2" }
         }
@@ -90,7 +90,7 @@ class RulesFailFastDslTest {
     @Test
     fun `rulesFailFast skips remaining checks after first failure`() {
         val evaluated = mutableListOf<Int>()
-        val result = rulesFailFast<String> {
+        val result = rulesFailFast {
             check(true) { evaluated += 1; "no" }
             check(false) { evaluated += 2; "fail" }
             check(false) { evaluated += 3; "skipped" }
@@ -101,7 +101,7 @@ class RulesFailFastDslTest {
 
     @Test
     fun `rulesFailFast works with non-String error type`() {
-        val result = rulesFailFast<TestError> {
+        val result = rulesFailFast {
             check(false) { TestError.ONE }
             check(false) { TestError.TWO }
         }
