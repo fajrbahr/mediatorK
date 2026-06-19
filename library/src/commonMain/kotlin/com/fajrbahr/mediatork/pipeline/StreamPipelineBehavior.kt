@@ -31,20 +31,6 @@ typealias StreamHandlerDelegate<TRequest, T> = (TRequest) -> Flow<T>
  *
  * Typical uses: logging, auth enforcement, rate limiting, and tracing on streams.
  *
- * ```kotlin
- * class StreamLoggingBehavior : StreamPipelineBehavior {
- *     override val order = -100
- *     override fun <TRequest : StreamRequest<T>, T> process(
- *         requestContext: RequestContext,
- *         next: StreamHandlerDelegate<TRequest, T>,
- *         request: TRequest,
- *     ): Flow<T> = next(request).onStart {
- *         println("▶ stream ${request::class.simpleName}")
- *     }.onCompletion { cause ->
- *         println("■ stream ${request::class.simpleName} — ${if (cause == null) "ok" else "err: $cause"}")
- *     }
- * }
- * ```
  *
  * @see StreamHandlerDelegate
  * @see PipelineBehavior

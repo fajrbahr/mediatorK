@@ -31,12 +31,6 @@ interface RequestHandler<in TRequest : Request<TResult>, TResult> {
      * [com.fajrbahr.mediatork.MediatorFactory] collects these automatically and runs
      * them via [com.fajrbahr.mediatork.validator.ValidationBehavior] before every request.
      *
-     * ```kotlin
-     * override fun validators() = listOf(
-     *     CreateInvoiceRequestValidator(),
-     *     CreateInvoiceAmountPolicyValidator(),
-     * )
-     * ```
      */
     fun validators(): List<RequestValidator<*>> = emptyList()
 

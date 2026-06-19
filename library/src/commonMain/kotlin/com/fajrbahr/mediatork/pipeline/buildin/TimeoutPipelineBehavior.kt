@@ -15,10 +15,6 @@ import kotlinx.coroutines.withTimeout
  * is exceeded. Pair with [RetryPipelineBehavior] (at a lower [order] value) if you
  * want to retry timed-out requests.
  *
- * ```kotlin
- * // Cancel any request that takes longer than 5 seconds.
- * val timeout = TimeoutPipelineBehavior(timeoutMillis = 5_000)
- * ```
  *
  * @param timeoutMillis maximum allowed duration in milliseconds. Must be > 0.
  * @param order position in the behavior chain. Defaults to `0`.

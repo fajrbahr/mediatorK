@@ -19,24 +19,6 @@ import com.fajrbahr.mediatork.RequestContext
  * Typical uses: crash reporting (Firebase Crashlytics, Sentry), structured error logging,
  * metrics emission, and audit-trail recording on failure.
  *
- * ```kotlin
- * class LogNetworkErrorAction : RequestExceptionAction<FetchDataQuery, NetworkException> {
- *     override suspend fun execute(
- *         requestContext: RequestContext,
- *         request: FetchDataQuery,
- *         exception: NetworkException,
- *     ) {
- *         logger.error("Network failure on FetchDataQuery(id=${request.id})", exception)
- *     }
- * }
- *
- * // Registration
- * registry.registerExceptionAction(
- *     FetchDataQuery::class,
- *     NetworkException::class,
- *     LogNetworkErrorAction(),
- * )
- * ```
  *
  * @param TRequest the request type whose pipeline this action monitors.
  * @param TException the exception type this action reacts to.

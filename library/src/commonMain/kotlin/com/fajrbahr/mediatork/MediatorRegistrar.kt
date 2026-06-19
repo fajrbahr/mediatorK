@@ -7,17 +7,6 @@ package com.fajrbahr.mediatork
  * example, one registrar per feature module. All registrars are called once during
  * [MediatorFactory.create] before the mediator is built.
  *
- * ```kotlin
- * class OrderRegistrar : MediatorRegistrar {
- *     override fun register(registry: HandlerRegistry) {
- *         registry.scope {
- *             +PlaceOrderHandler()
- *             +CancelOrderHandler()
- *             +OrderShippedHandler()
- *         }
- *     }
- * }
- * ```
  *
  * @see MediatorFactory
  * @see HandlerRegistry

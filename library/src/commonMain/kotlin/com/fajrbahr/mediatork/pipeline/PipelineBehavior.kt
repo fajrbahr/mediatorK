@@ -28,34 +28,6 @@ typealias RequestHandlerDelegate<TRequest, TResult> = suspend (TRequest) -> TRes
  * - [Tag.Default]: logging, retry, caching, timing, circuit-breaking
  * - [Tag.Post]: metrics emission, audit logging, response observation
  *
- * ```kotlin
- * class LoggingBehavior : PipelineBehavior {
- *     override val order = -100 // outermost among DEFAULT behaviors
- *     override suspend fun <TRequest : Request<TResult>, TResult> process(
- *         requestContext: RequestContext,
- *         next: RequestHandlerDelegate<TRequest, TResult>,
- *         request: TRequest,
- *     ): TResult {
- *         println("Handling ${request::class.simpleName}")
- *         val result = next(request)
- *         println("Handled — result: $result")
- *         return result
- *     }
- * }
- *
- * class MetricsBehavior : PipelineBehavior {
- *     override val tag = Tag.Post
- *     override suspend fun <TRequest : Request<TResult>, TResult> process(
- *         requestContext: RequestContext,
- *         next: RequestHandlerDelegate<TRequest, TResult>,
- *         request: TRequest,
- *     ): TResult {
- *         val result = next(request)
- *         println("[METRICS] ${request::class.simpleName} completed")
- *         return result
- *     }
- * }
- * ```
  *
  * @see PipelineBehavior.tag
  * @see PipelineBehavior.order

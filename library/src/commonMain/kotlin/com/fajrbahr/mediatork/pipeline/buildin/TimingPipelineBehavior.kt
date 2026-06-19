@@ -13,20 +13,6 @@ import kotlin.time.TimeSource
  * Timing is always reported — even when the handler throws — so you get latency data for
  * both successful and failed requests.
  *
- * ```kotlin
- * // KMP / println
- * TimingPipelineBehavior { name, ms -> println("$name took ${ms}ms") }
- *
- * // Android — Firebase Performance
- * TimingPipelineBehavior { name, ms ->
- *     FirebasePerformance.getInstance().newTrace(name).also { it.start(); it.stop() }
- * }
- *
- * // JVM — Micrometer
- * TimingPipelineBehavior { name, ms ->
- *     meterRegistry.timer(name).record(ms, TimeUnit.MILLISECONDS)
- * }
- * ```
  *
  * @param onTiming callback invoked after every request with `(requestName, durationMs)`.
  * @param order position in the behavior chain. Defaults to `0`.

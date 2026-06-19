@@ -10,10 +10,6 @@ import kotlinx.coroutines.launch
  * Strategy that controls how a [Notification] is delivered to its handlers.
  *
  * Prefer the companion-object constants for one-off overrides at a publish site:
- * ```kotlin
- * mediator.publish(event, NotificationPublishStrategy.SEQUENTIAL)
- * mediator.publish(event, NotificationPublishStrategy.fireAndForget(scope))
- * ```
  *
  * Custom implementations can enforce ordering, add tracing, or apply retry logic.
  *

@@ -18,14 +18,6 @@ class ValidationException(val errors: List<*>, cause: Throwable? = null) :
  * Pre-built [PipelineBehavior] that runs registered [RequestValidator]s before the handler.
  * Throws [ValidationException] if any validator returns [ValidationResult.Invalid].
  *
- * ```kotlin
- * val mediator = MediatorFactory.create(
- *     registrars = listOf(AppRegistrar()),
- *     pipelineBehaviors = listOf(
- *         ValidationBehavior(listOf(CreateTodoValidator())),
- *     ),
- * )
- * ```
  *
  * @param validators the validators to run; each is matched to a request by [RequestValidator.requestClass].
  * @param order position in the behavior chain; defaults to `-50` (runs before most behaviors).

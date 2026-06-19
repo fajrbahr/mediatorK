@@ -38,22 +38,7 @@ class CircuitOpenException(requestName: String) :
  * - Probe succeeds → circuit closes, failure counter resets.
  * - Probe fails → circuit re-opens, cooldown restarts.
  *
- * ```
- * CLOSED ──(failureThreshold reached)──► OPEN
- *   ▲                                      │
- *   └──── probe success ◄─ HALF_OPEN ◄─────┘
- *                              │
- *                        probe failure
- *                              │
- *                           re-OPEN
- * ```
  *
- * ```kotlin
- * CircuitBreakerPipelineBehavior(
- *     failureThreshold = 5,
- *     resetTimeoutMs = 10_000,
- * )
- * ```
  *
  * A single instance tracks state for **all** request types. Create one instance per
  * request type (or service boundary) if you need isolated breakers.

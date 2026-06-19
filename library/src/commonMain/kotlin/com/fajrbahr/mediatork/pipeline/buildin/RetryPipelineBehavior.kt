@@ -13,14 +13,6 @@ import kotlinx.coroutines.delay
  * waits [delayMillis] milliseconds and tries again. Once [maxRetries] attempts are
  * exhausted the last exception is rethrown.
  *
- * ```kotlin
- * // Retry up to 3 times on any IOException, waiting 200 ms between attempts.
- * val retry = RetryPipelineBehavior(
- *     maxRetries = 3,
- *     delayMillis = 200,
- *     retryOn = { it is IOException },
- * )
- * ```
  *
  * @param maxRetries number of retry attempts after the first failure (total attempts = maxRetries + 1).
  * @param delayMillis milliseconds to wait between attempts. Defaults to `0` (no delay).

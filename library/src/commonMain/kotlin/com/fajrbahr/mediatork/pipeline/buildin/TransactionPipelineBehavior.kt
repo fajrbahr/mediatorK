@@ -11,19 +11,6 @@ import com.fajrbahr.mediatork.pipeline.RequestHandlerDelegate
  * Implement this to adapt any persistence layer — Room, Exposed, SQLDelight, etc.
  * The [withTransaction] block must commit on normal return and roll back on exception.
  *
- * ```kotlin
- * // Room
- * val provider = object : TransactionProvider {
- *     override suspend fun <T> withTransaction(block: suspend () -> T): T =
- *         db.withTransaction { block() }
- * }
- *
- * // Exposed
- * val provider = object : TransactionProvider {
- *     override suspend fun <T> withTransaction(block: suspend () -> T): T =
- *         newSuspendedTransaction { block() }
- * }
- * ```
  */
 interface TransactionProvider {
     suspend fun <T> withTransaction(block: suspend () -> T): T
@@ -39,12 +26,6 @@ interface TransactionProvider {
  * [Request.Unit] marker is in use, a common pattern is to limit
  * transactions to those requests:
  *
- * ```kotlin
- * TransactionPipelineBehavior(
- *     transactionProvider = TransactionProvider { block -> db.withTransaction { block() } },
- *     appliesTo = { it is Request.Unit },
- * )
- * ```
  *
  * @param transactionProvider the unit-of-work implementation for the underlying store.
  * @param appliesTo predicate deciding which requests run inside a transaction; defaults to all.
