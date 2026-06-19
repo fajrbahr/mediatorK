@@ -8,7 +8,6 @@ import com.fajrbahr.mediatork.api.Notification
 import com.fajrbahr.mediatork.api.NotificationHandler
 import com.fajrbahr.mediatork.notification.NotificationPublishStrategy
 import com.fajrbahr.mediatork.api.RequestValidator
-import com.fajrbahr.mediatork.validator.BoundValidator
 import kotlin.reflect.KClass
 
 /**
@@ -142,43 +141,8 @@ class HandlerRegistry {
      *
      * Allows the `+validator` syntax inside a [scope] block.
      */
-    inline operator fun <reified TRequest : Request<*>> RequestValidator<TRequest>.unaryPlus() {
-        registerValidator(this)
-    }
-
-    /**
-     * Registers [handler] for [requestClass] without a reified type parameter.
-     *
-     * Intended for DI-framework integrations (e.g. Koin, Hilt) that discover
-     * handlers at runtime and therefore cannot supply a compile-time reified type.
-     * The caller is responsible for ensuring [requestClass] matches the handler's
-     * actual [TRequest] type parameter.
-     */
-    @Suppress("UNCHECKED_CAST")
-    fun registerDynamic(requestClass: KClass<*>, handler: RequestHandler<*, *>): HandlerRegistry {
-        requestHandlers[requestClass] = handler
-        return this
-    }
-
-    /**
-     * Appends [handler] for [notificationClass] without a reified type parameter.
-     *
-     * @see registerDynamic
-     */
-    fun registerNotificationDynamic(notificationClass: KClass<*>, handler: NotificationHandler<*>): HandlerRegistry {
-        notificationHandlers.getOrPut(notificationClass) { mutableListOf() }.add(handler)
-        return this
-    }
-
-    /**
-     * Registers [handler] for [requestClass] without a reified type parameter.
-     *
-     * @see registerDynamic
-     */
-    fun registerStreamDynamic(requestClass: KClass<*>, handler: StreamRequestHandler<*, *>): HandlerRegistry {
-        streamHandlers[requestClass] = handler
-        return this
-    }
+    inline operator fun <reified TRequest : Request<*>> RequestValidator<TRequest>.unaryPlus(): Unit =
+        registerValidator(this).let {}
 
     /**
      * Returns `true` if a [RequestHandler] is registered for [requestType].
@@ -191,16 +155,16 @@ class HandlerRegistry {
     fun registeredRequestTypes(): Set<KClass<*>> = requestHandlers.keys.toSet()
 
     @PublishedApi
-    internal val validators: MutableList<BoundValidator<*>> = mutableListOf()
+    internal val validatorsHandlers: MutableMap<KClass<*>, MutableList<RequestValidator<*>>> = mutableMapOf()
 
     inline fun <reified TRequest : Request<*>> registerValidator(
         validator: RequestValidator<TRequest>,
     ): HandlerRegistry {
-        validators.add(BoundValidator(TRequest::class, validator))
+        validatorsHandlers.getOrPut(TRequest::class) { mutableListOf() }.add(validator)
         return this
     }
 
-    internal fun collectValidators(): List<BoundValidator<*>> = validators.toList()
+    internal fun collectValidators(): Map<KClass<*>, List<RequestValidator<*>>> = validatorsHandlers
 
     /** Returns `true` if a [StreamRequestHandler] is registered for [requestType]. */
     fun hasStreamHandler(requestType: KClass<*>): Boolean = streamHandlers.containsKey(requestType)

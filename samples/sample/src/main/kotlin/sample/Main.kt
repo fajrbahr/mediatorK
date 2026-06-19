@@ -21,7 +21,6 @@ import com.fajrbahr.mediatork.pipeline.buildin.RateLimitPipelineBehavior
 import com.fajrbahr.mediatork.pipeline.buildin.RequestCounterPipelineBehavior
 import com.fajrbahr.mediatork.pipeline.buildin.TimingPipelineBehavior
 import com.fajrbahr.mediatork.pipeline.buildin.UnauthorizedException
-import com.fajrbahr.mediatork.api.RequestValidator
 import com.fajrbahr.mediatork.validator.ValidationException
 import kotlinx.coroutines.*
 import sample.behaviors.*
@@ -47,11 +46,6 @@ import sample.orders.queries.getorder.OrderDetails
 import sample.users.queries.fetchuser.FetchUserQuery
 import sample.users.queries.fetchuser.UserRegistrar
 
-private val validators: List<RequestValidator<*>> = listOf(
-    FetchBookingsValidator(),
-    GetOrderQueryValidator(),
-)
-
 private val mediator = MediatorFactory.create(
     registrars = listOf(
         UserRegistrar(),
@@ -67,7 +61,6 @@ private val mediator = MediatorFactory.create(
         MeasurePipelineBehaviour(),
         RetryPipelineBehavior(maxRetries = 2),
         TracingPipelineBehavior(),
-        ValidationBehavior(validators),
         MetricsBehavior(),
     ),
     notificationPublisher = NotificationPublishStrategy.DEFAULT,
