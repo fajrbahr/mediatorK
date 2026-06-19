@@ -18,8 +18,8 @@ import com.fajrbahr.mediatork.sample.ktor.after.domain.GetIslamicMonthsRequest
 import com.fajrbahr.mediatork.sample.ktor.after.domain.GetPrayerTimesRequest
 import com.fajrbahr.mediatork.sample.ktor.aftersuper.domain.AfterSuperRegistrar
 import com.fajrbahr.mediatork.sample.ktor.aftersuper.domain.GetPrayerTimesValidator
-import com.fajrbahr.mediatork.sample.ktor.aftersuper.domain.RequestAuditPostProcessor
-import com.fajrbahr.mediatork.sample.ktor.aftersuper.domain.TraceIdPreProcessor
+import com.fajrbahr.mediatork.sample.ktor.aftersuper.domain.RequestAuditBehavior
+import com.fajrbahr.mediatork.sample.ktor.aftersuper.domain.TraceIdBehavior
 import com.fajrbahr.mediatork.sample.ktor.aftersuper.model.AfterSuperIslamicMonthsResponse
 import com.fajrbahr.mediatork.sample.ktor.aftersuper.model.AfterSuperPrayerTimesResponse
 import com.fajrbahr.mediatork.validator.ValidationBehavior
@@ -72,9 +72,9 @@ fun Application.configureAfterSuperRoutes() {
             ErrorTrackingPipelineBehavior(order = Int.MAX_VALUE) { req, err ->
                 println("[MediatorK] ❌ ${req::class.simpleName}: ${err.message}")
             },
+            TraceIdBehavior(),
+            RequestAuditBehavior(),
         ),
-        preProcessors  = listOf(TraceIdPreProcessor()),
-        postProcessors = listOf(RequestAuditPostProcessor()),
         missingNotificationHandler = SilentMissingNotificationHandler(),
     )
 

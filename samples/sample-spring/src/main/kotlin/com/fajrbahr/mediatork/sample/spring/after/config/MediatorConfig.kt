@@ -18,8 +18,8 @@ import com.fajrbahr.mediatork.sample.spring.after.domain.AppRegistrar
 import com.fajrbahr.mediatork.sample.spring.after.domain.GetPrayerTimesRequest
 import com.fajrbahr.mediatork.sample.spring.aftersuper.domain.AfterSuperRegistrar
 import com.fajrbahr.mediatork.sample.spring.aftersuper.domain.GetPrayerTimesValidator
-import com.fajrbahr.mediatork.sample.spring.aftersuper.domain.RequestAuditPostProcessor
-import com.fajrbahr.mediatork.sample.spring.aftersuper.domain.TraceIdPreProcessor
+import com.fajrbahr.mediatork.sample.spring.aftersuper.domain.RequestAuditBehavior
+import com.fajrbahr.mediatork.sample.spring.aftersuper.domain.TraceIdBehavior
 import com.fajrbahr.mediatork.validator.ValidationBehavior
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
@@ -79,9 +79,9 @@ class MediatorConfig {
             ErrorTrackingPipelineBehavior(order = Int.MAX_VALUE) { req, err ->
                 println("[MediatorK] ❌ ${req::class.simpleName}: ${err.message}")
             },
+            TraceIdBehavior(),
+            RequestAuditBehavior(),
         ),
-        preProcessors  = listOf(TraceIdPreProcessor()),
-        postProcessors = listOf(RequestAuditPostProcessor()),
         missingNotificationHandler = SilentMissingNotificationHandler(),
     )
 }

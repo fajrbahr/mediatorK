@@ -1,10 +1,13 @@
-package com.fajrbahr.mediatork.pipeline
+package com.fajrbahr.mediatork.pipeline.buildin
 
 import com.fajrbahr.mediatork.Request
 import com.fajrbahr.mediatork.RequestContext
+import com.fajrbahr.mediatork.pipeline.PipelineBehavior
+import com.fajrbahr.mediatork.pipeline.RequestHandlerDelegate
+import kotlinx.coroutines.delay
 
 /**
- * A [PipelineBehavior] that retries the downstream pipeline on failure.
+ * A [com.fajrbahr.mediatork.pipeline.PipelineBehavior] that retries the downstream pipeline on failure.
  *
  * On each attempt, if [next] throws an exception that satisfies [retryOn], the behavior
  * waits [delayMillis] milliseconds and tries again. Once [maxRetries] attempts are
@@ -49,7 +52,7 @@ class RetryPipelineBehavior(
             } catch (e: Throwable) {
                 if (attempt >= maxRetries || !retryOn(e)) throw e
                 attempt++
-                if (delayMillis > 0) kotlinx.coroutines.delay(delayMillis)
+                if (delayMillis > 0) delay(delayMillis)
             }
         }
     }

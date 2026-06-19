@@ -24,8 +24,8 @@ import com.fajrbahr.mediatork.sample.android.after.domain.GetPrayerTimesRequest
 import com.fajrbahr.mediatork.sample.android.after.model.TodayPrayerTimes
 import com.fajrbahr.mediatork.sample.android.aftersuper.domain.AfterSuperRegistrar
 import com.fajrbahr.mediatork.sample.android.aftersuper.domain.GetPrayerTimesValidator
-import com.fajrbahr.mediatork.sample.android.aftersuper.domain.RequestAuditPostProcessor
-import com.fajrbahr.mediatork.sample.android.aftersuper.domain.TraceIdPreProcessor
+import com.fajrbahr.mediatork.sample.android.aftersuper.domain.RequestAuditBehavior
+import com.fajrbahr.mediatork.sample.android.aftersuper.domain.TraceIdBehavior
 import com.fajrbahr.mediatork.validator.ValidationBehavior
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -133,9 +133,9 @@ class AfterSuperPrayerTimesViewModel(
                                 val line = "❌ ${req::class.simpleName}: ${err.message}"
                                 logs.add(line); Log.e("MediatorK", line)
                             },
+                            TraceIdBehavior(),
+                            RequestAuditBehavior(),
                         ),
-                        preProcessors  = listOf(TraceIdPreProcessor()),
-                        postProcessors = listOf(RequestAuditPostProcessor()),
                         missingNotificationHandler = SilentMissingNotificationHandler(),
                     ),
                     logBuffer = logs,

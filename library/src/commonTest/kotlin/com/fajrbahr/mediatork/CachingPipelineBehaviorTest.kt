@@ -1,7 +1,7 @@
 package com.fajrbahr.mediatork
 
 import com.fajrbahr.mediatork.handler.RequestHandler
-import com.fajrbahr.mediatork.pipeline.CachingPipelineBehavior
+import com.fajrbahr.mediatork.pipeline.buildin.CachingPipelineBehavior
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals

@@ -1,7 +1,7 @@
 package com.fajrbahr.mediatork
 
 import com.fajrbahr.mediatork.handler.RequestHandler
-import com.fajrbahr.mediatork.pipeline.TimeoutPipelineBehavior
+import com.fajrbahr.mediatork.pipeline.buildin.TimeoutPipelineBehavior
 import kotlinx.coroutines.TimeoutCancellationException
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.test.runTest

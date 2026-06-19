@@ -1,7 +1,7 @@
 package com.fajrbahr.mediatork
 
 import com.fajrbahr.mediatork.handler.RequestHandler
-import com.fajrbahr.mediatork.pipeline.TimingPipelineBehavior
+import com.fajrbahr.mediatork.pipeline.buildin.TimingPipelineBehavior
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals

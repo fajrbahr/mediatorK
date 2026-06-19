@@ -1,6 +1,6 @@
 package com.fajrbahr.mediatork
 
-import com.fajrbahr.mediatork.pipeline.RequestCounterPipelineBehavior
+import com.fajrbahr.mediatork.pipeline.buildin.RequestCounterPipelineBehavior
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals

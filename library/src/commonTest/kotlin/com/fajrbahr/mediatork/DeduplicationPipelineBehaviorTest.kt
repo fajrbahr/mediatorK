@@ -1,7 +1,7 @@
 package com.fajrbahr.mediatork
 
 import com.fajrbahr.mediatork.handler.RequestHandler
-import com.fajrbahr.mediatork.pipeline.DeduplicationPipelineBehavior
+import com.fajrbahr.mediatork.pipeline.buildin.DeduplicationPipelineBehavior
 import kotlinx.coroutines.async
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test

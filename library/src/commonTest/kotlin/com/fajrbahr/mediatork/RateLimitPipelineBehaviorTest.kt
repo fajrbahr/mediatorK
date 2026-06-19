@@ -1,7 +1,7 @@
 package com.fajrbahr.mediatork
 
-import com.fajrbahr.mediatork.pipeline.RateLimitExceededException
-import com.fajrbahr.mediatork.pipeline.RateLimitPipelineBehavior
+import com.fajrbahr.mediatork.pipeline.buildin.RateLimitExceededException
+import com.fajrbahr.mediatork.pipeline.buildin.RateLimitPipelineBehavior
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
