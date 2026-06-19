@@ -1,12 +1,12 @@
 package com.fajrbahr.mediatork.pipeline.buildin
 
-import com.fajrbahr.mediatork.Request
-import com.fajrbahr.mediatork.RequestContext
-import com.fajrbahr.mediatork.pipeline.PipelineBehavior
-import com.fajrbahr.mediatork.pipeline.RequestHandlerDelegate
+import com.fajrbahr.mediatork.api.Request
+import com.fajrbahr.mediatork.api.RequestContext
+import com.fajrbahr.mediatork.api.PipelineBehavior
+import com.fajrbahr.mediatork.api.RequestHandlerDelegate
 
 /**
- * A [com.fajrbahr.mediatork.pipeline.PipelineBehavior] that logs each request as it enters and exits the pipeline.
+ * A [PipelineBehavior] that logs each request as it enters and exits the pipeline.
  *
  * Accepts any `(String) -> Unit` logger so the same behavior works on every platform:
  * pass `::println` for KMP/Native, `Log.d` on Android, an SLF4J logger on JVM,

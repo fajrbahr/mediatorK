@@ -1,7 +1,7 @@
 package com.fajrbahr.mediatork.handler
 
-import com.fajrbahr.mediatork.Request
-import com.fajrbahr.mediatork.RequestContext
+import com.fajrbahr.mediatork.api.Request
+import com.fajrbahr.mediatork.api.RequestContext
 
 /**
  * Intercepts a specific exception thrown during the handling of a [Request] and

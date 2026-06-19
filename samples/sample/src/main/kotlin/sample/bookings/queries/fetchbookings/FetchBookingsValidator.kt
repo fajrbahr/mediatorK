@@ -1,7 +1,6 @@
 package sample.bookings.queries.fetchbookings
 
-import com.fajrbahr.mediatork.validator.RequestValidator
-import com.fajrbahr.mediatork.validator.ValidationResult
+import com.fajrbahr.mediatork.api.RequestValidator
 import com.fajrbahr.mediatork.validator.rules
 import kotlin.reflect.KClass
 

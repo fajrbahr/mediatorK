@@ -1,8 +1,9 @@
 package com.fajrbahr.mediatork.handler
 
-import com.fajrbahr.mediatork.Mediator
-import com.fajrbahr.mediatork.Request
-import com.fajrbahr.mediatork.RequestContext
+import com.fajrbahr.mediatork.api.Mediator
+import com.fajrbahr.mediatork.api.Request
+import com.fajrbahr.mediatork.api.RequestContext
+import com.fajrbahr.mediatork.api.RequestHandler
 
 /**
  * Tries each handler in [handlers] in order, returning the first successful result.

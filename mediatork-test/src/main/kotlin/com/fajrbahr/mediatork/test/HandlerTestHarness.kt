@@ -1,15 +1,19 @@
 package com.fajrbahr.mediatork.test
 
 import com.fajrbahr.mediatork.*
+import com.fajrbahr.mediatork.api.Mediator
+import com.fajrbahr.mediatork.api.MediatorRegistrar
+import com.fajrbahr.mediatork.api.Request
+import com.fajrbahr.mediatork.api.StreamRequest
 import com.fajrbahr.mediatork.notification.NotificationPublishStrategy
 import com.fajrbahr.mediatork.notification.ParallelNotificationPublisher
-import com.fajrbahr.mediatork.pipeline.PipelineBehavior
+import com.fajrbahr.mediatork.api.PipelineBehavior
 import kotlinx.coroutines.flow.Flow
 
 /**
  * A scoped execution context for handler integration tests.
  *
- * [HandlerTestHarness] wires a real [Mediator] with real handlers and the full pipeline,
+ * [HandlerTestHarness] wires a real [com.fajrbahr.mediatork.api.Mediator] with real handlers and the full pipeline,
  * reproducing the same execution path used in production. Use it to test slices end-to-end:
  * set up state through the front door with [given], trigger the action under test with
  * [send], and assert outcomes via follow-up queries with [query].
@@ -67,7 +71,7 @@ class HandlerTestHarness(private val mediator: Mediator) {
     suspend fun <TResult> query(request: Request<TResult>): TResult = mediator.send(request)
 
     /**
-     * Dispatches a [StreamRequest] and returns the cold [Flow].
+     * Dispatches a [com.fajrbahr.mediatork.api.StreamRequest] and returns the cold [Flow].
      *
      * Collect the flow inside your test to consume items, e.g.:
      * ```kotlin
@@ -95,7 +99,7 @@ class HandlerTestHarness(private val mediator: Mediator) {
  * @param pipelineBehaviors cross-cutting behaviors to include in the pipeline.
  *   Use [PipelineBehavior.Tag.Pre] / [PipelineBehavior.Tag.Post] to control phase ordering.
  * @param notificationPublisher strategy for delivering notifications; defaults to parallel.
- * @param registrars additional [MediatorRegistrar]s that contribute handlers.
+ * @param registrars additional [com.fajrbahr.mediatork.api.MediatorRegistrar]s that contribute handlers.
  * @param init DSL block for registering handlers directly on the [HandlerRegistry].
  */
 fun buildHandlerTestHarness(

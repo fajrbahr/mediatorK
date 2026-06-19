@@ -1,16 +1,11 @@
-package com.fajrbahr.mediatork.handler
-
-import com.fajrbahr.mediatork.Mediator
-import com.fajrbahr.mediatork.Request
-import com.fajrbahr.mediatork.RequestContext
-import com.fajrbahr.mediatork.validator.RequestValidator
+package com.fajrbahr.mediatork.api
 
 /**
  * Handles a specific [Request] type and produces a result.
  *
  * Exactly one handler must be registered per request type. Registering a second
  * handler for the same type silently replaces the first. If no handler is
- * registered, [com.fajrbahr.mediatork.Sender.send] throws [com.fajrbahr.mediatork.MissingHandlerException].
+ * registered, [com.fajrbahr.mediatork.handler.Sender.send] throws [com.fajrbahr.mediatork.MissingHandlerException].
  *
  * The [mediator] parameter is injected so that a handler can dispatch secondary
  * requests or publish notifications as part of its own logic without creating
@@ -18,8 +13,8 @@ import com.fajrbahr.mediatork.validator.RequestValidator
  *
  * @param TRequest the request type this handler processes.
  * @param TResult the type of value produced by this handler.
- * @see com.fajrbahr.mediatork.pipeline.PipelineBehavior
- * @see com.fajrbahr.mediatork.pipeline.PipelineBehavior.Tag
+ * @see PipelineBehavior
+ * @see PipelineBehavior.Tag
  */
 interface RequestHandler<in TRequest : Request<TResult>, TResult> {
 

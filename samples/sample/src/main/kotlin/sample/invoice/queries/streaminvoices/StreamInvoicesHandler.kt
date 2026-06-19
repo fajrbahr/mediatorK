@@ -1,7 +1,8 @@
 package sample.invoice.queries.streaminvoices
 
-import com.fajrbahr.mediatork.*
-import com.fajrbahr.mediatork.handler.StreamRequestHandler
+import com.fajrbahr.mediatork.api.Mediator
+import com.fajrbahr.mediatork.api.RequestContext
+import com.fajrbahr.mediatork.api.StreamRequestHandler
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.asFlow
 import kotlinx.coroutines.flow.filter

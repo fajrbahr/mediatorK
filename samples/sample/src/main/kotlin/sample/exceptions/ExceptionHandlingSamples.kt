@@ -1,11 +1,15 @@
 package sample.exceptions
 
 import com.fajrbahr.mediatork.*
+import com.fajrbahr.mediatork.api.Mediator
+import com.fajrbahr.mediatork.api.MediatorRegistrar
+import com.fajrbahr.mediatork.api.Request
+import com.fajrbahr.mediatork.api.RequestContext
 import com.fajrbahr.mediatork.handler.RequestExceptionHandler
-import com.fajrbahr.mediatork.handler.RequestHandler
+import com.fajrbahr.mediatork.api.RequestHandler
 import com.fajrbahr.mediatork.notification.NotificationPublishStrategy
-import com.fajrbahr.mediatork.notification.Notification
-import com.fajrbahr.mediatork.notification.NotificationHandler
+import com.fajrbahr.mediatork.api.Notification
+import com.fajrbahr.mediatork.api.NotificationHandler
 
 // ── Domain types ──────────────────────────────────────────────────────────────
 

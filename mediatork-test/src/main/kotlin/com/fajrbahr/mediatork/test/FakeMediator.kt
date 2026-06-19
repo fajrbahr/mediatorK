@@ -1,17 +1,22 @@
 package com.fajrbahr.mediatork.test
 
 import com.fajrbahr.mediatork.*
-import com.fajrbahr.mediatork.handler.RequestHandler
-import com.fajrbahr.mediatork.handler.StreamRequestHandler
-import com.fajrbahr.mediatork.notification.Notification
-import com.fajrbahr.mediatork.notification.NotificationHandler
+import com.fajrbahr.mediatork.api.Mediator
+import com.fajrbahr.mediatork.api.MediatorRegistrar
+import com.fajrbahr.mediatork.api.Request
+import com.fajrbahr.mediatork.api.StreamRequest
+import com.fajrbahr.mediatork.api.RequestHandler
+import com.fajrbahr.mediatork.api.StreamRequestHandler
+import com.fajrbahr.mediatork.api.Notification
+import com.fajrbahr.mediatork.api.NotificationHandler
 import com.fajrbahr.mediatork.notification.NotificationPublishStrategy
 import com.fajrbahr.mediatork.notification.ParallelNotificationPublisher
-import com.fajrbahr.mediatork.pipeline.PipelineBehavior
+import com.fajrbahr.mediatork.api.PipelineBehavior
+import com.fajrbahr.mediatork.api.RequestContext
 import kotlinx.coroutines.flow.Flow
 
 /**
- * A test-only [Mediator] backed by a real [HandlerRegistry] and [MediatorFactory].
+ * A test-only [com.fajrbahr.mediatork.api.Mediator] backed by a real [HandlerRegistry] and [MediatorFactory].
  *
  * Handlers can be registered at construction time via the [init] block or the
  * [registrars] list, and also added at any time after construction by calling

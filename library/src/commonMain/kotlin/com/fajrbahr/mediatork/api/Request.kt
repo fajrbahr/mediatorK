@@ -1,4 +1,4 @@
-package com.fajrbahr.mediatork
+package com.fajrbahr.mediatork.api
 
 /**
  * A request that expects exactly one handler and a response.
@@ -13,7 +13,7 @@ package com.fajrbahr.mediatork
  *
  * **Command without result**-perform a side effect, no return value needed:
  *
- * @see com.fajrbahr.mediatork.notification.Notification for broadcasting events to zero-or-many handlers with no response.
+ * @see Notification for broadcasting events to zero-or-many handlers with no response.
  */
 interface Request<out TResponse> {
     /** Convenience marker for commands that return no value. Use instead of `Request<Unit>`. */

@@ -1,31 +1,35 @@
 package com.fajrbahr.mediatork
 
 import com.fajrbahr.mediatork.MediatorFactory.create
+import com.fajrbahr.mediatork.api.Mediator
+import com.fajrbahr.mediatork.api.MediatorRegistrar
+import com.fajrbahr.mediatork.api.Notification
+import com.fajrbahr.mediatork.api.NotificationHandler
 import com.fajrbahr.mediatork.notification.*
-import com.fajrbahr.mediatork.pipeline.PipelineBehavior
-import com.fajrbahr.mediatork.pipeline.StreamPipelineBehavior
+import com.fajrbahr.mediatork.api.PipelineBehavior
+import com.fajrbahr.mediatork.api.StreamPipelineBehavior
 import com.fajrbahr.mediatork.validator.ValidationBehavior
 
 
 /**
- * Factory object for constructing a fully configured [Mediator] instance.
+ * Factory object for constructing a fully configured [com.fajrbahr.mediatork.api.Mediator] instance.
  *
  * Call [create] once at application startup, providing all registrars and
- * cross-cutting components, then share the returned [Mediator] as a singleton
+ * cross-cutting components, then share the returned [com.fajrbahr.mediatork.api.Mediator] as a singleton
  * throughout the application.
  *
- * @see MediatorRegistrar
- * @see com.fajrbahr.mediatork.pipeline.PipelineBehavior
- * @see com.fajrbahr.mediatork.pipeline.PipelineBehavior.Tag
+ * @see com.fajrbahr.mediatork.api.MediatorRegistrar
+ * @see PipelineBehavior
+ * @see PipelineBehavior.Tag
  * @see com.fajrbahr.mediatork.notification.NotificationPublishStrategy
  */
 object MediatorFactory {
 
     /**
-     * Builds and returns a [Mediator] wired with the supplied components.
+     * Builds and returns a [com.fajrbahr.mediatork.api.Mediator] wired with the supplied components.
      *
      * Registration order:
-     * 1. Each [MediatorRegistrar] in [registrars] is called to populate the [HandlerRegistry].
+     * 1. Each [com.fajrbahr.mediatork.api.MediatorRegistrar] in [registrars] is called to populate the [HandlerRegistry].
      * 2. If [verifyHandlers] is `true`, the registry is verified; a warning is printed to stdout
      *    for any request type whose handler is absent after registration.
      * 3. A [MediatorImpl] is constructed with the assembled registry and behaviors.
@@ -38,7 +42,7 @@ object MediatorFactory {
      *   Defaults to [com.fajrbahr.mediatork.notification.ParallelNotificationPublisher].
      * @param verifyHandlers when `true` (the default), logs a warning for every registered request
      *   type that has no handler after all registrars have run.
-     * @return a ready-to-use [Mediator] instance.
+     * @return a ready-to-use [com.fajrbahr.mediatork.api.Mediator] instance.
      */
     fun create(
         registrars: List<MediatorRegistrar> = emptyList(),
@@ -53,7 +57,7 @@ object MediatorFactory {
         registrars.forEach { it.register(registry) }
 
         if (verifyHandlers) {
-            registry.verifyHandlers { typeName ->
+            registry.verify{ typeName ->
                 println("MEDIATOR WARNING: No handler registered for '$typeName'")
             }
         }

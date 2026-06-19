@@ -1,6 +1,6 @@
 package sample.android
 
-import com.fajrbahr.mediatork.Mediator
+import com.fajrbahr.mediatork.api.Mediator
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import sample.orders.commands.createorder.CreateOrderCommand

@@ -1,7 +1,7 @@
 package com.fajrbahr.mediatork.handler
 
-import com.fajrbahr.mediatork.Request
-import com.fajrbahr.mediatork.RequestContext
+import com.fajrbahr.mediatork.api.Request
+import com.fajrbahr.mediatork.api.RequestContext
 
 /**
  * Executes a side effect when a specific exception is thrown during request handling,

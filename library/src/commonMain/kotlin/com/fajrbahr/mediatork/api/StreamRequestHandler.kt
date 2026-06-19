@@ -1,8 +1,5 @@
-package com.fajrbahr.mediatork.handler
+package com.fajrbahr.mediatork.api
 
-import com.fajrbahr.mediatork.Mediator
-import com.fajrbahr.mediatork.RequestContext
-import com.fajrbahr.mediatork.StreamRequest
 import kotlinx.coroutines.flow.Flow
 
 /**
@@ -19,7 +16,7 @@ import kotlinx.coroutines.flow.Flow
  * @param TRequest the stream request type this handler processes.
  * @param T the type of each item emitted.
  * @see StreamRequest
- * @see com.fajrbahr.mediatork.IStreamRequest
+ * @see IStreamRequest
  */
 interface StreamRequestHandler<in TRequest : StreamRequest<T>, T> {
     /**

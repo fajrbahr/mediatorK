@@ -1,6 +1,6 @@
 package sample.context
 
-import com.fajrbahr.mediatork.RequestContext
+import com.fajrbahr.mediatork.api.RequestContext
 
 data class CurrentUser(
     val id: String,

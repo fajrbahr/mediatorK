@@ -1,13 +1,15 @@
 package com.fajrbahr.mediatork.notification
 
 import com.fajrbahr.mediatork.AggregateException
+import com.fajrbahr.mediatork.api.Notification
+import com.fajrbahr.mediatork.api.NotificationHandler
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.joinAll
 import kotlinx.coroutines.launch
 
 /**
- * Strategy that controls how a [Notification] is delivered to its handlers.
+ * Strategy that controls how a [com.fajrbahr.mediatork.api.Notification] is delivered to its handlers.
  *
  * Prefer the companion-object constants for one-off overrides at a publish site:
  *

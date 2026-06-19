@@ -1,5 +1,8 @@
 package com.fajrbahr.mediatork.notification
 
+import com.fajrbahr.mediatork.api.Notification
+import com.fajrbahr.mediatork.api.NotificationHandler
+
 /**
  * Tries each handler in [handlers] in order, stopping at the first success.
  * If a handler throws, the exception is swallowed and the next handler is tried.

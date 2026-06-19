@@ -1,4 +1,4 @@
-package com.fajrbahr.mediatork.notification
+package com.fajrbahr.mediatork.api
 
 /**
  * An event that is broadcast to zero or more handlers with no response.
@@ -16,6 +16,6 @@ package com.fajrbahr.mediatork.notification
  * - [com.fajrbahr.mediatork.notification.ContinueOnExceptionNotificationPublisher] — all handlers run even if some fail, errors collected into [com.fajrbahr.mediatork.AggregateException]
  * - [com.fajrbahr.mediatork.notification.FireAndForgetNotificationPublisher] — returns immediately, handlers run in the background
  *
- * @see com.fajrbahr.mediatork.Request for operations that expect exactly one handler and a response.
+ * @see Request for operations that expect exactly one handler and a response.
  */
 interface Notification

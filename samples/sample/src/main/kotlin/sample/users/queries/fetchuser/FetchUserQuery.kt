@@ -1,6 +1,6 @@
 package sample.users.queries.fetchuser
 
-import com.fajrbahr.mediatork.Request
+import com.fajrbahr.mediatork.api.Request
 
 data class FetchUserQuery(
     val id: String,

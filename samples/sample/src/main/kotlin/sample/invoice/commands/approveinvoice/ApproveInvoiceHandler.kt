@@ -1,7 +1,8 @@
 package sample.invoice.commands.approveinvoice
 
-import com.fajrbahr.mediatork.*
-import com.fajrbahr.mediatork.handler.RequestHandler
+import com.fajrbahr.mediatork.api.Mediator
+import com.fajrbahr.mediatork.api.RequestContext
+import com.fajrbahr.mediatork.api.RequestHandler
 import sample.invoice.InvoiceRepository
 import sample.invoice.InvoiceStatus
 

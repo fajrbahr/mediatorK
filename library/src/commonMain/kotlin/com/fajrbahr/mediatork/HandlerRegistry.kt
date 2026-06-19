@@ -1,20 +1,22 @@
 package com.fajrbahr.mediatork
 
+import com.fajrbahr.mediatork.api.Request
+import com.fajrbahr.mediatork.api.StreamRequest
 import com.fajrbahr.mediatork.handler.RequestExceptionAction
 import com.fajrbahr.mediatork.handler.RequestExceptionHandler
-import com.fajrbahr.mediatork.handler.RequestHandler
-import com.fajrbahr.mediatork.handler.StreamRequestHandler
-import com.fajrbahr.mediatork.notification.Notification
-import com.fajrbahr.mediatork.notification.NotificationHandler
+import com.fajrbahr.mediatork.api.RequestHandler
+import com.fajrbahr.mediatork.api.StreamRequestHandler
+import com.fajrbahr.mediatork.api.Notification
+import com.fajrbahr.mediatork.api.NotificationHandler
 import com.fajrbahr.mediatork.notification.NotificationPublishStrategy
-import com.fajrbahr.mediatork.validator.RequestValidator
+import com.fajrbahr.mediatork.api.RequestValidator
 import kotlin.reflect.KClass
 
 /**
  * Central store for all handlers registered with the mediator.
  *
  * Holds mappings from request/notification/exception types to their respective
- * handlers. Populated at application startup — typically via [MediatorRegistrar]
+ * handlers. Populated at application startup — typically via [com.fajrbahr.mediatork.api.MediatorRegistrar]
  * implementations — and then queried at runtime by [MediatorImpl] for each
  * dispatched request or published notification.
  *
@@ -22,7 +24,7 @@ import kotlin.reflect.KClass
  * request/notification [KClass] is captured without reflection at the call site.
  *
  * @see MediatorFactory
- * @see MediatorRegistrar
+ * @see com.fajrbahr.mediatork.api.MediatorRegistrar
  */
 class HandlerRegistry {
 
@@ -50,7 +52,7 @@ class HandlerRegistry {
         mutableMapOf()
 
     /**
-     * Maps each [StreamRequest] [KClass] to its single registered [StreamRequestHandler].
+     * Maps each [com.fajrbahr.mediatork.api.StreamRequest] [KClass] to its single registered [StreamRequestHandler].
      * Marked `@PublishedApi` for inline-function access.
      */
     @PublishedApi
@@ -257,6 +259,9 @@ class HandlerRegistry {
 
     /** Returns `true` if a [StreamRequestHandler] is registered for [requestType]. */
     fun hasStreamHandler(requestType: KClass<*>): Boolean = streamHandlers.containsKey(requestType)
+
+    /** Returns `true` if at least one [NotificationHandler] is registered for [notificationType]. */
+    fun hasNotificationHandler(notificationType: KClass<*>): Boolean = notificationHandlers.containsKey(notificationType)
 
     /** Returns the set of all stream request types that have a registered handler. */
     fun registeredStreamRequestTypes(): Set<KClass<*>> = streamHandlers.keys.toSet()

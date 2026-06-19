@@ -1,9 +1,10 @@
 package com.fajrbahr.mediatork.validator
 
-import com.fajrbahr.mediatork.Request
-import com.fajrbahr.mediatork.RequestContext
-import com.fajrbahr.mediatork.pipeline.PipelineBehavior
-import com.fajrbahr.mediatork.pipeline.RequestHandlerDelegate
+import com.fajrbahr.mediatork.api.Request
+import com.fajrbahr.mediatork.api.RequestContext
+import com.fajrbahr.mediatork.api.PipelineBehavior
+import com.fajrbahr.mediatork.api.RequestHandlerDelegate
+import com.fajrbahr.mediatork.api.RequestValidator
 
 /**
  * Thrown when validation fails. [errors] contains one or more messages describing what failed.
@@ -15,11 +16,11 @@ class ValidationException(val errors: List<*>, cause: Throwable? = null) :
 }
 
 /**
- * Pre-built [PipelineBehavior] that runs registered [RequestValidator]s before the handler.
+ * Pre-built [PipelineBehavior] that runs registered [com.fajrbahr.mediatork.api.RequestValidator]s before the handler.
  * Throws [ValidationException] if any validator returns [ValidationResult.Invalid].
  *
  *
- * @param validators the validators to run; each is matched to a request by [RequestValidator.requestClass].
+ * @param validators the validators to run; each is matched to a request by [com.fajrbahr.mediatork.api.RequestValidator.requestClass].
  * @param order position in the behavior chain; defaults to `-50` (runs before most behaviors).
  */
 class ValidationBehavior(

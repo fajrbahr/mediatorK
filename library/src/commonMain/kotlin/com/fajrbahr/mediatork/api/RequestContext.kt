@@ -1,9 +1,9 @@
-package com.fajrbahr.mediatork
+package com.fajrbahr.mediatork.api
 
 /**
  * Mutable key-value bag scoped to a single request pipeline execution.
  *
- * A fresh [RequestContext] is created for every [Sender.send] call, so values
+ * A fresh [RequestContext] is created for every [com.fajrbahr.mediatork.handler.Sender.send] call, so values
  * stored here are never shared between concurrent requests — even when the
  * mediator itself is a singleton. This design mirrors the per-request scoping of
  * `HttpContext` in web frameworks.

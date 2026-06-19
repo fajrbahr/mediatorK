@@ -1,15 +1,15 @@
 package com.fajrbahr.mediatork.pipeline.buildin
 
-import com.fajrbahr.mediatork.Request
-import com.fajrbahr.mediatork.RequestContext
-import com.fajrbahr.mediatork.pipeline.PipelineBehavior
-import com.fajrbahr.mediatork.pipeline.RequestHandlerDelegate
+import com.fajrbahr.mediatork.api.Request
+import com.fajrbahr.mediatork.api.RequestContext
+import com.fajrbahr.mediatork.api.PipelineBehavior
+import com.fajrbahr.mediatork.api.RequestHandlerDelegate
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 
 /**
- * A [com.fajrbahr.mediatork.pipeline.PipelineBehavior] that deduplicates concurrent in-flight requests with the same key.
+ * A [PipelineBehavior] that deduplicates concurrent in-flight requests with the same key.
  *
  * When two `send` calls arrive with the same request key while the first is still executing,
  * the second call suspends and awaits the first call's result instead of running a second

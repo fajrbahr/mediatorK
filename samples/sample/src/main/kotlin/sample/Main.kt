@@ -2,8 +2,14 @@ package sample
 
 import com.fajrbahr.mediatork.HandlerRegistry
 import com.fajrbahr.mediatork.MediatorFactory
-import com.fajrbahr.mediatork.MediatorRegistrar
-import com.fajrbahr.mediatork.Request
+import com.fajrbahr.mediatork.api.MediatorRegistrar
+import com.fajrbahr.mediatork.api.Mediator
+import com.fajrbahr.mediatork.api.NotificationHandler
+import com.fajrbahr.mediatork.api.PipelineBehavior
+import com.fajrbahr.mediatork.api.Request
+import com.fajrbahr.mediatork.api.RequestContext
+import com.fajrbahr.mediatork.api.RequestHandler
+import com.fajrbahr.mediatork.api.RequestHandlerDelegate
 import com.fajrbahr.mediatork.notification.*
 import com.fajrbahr.mediatork.pipeline.buildin.AuthenticatedRequest
 import com.fajrbahr.mediatork.pipeline.buildin.AuthorizationPipelineBehavior
@@ -15,7 +21,7 @@ import com.fajrbahr.mediatork.pipeline.buildin.RateLimitPipelineBehavior
 import com.fajrbahr.mediatork.pipeline.buildin.RequestCounterPipelineBehavior
 import com.fajrbahr.mediatork.pipeline.buildin.TimingPipelineBehavior
 import com.fajrbahr.mediatork.pipeline.buildin.UnauthorizedException
-import com.fajrbahr.mediatork.validator.RequestValidator
+import com.fajrbahr.mediatork.api.RequestValidator
 import com.fajrbahr.mediatork.validator.ValidationException
 import kotlinx.coroutines.*
 import sample.behaviors.*
@@ -328,10 +334,10 @@ class Test16Caching {
             registrars = listOf(object : MediatorRegistrar {
                 override fun register(registry: HandlerRegistry) {
                     registry register GetOrderHandler().let { orig ->
-                        object : com.fajrbahr.mediatork.handler.RequestHandler<GetOrderQuery, OrderDetails> {
+                        object : RequestHandler<GetOrderQuery, OrderDetails> {
                             override suspend fun handle(
-                                mediator: com.fajrbahr.mediatork.Mediator,
-                                requestContext: com.fajrbahr.mediatork.RequestContext,
+                                mediator: Mediator,
+                                requestContext: RequestContext,
                                 request: GetOrderQuery,
                             ): OrderDetails {
                                 handlerCalls++
@@ -365,10 +371,10 @@ class Test17Deduplication {
             registrars = listOf(object : MediatorRegistrar {
                 override fun register(registry: HandlerRegistry) {
                     registry register object :
-                        com.fajrbahr.mediatork.handler.RequestHandler<GetOrderQuery, OrderDetails> {
+                        RequestHandler<GetOrderQuery, OrderDetails> {
                         override suspend fun handle(
-                            mediator: com.fajrbahr.mediatork.Mediator,
-                            requestContext: com.fajrbahr.mediatork.RequestContext,
+                            mediator: Mediator,
+                            requestContext: RequestContext,
                             request: GetOrderQuery,
                         ): OrderDetails {
                             handlerCalls++
@@ -410,10 +416,10 @@ class Test18CircuitBreaker {
                 var callCount = 0
                 override fun register(registry: HandlerRegistry) {
                     registry register object :
-                        com.fajrbahr.mediatork.handler.RequestHandler<GetOrderQuery, OrderDetails> {
+                        RequestHandler<GetOrderQuery, OrderDetails> {
                         override suspend fun handle(
-                            mediator: com.fajrbahr.mediatork.Mediator,
-                            requestContext: com.fajrbahr.mediatork.RequestContext,
+                            mediator: Mediator,
+                            requestContext: RequestContext,
                             request: GetOrderQuery,
                         ): OrderDetails {
                             callCount++
@@ -475,10 +481,10 @@ class Test20ErrorTracking {
             registrars = listOf(object : MediatorRegistrar {
                 override fun register(registry: HandlerRegistry) {
                     registry register object :
-                        com.fajrbahr.mediatork.handler.RequestHandler<GetOrderQuery, OrderDetails> {
+                        RequestHandler<GetOrderQuery, OrderDetails> {
                         override suspend fun handle(
-                            mediator: com.fajrbahr.mediatork.Mediator,
-                            requestContext: com.fajrbahr.mediatork.RequestContext,
+                            mediator: Mediator,
+                            requestContext: RequestContext,
                             request: GetOrderQuery,
                         ): OrderDetails = throw RuntimeException("Simulated crash")
                     }
@@ -535,21 +541,21 @@ class Test22Authorization {
             registrars = listOf(object : MediatorRegistrar {
                 override fun register(registry: HandlerRegistry) {
                     registry register object :
-                        com.fajrbahr.mediatork.handler.RequestHandler<AuthenticatedGetOrderQuery, OrderDetails> {
+                        RequestHandler<AuthenticatedGetOrderQuery, OrderDetails> {
                         override suspend fun handle(
-                            mediator: com.fajrbahr.mediatork.Mediator,
-                            requestContext: com.fajrbahr.mediatork.RequestContext,
+                            mediator: Mediator,
+                            requestContext: RequestContext,
                             request: AuthenticatedGetOrderQuery,
                         ) = OrderDetails(request.orderId, request.customerId, "CONFIRMED", 99.0)
                     }
                 }
             }),
             pipelineBehaviors = listOf(
-                object : com.fajrbahr.mediatork.pipeline.PipelineBehavior {
-                    override val tag = com.fajrbahr.mediatork.pipeline.PipelineBehavior.Tag.Pre
-                    override suspend fun <TRequest : com.fajrbahr.mediatork.Request<TResult>, TResult> process(
-                        requestContext: com.fajrbahr.mediatork.RequestContext,
-                        next: com.fajrbahr.mediatork.pipeline.RequestHandlerDelegate<TRequest, TResult>,
+                object : PipelineBehavior {
+                    override val tag = PipelineBehavior.Tag.Pre
+                    override suspend fun <TRequest : Request<TResult>, TResult> process(
+                        requestContext: RequestContext,
+                        next: RequestHandlerDelegate<TRequest, TResult>,
                         request: TRequest,
                     ): TResult {
                         // Inject a valid token only for specific test IDs
@@ -594,7 +600,7 @@ class Test23FireAndForget {
             registrars = listOf(object : MediatorRegistrar {
                 override fun register(registry: HandlerRegistry) {
                     registry.registerNotification(object :
-                        com.fajrbahr.mediatork.notification.NotificationHandler<OrderCreatedNotification> {
+                        NotificationHandler<OrderCreatedNotification> {
                         override suspend fun handle(notification: OrderCreatedNotification) {
                             delay(50) // simulate async work
                             received += notification.orderId

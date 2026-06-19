@@ -1,6 +1,6 @@
 package com.fajrbahr.mediatork
 
-import com.fajrbahr.mediatork.notification.NotificationHandler
+import com.fajrbahr.mediatork.api.NotificationHandler
 import com.fajrbahr.mediatork.notification.otherwise
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test

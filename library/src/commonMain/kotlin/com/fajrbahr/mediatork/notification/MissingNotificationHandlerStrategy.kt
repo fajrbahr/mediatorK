@@ -1,6 +1,8 @@
 package com.fajrbahr.mediatork.notification
 
 import com.fajrbahr.mediatork.MissingNotificationHandlerException
+import com.fajrbahr.mediatork.api.Notification
+import com.fajrbahr.mediatork.api.NotificationHandler
 
 /**
  * Throws [com.fajrbahr.mediatork.MissingNotificationHandlerException] when a notification is published
