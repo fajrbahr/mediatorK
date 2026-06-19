@@ -20,11 +20,11 @@ class ValidationException(val errors: List<*>, cause: Throwable? = null) :
  * Throws [ValidationException] if any validator returns [ValidationResult.Invalid].
  *
  *
- * @param validators the validators to run; each is matched to a request by [com.fajrbahr.mediatork.api.RequestValidator.requestClass].
+ * @param validators the validators to run; each is matched to a request by its bound [kotlin.reflect.KClass].
  * @param order position in the behavior chain; defaults to `-50` (runs before most behaviors).
  */
 class ValidationBehavior(
-    private val validators: List<RequestValidator<*>>,
+    private val validators: List<BoundValidator<*>>,
     override val order: Int = -50,
 ) : PipelineBehavior {
 
@@ -36,8 +36,8 @@ class ValidationBehavior(
     ): TResult {
         validators
             .filter { it.requestClass.isInstance(request) }
-            .forEach { validator ->
-                val result = (validator as RequestValidator<TRequest>).validate(request)
+            .forEach { bound ->
+                val result = (bound.validator as RequestValidator<TRequest>).validate(request)
                 if (result is ValidationResult.Invalid) throw ValidationException(result.errors)
             }
 

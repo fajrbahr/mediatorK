@@ -2,11 +2,8 @@ package sample.orders.queries.getorder
 
 import com.fajrbahr.mediatork.api.RequestValidator
 import com.fajrbahr.mediatork.validator.rulesFailFast
-import kotlin.reflect.KClass
 
 class GetOrderQueryValidator : RequestValidator<GetOrderQuery> {
-    override val requestClass: KClass<GetOrderQuery> = GetOrderQuery::class
-
     override fun validate(request: GetOrderQuery) = rulesFailFast<String> {
         check(request.orderId.isNotBlank()) { "Order ID is required" }
         check(request.orderId.startsWith("ORD-")) { "Order ID must start with ORD-" }

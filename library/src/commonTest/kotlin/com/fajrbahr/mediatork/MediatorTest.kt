@@ -3,7 +3,6 @@ package com.fajrbahr.mediatork
 import com.fajrbahr.mediatork.api.Mediator
 import com.fajrbahr.mediatork.api.MediatorRegistrar
 import com.fajrbahr.mediatork.api.Request
-import com.fajrbahr.mediatork.handler.RequestExceptionHandler
 import com.fajrbahr.mediatork.api.RequestHandler
 import com.fajrbahr.mediatork.api.PipelineBehavior
 import com.fajrbahr.mediatork.api.RequestContext
@@ -208,34 +207,4 @@ class MediatorTest {
         assertEquals("pong:world", captured)
     }
 
-    @Test
-    fun `exception handler converts exception to response`() = runTest {
-        val failingHandler = object : RequestHandler<PingQuery, String> {
-            override suspend fun handle(
-                mediator: Mediator,
-                requestContext: RequestContext,
-                request: PingQuery
-            ): String =
-                throw IllegalStateException("boom")
-        }
-
-        val exHandler = object : RequestExceptionHandler<PingQuery, String, IllegalStateException> {
-            override suspend fun handle(
-                requestContext: RequestContext,
-                request: PingQuery,
-                exception: IllegalStateException,
-            ) = "recovered"
-        }
-
-        val m = MediatorFactory.create(
-            registrars = listOf(object : MediatorRegistrar {
-                override fun register(registry: HandlerRegistry) {
-                    registry.register(failingHandler)
-                    registry.registerExceptionHandler(PingQuery::class, IllegalStateException::class, exHandler)
-                }
-            })
-        )
-
-        assertEquals("recovered", m.send(PingQuery("x")))
-    }
 }

@@ -19,17 +19,6 @@ package com.fajrbahr.mediatork.api
 interface RequestHandler<in TRequest : Request<TResult>, TResult> {
 
     /**
-     * REQUEST-scope validators that belong to this handler.
-     *
-     * Override to declare validators inline with the handler instead of wiring them
-     * separately in [com.fajrbahr.mediatork.MediatorFactory].
-     * [com.fajrbahr.mediatork.MediatorFactory] collects these automatically and runs
-     * them via [com.fajrbahr.mediatork.validator.ValidationBehavior] before every request.
-     *
-     */
-    fun validators(): List<RequestValidator<*>> = emptyList()
-
-    /**
      * Executes the business logic for [request] and returns a result.
      *
      * @param mediator the active mediator, available for issuing nested requests

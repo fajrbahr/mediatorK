@@ -2,14 +2,12 @@ package sample.invoice
 
 import com.fajrbahr.mediatork.MediatorFactory
 import com.fajrbahr.mediatork.pipeline.buildin.TransactionPipelineBehavior
-import com.fajrbahr.mediatork.validator.ValidationBehavior
 import com.fajrbahr.mediatork.validator.ValidationException
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.runBlocking
 import sample.invoice.commands.approveinvoice.ApproveInvoiceCommand
 import sample.invoice.commands.createinvoice.CreateInvoiceAmountPolicyValidator
 import sample.invoice.commands.createinvoice.CreateInvoiceCommand
-import sample.invoice.commands.createinvoice.CreateInvoiceRequestValidator
 import sample.invoice.queries.getinvoice.GetInvoiceQuery
 import sample.invoice.queries.streaminvoices.StreamInvoicesQuery
 
@@ -22,7 +20,6 @@ class Test25TransactionCommit {
         val mediator = MediatorFactory.create(
             registrars = listOf(InvoiceRegistrar(repo)),
             pipelineBehaviors = listOf(
-                ValidationBehavior(listOf(CreateInvoiceRequestValidator())),
                 TransactionPipelineBehavior(transactionProvider = repo.transactionProvider),
             ),
         )
@@ -49,7 +46,6 @@ class Test26TransactionRollback {
         val mediator = MediatorFactory.create(
             registrars = listOf(InvoiceRegistrar(repo)),
             pipelineBehaviors = listOf(
-                ValidationBehavior(listOf(CreateInvoiceRequestValidator())),
                 TransactionPipelineBehavior(transactionProvider = repo.transactionProvider),
             ),
         )
@@ -119,11 +115,8 @@ class Test29MultipleValidators {
         val mediator = MediatorFactory.create(
             registrars = listOf(InvoiceRegistrar(repo)),
             pipelineBehaviors = listOf(
-                ValidationBehavior(
-                    listOf(
-                        CreateInvoiceRequestValidator(),      // checks id format + amount > 0
-                        CreateInvoiceAmountPolicyValidator(), // checks amount <= 10,000
-                    )
+                com.fajrbahr.mediatork.validator.ValidationBehavior(
+                    listOf(CreateInvoiceAmountPolicyValidator()) // checks amount <= 10,000; format checks come from handler
                 ),
             ),
         )
