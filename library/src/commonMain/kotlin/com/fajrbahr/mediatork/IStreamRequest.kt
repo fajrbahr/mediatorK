@@ -14,7 +14,7 @@ import kotlinx.coroutines.flow.Flow
  * @see StreamRequest
  * @see com.fajrbahr.mediatork.handler.StreamRequestHandler
  */
-interface Streamer {
+interface IStreamRequest {
     /**
      * Resolves the handler for [request] and returns a cold [Flow] of results.
      *

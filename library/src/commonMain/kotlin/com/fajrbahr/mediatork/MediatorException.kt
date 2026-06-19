@@ -37,7 +37,7 @@ class MissingHandlerException(
  * @param notificationTypeName simple name of the notification type that had no handlers.
  */
 /**
- * Thrown when [Streamer.stream] is called for a request type that has no registered handler.
+ * Thrown when [IStreamRequest.stream] is called for a request type that has no registered handler.
  *
  * @param requestTypeName simple name of the stream request type that could not be resolved.
  * @param registered simple names of all currently registered stream request types.

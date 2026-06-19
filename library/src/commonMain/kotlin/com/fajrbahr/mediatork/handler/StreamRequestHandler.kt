@@ -32,7 +32,7 @@ import kotlinx.coroutines.flow.Flow
  * @param TRequest the stream request type this handler processes.
  * @param T the type of each item emitted.
  * @see StreamRequest
- * @see com.fajrbahr.mediatork.Streamer
+ * @see com.fajrbahr.mediatork.IStreamRequest
  */
 interface StreamRequestHandler<in TRequest : StreamRequest<T>, T> {
     /**
