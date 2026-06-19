@@ -40,7 +40,15 @@ internal class MediatorImpl(
     @Suppress("UNCHECKED_CAST")
     override suspend fun <TRequest : Request<TResult>, TResult> send(request: TRequest): TResult {
         val handler = registry.resolveHandlerOrNull(request)
-            ?: (missingRequestHandler as RequestHandler<TRequest, TResult>)
+            ?: run {
+                // Use missingRequestHandler if it was customised, otherwise let
+                // resolveHandler throw with the full registered-types list.
+                if (missingRequestHandler !is ThrowMissingRequestHandler) {
+                    missingRequestHandler as RequestHandler<TRequest, TResult>
+                } else {
+                    registry.resolveHandler(request) // throws MissingHandlerException with registered list
+                }
+            }
         return executePipeline(request, handler)
     }
 
