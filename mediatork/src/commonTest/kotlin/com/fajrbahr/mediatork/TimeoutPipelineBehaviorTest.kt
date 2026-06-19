@@ -10,6 +10,7 @@ import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
+import kotlin.time.Duration.Companion.milliseconds
 
 class TimeoutPipelineBehaviorTest {
 
