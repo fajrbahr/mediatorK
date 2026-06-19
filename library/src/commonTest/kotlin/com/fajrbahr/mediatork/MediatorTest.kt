@@ -151,7 +151,7 @@ class MediatorTest {
         var contextValue: String? = null
 
         val pre = object : PipelineBehavior {
-            override val tag = PipelineBehavior.Tag.PRE
+            override val tag = PipelineBehavior.Tag.Pre
             override suspend fun <TRequest : Request<TResult>, TResult> process(
                 requestContext: RequestContext,
                 next: com.fajrbahr.mediatork.pipeline.RequestHandlerDelegate<TRequest, TResult>,
@@ -184,7 +184,7 @@ class MediatorTest {
         var captured: Any? = "not-set"
 
         val post = object : PipelineBehavior {
-            override val tag = PipelineBehavior.Tag.POST
+            override val tag = PipelineBehavior.Tag.Post
             override suspend fun <TRequest : Request<TResult>, TResult> process(
                 requestContext: RequestContext,
                 next: com.fajrbahr.mediatork.pipeline.RequestHandlerDelegate<TRequest, TResult>,

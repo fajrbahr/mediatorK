@@ -6,7 +6,7 @@ import com.fajrbahr.mediatork.pipeline.PipelineBehavior
 import com.fajrbahr.mediatork.pipeline.RequestHandlerDelegate
 
 class MetricsBehavior : PipelineBehavior {
-    override val tag = PipelineBehavior.Tag.POST
+    override val tag = PipelineBehavior.Tag.Post
 
     override suspend fun <TRequest : Request<TResult>, TResult> process(
         requestContext: RequestContext,

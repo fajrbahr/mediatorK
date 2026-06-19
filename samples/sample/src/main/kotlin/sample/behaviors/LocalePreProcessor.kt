@@ -8,7 +8,7 @@ import sample.context.locale
 import java.util.*
 
 class LocaleBehavior : PipelineBehavior {
-    override val tag = PipelineBehavior.Tag.PRE
+    override val tag = PipelineBehavior.Tag.Pre
 
     override suspend fun <TRequest : Request<TResult>, TResult> process(
         requestContext: RequestContext,

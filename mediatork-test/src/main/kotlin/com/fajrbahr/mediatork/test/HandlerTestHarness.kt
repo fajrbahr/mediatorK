@@ -93,7 +93,7 @@ class HandlerTestHarness(private val mediator: Mediator) {
  * ```
  *
  * @param pipelineBehaviors cross-cutting behaviors to include in the pipeline.
- *   Use [PipelineBehavior.Tag.PRE] / [PipelineBehavior.Tag.POST] to control phase ordering.
+ *   Use [PipelineBehavior.Tag.Pre] / [PipelineBehavior.Tag.Post] to control phase ordering.
  * @param notificationPublisher strategy for delivering notifications; defaults to parallel.
  * @param registrars additional [MediatorRegistrar]s that contribute handlers.
  * @param init DSL block for registering handlers directly on the [HandlerRegistry].

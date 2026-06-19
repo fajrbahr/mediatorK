@@ -146,7 +146,7 @@ class ExceptionHandlerTest {
     @Test
     fun `PRE behavior exception propagates and is NOT caught by exception handler`() = runTest {
         val pre = object : PipelineBehavior {
-            override val tag = PipelineBehavior.Tag.PRE
+            override val tag = PipelineBehavior.Tag.Pre
             override suspend fun <TRequest : Request<TResult>, TResult> process(
                 requestContext: RequestContext,
                 next: com.fajrbahr.mediatork.pipeline.RequestHandlerDelegate<TRequest, TResult>,
@@ -177,7 +177,7 @@ class ExceptionHandlerTest {
     fun `POST behavior runs with recovered result after exception handler`() = runTest {
         var postResponse: Any? = "not-set"
         val post = object : PipelineBehavior {
-            override val tag = PipelineBehavior.Tag.POST
+            override val tag = PipelineBehavior.Tag.Post
             override suspend fun <TRequest : Request<TResult>, TResult> process(
                 requestContext: RequestContext,
                 next: com.fajrbahr.mediatork.pipeline.RequestHandlerDelegate<TRequest, TResult>,
@@ -208,7 +208,7 @@ class ExceptionHandlerTest {
     fun `exception handler has access to request context from PRE behavior`() = runTest {
         var contextValue: String? = null
         val pre = object : PipelineBehavior {
-            override val tag = PipelineBehavior.Tag.PRE
+            override val tag = PipelineBehavior.Tag.Pre
             override suspend fun <TRequest : Request<TResult>, TResult> process(
                 requestContext: RequestContext,
                 next: com.fajrbahr.mediatork.pipeline.RequestHandlerDelegate<TRequest, TResult>,

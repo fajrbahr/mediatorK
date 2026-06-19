@@ -8,7 +8,7 @@ import sample.context.CurrentUser
 import sample.context.currentUser
 
 class AuthBehavior : PipelineBehavior {
-    override val tag = PipelineBehavior.Tag.PRE
+    override val tag = PipelineBehavior.Tag.Pre
 
     override suspend fun <TRequest : Request<TResult>, TResult> process(
         requestContext: RequestContext,

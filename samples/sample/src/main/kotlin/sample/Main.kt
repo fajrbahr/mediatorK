@@ -546,7 +546,7 @@ class Test22Authorization {
             }),
             pipelineBehaviors = listOf(
                 object : com.fajrbahr.mediatork.pipeline.PipelineBehavior {
-                    override val tag = com.fajrbahr.mediatork.pipeline.PipelineBehavior.Tag.PRE
+                    override val tag = com.fajrbahr.mediatork.pipeline.PipelineBehavior.Tag.Pre
                     override suspend fun <TRequest : com.fajrbahr.mediatork.Request<TResult>, TResult> process(
                         requestContext: com.fajrbahr.mediatork.RequestContext,
                         next: com.fajrbahr.mediatork.pipeline.RequestHandlerDelegate<TRequest, TResult>,
