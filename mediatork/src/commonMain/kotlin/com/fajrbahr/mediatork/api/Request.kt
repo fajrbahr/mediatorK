@@ -7,11 +7,20 @@ package com.fajrbahr.mediatork.api
  * operation succeeded or failed. There must be exactly one handler registered —
  * dispatching with no handler throws [com.fajrbahr.mediatork.MissingHandlerException].
  *
- * **Query**-read data, return it:
+ * **Query** — read data, return it:
+ * ```kotlin
+ * data class GetTodoQuery(val id: String) : Request<Todo?>
+ * ```
  *
- * **Command with result**-perform a side effect, return outcome:
+ * **Command with result** — perform a side effect, return the outcome:
+ * ```kotlin
+ * data class AddTodoCommand(val id: String, val title: String) : Request<Todo>
+ * ```
  *
- * **Command without result**-perform a side effect, no return value needed:
+ * **Command without result** — perform a side effect, no return value needed:
+ * ```kotlin
+ * data class DeleteTodoCommand(val id: String) : Request.Unit
+ * ```
  *
  * @see Notification for broadcasting events to zero-or-many handlers with no response.
  */
