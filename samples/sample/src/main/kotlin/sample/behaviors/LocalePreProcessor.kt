@@ -2,17 +2,21 @@ package sample.behaviors
 
 import com.fajrbahr.mediatork.Request
 import com.fajrbahr.mediatork.RequestContext
-import com.fajrbahr.mediatork.RequestPreProcessor
+import com.fajrbahr.mediatork.pipeline.PipelineBehavior
+import com.fajrbahr.mediatork.pipeline.RequestHandlerDelegate
 import sample.context.locale
 import java.util.*
 
-class LocalePreProcessor : RequestPreProcessor {
-    override suspend fun process(
+class LocaleBehavior : PipelineBehavior {
+    override val tag = PipelineBehavior.Tag.PRE
+
+    override suspend fun <TRequest : Request<TResult>, TResult> process(
         requestContext: RequestContext,
-        request: Request<*>
-    ) {
-        // Get JVM default locale (e.g., from OS setting)
-        val systemLocale = Locale.getDefault().language  // "en", "fr", "de", etc.
+        next: RequestHandlerDelegate<TRequest, TResult>,
+        request: TRequest,
+    ): TResult {
+        val systemLocale = Locale.getDefault().language
         requestContext.locale = systemLocale
+        return next(request)
     }
 }

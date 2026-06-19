@@ -40,28 +40,19 @@ viewModel { UserViewModel(get()) }
 
 ## Handling validation errors
 
-When `ValidationBehavior` is in the pipeline, catch `ValidationException` and map each error to its own `StateFlow` by
-field type — no string matching needed:
+When `ValidationBehavior` is in the pipeline, catch `ValidationException` and surface its message in your UI state:
 
 ```kotlin
 class CreateTodoViewModel(private val mediator: Mediator) : ViewModel() {
 
-    val titleError   = MutableStateFlow<String?>(null)
-    val dueDateError = MutableStateFlow<String?>(null)
-    val generalError = MutableStateFlow<String?>(null)
+    val error = MutableStateFlow<String?>(null)
 
     fun submit(title: String, dueDate: LocalDate) {
         viewModelScope.launch {
             try {
                 mediator.send(CreateTodoCommand(title, dueDate))
             } catch (e: ValidationException) {
-                e.errors.forEach { error ->
-                    when (error.field) {
-                        CreateTodoFields.TITLE    -> titleError.value   = error.message
-                        CreateTodoFields.DUE_DATE -> dueDateError.value = error.message
-                        else                      -> generalError.value  = error.message
-                    }
-                }
+                error.value = e.message
             }
         }
     }

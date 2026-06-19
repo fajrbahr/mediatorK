@@ -93,16 +93,13 @@ class HandlerTestHarness(private val mediator: Mediator) {
  * ```
  *
  * @param pipelineBehaviors cross-cutting behaviors to include in the pipeline.
- * @param preProcessors processors that run before the handler.
- * @param postProcessors processors that run after the handler.
+ *   Use [PipelineBehavior.Tag.PRE] / [PipelineBehavior.Tag.POST] to control phase ordering.
  * @param notificationPublisher strategy for delivering notifications; defaults to parallel.
  * @param registrars additional [MediatorRegistrar]s that contribute handlers.
  * @param init DSL block for registering handlers directly on the [HandlerRegistry].
  */
 fun buildHandlerTestHarness(
     pipelineBehaviors: List<PipelineBehavior> = emptyList(),
-    preProcessors: List<RequestPreProcessor> = emptyList(),
-    postProcessors: List<RequestPostProcessor> = emptyList(),
     notificationPublisher: NotificationPublishStrategy = ParallelNotificationPublisher(),
     registrars: List<MediatorRegistrar> = emptyList(),
     init: HandlerRegistry.() -> Unit = {},
@@ -113,8 +110,6 @@ fun buildHandlerTestHarness(
     val mediator = MediatorFactory.create(
         registrars = allRegistrars,
         pipelineBehaviors = pipelineBehaviors,
-        preProcessors = preProcessors,
-        postProcessors = postProcessors,
         notificationPublisher = notificationPublisher,
     )
     return HandlerTestHarness(mediator)

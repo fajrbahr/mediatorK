@@ -55,8 +55,6 @@ class AlertNotificationHandler : NotificationHandler<AlertNotification> {
 
 fun mediator(
     pipelineBehaviors: List<PipelineBehavior> = emptyList(),
-    preProcessors: List<RequestPreProcessor> = emptyList(),
-    postProcessors: List<RequestPostProcessor> = emptyList(),
     notificationPublisher: NotificationPublishStrategy = ParallelNotificationPublisher(),
     missingNotificationHandler: NotificationHandler<Notification> = ThrowMissingNotificationHandler(),
     block: HandlerRegistry.() -> Unit,
@@ -67,8 +65,6 @@ fun mediator(
         }
     }),
     pipelineBehaviors = pipelineBehaviors,
-    preProcessors = preProcessors,
-    postProcessors = postProcessors,
     notificationPublisher = notificationPublisher,
     missingNotificationHandler = missingNotificationHandler,
 )

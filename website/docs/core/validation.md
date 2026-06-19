@@ -11,91 +11,51 @@ processing, no reflection, no external dependencies.
 
 ---
 
-## Typed field identifiers
-
-Use an enum or sealed class so the compiler catches typos and `when` expressions are exhaustive:
-
-```kotlin
-enum class CreateTodoFields : FieldValidator {
-    TITLE, DUE_DATE
-}
-```
-
-`DefaultField` is used when the error isn't tied to a specific field.
-
----
-
-## ValidationResult
-
-```kotlin
-// success
-val ok = ValidationResult.Success
-
-// single field-agnostic error
-val err = ValidationResult.error("Something went wrong")
-
-// error tied to a specific field
-val fieldErr = ValidationResult.error(CreateTodoFields.TITLE, "Title must not be blank")
-
-// multiple errors
-val multi = ValidationResult.failure(
-    ValidationError(CreateTodoFields.TITLE, "Required"),
-    ValidationError(CreateTodoFields.DUE_DATE, "Must be in the future"),
-)
-```
-
-`ValidationResult.isValid` is `true` when `errors` is empty.
-
----
-
 ## RequestValidator
 
-### Basic style
+Implement `RequestValidator<TRequest>` and **throw** to signal failure. The library imposes no return type.
 
-Early-return as soon as the first rule fails:
+### Fail-fast — stop at first error
 
-```kotlin
-class CreateTodoValidator : RequestValidator<CreateTodoCommand> {
-    override val requestClass = CreateTodoCommand::class
-
-    override fun validate(request: CreateTodoCommand): ValidationResult {
-        if (request.title.isBlank())
-            return ValidationResult.error(CreateTodoFields.TITLE, "Title must not be blank")
-        return ValidationResult.Success
-    }
-}
-```
-
-### rules { } style — collect all errors
-
-`rules { }` evaluates every rule and collects all failures in one pass. Use `ruleFor` to scope checks to a specific
-field:
+Use Kotlin's `require` or `check`:
 
 ```kotlin
 class CreateTodoValidator : RequestValidator<CreateTodoCommand> {
     override val requestClass = CreateTodoCommand::class
 
-    override fun validate(request: CreateTodoCommand): ValidationResult = rules {
-        ruleFor(CreateTodoFields.TITLE, request.title) { value ->
-            check(value.isNotBlank()) { "Title must not be blank" }
-            check(value.length <= 200) { "Title must be 200 characters or fewer" }
-        }
-        ruleFor(CreateTodoFields.DUE_DATE, request.dueDate) { value ->
-            check(value.isAfter(today())) { "Due date must be in the future" }
-        }
+    override fun validate(request: CreateTodoCommand) {
+        require(request.title.isNotBlank()) { "Title must not be blank" }
+        require(request.title.length <= 200) { "Title must be 200 characters or fewer" }
+        require(request.dueDate.isAfter(today())) { "Due date must be in the future" }
     }
 }
 ```
 
-### rulesFailFast { } — stop at first error
+### Collect all errors — `rules { }`
 
-Use `rulesFailFast { }` when later rules depend on earlier ones being valid (e.g. parse before validate):
+Use `rules { }` when you want every failure reported in one pass (e.g. form validation):
 
 ```kotlin
-override fun validate(request: CreateTodoCommand): ValidationResult = rulesFailFast {
-    check(request.title.isNotBlank()) { "Title must not be blank" }
-    check(request.title.length <= 200) { "Title must be 200 characters or fewer" }
+class CreateInvoiceRequestValidator : RequestValidator<CreateInvoiceCommand> {
+    override val requestClass = CreateInvoiceCommand::class
+
+    override fun validate(request: CreateInvoiceCommand) = rules {
+        check(request.id.isNotBlank()) { "Invoice ID is required" }
+        check(request.id.startsWith("INV-")) { "Invoice ID must start with INV-" }
+        check(request.amount > 0) { "Amount must be positive" }
+    }
 }
+```
+
+All checks run regardless of earlier failures. `ValidationException.errors` contains the full list.
+
+### Throw directly
+
+Throw `ValidationException` when you have a single computed message:
+
+```kotlin
+if (repo.findById(request.id) != null)
+    throw ValidationException("Invoice ${request.id} already exists")
 ```
 
 ---
@@ -118,14 +78,10 @@ class CreateInvoiceRequestValidator : RequestValidator<CreateInvoiceCommand> {
     override val requestClass = CreateInvoiceCommand::class
     override val scope = ValidationScope.REQUEST
 
-    override fun validate(request: CreateInvoiceCommand): ValidationResult = rules {
-        ruleFor(CreateInvoiceField.Id, request.id) {
-            check(it.isNotBlank()) { "Invoice ID is required" }
-            check(it.startsWith("INV-")) { "Invoice ID must start with INV-" }
-        }
-        ruleFor(CreateInvoiceField.Amount, request.amount) {
-            check(it > 0) { "Amount must be positive" }
-        }
+    override fun validate(request: CreateInvoiceCommand) {
+        require(request.id.isNotBlank()) { "Invoice ID is required" }
+        require(request.id.startsWith("INV-")) { "Invoice ID must start with INV-" }
+        require(request.amount > 0) { "Amount must be positive" }
     }
 }
 
@@ -135,10 +91,10 @@ class CreateInvoiceDomainValidator(private val repo: InvoiceRepository)
     override val requestClass = CreateInvoiceCommand::class
     override val scope = ValidationScope.DOMAIN
 
-    override fun validate(request: CreateInvoiceCommand): ValidationResult =
+    override fun validate(request: CreateInvoiceCommand) {
         if (repo.findById(request.id) != null)
-            ValidationResult.error(CreateInvoiceField.Id, "Invoice ${request.id} already exists")
-        else ValidationResult.Success
+            throw ValidationException("Invoice ${request.id} already exists")
+    }
 }
 
 // PERSISTENCE — called just before the write, ideally inside the transaction
@@ -147,10 +103,10 @@ class CreateInvoicePersistenceValidator(private val repo: InvoiceRepository)
     override val requestClass = CreateInvoiceCommand::class
     override val scope = ValidationScope.PERSISTENCE
 
-    override fun validate(request: CreateInvoiceCommand): ValidationResult =
+    override fun validate(request: CreateInvoiceCommand) {
         if (repo.findById(request.id) != null)
-            ValidationResult.error(CreateInvoiceField.Id, "Duplicate invoice ID — database constraint violated")
-        else ValidationResult.Success
+            throw ValidationException("Duplicate invoice ID — database constraint violated")
+    }
 }
 ```
 
@@ -164,22 +120,18 @@ class CreateInvoiceHandler(
 ) : RequestHandler<CreateInvoiceCommand, Unit> {
 
     override suspend fun handle(mediator: Mediator, requestContext: RequestContext, request: CreateInvoiceCommand) {
-        // DOMAIN — needs the repo, runs after handler entry
-        val domainResult = domainValidator.validate(request)
-        if (!domainResult.isValid) throw ValidationException(domainResult.errors)
+        domainValidator.validate(request)        // throws if duplicate
 
         val invoice = Invoice(id = request.id, amount = request.amount)
 
-        // PERSISTENCE — runs just before the write (inside a transaction)
-        val persistenceResult = persistenceValidator.validate(request)
-        if (!persistenceResult.isValid) throw ValidationException(persistenceResult.errors)
+        persistenceValidator.validate(request)   // throws if DB constraint violated
 
         repo.save(invoice)
     }
 }
 ```
 
-`ValidationBehavior` in the pipeline will only run validators whose `scope == ValidationScope.REQUEST` — DOMAIN and PERSISTENCE validators are ignored by the pipeline even if you pass them in.
+`ValidationBehavior` in the pipeline will only run validators whose `scope == ValidationScope.REQUEST`.
 
 ---
 
@@ -198,47 +150,23 @@ val mediator = MediatorFactory.create(
 )
 ```
 
+`ValidationBehavior` wraps `IllegalArgumentException` (from `require`) and `IllegalStateException` (from `check`)
+into `ValidationException`. A `ValidationException` thrown directly by a validator is re-thrown unchanged.
+
 :::tip
-`ValidationBehavior` runs at `order = -50` by default so it executes before most behaviors. You can override the order,
-replace it entirely with your own `PipelineBehavior`, or skip it and call validators directly from your handlers —
-whichever fits your setup.
+`ValidationBehavior` runs at `order = -50` by default so it executes before most behaviors. You can override the
+order or replace it entirely with your own `PipelineBehavior`.
 :::
 
-When validation fails, `ValidationBehavior` throws `ValidationException`. Catch it to map errors to UI state.
-
----
-
-## Handling errors by field type in a ViewModel
-
-Because `FieldValidator` is a typed interface implemented by your enum, use `when` to dispatch each error to the right
-UI state — exhaustive, no string matching:
+Catch `ValidationException` in your ViewModel or exception handler:
 
 ```kotlin
-class CreateTodoViewModel(private val mediator: Mediator) : ViewModel() {
-
-    val titleError   = MutableStateFlow<String?>(null)
-    val dueDateError = MutableStateFlow<String?>(null)
-    val generalError = MutableStateFlow<String?>(null)
-
-    fun submit(title: String, dueDate: LocalDate) {
-        viewModelScope.launch {
-            try {
-                mediator.send(CreateTodoCommand(title, dueDate))
-            } catch (e: ValidationException) {
-                e.errors.forEach { error ->
-                    when (error.field) {
-                        CreateTodoFields.TITLE    -> titleError.value   = error.message
-                        CreateTodoFields.DUE_DATE -> dueDateError.value = error.message
-                        else                      -> generalError.value  = error.message
-                    }
-                }
-            }
-        }
-    }
+try {
+    mediator.send(CreateTodoCommand(title, dueDate))
+} catch (e: ValidationException) {
+    errorMessage = e.message
 }
 ```
-
-Each `StateFlow` maps directly to one field in the UI — no `field == "TITLE"` string comparison.
 
 ---
 

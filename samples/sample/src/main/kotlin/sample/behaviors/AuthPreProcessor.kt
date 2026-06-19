@@ -2,17 +2,19 @@ package sample.behaviors
 
 import com.fajrbahr.mediatork.Request
 import com.fajrbahr.mediatork.RequestContext
-import com.fajrbahr.mediatork.RequestPreProcessor
+import com.fajrbahr.mediatork.pipeline.PipelineBehavior
+import com.fajrbahr.mediatork.pipeline.RequestHandlerDelegate
 import sample.context.CurrentUser
 import sample.context.currentUser
 
+class AuthBehavior : PipelineBehavior {
+    override val tag = PipelineBehavior.Tag.PRE
 
-class AuthPreProcessor : RequestPreProcessor {
-    override suspend fun process(
+    override suspend fun <TRequest : Request<TResult>, TResult> process(
         requestContext: RequestContext,
-        request: Request<*>
-    ) {
-        // In a real app, you'd extract a token from the request or a thread-local
+        next: RequestHandlerDelegate<TRequest, TResult>,
+        request: TRequest,
+    ): TResult {
         val user = CurrentUser(
             id = "user-123",
             name = "Alice",
@@ -21,5 +23,6 @@ class AuthPreProcessor : RequestPreProcessor {
             roles = listOf("admin", "user")
         )
         requestContext.currentUser = user
+        return next(request)
     }
 }

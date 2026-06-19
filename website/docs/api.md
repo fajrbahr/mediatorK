@@ -14,7 +14,7 @@ Quick reference for all public types in `com.fajrbahr.mediatork`.
 | `com.fajrbahr.mediatork.handler`      | `RequestHandler`, `StreamRequestHandler`, `FallbackRequestHandler` (`otherwise`), `RequestExceptionHandler`                                                      |
 | `com.fajrbahr.mediatork.notification` | `Notification`, `NotificationHandler`, `FallbackNotificationHandler` (`otherwise`), all publisher implementations, `ThrowMissingNotificationHandler`, `SilentMissingNotificationHandler` |
 | `com.fajrbahr.mediatork.pipeline`     | `PipelineBehavior` and all built-in behaviors (logging, retry, caching, auth, circuit-breaker, transaction, etc.)                                                |
-| `com.fajrbahr.mediatork.validator`    | `RequestValidator`, `ValidationBehavior`, `ValidationScope`, `ValidationResult`, DSL builders                                                                    |
+| `com.fajrbahr.mediatork.validator`    | `RequestValidator`, `ValidationBehavior`, `ValidationScope`, `ValidationException`                                                                               |
 
 ---
 
@@ -274,16 +274,11 @@ interface Mediator : Sender, Streamer, Publisher
 
 | Type                  | Description                                                                                   |
 |-----------------------|-----------------------------------------------------------------------------------------------|
-| `RequestValidator<T>` | Validates a request; returns `ValidationResult`. Declares its `scope`.                        |
+| `RequestValidator<T>` | Validates a request by throwing on failure (`require`, `check`, or `throw ValidationException`). Declares its `scope`. |
 | `ValidationScope`     | `REQUEST` (pipeline, automatic) · `DOMAIN` (in handler, after load) · `PERSISTENCE` (in handler, before write) |
-| `ValidationResult`    | Holds zero or more `ValidationError`s; `isValid` when empty                                   |
-| `ValidationError`     | A single failure with an optional `FieldValidator` field and a message                        |
-| `FieldValidator`      | Marker interface for typed field identifiers                                                  |
-| `DefaultField`        | Sentinel for errors not tied to a specific field                                              |
-| `ValidationBehavior`  | Pre-built `PipelineBehavior` that runs `ValidationScope.REQUEST` validators automatically    |
-| `ValidationException` | Thrown when validation fails; carries the list of `ValidationError`s                          |
-| `rules { }`           | DSL builder — evaluates all rules and collects every error                                    |
-| `rulesFailFast { }`   | DSL builder — stops at the first error                                                        |
+| `ValidationBehavior`  | Pre-built `PipelineBehavior` that runs `ValidationScope.REQUEST` validators and wraps failures in `ValidationException` |
+| `ValidationException` | Thrown when validation fails; `errors: List<*>` carries all failure messages (any type — `String`, sealed class, enum, etc.) |
+| `rules { }`           | Collect-all DSL — evaluates every `check`/`require` and throws `ValidationException(errors)`  |
 
 ---
 

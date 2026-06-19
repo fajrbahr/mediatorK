@@ -12,6 +12,19 @@ package com.fajrbahr.mediatork.notification
  * @see Publisher
  */
 interface NotificationHandler<in T : Notification> {
+
+    /**
+     * Relative execution order among all handlers registered for the same notification type.
+     *
+     * Lower values run first. When two handlers share the same [order], they run in
+     * registration order — the sort is stable. Defaults to `0`.
+     *
+     * Ordering is applied before the active [NotificationPublishStrategy], so it affects
+     * both sequential and parallel strategies (parallel strategies receive handlers
+     * pre-sorted but may launch them concurrently).
+     */
+    val order: Int get() = 0
+
     /**
      * Performs the side effect triggered by [notification].
      *

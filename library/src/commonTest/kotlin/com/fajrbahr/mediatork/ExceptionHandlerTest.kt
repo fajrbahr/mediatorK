@@ -2,6 +2,7 @@ package com.fajrbahr.mediatork
 
 import com.fajrbahr.mediatork.handler.RequestExceptionHandler
 import com.fajrbahr.mediatork.handler.RequestHandler
+import com.fajrbahr.mediatork.pipeline.PipelineBehavior
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -143,11 +144,14 @@ class ExceptionHandlerTest {
     }
 
     @Test
-    fun `pre-processor exception propagates and is NOT caught by exception handler`() = runTest {
-        val pre = object : RequestPreProcessor {
-            override suspend fun process(requestContext: RequestContext, request: Request<*>) {
-                throw IllegalStateException("pre-fail")
-            }
+    fun `PRE behavior exception propagates and is NOT caught by exception handler`() = runTest {
+        val pre = object : PipelineBehavior {
+            override val tag = PipelineBehavior.Tag.PRE
+            override suspend fun <TRequest : Request<TResult>, TResult> process(
+                requestContext: RequestContext,
+                next: com.fajrbahr.mediatork.pipeline.RequestHandlerDelegate<TRequest, TResult>,
+                request: TRequest,
+            ): TResult = throw IllegalStateException("pre-fail")
         }
         val exHandler = object : RequestExceptionHandler<PingQuery, String, IllegalStateException> {
             override suspend fun handle(
@@ -163,19 +167,22 @@ class ExceptionHandlerTest {
                     registry.registerExceptionHandler(PingQuery::class, IllegalStateException::class, exHandler)
                 }
             }),
-            preProcessors = listOf(pre)
+            pipelineBehaviors = listOf(pre)
         )
-        // pre-processor exceptions bypass the exception handler
+        // PRE behavior exceptions bypass the exception handler
         assertFailsWith<IllegalStateException> { m.send(PingQuery("x")) }
     }
 
     @Test
-    fun `post-processor runs with recovered result after exception handler`() = runTest {
+    fun `POST behavior runs with recovered result after exception handler`() = runTest {
         var postResponse: Any? = "not-set"
-        val post = object : RequestPostProcessor {
-            override suspend fun process(requestContext: RequestContext, request: Request<*>, response: Any?) {
-                postResponse = response
-            }
+        val post = object : PipelineBehavior {
+            override val tag = PipelineBehavior.Tag.POST
+            override suspend fun <TRequest : Request<TResult>, TResult> process(
+                requestContext: RequestContext,
+                next: com.fajrbahr.mediatork.pipeline.RequestHandlerDelegate<TRequest, TResult>,
+                request: TRequest,
+            ): TResult { val r = next(request); postResponse = r; return r }
         }
         val exHandler = object : RequestExceptionHandler<PingQuery, String, RuntimeException> {
             override suspend fun handle(
@@ -191,29 +198,29 @@ class ExceptionHandlerTest {
                     registry.registerExceptionHandler(PingQuery::class, RuntimeException::class, exHandler)
                 }
             }),
-            postProcessors = listOf(post)
+            pipelineBehaviors = listOf(post)
         )
         m.send(PingQuery("x"))
         assertEquals("recovered", postResponse)
     }
 
     @Test
-    fun `exception handler has access to request context from pre-processor`() = runTest {
+    fun `exception handler has access to request context from PRE behavior`() = runTest {
         var contextValue: String? = null
-        val pre = object : RequestPreProcessor {
-            override suspend fun process(requestContext: RequestContext, request: Request<*>) {
-                requestContext.put("trace", "t-99")
-            }
+        val pre = object : PipelineBehavior {
+            override val tag = PipelineBehavior.Tag.PRE
+            override suspend fun <TRequest : Request<TResult>, TResult> process(
+                requestContext: RequestContext,
+                next: com.fajrbahr.mediatork.pipeline.RequestHandlerDelegate<TRequest, TResult>,
+                request: TRequest,
+            ): TResult { requestContext.put("trace", "t-99"); return next(request) }
         }
         val exHandler = object : RequestExceptionHandler<PingQuery, String, RuntimeException> {
             override suspend fun handle(
                 requestContext: RequestContext,
                 request: PingQuery,
                 exception: RuntimeException
-            ): String {
-                contextValue = requestContext.getMetaDate("trace")
-                return "handled"
-            }
+            ): String { contextValue = requestContext.getMetaDate("trace"); return "handled" }
         }
         val m = MediatorFactory.create(
             registrars = listOf(object : MediatorRegistrar {
@@ -222,7 +229,7 @@ class ExceptionHandlerTest {
                     registry.registerExceptionHandler(PingQuery::class, RuntimeException::class, exHandler)
                 }
             }),
-            preProcessors = listOf(pre)
+            pipelineBehaviors = listOf(pre)
         )
         m.send(PingQuery("x"))
         assertEquals("t-99", contextValue)
