@@ -83,7 +83,8 @@ mediator.send(DeleteAccountCommand("user-1")) // returns Unit
 
 ## Streaming requests
 
-Use `StreamRequest<T>` when the response is a sequence of items — large result sets, live feeds, cursor-based exports, or anything better consumed incrementally rather than loaded into a `List` all at once.
+Use `StreamRequest<T>` when the response is a sequence of items — large result sets, live feeds, cursor-based exports,
+or anything better consumed incrementally rather than loaded into a `List` all at once.
 
 ```kotlin
 // 1. Define — implements StreamRequest instead of Request
@@ -120,7 +121,8 @@ mediator.stream(StreamInvoicesQuery(status = InvoiceStatus.APPROVED))
 val all = mediator.stream(StreamInvoicesQuery()).toList()
 ```
 
-`stream()` is **non-suspend** — it resolves the handler and returns the cold `Flow` immediately. The handler's work begins only when the caller collects. Each collection creates a fresh `RequestContext`.
+`stream()` is **non-suspend** — it resolves the handler and returns the cold `Flow` immediately. The handler's work
+begins only when the caller collects. Each collection creates a fresh `RequestContext`.
 
 Dispatching with no registered stream handler throws `MissingStreamHandlerException`.
 

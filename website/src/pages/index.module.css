@@ -191,8 +191,14 @@
 }
 
 @keyframes arrowPulse {
-    0%, 100% { opacity: 0.7; transform: translateX(0); }
-    50%       { opacity: 1;   transform: translateX(-6px); }
+    0%, 100% {
+        opacity: 0.7;
+        transform: translateX(0);
+    }
+    50% {
+        opacity: 1;
+        transform: translateX(-6px);
+    }
 }
 
 .imageRow .sectionImage {

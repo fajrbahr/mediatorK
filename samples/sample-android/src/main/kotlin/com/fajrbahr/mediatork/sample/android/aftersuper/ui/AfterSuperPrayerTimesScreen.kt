@@ -93,7 +93,12 @@ fun AfterSuperPrayerTimesScreen(
                         viewModel::retry
                     )
 
-                    is AfterSuperUiState.Success -> PrayerTimesContent(s.prayerTimes, s.pipelineLogs, s.requestCount, city)
+                    is AfterSuperUiState.Success -> PrayerTimesContent(
+                        s.prayerTimes,
+                        s.pipelineLogs,
+                        s.requestCount,
+                        city
+                    )
                 }
             }
         }
@@ -101,7 +106,12 @@ fun AfterSuperPrayerTimesScreen(
 }
 
 @Composable
-private fun PrayerTimesContent(prayerTimes: TodayPrayerTimes, logs: List<String>, requestCount: Long, city: String = "") {
+private fun PrayerTimesContent(
+    prayerTimes: TodayPrayerTimes,
+    logs: List<String>,
+    requestCount: Long,
+    city: String = ""
+) {
     val nextIndex = prayerTimes.prayers.indexOfFirst { !it.isPast() }
     LazyColumn(
         modifier = Modifier.fillMaxSize(),

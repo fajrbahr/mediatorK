@@ -146,6 +146,7 @@ sealed interface AfterSuperMonthsUiState {
     data object Loading : AfterSuperMonthsUiState
     data class Success(val months: List<IslamicMonth>, val pipelineLogs: List<String>, val requestCount: Long) :
         AfterSuperMonthsUiState
+
     data class Error(val message: String, val pipelineLogs: List<String>, val requestCount: Long) :
         AfterSuperMonthsUiState
 }

@@ -53,7 +53,8 @@ fun `initial state is empty and not loading`() {
 
 ---
 
-Full runnable example: [`samples/sample/src/test/kotlin/sample/OrderViewModelTest.kt`](https://github.com/fajrbahr/MediatorK/blob/main/samples/sample/src/test/kotlin/sample/OrderViewModelTest.kt)
+Full runnable example: [
+`samples/sample/src/test/kotlin/sample/OrderViewModelTest.kt`](https://github.com/fajrbahr/MediatorK/blob/main/samples/sample/src/test/kotlin/sample/OrderViewModelTest.kt)
 
 ---
 

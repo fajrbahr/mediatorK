@@ -27,5 +27,6 @@ class ThrowMissingRequestHandler<TRequest : Request<TResult>, TResult> : Request
 class SilentMissingRequestHandler<TRequest : Request<TResult>, TResult>(
     private val default: TResult,
 ) : RequestHandler<TRequest, TResult> {
-    override suspend fun handle(mediator: Mediator, requestContext: RequestContext, request: TRequest): TResult = default
+    override suspend fun handle(mediator: Mediator, requestContext: RequestContext, request: TRequest): TResult =
+        default
 }

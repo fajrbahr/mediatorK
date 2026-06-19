@@ -209,11 +209,13 @@ export default function Home(): ReactNode {
                         </p>
                         <div className={styles.beforeAfterGrid}>
                             <div className={styles.beforeAfterCard}>
-                                <div className={clsx(styles.beforeAfterLabel, styles.beforeLabel)}>Before — Mockk hell</div>
+                                <div className={clsx(styles.beforeAfterLabel, styles.beforeLabel)}>Before — Mockk hell
+                                </div>
                                 <CodeBlock language="kotlin">{MOCK_BEFORE_CODE}</CodeBlock>
                             </div>
                             <div className={styles.beforeAfterCard}>
-                                <div className={clsx(styles.beforeAfterLabel, styles.afterLabel)}>After — Just a fake</div>
+                                <div className={clsx(styles.beforeAfterLabel, styles.afterLabel)}>After — Just a fake
+                                </div>
                                 <CodeBlock language="kotlin">{MOCK_AFTER_CODE}</CodeBlock>
                                 <p className={styles.afterNote}>
                                     Each handler is a pure function. Swap it with a fake object in tests —

@@ -1,12 +1,6 @@
 package com.fajrbahr.mediatork
 
-import com.fajrbahr.mediatork.api.Mediator
-import com.fajrbahr.mediatork.api.MediatorRegistrar
-import com.fajrbahr.mediatork.api.Request
-import com.fajrbahr.mediatork.api.RequestHandler
-import com.fajrbahr.mediatork.api.PipelineBehavior
-import com.fajrbahr.mediatork.api.RequestContext
-import com.fajrbahr.mediatork.api.RequestHandlerDelegate
+import com.fajrbahr.mediatork.api.*
 import kotlinx.coroutines.test.runTest
 import kotlin.test.*
 
@@ -159,7 +153,9 @@ class MediatorTest {
                 requestContext: RequestContext,
                 next: RequestHandlerDelegate<TRequest, TResult>,
                 request: TRequest,
-            ): TResult { requestContext.put("key", "injected"); return next(request) }
+            ): TResult {
+                requestContext.put("key", "injected"); return next(request)
+            }
         }
 
         val handler = object : RequestHandler<PingQuery, String> {
@@ -167,7 +163,9 @@ class MediatorTest {
                 mediator: Mediator,
                 requestContext: RequestContext,
                 request: PingQuery
-            ): String { contextValue = requestContext.getMetaDate("key"); return "ok" }
+            ): String {
+                contextValue = requestContext.getMetaDate("key"); return "ok"
+            }
         }
 
         val m = MediatorFactory.create(
@@ -192,7 +190,9 @@ class MediatorTest {
                 requestContext: RequestContext,
                 next: RequestHandlerDelegate<TRequest, TResult>,
                 request: TRequest,
-            ): TResult { val r = next(request); captured = r; return r }
+            ): TResult {
+                val r = next(request); captured = r; return r
+            }
         }
 
         val m = MediatorFactory.create(

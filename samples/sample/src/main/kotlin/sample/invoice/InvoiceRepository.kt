@@ -6,7 +6,10 @@ class InvoiceRepository {
 
     private val store = mutableMapOf<String, Invoice>()
 
-    fun save(invoice: Invoice) { store[invoice.id] = invoice }
+    fun save(invoice: Invoice) {
+        store[invoice.id] = invoice
+    }
+
     fun findById(id: String): Invoice? = store[id]
     fun all(): List<Invoice> = store.values.toList()
 

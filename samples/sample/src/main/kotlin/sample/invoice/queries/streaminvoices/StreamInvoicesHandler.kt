@@ -12,7 +12,11 @@ import sample.invoice.InvoiceRepository
 class StreamInvoicesHandler(
     private val repo: InvoiceRepository,
 ) : StreamRequestHandler<StreamInvoicesQuery, Invoice> {
-    override fun handle(mediator: Mediator, requestContext: RequestContext, request: StreamInvoicesQuery): Flow<Invoice> =
+    override fun handle(
+        mediator: Mediator,
+        requestContext: RequestContext,
+        request: StreamInvoicesQuery
+    ): Flow<Invoice> =
         repo.all().asFlow().let { flow ->
             if (request.status != null) flow.filter { it.status == request.status } else flow
         }

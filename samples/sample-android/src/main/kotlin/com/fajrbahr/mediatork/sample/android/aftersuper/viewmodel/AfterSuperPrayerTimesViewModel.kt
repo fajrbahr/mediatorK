@@ -151,6 +151,7 @@ sealed interface AfterSuperUiState {
     data object Loading : AfterSuperUiState
     data class Success(val prayerTimes: TodayPrayerTimes, val pipelineLogs: List<String>, val requestCount: Long) :
         AfterSuperUiState
+
     data class Error(val message: String, val pipelineLogs: List<String>, val requestCount: Long) :
         AfterSuperUiState
 }

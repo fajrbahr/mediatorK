@@ -8,13 +8,13 @@ sidebar_label: API Reference
 
 Quick reference for all public types in `com.fajrbahr.mediatork`.
 
-| Subpackage                            | Contents                                                                                                                                                         |
-|---------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `com.fajrbahr.mediatork`              | Core: `Mediator`, `Request`, `StreamRequest`, `HandlerRegistry`, `MediatorFactory`, processors, exceptions                                                       |
-| `com.fajrbahr.mediatork.handler`      | `RequestHandler`, `StreamRequestHandler`, `FallbackRequestHandler` (`otherwise`), `RequestExceptionHandler`                                                      |
+| Subpackage                            | Contents                                                                                                                                                                                 |
+|---------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `com.fajrbahr.mediatork`              | Core: `Mediator`, `Request`, `StreamRequest`, `HandlerRegistry`, `MediatorFactory`, processors, exceptions                                                                               |
+| `com.fajrbahr.mediatork.handler`      | `RequestHandler`, `StreamRequestHandler`, `FallbackRequestHandler` (`otherwise`), `RequestExceptionHandler`                                                                              |
 | `com.fajrbahr.mediatork.notification` | `Notification`, `NotificationHandler`, `FallbackNotificationHandler` (`otherwise`), all publisher implementations, `ThrowMissingNotificationHandler`, `SilentMissingNotificationHandler` |
-| `com.fajrbahr.mediatork.pipeline`     | `PipelineBehavior` and all built-in behaviors (logging, retry, caching, auth, circuit-breaker, transaction, etc.)                                                |
-| `com.fajrbahr.mediatork.validator`    | `RequestValidator`, `ValidationBehavior`, `ValidationScope`, `ValidationException`                                                                               |
+| `com.fajrbahr.mediatork.pipeline`     | `PipelineBehavior` and all built-in behaviors (logging, retry, caching, auth, circuit-breaker, transaction, etc.)                                                                        |
+| `com.fajrbahr.mediatork.validator`    | `RequestValidator`, `ValidationBehavior`, `ValidationScope`, `ValidationException`                                                                                                       |
 
 ---
 
@@ -53,13 +53,15 @@ Marker interface for requests that return a lazy `Flow<T>` instead of a single v
 interface StreamRequest<out T>
 ```
 
-Use when the response is a sequence produced over time — large result sets, live feeds, cursor-based exports, or anything better consumed incrementally than batched into a list.
+Use when the response is a sequence produced over time — large result sets, live feeds, cursor-based exports, or
+anything better consumed incrementally than batched into a list.
 
 ---
 
 ### `StreamRequestHandler<TRequest, T>` · `com.fajrbahr.mediatork.handler`
 
-Handles a `StreamRequest` and returns a cold `Flow<T>`. The interface is **not** `suspend` — it returns the flow immediately; work begins when the caller collects it.
+Handles a `StreamRequest` and returns a cold `Flow<T>`. The interface is **not** `suspend` — it returns the flow
+immediately; work begins when the caller collects it.
 
 ```kotlin
 interface StreamRequestHandler<in TRequest : StreamRequest<T>, T> {
@@ -96,7 +98,8 @@ interface Streamer {
 }
 ```
 
-`stream()` is non-suspend. It resolves the handler and returns a cold `Flow` immediately. Each collection starts a fresh `RequestContext`.
+`stream()` is non-suspend. It resolves the handler and returns a cold `Flow` immediately. Each collection starts a fresh
+`RequestContext`.
 
 ---
 
@@ -208,15 +211,15 @@ object MediatorFactory {
 }
 ```
 
-| Parameter                      | Default                              | Description                                                                                      |
-|--------------------------------|--------------------------------------|--------------------------------------------------------------------------------------------------|
-| `registrars`                   | `emptyList()`                        | Modules that contribute handlers to the registry                                                 |
-| `pipelineBehaviors`            | `emptyList()`                        | Cross-cutting decorators; sorted by `order`                                                      |
-| `preProcessors`                | `emptyList()`                        | Hooks that run before the handler; sorted by `order`                                             |
-| `notificationPublisher`        | `ParallelNotificationPublisher()`    | Strategy for delivering notifications                                                            |
-| `postProcessors`               | `emptyList()`                        | Hooks that run after the handler; sorted by `order`                                              |
-| `verifyHandlers`               | `true`                               | When `true`, logs a warning for every request type with no handler after all registrars have run |
-| `missingNotificationHandler`   | `ThrowMissingNotificationHandler()`  | What to do when a notification is published with no registered handlers                          |
+| Parameter                    | Default                             | Description                                                                                      |
+|------------------------------|-------------------------------------|--------------------------------------------------------------------------------------------------|
+| `registrars`                 | `emptyList()`                       | Modules that contribute handlers to the registry                                                 |
+| `pipelineBehaviors`          | `emptyList()`                       | Cross-cutting decorators; sorted by `order`                                                      |
+| `preProcessors`              | `emptyList()`                       | Hooks that run before the handler; sorted by `order`                                             |
+| `notificationPublisher`      | `ParallelNotificationPublisher()`   | Strategy for delivering notifications                                                            |
+| `postProcessors`             | `emptyList()`                       | Hooks that run after the handler; sorted by `order`                                              |
+| `verifyHandlers`             | `true`                              | When `true`, logs a warning for every request type with no handler after all registrars have run |
+| `missingNotificationHandler` | `ThrowMissingNotificationHandler()` | What to do when a notification is published with no registered handlers                          |
 
 ---
 
@@ -238,12 +241,12 @@ interface MediatorRegistrar {
 interface Mediator : Sender, Streamer, Publisher
 ```
 
-| Method                              | Description                                                                              |
-|-------------------------------------|------------------------------------------------------------------------------------------|
-| `send(request)`                     | Dispatch a `Request`; returns `TResponse`. Throws `MissingHandlerException` if no handler. |
-| `stream(request)`                   | Dispatch a `StreamRequest`; returns a cold `Flow<T>`. Throws `MissingStreamHandlerException` if no handler. |
-| `publish(notification)`             | Broadcast a notification using the default `NotificationPublisher`.                      |
-| `publish(notification, publisher)`  | Broadcast a notification using the supplied publisher, overriding the default for this call only. |
+| Method                             | Description                                                                                                 |
+|------------------------------------|-------------------------------------------------------------------------------------------------------------|
+| `send(request)`                    | Dispatch a `Request`; returns `TResponse`. Throws `MissingHandlerException` if no handler.                  |
+| `stream(request)`                  | Dispatch a `StreamRequest`; returns a cold `Flow<T>`. Throws `MissingStreamHandlerException` if no handler. |
+| `publish(notification)`            | Broadcast a notification using the default `NotificationPublisher`.                                         |
+| `publish(notification, publisher)` | Broadcast a notification using the supplied publisher, overriding the default for this call only.           |
 
 ---
 
@@ -260,25 +263,25 @@ interface Mediator : Sender, Streamer, Publisher
 
 ## Exceptions
 
-| Class                              | Description                                                         |
-|------------------------------------|---------------------------------------------------------------------|
-| `MediatorException`                | Base class for all MediatorK errors                                 |
-| `MissingHandlerException`          | No handler registered for the dispatched request type               |
-| `MissingStreamHandlerException`    | No stream handler registered for the dispatched `StreamRequest` type |
-| `MissingNotificationHandlerException` | No handlers registered for a published notification type         |
-| `AggregateException`               | One or more notification handlers failed (from `ContinueOnException…`) |
+| Class                                 | Description                                                            |
+|---------------------------------------|------------------------------------------------------------------------|
+| `MediatorException`                   | Base class for all MediatorK errors                                    |
+| `MissingHandlerException`             | No handler registered for the dispatched request type                  |
+| `MissingStreamHandlerException`       | No stream handler registered for the dispatched `StreamRequest` type   |
+| `MissingNotificationHandlerException` | No handlers registered for a published notification type               |
+| `AggregateException`                  | One or more notification handlers failed (from `ContinueOnException…`) |
 
 ---
 
 ## Validator package (`com.fajrbahr.mediatork.validator`)
 
-| Type                  | Description                                                                                   |
-|-----------------------|-----------------------------------------------------------------------------------------------|
-| `RequestValidator<T>` | Validates a request by throwing on failure (`require`, `check`, or `throw ValidationException`). Declares its `scope`. |
-| `ValidationScope`     | `REQUEST` (pipeline, automatic) · `DOMAIN` (in handler, after load) · `PERSISTENCE` (in handler, before write) |
-| `ValidationBehavior`  | Pre-built `PipelineBehavior` that runs `ValidationScope.REQUEST` validators and wraps failures in `ValidationException` |
+| Type                  | Description                                                                                                                  |
+|-----------------------|------------------------------------------------------------------------------------------------------------------------------|
+| `RequestValidator<T>` | Validates a request by throwing on failure (`require`, `check`, or `throw ValidationException`). Declares its `scope`.       |
+| `ValidationScope`     | `REQUEST` (pipeline, automatic) · `DOMAIN` (in handler, after load) · `PERSISTENCE` (in handler, before write)               |
+| `ValidationBehavior`  | Pre-built `PipelineBehavior` that runs `ValidationScope.REQUEST` validators and wraps failures in `ValidationException`      |
 | `ValidationException` | Thrown when validation fails; `errors: List<*>` carries all failure messages (any type — `String`, sealed class, enum, etc.) |
-| `rules { }`           | Collect-all DSL — evaluates every `check`/`require` and throws `ValidationException(errors)`  |
+| `rules { }`           | Collect-all DSL — evaluates every `check`/`require` and throws `ValidationException(errors)`                                 |
 
 ---
 
@@ -286,7 +289,8 @@ interface Mediator : Sender, Streamer, Publisher
 
 ### `TransactionProvider`
 
-Abstraction over a transactional unit of work. Implement once per persistence layer and pass to `TransactionPipelineBehavior`.
+Abstraction over a transactional unit of work. Implement once per persistence layer and pass to
+`TransactionPipelineBehavior`.
 
 ```kotlin
 interface TransactionProvider {
@@ -318,8 +322,8 @@ TransactionPipelineBehavior(
 )
 ```
 
-| Parameter             | Default    | Description                                              |
-|-----------------------|------------|----------------------------------------------------------|
-| `transactionProvider` | —          | Required. The unit-of-work implementation.               |
+| Parameter             | Default    | Description                                               |
+|-----------------------|------------|-----------------------------------------------------------|
+| `transactionProvider` | —          | Required. The unit-of-work implementation.                |
 | `appliesTo`           | `{ true }` | Predicate to restrict which requests run in a transaction |
-| `order`               | `0`        | Position in the behavior chain                           |
+| `order`               | `0`        | Position in the behavior chain                            |

@@ -87,16 +87,17 @@ class UserController(private val mediator: Mediator) {
 
 ## Sample — Prayer Times API
 
-The [`/samples/sample-spring`](https://github.com/fajrbahr/MediatorK/tree/main/samples/sample-spring) module is a runnable Spring Boot
+The [`/samples/sample-spring`](https://github.com/fajrbahr/MediatorK/tree/main/samples/sample-spring) module is a
+runnable Spring Boot
 WebFlux application that fetches prayer times and Islamic calendar months from the
 [Aladhan API](https://aladhan.com/prayer-times-api). It mirrors the [Android sample](../sample.md) structure in three
 layers:
 
-| Layer | Routes | Pattern |
-|-------|--------|---------|
-| **Before** | `/before/prayer-times/{city}` · `/before/islamic-months` | `Controller → UseCase → Repository → DataSource` |
-| **After** | `/after/prayer-times/{city}` · `/after/islamic-months` | `Controller → Mediator → Handler` |
-| **After Super** | `/aftersuper/prayer-times/{city}` · `/aftersuper/islamic-months` | After + all pipeline behaviors |
+| Layer           | Routes                                                           | Pattern                                          |
+|-----------------|------------------------------------------------------------------|--------------------------------------------------|
+| **Before**      | `/before/prayer-times/{city}` · `/before/islamic-months`         | `Controller → UseCase → Repository → DataSource` |
+| **After**       | `/after/prayer-times/{city}` · `/after/islamic-months`           | `Controller → Mediator → Handler`                |
+| **After Super** | `/aftersuper/prayer-times/{city}` · `/aftersuper/islamic-months` | After + all pipeline behaviors                   |
 
 ```bash
 # Run (from the repo root)

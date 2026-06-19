@@ -38,5 +38,8 @@ interface Sender {
  * [Result.failure] for any exception — [com.fajrbahr.mediatork.MediatorException] or otherwise.
  */
 suspend fun <T> Sender.trySend(request: Request<T>): Result<T> =
-    try { Result.success(send(request)) }
-    catch (e: Exception) { Result.failure(e) }
+    try {
+        Result.success(send(request))
+    } catch (e: Exception) {
+        Result.failure(e)
+    }

@@ -80,7 +80,13 @@ class Test28StreamInvoices {
         val mediator = MediatorFactory.create(
             registrars = listOf(InvoiceRegistrar(repo)),
             pipelineBehaviors = listOf(
-                com.fajrbahr.mediatork.validator.ValidationBehavior(mapOf(CreateInvoiceCommand::class to listOf(CreateInvoiceRequestValidator()))),
+                com.fajrbahr.mediatork.validator.ValidationBehavior(
+                    mapOf(
+                        CreateInvoiceCommand::class to listOf(
+                            CreateInvoiceRequestValidator()
+                        )
+                    )
+                ),
             ),
         )
 

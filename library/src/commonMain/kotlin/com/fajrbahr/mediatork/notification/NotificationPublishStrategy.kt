@@ -47,7 +47,8 @@ interface NotificationPublishStrategy {
          * Returns a [FireAndForgetNotificationPublisher] bound to [scope].
          * Handlers are launched in [scope] and the caller returns immediately.
          */
-        fun fireAndForget(scope: CoroutineScope): NotificationPublishStrategy = FireAndForgetNotificationPublisher(scope)
+        fun fireAndForget(scope: CoroutineScope): NotificationPublishStrategy =
+            FireAndForgetNotificationPublisher(scope)
     }
 
     /**
