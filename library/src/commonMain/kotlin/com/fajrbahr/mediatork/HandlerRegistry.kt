@@ -279,6 +279,10 @@ class HandlerRegistry {
                 registered = requestHandlers.keys.mapNotNull { it.simpleName },
             )
 
+    @Suppress("UNCHECKED_CAST")
+    internal fun <TRequest : Request<TResult>, TResult> resolveHandlerOrNull(request: TRequest): RequestHandler<TRequest, TResult>? =
+        requestHandlers[request::class] as? RequestHandler<TRequest, TResult>
+
     /**
      * Returns all notification handlers registered for [notification]'s runtime type.
      * Returns an empty list if none are registered.
