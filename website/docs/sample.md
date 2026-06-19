@@ -6,10 +6,11 @@ sidebar_label: Samples
 
 # Sample
 
-MediatorK ships with four runnable samples:
+MediatorK ships with five runnable samples:
 
 | Sample                                           | Module                                                                                              | Framework       |
 |--------------------------------------------------|-----------------------------------------------------------------------------------------------------|-----------------|
+| [Basic](#basic-sample--todo)                     | [`/samples/basic`](https://github.com/fajrbahr/MediatorK/tree/main/samples/basic)                   | Plain JVM       |
 | [Android](#android-sample--prayer-times)         | [`/samples/sample-android`](https://github.com/fajrbahr/MediatorK/tree/main/samples/sample-android) | Jetpack Compose |
 | [Ktor](#ktor-sample--prayer-times)               | [`/samples/sample-ktor`](https://github.com/fajrbahr/MediatorK/tree/main/samples/sample-ktor)       | Ktor Server     |
 | [Spring Boot](#spring-boot-sample--prayer-times) | [`/samples/sample-spring`](https://github.com/fajrbahr/MediatorK/tree/main/samples/sample-spring)   | Spring WebFlux  |
@@ -18,6 +19,92 @@ MediatorK ships with four runnable samples:
 The Android, Ktor, and Spring samples all use the same **before / after / after super** structure against the
 [Aladhan prayer-times API](https://aladhan.com/prayer-times-api) so the progression is easy to compare across
 platforms.
+
+---
+
+## Basic Sample — Todo
+
+The [`/samples/basic`](https://github.com/fajrbahr/MediatorK/tree/main/samples/basic) module is the smallest possible
+end-to-end demonstration of MediatorK. It uses a simple in-memory **Todo** domain to show a command, a query, and a
+notification — each in its own file — with no framework overhead.
+
+### Structure
+
+```
+basic/src/main/kotlin/sample/basic/
+  Basic.kt                   ← Todo model, TodoStore, TodoRegistrar, main()
+  AddTodoCommand.kt          ← AddTodoCommand + AddTodoHandler
+  GetTodoQuery.kt            ← GetTodoQuery  + GetTodoHandler
+  TodoAddedNotification.kt   ← TodoAddedNotification + LogTodoAddedHandler + SyncTodoAddedHandler
+```
+
+### Command — write with a result
+
+`AddTodoCommand` creates a new `Todo`, saves it to the store, publishes a `TodoAddedNotification`, and returns the
+saved todo.
+
+```kotlin
+data class AddTodoCommand(val id: String, val title: String) : Request<Todo>
+
+class AddTodoHandler(private val store: TodoStore) : RequestHandler<AddTodoCommand, Todo> {
+    override suspend fun handle(mediator: Mediator, requestContext: RequestContext, request: AddTodoCommand): Todo {
+        val todo = Todo(id = request.id, title = request.title)
+        store.save(todo)
+        mediator.publish(TodoAddedNotification(todo))
+        return todo
+    }
+}
+```
+
+### Query — read with a nullable result
+
+`GetTodoQuery` looks up a todo by id. Returns `null` when not found — no exception, no special case.
+
+```kotlin
+data class GetTodoQuery(val id: String) : Request<Todo?>
+
+class GetTodoHandler(private val store: TodoStore) : RequestHandler<GetTodoQuery, Todo?> {
+    override suspend fun handle(mediator: Mediator, requestContext: RequestContext, request: GetTodoQuery): Todo? =
+        store.findById(request.id)
+}
+```
+
+### Notification — fan-out with no response
+
+`TodoAddedNotification` is broadcast to two independent handlers: one logs, one syncs. Neither returns a value, and
+neither knows about the other.
+
+```kotlin
+data class TodoAddedNotification(val todo: Todo) : Notification
+
+class LogTodoAddedHandler : NotificationHandler<TodoAddedNotification> {
+    override suspend fun handle(notification: TodoAddedNotification) {
+        println("[Log] Todo added: '${notification.todo.title}' (id=${notification.todo.id})")
+    }
+}
+
+class SyncTodoAddedHandler : NotificationHandler<TodoAddedNotification> {
+    override suspend fun handle(notification: TodoAddedNotification) {
+        println("[Sync] Syncing todo '${notification.todo.id}' to remote...")
+    }
+}
+```
+
+### Running the sample
+
+```bash
+./gradlew :samples:basic:run
+```
+
+Expected output:
+
+```
+[Log] Todo added: 'Buy groceries' (id=1)
+[Sync] Syncing todo '1' to remote...
+Created: Todo(id=1, title=Buy groceries, done=false)
+Found: Todo(id=1, title=Buy groceries, done=false)
+Missing: null
+```
 
 ---
 
