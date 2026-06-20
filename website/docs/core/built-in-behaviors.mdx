@@ -79,7 +79,7 @@ LoggingPipelineBehavior(logger = ::println, logResult = true)
 |-----------|------|---------|-------------|
 | `logger` | `(String) -> Unit` | `::println` | Function that receives each log line |
 | `logResult` | `Boolean` | `false` | Append the result to the exit log line |
-| `order` | `Int` | `-100` | Outermost by default — logs before any other behavior |
+| `order` | `Int` | `-100` | Low number = outermost — logs before any other behavior |
 
 ### Source
 
