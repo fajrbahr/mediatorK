@@ -5,7 +5,6 @@ import com.fajrbahr.mediatork.api.Request
 import com.fajrbahr.mediatork.api.RequestContext
 import com.fajrbahr.mediatork.api.RequestHandlerDelegate
 import kotlinx.coroutines.delay
-import kotlin.time.Duration.Companion.milliseconds
 
 /**
  * A [PipelineBehavior] that retries the downstream pipeline on failure.
@@ -45,7 +44,7 @@ class RetryPipelineBehavior(
             } catch (e: Throwable) {
                 if (attempt >= maxRetries || !retryOn(e)) throw e
                 attempt++
-                if (delayMillis > 0) delay(delayMillis.milliseconds)
+                if (delayMillis > 0) delay(delayMillis)
             }
         }
     }
