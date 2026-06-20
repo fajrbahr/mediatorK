@@ -3,7 +3,6 @@ package com.fajrbahr.mediatork
 import com.fajrbahr.mediatork.api.Mediator
 import com.fajrbahr.mediatork.api.RequestContext
 import com.fajrbahr.mediatork.api.RequestHandler
-import com.fajrbahr.mediatork.pipeline.buildin.RetryPipelineBehavior
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals

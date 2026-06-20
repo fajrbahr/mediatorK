@@ -13,7 +13,6 @@ import kotlin.time.TimeSource
  * Timing is always reported — even when the handler throws — so you get latency data for
  * both successful and failed requests.
  *
- *
  * @param onTiming callback invoked after every request with `(requestName, durationMs)`.
  * @param order position in the behavior chain. Defaults to `0`.
  */

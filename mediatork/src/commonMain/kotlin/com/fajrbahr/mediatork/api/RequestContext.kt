@@ -14,7 +14,6 @@ package com.fajrbahr.mediatork.api
  * or companion-object constants).
  */
 class RequestContext {
-    /** Internal storage for arbitrary metadata keyed by name. */
     private val metadata = mutableMapOf<String, Any?>()
 
     /**

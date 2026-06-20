@@ -13,7 +13,7 @@ It implements the **CQRS** and **Vertical Slice** patterns:
 
 - Every **request** is routed to exactly one handler
 - Every **notification** fans out to many handlers
-- A **pipeline** of behaviors sits in between (logging, retry, auth, validation…)
+- A **pipeline** of behaviors sits in between (logging, caching, timeout, validation…)
 
 No kotlin-reflect. No annotation processing. No framework required.
 
@@ -29,7 +29,7 @@ No kotlin-reflect. No annotation processing. No framework required.
 | 🔌 **Framework-agnostic**   | Works with Spring Boot, Ktor, KMP, or plain Kotlin                                                     |
 | 🪶 **Zero magic**           | No kotlin-reflect, no code generation, no annotation processors                                        |
 | 🛡️ **Built-in validation** | Lightweight `RequestValidator` DSL with `rules { }` and `rulesFailFast { }` — no annotation processing |
-| 🔧 **Batteries included**   | 10+ built-in pipeline behaviors: caching, retry, circuit-breaker, dedup, and more                      |
+| 🔧 **Batteries included**   | 6 built-in pipeline behaviors: caching, logging, timeout, timing, error tracking, and more              |
 | 🧪 **Testable by design**   | `buildHandlerTestHarness`, `FakeMediator`, `MediatorSpy` — no mocking library needed                   |
 
 ---

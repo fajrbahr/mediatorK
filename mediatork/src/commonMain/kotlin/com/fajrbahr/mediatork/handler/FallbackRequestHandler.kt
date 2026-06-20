@@ -10,7 +10,7 @@ import com.fajrbahr.mediatork.api.RequestHandler
  * If a handler throws, the exception is swallowed and the next handler is tried.
  * Re-throws the last handler's exception if every handler fails.
  *
- * Compose with [otherwise] rather than constructing directly:
+ * Compose with [otherwise] instead of constructing directly.
  */
 class FallbackRequestHandler<TRequest : Request<TResult>, TResult>(
     private val handlers: List<RequestHandler<TRequest, TResult>>,

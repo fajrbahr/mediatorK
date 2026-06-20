@@ -54,7 +54,9 @@ interface PipelineBehavior {
     val stage: Stage get() = Stage.Default
 
     /**
-     * Relative position within the [stage]. Lower values are outermost (run first on entry).
+     * Relative position within the [stage]. Lower values are outermost (run first on entry)
+     * for [Stage.Pre] and [Stage.Default]. **[Stage.Post] is the exception**: lower values are
+     * innermost — closest to the handler on return — so they observe the result first on exit.
      * Defaults to `0`. Within a stage, behaviors with the same [order] run in registration order.
      */
     val order: Int get() = 0

@@ -141,50 +141,17 @@ Behaviors are sorted by `order` at dispatch time — registration order doesn't 
 
 ## Built-in behaviors · `com.fajrbahr.mediatork.pipeline`
 
-MediatorK ships 10+ production-ready behaviors. Import them with `com.fajrbahr.mediatork.pipeline.*`.
+MediatorK ships 6 production-ready behaviors. Import them with `com.fajrbahr.mediatork.pipeline.*`.
 
-| Class                            | Default order   | Description                                                                                                                                |
-|----------------------------------|-----------------|--------------------------------------------------------------------------------------------------------------------------------------------|
-| `LoggingPipelineBehavior`        | `-100`          | Logs request entry and exit with optional result logging. Accepts any `(String) -> Unit` logger.                                           |
-| `ValidationBehavior`             | `-50`           | Runs registered `RequestValidator`s and throws `ValidationException` on failure. From `com.fajrbahr.mediatork.validator`.                  |
-| `AuthorizationPipelineBehavior`  | `-10`           | Only applies to requests implementing `AuthenticatedRequest`. Throws `UnauthorizedException` to deny access.                               |
-| `CachingPipelineBehavior`        | `0`             | TTL-based cache with mutex locking. Customizable key function. Public API: `invalidate(key)`, `clear()`, `size()`.                         |
-| `RetryPipelineBehavior`          | `0`             | Retries the handler up to `maxRetries` times. Configurable `delay` and `retryOn` predicate.                                                |
-| `TimeoutPipelineBehavior`        | `0`             | Cancels the downstream pipeline if it exceeds `timeoutMillis`.                                                                             |
-| `RateLimitPipelineBehavior`      | `0`             | Sliding-window counter per request type. Throws `RateLimitExceededException` immediately — no queueing.                                    |
-| `CircuitBreakerPipelineBehavior` | `0`             | CLOSED → OPEN → HALF_OPEN → CLOSED state machine. Configurable `failureThreshold` and `resetTimeoutMs`. Optional `onStateChange` callback. |
-| `DeduplicationPipelineBehavior`  | `0`             | Deduplicates concurrent in-flight requests with the same key. Second caller suspends and awaits the first caller's result.                 |
-| `TransactionPipelineBehavior`    | `0`             | Wraps the handler in a `TransactionProvider`. Commits on success, rolls back and rethrows on exception.                                    |
-| `TimingPipelineBehavior`         | `0`             | Measures handler execution time. Calls `onTiming(requestName, durationMs)` after each dispatch.                                            |
-| `ErrorTrackingPipelineBehavior`  | `Int.MAX_VALUE` | Calls `onError(request, throwable)` for every unhandled exception, then rethrows it.                                                       |
-| `RequestCounterPipelineBehavior` | `0`             | Counts dispatches per request type. Public API: `countFor(klass)`, `snapshot()`.                                                           |
-
-### TransactionPipelineBehavior
-
-The most common use case — wrap write commands in a transaction and ignore reads:
-
-```kotlin
-// Implement TransactionProvider once for your persistence layer
-val transactionProvider = object : TransactionProvider {
-    override suspend fun <T> withTransaction(block: suspend () -> T): T =
-        db.withTransaction { block() }  // Room, Exposed, SQLDelight, etc.
-}
-
-// Register in the pipeline
-val mediator = MediatorFactory.create(
-    registrars = listOf(AppRegistrar()),
-    pipelineBehaviors = listOf(
-        ValidationBehavior(validators),
-        TransactionPipelineBehavior(
-            transactionProvider = transactionProvider,
-            appliesTo = { it is Request.Unit },  // only write commands, not queries
-        ),
-    ),
-)
-```
-
-The transaction commits when the handler returns normally. On any exception, the transaction rolls back and the original
-exception is rethrown unchanged.
+| Class                            | Default order   | Description                                                                                                               |
+|----------------------------------|-----------------|---------------------------------------------------------------------------------------------------------------------------|
+| `LoggingPipelineBehavior`        | `-100`          | Logs request entry and exit with optional result logging. Accepts any `(String) -> Unit` logger.                          |
+| `ValidationBehavior`             | `-50`           | Runs registered `RequestValidator`s and throws `ValidationException` on failure. From `com.fajrbahr.mediatork.validator`. |
+| `CachingPipelineBehavior`        | `0`             | TTL-based cache with mutex locking. Customizable key function. Public API: `invalidate(key)`, `clear()`, `size()`.        |
+| `TimeoutPipelineBehavior`        | `0`             | Cancels the downstream pipeline if it exceeds `timeoutMillis`.                                                            |
+| `TimingPipelineBehavior`         | `0`             | Measures handler execution time. Calls `onTiming(requestName, durationMs)` after each dispatch.                           |
+| `ErrorTrackingPipelineBehavior`  | `Int.MAX_VALUE` | Calls `onError(request, throwable)` for every unhandled exception, then rethrows it.                                      |
+| `RequestCounterPipelineBehavior` | `0`             | Counts dispatches per request type. Public API: `countFor(klass)`, `snapshot()`.                                          |
 
 ---
 

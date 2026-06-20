@@ -103,8 +103,9 @@ internal class MediatorImpl(
      * Composes and executes the full behavior chain for a single request dispatch.
      *
      * Behaviors are grouped by [Stage] phase ([Stage.Pre] → [Stage.Default] → [Stage.Post])
-     * and sorted by [PipelineBehavior.order] within each phase. Lower order is outermost
-     * within a phase; [Stage.Pre] behaviors always wrap [Stage.Default], which always wrap [Stage.Post].
+     * and sorted by [PipelineBehavior.order] within each phase. For [Stage.Pre] and [Stage.Default],
+     * lower order is outermost. [Stage.Post] reverses this: lower order is innermost, so Post
+     * behaviors with a lower order observe the response first when the handler returns.
      *
      * @param request the incoming request.
      * @param handler the resolved handler for this request type.
