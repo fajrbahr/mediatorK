@@ -6,7 +6,10 @@ data class Todo(val id: String, val title: String, val done: Boolean = false)
 
 class TodoStore {
     private val todos = mutableMapOf<String, Todo>()
-    fun save(todo: Todo) { todos[todo.id] = todo }
+    fun save(todo: Todo) {
+        todos[todo.id] = todo
+    }
+
     fun findById(id: String): Todo? = todos[id]
 }
 

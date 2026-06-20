@@ -21,6 +21,39 @@ Lower `order` = outermost wrapper = runs first on the way in, last on the way ou
 
 ---
 
+## Pipeline stages
+
+Every `PipelineBehavior` has a `stage` property that controls its absolute position in the chain:
+
+| Stage           | Position           | Typical use                                             |
+|-----------------|--------------------|---------------------------------------------------------|
+| `Stage.Pre`     | Outermost wrappers | Auth token injection, locale setup, trace-id population |
+| `Stage.Default` | Middle *(default)* | Logging, retry, caching, circuit-breaking, timing       |
+| `Stage.Post`    | Innermost wrappers | Metrics emission, audit logging, response observation   |
+
+**Stage always wins over `order`.** Every `Stage.Pre` behavior executes before every `Stage.Default` behavior,
+regardless of their `order` values. `order` only controls sequencing *within* a stage.
+
+```kotlin
+class TraceIdBehavior : PipelineBehavior {
+    override val stage = Stage.Pre   // runs before all Default behaviors
+    override val order = 0
+
+    override suspend fun <TRequest : Request<TResult>, TResult> process(
+        requestContext: RequestContext,
+        next: RequestHandlerDelegate<TRequest, TResult>,
+        request: TRequest,
+    ): TResult {
+        requestContext.put("traceId", generateTraceId())
+        return next(request)
+    }
+}
+```
+
+All built-in behaviors use `Stage.Default`. See [Pre / Post Behaviors](processors.md) for a detailed guide.
+
+---
+
 ## Implementing a behavior
 
 ```kotlin
@@ -113,7 +146,7 @@ MediatorK ships 10+ production-ready behaviors. Import them with `com.fajrbahr.m
 | Class                            | Default order   | Description                                                                                                                                |
 |----------------------------------|-----------------|--------------------------------------------------------------------------------------------------------------------------------------------|
 | `LoggingPipelineBehavior`        | `-100`          | Logs request entry and exit with optional result logging. Accepts any `(String) -> Unit` logger.                                           |
-| `ValidationBehavior`             | `-50`           | Runs `ValidationScope.REQUEST` validators and throws `ValidationException` on failure. From `com.fajrbahr.mediatork.validator`.            |
+| `ValidationBehavior`             | `-50`           | Runs registered `RequestValidator`s and throws `ValidationException` on failure. From `com.fajrbahr.mediatork.validator`.                  |
 | `AuthorizationPipelineBehavior`  | `-10`           | Only applies to requests implementing `AuthenticatedRequest`. Throws `UnauthorizedException` to deny access.                               |
 | `CachingPipelineBehavior`        | `0`             | TTL-based cache with mutex locking. Customizable key function. Public API: `invalidate(key)`, `clear()`, `size()`.                         |
 | `RetryPipelineBehavior`          | `0`             | Retries the handler up to `maxRetries` times. Configurable `delay` and `retryOn` predicate.                                                |
@@ -122,7 +155,7 @@ MediatorK ships 10+ production-ready behaviors. Import them with `com.fajrbahr.m
 | `CircuitBreakerPipelineBehavior` | `0`             | CLOSED → OPEN → HALF_OPEN → CLOSED state machine. Configurable `failureThreshold` and `resetTimeoutMs`. Optional `onStateChange` callback. |
 | `DeduplicationPipelineBehavior`  | `0`             | Deduplicates concurrent in-flight requests with the same key. Second caller suspends and awaits the first caller's result.                 |
 | `TransactionPipelineBehavior`    | `0`             | Wraps the handler in a `TransactionProvider`. Commits on success, rolls back and rethrows on exception.                                    |
-| `TimingPipelineBehavior`         | `0`             | Measures handler execution time. Calls `onTimed(requestName, durationMs)` after each dispatch.                                             |
+| `TimingPipelineBehavior`         | `0`             | Measures handler execution time. Calls `onTiming(requestName, durationMs)` after each dispatch.                                            |
 | `ErrorTrackingPipelineBehavior`  | `Int.MAX_VALUE` | Calls `onError(request, throwable)` for every unhandled exception, then rethrows it.                                                       |
 | `RequestCounterPipelineBehavior` | `0`             | Counts dispatches per request type. Public API: `countFor(klass)`, `snapshot()`.                                                           |
 

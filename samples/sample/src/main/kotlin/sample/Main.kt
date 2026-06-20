@@ -27,6 +27,7 @@ import sample.orders.queries.getorder.GetOrderQuery
 import sample.orders.queries.getorder.GetOrderRegistrar
 import sample.orders.queries.getorder.OrderDetails
 import sample.users.queries.fetchuser.FetchUserQuery
+import sample.users.queries.fetchuser.User
 import sample.users.queries.fetchuser.UserRegistrar
 
 private val mediator = MediatorFactory.create(
@@ -183,7 +184,7 @@ class Test8NotificationSequential {
 
 class Test9ExceptionOrderNotFound {
     suspend fun start() {
-        println("=== TEST 9: RequestExceptionHandler — OrderNotFoundException recovered ===")
+        println("=== TEST 9: Fallback chain — OrderNotFoundException recovered by fallback handler ===")
         val exMediator = MediatorFactory.create(
             registrars = listOf(ShipOrderRegistrar()),
             notificationPublisher = NotificationPublishStrategy.SEQUENTIAL,
@@ -200,7 +201,7 @@ class Test9ExceptionOrderNotFound {
 
 class Test10ExceptionOutOfStock {
     suspend fun start() {
-        println("=== TEST 10: RequestExceptionHandler — OutOfStockException recovered ===")
+        println("=== TEST 10: Fallback chain — OutOfStockException recovered by fallback handler ===")
         val exMediator = MediatorFactory.create(
             registrars = listOf(ShipOrderRegistrar()),
             notificationPublisher = NotificationPublishStrategy.SEQUENTIAL,
@@ -235,17 +236,17 @@ class Test12UnhandledException {
     suspend fun start() {
         println("=== TEST 12: Unhandled exception propagates as-is ===")
         runCatching {
-            val noExHandlerMediator = MediatorFactory.create(
+            val noFallbackMediator = MediatorFactory.create(
                 registrars = listOf(object : MediatorRegistrar {
                     override fun register(registry: HandlerRegistry) {
                         registry.register(ShipOrderHandler())
                     }
                 }),
             )
-            noExHandlerMediator.send(ShipOrderCommand(orderId = "MISSING", warehouseId = "WH-1"))
+            noFallbackMediator.send(ShipOrderCommand(orderId = "MISSING", warehouseId = "WH-1"))
         }.onFailure { throwable ->
             println("Unhandled ${throwable::class.simpleName}: ${throwable.message}")
-            println("(No RequestExceptionHandler registered — exception propagates to caller)")
+            println("(No fallback handler registered — exception propagates to caller)")
         }
     }
 
@@ -490,7 +491,7 @@ class Test21RequestCounter {
         println("=== TEST 21: RequestCounterPipelineBehavior — counts dispatches per type ===")
         val counter = RequestCounterPipelineBehavior()
         val countingMediator = MediatorFactory.create(
-            registrars = listOf(GetOrderRegistrar(), FetchBookingsRegistrar()),
+            registrars = listOf(GetOrderRegistrar(), FetchBookingsRegistrar(), UserRegistrar()),
             pipelineBehaviors = listOf(counter),
         )
         repeat(3) { countingMediator.send(GetOrderQuery(orderId = "ORD-$it", customerId = "USR-1")) }

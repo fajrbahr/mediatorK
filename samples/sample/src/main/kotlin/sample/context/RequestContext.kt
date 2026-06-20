@@ -22,12 +22,6 @@ var RequestContext.locale: String
         put("locale", value)
     }
 
-data class TraceMeta(val name: String, val value: Long)
-
 fun RequestContext.addTraceMeta(metrics: List<Pair<String, Long>>) {
-    val metrics = metrics.map { TraceMeta(it.first, it.second) }
     put("traceMeta", metrics)
 }
-
-val RequestContext.traceNetworkMetrics: List<TraceMeta>
-    get() = getMetaDate("traceMeta") ?: emptyList()

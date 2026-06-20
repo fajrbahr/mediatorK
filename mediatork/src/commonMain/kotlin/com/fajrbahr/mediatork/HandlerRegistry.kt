@@ -35,8 +35,13 @@ class HandlerRegistry {
 
     // ── Registration ──────────────────────────────────────────────────────────
 
+    /** Opens a scoped registration block; equivalent to calling methods directly but allows `+handler` DSL inside. */
     fun scope(block: HandlerRegistry.() -> Unit) = block()
 
+    /**
+     * Registers [handler] for request type [TRequest], replacing any previously registered handler.
+     * Use the `+handler` DSL operator inside a [scope] block as a shorter alternative.
+     */
     inline infix fun <reified TRequest : Request<TResult>, TResult> register(
         handler: RequestHandler<TRequest, TResult>,
     ): HandlerRegistry {
@@ -44,6 +49,10 @@ class HandlerRegistry {
         return this
     }
 
+    /**
+     * Registers [handler] for stream request type [TRequest], replacing any previously registered handler.
+     * Use the `+handler` DSL operator inside a [scope] block as a shorter alternative.
+     */
     inline infix fun <reified TRequest : StreamRequest<T>, T> registerStream(
         handler: StreamRequestHandler<TRequest, T>,
     ): HandlerRegistry {
@@ -51,6 +60,11 @@ class HandlerRegistry {
         return this
     }
 
+    /**
+     * Appends [handler] to the list of handlers for notification type [T].
+     * Multiple handlers for the same type are all invoked according to the active
+     * [com.fajrbahr.mediatork.notification.NotificationPublishStrategy].
+     */
     inline infix fun <reified T : Notification> registerNotification(
         handler: NotificationHandler<T>,
     ): HandlerRegistry {
@@ -58,6 +72,10 @@ class HandlerRegistry {
         return this
     }
 
+    /**
+     * Appends [validator] to the list of validators for request type [TRequest].
+     * Validators are run by [com.fajrbahr.mediatork.validator.ValidationBehavior] before the handler.
+     */
     inline fun <reified TRequest : Request<*>> registerValidator(
         validator: RequestValidator<TRequest>,
     ): HandlerRegistry {
@@ -67,30 +85,46 @@ class HandlerRegistry {
 
     // ── DSL operators ─────────────────────────────────────────────────────────
 
+    /** Shorthand for [register]; use inside a [scope] block: `+MyHandler()`. */
     inline operator fun <reified TRequest : Request<TResult>, TResult> RequestHandler<TRequest, TResult>.unaryPlus() =
         register(this)
 
+    /** Shorthand for [registerStream]; use inside a [scope] block: `+MyStreamHandler()`. */
     inline operator fun <reified TRequest : StreamRequest<T>, T> StreamRequestHandler<TRequest, T>.unaryPlus() =
         registerStream(this)
 
+    /** Shorthand for [registerNotification]; use inside a [scope] block: `+MyNotificationHandler()`. */
     inline operator fun <reified T : Notification> NotificationHandler<T>.unaryPlus() =
         registerNotification(this)
 
+    /** Shorthand for [registerValidator]; use inside a [scope] block: `+MyValidator()`. */
     inline operator fun <reified TRequest : Request<*>> RequestValidator<TRequest>.unaryPlus() =
         registerValidator(this)
 
     // ── Dynamic registration (for DI frameworks) ──────────────────────────────
 
+    /**
+     * Registers [handler] for [requestClass] without a reified type parameter.
+     * Intended for DI frameworks (Koin, Hilt) that resolve handlers at runtime via reflection.
+     */
     fun registerDynamic(requestClass: KClass<*>, handler: RequestHandler<*, *>): HandlerRegistry {
         requestHandlers[requestClass] = handler
         return this
     }
 
+    /**
+     * Registers [handler] for [requestClass] without a reified type parameter.
+     * Intended for DI frameworks that resolve stream handlers at runtime via reflection.
+     */
     fun registerStreamDynamic(requestClass: KClass<*>, handler: StreamRequestHandler<*, *>): HandlerRegistry {
         streamHandlers[requestClass] = handler
         return this
     }
 
+    /**
+     * Appends [handler] to the notification handler list for [notificationClass] without a reified type parameter.
+     * Intended for DI frameworks that resolve notification handlers at runtime via reflection.
+     */
     fun registerNotificationDynamic(notificationClass: KClass<*>, handler: NotificationHandler<*>): HandlerRegistry {
         notificationHandlers.getOrPut(notificationClass) { mutableListOf() }.add(handler)
         return this
@@ -98,12 +132,20 @@ class HandlerRegistry {
 
     // ── Queries ───────────────────────────────────────────────────────────────
 
+    /** Returns `true` if a request handler is registered for [requestType]. */
     fun hasHandler(requestType: KClass<*>): Boolean = requestHandlers.containsKey(requestType)
+
+    /** Returns `true` if a stream handler is registered for [requestType]. */
     fun hasStreamHandler(requestType: KClass<*>): Boolean = streamHandlers.containsKey(requestType)
+
+    /** Returns `true` if at least one notification handler is registered for [notificationType]. */
     fun hasNotificationHandler(notificationType: KClass<*>): Boolean =
         notificationHandlers.containsKey(notificationType)
 
+    /** Returns an immutable snapshot of all registered request types. */
     fun registeredRequestTypes(): Set<KClass<*>> = requestHandlers.keys.toSet()
+
+    /** Returns an immutable snapshot of all registered stream request types. */
     fun registeredStreamRequestTypes(): Set<KClass<*>> = streamHandlers.keys.toSet()
 
     // ── Resolution (internal) ─────────────────────────────────────────────────

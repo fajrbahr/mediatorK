@@ -1,7 +1,6 @@
 package com.fajrbahr.mediatork
 
 import com.fajrbahr.mediatork.api.*
-import com.fajrbahr.mediatork.api.Stage
 import com.fajrbahr.mediatork.handler.ThrowMissingRequestHandler
 import com.fajrbahr.mediatork.notification.NotificationPublishStrategy
 import com.fajrbahr.mediatork.notification.ThrowMissingNotificationHandler
@@ -103,7 +102,7 @@ internal class MediatorImpl(
     /**
      * Composes and executes the full behavior chain for a single request dispatch.
      *
-     * Behaviors are grouped by [Tag] phase ([Stage.Pre] → [Stage.Default] → [Stage.Post])
+     * Behaviors are grouped by [Stage] phase ([Stage.Pre] → [Stage.Default] → [Stage.Post])
      * and sorted by [PipelineBehavior.order] within each phase. Lower order is outermost
      * within a phase; [Stage.Pre] behaviors always wrap [Stage.Default], which always wrap [Stage.Post].
      *

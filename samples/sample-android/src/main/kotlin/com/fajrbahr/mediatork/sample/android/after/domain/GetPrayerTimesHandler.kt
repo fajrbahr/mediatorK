@@ -20,6 +20,25 @@ data class GetPrayerTimesRequest(
     val method: Int = 3,
 ) : Request<TodayPrayerTimes>, AuthenticatedRequest
 
+class CreateCityValidator : RequestValidator<GetPrayerTimesRequest> {
+    override fun validate(request: GetPrayerTimesRequest) = rules<String> {
+        check(request.city.isNotBlank()) { "City must not be blank" }
+        check(request.city.length >= 2) { "City must be at least 2 characters" }
+        check(request.city.all { it.isLetter() || it.isWhitespace() || it == '-' }) {
+            "City must contain only letters, spaces, or hyphens"
+        }
+        if (request.country.isNotEmpty()) {
+            check(request.country.length >= 2) { "Country must be at least 2 characters" }
+            check(request.country.all { it.isLetter() || it.isWhitespace() || it == '-' }) {
+                "Country must contain only letters, spaces, or hyphens"
+            }
+        }
+    }
+}
+
+/** Kept for backward compatibility — delegates to [CreateCityValidator]. */
+class GetPrayerTimesValidator : RequestValidator<GetPrayerTimesRequest> by CreateCityValidator()
+
 class GetPrayerTimesHandler(
     private val cache: AladhanCacheDataSource,
 ) : RequestHandler<GetPrayerTimesRequest, TodayPrayerTimes> {

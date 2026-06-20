@@ -13,33 +13,37 @@ processing, no reflection, no external dependencies.
 
 ## RequestValidator
 
-Implement `RequestValidator<TRequest>` and **throw** to signal failure. The library imposes no return type.
+Implement `RequestValidator<TRequest>` and return a `ValidationResult` to signal pass or fail:
+
+```kotlin
+interface RequestValidator<TRequest : Any> {
+    fun validate(request: TRequest): ValidationResult
+}
+```
 
 ### Fail-fast — stop at first error
 
-Use Kotlin's `require` or `check`:
+Use `rulesFailFast { }` or Kotlin's own `require`/`check` (thrown as `IllegalArgumentException`):
 
 ```kotlin
 class CreateTodoValidator : RequestValidator<CreateTodoCommand> {
-    override val requestClass = CreateTodoCommand::class
-
-    override fun validate(request: CreateTodoCommand) {
-        require(request.title.isNotBlank()) { "Title must not be blank" }
-        require(request.title.length <= 200) { "Title must be 200 characters or fewer" }
-        require(request.dueDate.isAfter(today())) { "Due date must be in the future" }
+    override fun validate(request: CreateTodoCommand): ValidationResult = rulesFailFast {
+        check(request.title.isNotBlank()) { "Title must not be blank" }
+        check(request.title.length <= 200) { "Title must be 200 characters or fewer" }
+        check(request.dueDate.isAfter(today())) { "Due date must be in the future" }
     }
 }
 ```
+
+Execution stops at the first failure. Only the first error is included in the result.
 
 ### Collect all errors — `rules { }`
 
 Use `rules { }` when you want every failure reported in one pass (e.g. form validation):
 
 ```kotlin
-class CreateInvoiceRequestValidator : RequestValidator<CreateInvoiceCommand> {
-    override val requestClass = CreateInvoiceCommand::class
-
-    override fun validate(request: CreateInvoiceCommand) = rules {
+class CreateInvoiceValidator : RequestValidator<CreateInvoiceCommand> {
+    override fun validate(request: CreateInvoiceCommand): ValidationResult = rules {
         check(request.id.isNotBlank()) { "Invoice ID is required" }
         check(request.id.startsWith("INV-")) { "Invoice ID must start with INV-" }
         check(request.amount > 0) { "Amount must be positive" }
@@ -49,115 +53,76 @@ class CreateInvoiceRequestValidator : RequestValidator<CreateInvoiceCommand> {
 
 All checks run regardless of earlier failures. `ValidationException.errors` contains the full list.
 
-### Throw directly
+### Return directly
 
-Throw `ValidationException` when you have a single computed message:
+Return `ValidationResult.Invalid` when you have a single computed message:
 
 ```kotlin
-if (repo.findById(request.id) != null)
-    throw ValidationException("Invoice ${request.id} already exists")
+class CreateInvoiceValidator : RequestValidator<CreateInvoiceCommand> {
+    override fun validate(request: CreateInvoiceCommand): ValidationResult {
+        if (request.id.isBlank()) return ValidationResult.Invalid("Invoice ID is required")
+        return ValidationResult.Valid
+    }
+}
 ```
 
 ---
 
-## Validation Scopes
+## Registering validators
 
-Real-world validation happens at three distinct points in the lifecycle. MediatorK formalises this with
-`ValidationScope`:
-
-| Scope         | When it runs                            | Automatic?                     | What to check                                             |
-|---------------|-----------------------------------------|--------------------------------|-----------------------------------------------------------|
-| `REQUEST`     | Before the handler, in the pipeline     | Yes (via `ValidationBehavior`) | Field format and type — answerable from the request alone |
-| `DOMAIN`      | Inside the handler, after loading state | No — call explicitly           | Business rules that need the loaded aggregate             |
-| `PERSISTENCE` | Inside the handler, before writing      | No — call explicitly           | DB constraints (uniqueness, FK checks)                    |
-
-Declare the scope on your validator:
+Register validators via `HandlerRegistry.registerValidator<TRequest>(validator)`:
 
 ```kotlin
-// REQUEST — runs automatically in the pipeline (never touches the DB)
-class CreateInvoiceRequestValidator : RequestValidator<CreateInvoiceCommand> {
-    override val requestClass = CreateInvoiceCommand::class
-    override val scope = ValidationScope.REQUEST
-
-    override fun validate(request: CreateInvoiceCommand) {
-        require(request.id.isNotBlank()) { "Invoice ID is required" }
-        require(request.id.startsWith("INV-")) { "Invoice ID must start with INV-" }
-        require(request.amount > 0) { "Amount must be positive" }
-    }
-}
-
-// DOMAIN — called by the handler after the aggregate is loaded
-class CreateInvoiceDomainValidator(private val repo: InvoiceRepository)
-    : RequestValidator<CreateInvoiceCommand> {
-    override val requestClass = CreateInvoiceCommand::class
-    override val scope = ValidationScope.DOMAIN
-
-    override fun validate(request: CreateInvoiceCommand) {
-        if (repo.findById(request.id) != null)
-            throw ValidationException("Invoice ${request.id} already exists")
-    }
-}
-
-// PERSISTENCE — called just before the write, ideally inside the transaction
-class CreateInvoicePersistenceValidator(private val repo: InvoiceRepository)
-    : RequestValidator<CreateInvoiceCommand> {
-    override val requestClass = CreateInvoiceCommand::class
-    override val scope = ValidationScope.PERSISTENCE
-
-    override fun validate(request: CreateInvoiceCommand) {
-        if (repo.findById(request.id) != null)
-            throw ValidationException("Duplicate invoice ID — database constraint violated")
-    }
-}
-```
-
-The handler calls DOMAIN and PERSISTENCE validators explicitly at the right moment:
-
-```kotlin
-class CreateInvoiceHandler(
+class AppRegistrar(
     private val repo: InvoiceRepository,
-    private val domainValidator: CreateInvoiceDomainValidator,
-    private val persistenceValidator: CreateInvoicePersistenceValidator,
-) : RequestHandler<CreateInvoiceCommand, Unit> {
-
-    override suspend fun handle(mediator: Mediator, requestContext: RequestContext, request: CreateInvoiceCommand) {
-        domainValidator.validate(request)        // throws if duplicate
-
-        val invoice = Invoice(id = request.id, amount = request.amount)
-
-        persistenceValidator.validate(request)   // throws if DB constraint violated
-
-        repo.save(invoice)
+) : MediatorRegistrar {
+    override fun register(registry: HandlerRegistry) {
+        registry register CreateInvoiceHandler(repo)
+        registry.registerValidator(CreateInvoiceValidator())
     }
 }
 ```
 
-`ValidationBehavior` in the pipeline will only run validators whose `scope == ValidationScope.REQUEST`.
+Or using the `+` shorthand inside a `scope { }` block:
+
+```kotlin
+registry.scope {
+    +CreateInvoiceHandler(repo)
+    +CreateInvoiceValidator()
+}
+```
 
 ---
 
 ## ValidationBehavior
 
-MediatorK ships a ready-to-use `ValidationBehavior` — just pass your validators and register it:
+MediatorK ships a ready-to-use `ValidationBehavior` that runs automatically when any validators are registered.
+When you call `MediatorFactory.create`, it detects registered validators and injects `ValidationBehavior` at
+`order = -50` automatically — no manual setup needed.
+
+If you need to customize the behavior order, you can construct and add it explicitly:
 
 ```kotlin
 val mediator = MediatorFactory.create(
     registrars = listOf(AppRegistrar()),
     pipelineBehaviors = listOf(
-        ValidationBehavior(
-            validators = listOf(CreateTodoValidator(), UpdateTodoValidator()),
-        ),
+        // ValidationBehavior is injected automatically from registered validators,
+        // but you can override its order by passing it explicitly:
+        ValidationBehavior(validators = registry.anyValidators(), order = -100),
     ),
 )
 ```
 
-`ValidationBehavior` wraps `IllegalArgumentException` (from `require`) and `IllegalStateException` (from `check`)
-into `ValidationException`. A `ValidationException` thrown directly by a validator is re-thrown unchanged.
+`ValidationBehavior` runs before the handler for every request whose type has registered validators.
+It throws `ValidationException` if any validator returns `ValidationResult.Invalid`.
 
 :::tip
-`ValidationBehavior` runs at `order = -50` by default so it executes before most behaviors. You can override the
-order or replace it entirely with your own `PipelineBehavior`.
+`ValidationBehavior` runs at `order = -50` by default so it executes before most behaviors.
 :::
+
+---
+
+## Handling ValidationException
 
 Catch `ValidationException` in your ViewModel or exception handler:
 
@@ -165,13 +130,29 @@ Catch `ValidationException` in your ViewModel or exception handler:
 try {
     mediator.send(CreateTodoCommand(title, dueDate))
 } catch (e: ValidationException) {
-    errorMessage = e.message
+    errorMessage = e.errors.joinToString(", ") { it.toString() }
 }
+```
+
+`ValidationException.errors` is a `List<*>` — cast to your error type if you used a custom type in `rules { }`.
+
+---
+
+## ValidationResult API
+
+```kotlin
+sealed class ValidationResult {
+    data object Valid : ValidationResult()
+    data class Invalid(val errors: List<*>) : ValidationResult()
+}
+
+// Throw directly if invalid
+result.throwIfInvalid()
 ```
 
 ---
 
 ## Next
 
-→ [Requests & Handlers](requests.md) — streaming requests, fallback chains  
+→ [Requests & Handlers](requests.md)  
 → [Kotlin JVM](../integration/jvm.md)

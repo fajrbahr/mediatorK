@@ -29,10 +29,8 @@ import androidx.compose.ui.unit.dp
 fun LauncherScreen(
     onBeforePrayerTimesClick: () -> Unit,
     onAfterPrayerTimesClick: () -> Unit,
-    onAfterSuperPrayerTimesClick: () -> Unit,
     onBeforeIslamicMonthsClick: () -> Unit,
     onAfterIslamicMonthsClick: () -> Unit,
-    onAfterSuperIslamicMonthsClick: () -> Unit,
 ) {
     Scaffold(
         topBar = {
@@ -75,16 +73,6 @@ fun LauncherScreen(
                 onClick = onAfterPrayerTimesClick,
             )
 
-            SampleCard(
-                title = "After Super",
-                description = "After + pipeline behaviors\n" +
-                        "Validation · Logging · Timing · Retry · Timeout · Counter · ErrorTracking\n" +
-                        "City validated by ValidationBehavior before the handler runs",
-                containerColor = Color(0xFF1E1032),
-                titleColor = Color(0xFFCE93D8),
-                onClick = onAfterSuperPrayerTimesClick,
-            )
-
             Spacer(Modifier.height(8.dp))
             SectionHeader("Islamic Months")
 
@@ -107,17 +95,6 @@ fun LauncherScreen(
                 titleColor = Color(0xFF81C784),
                 onClick = onAfterIslamicMonthsClick,
             )
-
-            SampleCard(
-                title = "After Super",
-                description = "After + pipeline behaviors\n" +
-                        "Logging · Timing · Retry · Timeout · Counter · ErrorTracking\n" +
-                        "Pipeline logs captured and shown inline in the screen",
-                containerColor = Color(0xFF1E1032),
-                titleColor = Color(0xFFCE93D8),
-                onClick = onAfterSuperIslamicMonthsClick,
-            )
-
         }
     }
 }
