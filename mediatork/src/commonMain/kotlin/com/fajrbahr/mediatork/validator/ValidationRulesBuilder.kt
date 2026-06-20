@@ -23,13 +23,28 @@ fun <T : Any> rulesFailFast(block: FailFastRulesBuilder<T>.() -> Unit): Validati
     }
 }
 
+/**
+ * Collects all validation errors and returns them together.
+ *
+ * Call [check] or [require] for each rule — all checks run regardless of earlier failures.
+ * After the block completes, [toResult] returns [ValidationResult.Valid] if the error list
+ * is empty, or [ValidationResult.Invalid] with every collected error otherwise.
+ *
+ * Instantiated by [rules].
+ */
 class RulesBuilder<T : Any> {
     private val errors = mutableListOf<T>()
 
+    /**
+     * Adds [message] to the error list when [condition] is `false`. All subsequent checks still run.
+     */
     fun check(condition: Boolean, message: () -> T) {
         if (!condition) errors += message()
     }
 
+    /**
+     * Alias for [check]. Adds [message] to the error list when [condition] is `false`.
+     */
     fun require(condition: Boolean, message: () -> T) {
         if (!condition) errors += message()
     }
@@ -38,17 +53,33 @@ class RulesBuilder<T : Any> {
         if (errors.isEmpty()) ValidationResult.Valid else ValidationResult.Invalid(errors.toList())
 }
 
+/**
+ * Stops at the first failing check and returns only that error.
+ *
+ * Call [check] or [require] for each rule — execution stops at the first failure.
+ * After the block completes, the result is [ValidationResult.Valid] if no check failed,
+ * or [ValidationResult.Invalid] with the single first error otherwise.
+ *
+ * Instantiated by [rulesFailFast].
+ */
 class FailFastRulesBuilder<T : Any> {
     internal var firstError: T? = null
 
+    /** Internal control-flow signal — not an actual exception type. */
     internal class FailFastSignal : Throwable()
 
+    /**
+     * Records [message] as the first error and halts the block when [condition] is `false`.
+     */
     fun check(condition: Boolean, message: () -> T) {
         if (!condition) {
             firstError = message(); throw FailFastSignal()
         }
     }
 
+    /**
+     * Alias for [check]. Records [message] as the first error and halts when [condition] is `false`.
+     */
     fun require(condition: Boolean, message: () -> T) {
         if (!condition) {
             firstError = message(); throw FailFastSignal()

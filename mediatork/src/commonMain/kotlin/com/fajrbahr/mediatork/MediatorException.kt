@@ -31,12 +31,6 @@ class MissingHandlerException(
 )
 
 /**
- * Thrown by [com.fajrbahr.mediatork.notification.ThrowMissingNotificationHandler] when [com.fajrbahr.mediatork.notification.Publisher.publish] is called
- * for a notification type that has no registered handlers.
- *
- * @param notificationTypeName simple name of the notification type that had no handlers.
- */
-/**
  * Thrown when [com.fajrbahr.mediatork.api.IStreamRequest.stream] is called for a request type that has no registered handler.
  *
  * @param requestTypeName simple name of the stream request type that could not be resolved.
@@ -52,6 +46,12 @@ class MissingStreamHandlerException(
     }
 )
 
+/**
+ * Thrown by [com.fajrbahr.mediatork.notification.ThrowMissingNotificationHandler] when
+ * [com.fajrbahr.mediatork.notification.Publisher.publish] is called for a notification type that has no registered handlers.
+ *
+ * @param notificationTypeName simple name of the notification type that had no handlers.
+ */
 class MissingNotificationHandlerException(
     notificationTypeName: String,
 ) : MediatorException("No handler registered for notification '$notificationTypeName'")

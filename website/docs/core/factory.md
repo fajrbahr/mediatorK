@@ -7,7 +7,7 @@ sidebar_label: MediatorFactory
 # MediatorFactory
 
 `MediatorFactory.create` is the single entry point for wiring everything together — registrars, pipeline behaviors,
-processors, validators, and the notification strategy all go here.
+validators, and the notification strategy all go here.
 
 ---
 
@@ -28,32 +28,21 @@ val mediator = MediatorFactory.create(
 A production setup with all extension points populated:
 
 ```kotlin
-val validators: List<RequestValidator<*>> = listOf(
-    FetchBookingsByEmailQueryValidator(),
-    GetOrderQueryValidator(),
-)
-
 val mediator = MediatorFactory.create(
     registrars = listOf(
         UserRegistrar(),
         OrderRegistrar(),
         OrderNotificationRegistrar(),
-        FetchUserHandlerRegistrar(),
-        GetOrderRegistrar(),
     ),
     pipelineBehaviors = listOf(
-        LoggingBehavior(),
-        MeasurePipelineBehaviour(),
-        RetryPipelineBehavior(maxRetries = 2),
-        TracingPipelineBehavior(),
-        ValidationBehavior(validators),
-    ),
-    preProcessors = listOf(
-        AuthPreProcessor(),
-        LocalePreProcessor(),
-    ),
-    postProcessors = listOf(
-        MetricsPostProcessor(),
+        TraceIdBehavior(),                        // Stage.Pre  — outermost
+        LoggingPipelineBehavior(),                // Stage.Default, order=-100
+        RetryPipelineBehavior(maxRetries = 2),    // Stage.Default, order=0
+        CircuitBreakerPipelineBehavior(),         // Stage.Default, order=0
+        TimingPipelineBehavior { name, ms ->      // Stage.Default, order=0
+            metrics.record(name, ms)
+        },
+        AuditBehavior(auditLog),                  // Stage.Post — innermost
     ),
     notificationPublisher = ParallelNotificationPublisher(),
     missingNotificationHandler = ThrowMissingNotificationHandler(),
@@ -64,15 +53,15 @@ val mediator = MediatorFactory.create(
 
 ## Parameters
 
-| Parameter                    | Type                                | Default                             | Description                                                                                                                                                               |
-|------------------------------|-------------------------------------|-------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `registrars`                 | `List<MediatorRegistrar>`           | `emptyList()`                       | Contribute handlers to the registry at startup                                                                                                                            |
-| `pipelineBehaviors`          | `List<PipelineBehavior>`            | `emptyList()`                       | Cross-cutting decorators; sorted by `order` at dispatch time                                                                                                              |
-| `preProcessors`              | `List<RequestPreProcessor>`         | `emptyList()`                       | Run before the handler; sorted by `order`                                                                                                                                 |
-| `postProcessors`             | `List<RequestPostProcessor>`        | `emptyList()`                       | Run after the handler; sorted by `order`                                                                                                                                  |
-| `notificationPublisher`      | `NotificationPublisher`             | `ParallelNotificationPublisher()`   | Strategy for delivering notifications to handlers                                                                                                                         |
-| `verifyHandlers`             | `Boolean`                           | `true`                              | When `true`, logs a warning for every request type with no handler after all registrars have run                                                                          |
-| `missingNotificationHandler` | `NotificationHandler<Notification>` | `ThrowMissingNotificationHandler()` | Called when a notification is published with no registered handlers. Built-in: `ThrowMissingNotificationHandler`, `SilentMissingNotificationHandler`, or provide your own |
+| Parameter                    | Type                                  | Default                             | Description                                                                                                                                                               |
+|------------------------------|---------------------------------------|-------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `registrars`                 | `List<MediatorRegistrar>`             | `emptyList()`                       | Contribute handlers to the registry at startup                                                                                                                            |
+| `pipelineBehaviors`          | `List<PipelineBehavior>`              | `emptyList()`                       | Cross-cutting decorators; grouped by `Stage` then sorted by `order` within each stage                                                                                     |
+| `streamPipelineBehaviors`    | `List<StreamPipelineBehavior>`        | `emptyList()`                       | Cross-cutting decorators for `StreamRequest` dispatches; sorted by `order`                                                                                                |
+| `notificationPublisher`      | `NotificationPublishStrategy`         | `ParallelNotificationPublisher()`   | Strategy for delivering notifications to handlers                                                                                                                         |
+| `verifyHandlers`             | `Boolean`                             | `true`                              | When `true`, logs a warning for every request type with no handler after all registrars have run                                                                          |
+| `missingNotificationHandler` | `NotificationHandler<Notification>`   | `ThrowMissingNotificationHandler()` | Called when a notification is published with no registered handlers. Built-in: `ThrowMissingNotificationHandler`, `SilentMissingNotificationHandler`, or provide your own |
+| `missingRequestHandler`      | `RequestHandler<Request<Any?>, Any?>` | `ThrowMissingRequestHandler()`      | Called when `send()` is called for a request type with no registered handler. Use `SilentMissingRequestHandler` to return a default instead of throwing.                  |
 
 ---
 
@@ -81,15 +70,20 @@ val mediator = MediatorFactory.create(
 For every `mediator.send(request)` call, the execution flows like this:
 
 ```
-PreProcessors  (ascending order)
-  └─ PipelineBehaviors  (ascending order, outermost first)
-       └─ Handler
-  └─ PipelineBehaviors  (unwinding, innermost first)
-PostProcessors (ascending order)
+Stage.Pre behaviors    (ascending order, outermost)
+  └─ Stage.Default behaviors  (ascending order)
+       └─ Stage.Post behaviors  (ascending order, innermost)
+            └─ Handler
+       └─ Stage.Post behaviors  (unwinding)
+  └─ Stage.Default behaviors  (unwinding)
+Stage.Pre behaviors    (unwinding)
 ```
 
-`ValidationBehavior` runs at `order = -50` by default, so it executes before logging, tracing, and retry behaviors that
-typically sit at `order = 0` or above.
+**Stage always beats `order`**: every `Stage.Pre` behavior wraps every `Stage.Default` behavior, regardless of their
+`order` values. `order` only controls sequencing *within* a stage.
+
+`ValidationBehavior` runs at `order = -50` in `Stage.Default` by default, so it executes before logging (`-100`?),
+caching, and retry behaviors at `order = 0`.
 
 ---
 
@@ -124,9 +118,8 @@ A missing handler is invisible at startup. It only surfaces at runtime when `sen
 **Unsatisfied dependencies** (e.g. a null `Repository` injected into a handler) are outside
 MediatorK's scope — that is your DI container's responsibility (Koin, Hilt, etc.).
 
-**Future improvement:** a more descriptive verifier that cross-references notification
-publishers and handler registrations is planned. Until then, prefer integration tests
-that exercise each handler at least once to catch missing registrations early.
+Use `MediatorTestUtils.assertAllHandlersRegistered(registrars)` from the `mediatork-test` module to catch missing
+registrations in tests rather than at runtime.
 
 ---
 

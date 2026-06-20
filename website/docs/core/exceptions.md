@@ -8,54 +8,72 @@ sidebar_label: Exception Handling
 
 MediatorK provides two layers of exception handling:
 
-1. **`RequestExceptionHandler`** — intercept a specific exception for a specific request type and convert it into a
-   valid response instead of propagating it.
+1. **`ErrorTrackingPipelineBehavior`** — intercept every unhandled exception in the pipeline and forward it to a
+   callback (e.g. crash reporting) before rethrowing.
 2. **`AggregateException`** — thrown by `ContinueOnExceptionNotificationPublisher` when multiple notification handlers
    fail.
 
 ---
 
-## RequestExceptionHandler
+## ErrorTrackingPipelineBehavior
 
-Register one to translate domain exceptions into typed responses:
-
-```kotlin
-class UserNotFoundExceptionHandler
-    : RequestExceptionHandler<GetUserQuery, User?, UserNotFoundException> {
-
-    override suspend fun handle(
-        requestContext: RequestContext,
-        request: GetUserQuery,
-        exception: UserNotFoundException,
-    ): User? = null   // return null instead of crashing
-}
-```
-
-### Registering
+Register this behavior to wire crash-reporting services (Firebase Crashlytics, Sentry, Bugsnag, etc.) into the pipeline
+without touching handler code. The callback receives the original request and the throwable — the exception is always
+rethrown after the callback returns.
 
 ```kotlin
-registry.registerExceptionHandler(
-    requestClass   = GetUserQuery::class,
-    exceptionClass = UserNotFoundException::class,
-    handler        = UserNotFoundExceptionHandler(),
+val mediator = MediatorFactory.create(
+    registrars = listOf(AppRegistrar()),
+    pipelineBehaviors = listOf(
+        ErrorTrackingPipelineBehavior(
+            order = Int.MAX_VALUE,   // innermost by default — fires closest to the handler
+            onError = { request, error ->
+                Crashlytics.recordException(error)
+            },
+        ),
+    ),
 )
 ```
 
-### Matching rules
+Use `order = Int.MAX_VALUE` (the default) so the tracker fires after retry and timeout behaviors have already given up.
 
-- Only one exception handler per `(request type, exception type)` combination is used — the first registered handler
-  whose exception class `isInstance` of the thrown exception wins.
-- If no handler matches, the exception propagates normally.
+---
+
+## Handling missing handlers
+
+By default, `send()` for an unregistered request type throws `MissingHandlerException`.
+Customize this behavior via `missingRequestHandler` in `MediatorFactory.create`:
+
+```kotlin
+// Default — throws immediately
+val mediator = MediatorFactory.create(
+    registrars = listOf(AppRegistrar()),
+    missingRequestHandler = ThrowMissingRequestHandler(), // default
+)
+
+// Silent — returns a default value instead of throwing
+val mediator = MediatorFactory.create(
+    registrars = listOf(AppRegistrar()),
+    missingRequestHandler = SilentMissingRequestHandler(default = null),
+)
+```
+
+:::danger
+`SilentMissingRequestHandler` silently drops requests. Only use it when unhandled
+requests are intentional — misconfiguration will produce no error and no trace.
+:::
 
 ---
 
 ## Built-in exceptions
 
-| Class                     | Thrown when                                                                           |
-|---------------------------|---------------------------------------------------------------------------------------|
-| `MediatorException`       | Base class for all MediatorK errors                                                   |
-| `MissingHandlerException` | `send()` called for a request type with no registered handler                         |
-| `AggregateException`      | `ContinueOnExceptionNotificationPublisher` — one or more notification handlers failed |
+| Class                                 | Thrown when                                                                                            |
+|---------------------------------------|--------------------------------------------------------------------------------------------------------|
+| `MediatorException`                   | Base class for all MediatorK errors                                                                    |
+| `MissingHandlerException`             | `send()` called for a request type with no registered handler                                          |
+| `MissingStreamHandlerException`       | `stream()` called for a stream request type with no registered handler                                 |
+| `MissingNotificationHandlerException` | Notification published with no registered handlers (only when using `ThrowMissingNotificationHandler`) |
+| `AggregateException`                  | `ContinueOnExceptionNotificationPublisher` — one or more notification handlers failed                  |
 
 ### MissingHandlerException
 
@@ -72,6 +90,18 @@ try {
 } catch (e: AggregateException) {
     e.message // "2 handler(s) failed: ..."
 }
+```
+
+---
+
+## trySend — Result wrapper
+
+Use `trySend` when you want to handle errors as `Result` instead of catching exceptions:
+
+```kotlin
+val result: Result<User> = mediator.trySend(GetUserQuery("user-1"))
+result.onSuccess { user -> ... }
+result.onFailure { error -> ... }
 ```
 
 ---

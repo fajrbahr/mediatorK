@@ -10,11 +10,11 @@ Quick reference for all public types in `com.fajrbahr.mediatork`.
 
 | Subpackage                            | Contents                                                                                                                                                                                 |
 |---------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `com.fajrbahr.mediatork`              | Core: `Mediator`, `Request`, `StreamRequest`, `HandlerRegistry`, `MediatorFactory`, processors, exceptions                                                                               |
-| `com.fajrbahr.mediatork.handler`      | `RequestHandler`, `StreamRequestHandler`, `FallbackRequestHandler` (`otherwise`), `RequestExceptionHandler`                                                                              |
+| `com.fajrbahr.mediatork`              | Core: `Mediator`, `Request`, `StreamRequest`, `HandlerRegistry`, `MediatorFactory`, `MediatorException` hierarchy                                                                        |
+| `com.fajrbahr.mediatork.handler`      | `RequestHandler`, `StreamRequestHandler`, `FallbackRequestHandler` (`otherwise`), `Sender`, `trySend`                                                                                    |
 | `com.fajrbahr.mediatork.notification` | `Notification`, `NotificationHandler`, `FallbackNotificationHandler` (`otherwise`), all publisher implementations, `ThrowMissingNotificationHandler`, `SilentMissingNotificationHandler` |
-| `com.fajrbahr.mediatork.pipeline`     | `PipelineBehavior` and all built-in behaviors (logging, retry, caching, auth, circuit-breaker, transaction, etc.)                                                                        |
-| `com.fajrbahr.mediatork.validator`    | `RequestValidator`, `ValidationBehavior`, `ValidationScope`, `ValidationException`                                                                                                       |
+| `com.fajrbahr.mediatork.pipeline`     | `PipelineBehavior`, `Stage`, `StreamPipelineBehavior` and all built-in behaviors (logging, retry, caching, auth, circuit-breaker, transaction, etc.)                                     |
+| `com.fajrbahr.mediatork.validator`    | `RequestValidator`, `ValidationBehavior`, `ValidationResult`, `ValidationException`, `rules`, `rulesFailFast`                                                                            |
 
 ---
 
@@ -47,7 +47,7 @@ interface RequestHandler<in TRequest : Request<TResult>, TResult> {
 
 ### `StreamRequest<T>`
 
-Marker interface for requests that return a lazy `Flow<T>` instead of a single value. Dispatch via `Streamer.stream()`.
+Marker interface for requests that return a lazy `Flow<T>` instead of a single value. Dispatch via `Mediator.stream()`.
 
 ```kotlin
 interface StreamRequest<out T>
@@ -88,12 +88,12 @@ mediator.stream(StreamInvoicesQuery(status = InvoiceStatus.APPROVED)).collect { 
 
 ---
 
-### `Streamer`
+### `IStreamRequest`
 
-Capability for dispatching a `StreamRequest` to its handler.
+Capability for dispatching a `StreamRequest` to its handler. Implemented by `Mediator`.
 
 ```kotlin
-interface Streamer {
+interface IStreamRequest {
     fun <TRequest : StreamRequest<T>, T> stream(request: TRequest): Flow<T>
 }
 ```
@@ -129,50 +129,25 @@ interface NotificationHandler<in T : Notification> {
 
 Cross-cutting decorator that wraps each request pipeline.
 
-| Member                    | Type              | Default | Description                                                |
-|---------------------------|-------------------|---------|------------------------------------------------------------|
-| `order`                   | `Int`             | `0`     | Position in chain; lower = outermost                       |
-| `isEnabled`               | `Boolean`         | `true`  | Skip entirely when `false`                                 |
-| `appliesTo(request)`      | `Boolean`         | `true`  | Opt out for specific request types                         |
-| `process(ctx, next, req)` | `suspend TResult` | —       | Core implementation; must call `next(request)` to continue |
+| Member                    | Type              | Default         | Description                                                          |
+|---------------------------|-------------------|-----------------|----------------------------------------------------------------------|
+| `stage`                   | `Stage`           | `Stage.Default` | Absolute position group: `Pre`, `Default`, or `Post`                 |
+| `order`                   | `Int`             | `0`             | Position within the stage; lower = outermost                         |
+| `isEnabled`               | `Boolean`         | `true`          | Skip entirely when `false`                                           |
+| `appliesTo(request)`      | `Boolean`         | `true`          | Opt out for specific request types                                   |
+| `process(ctx, next, req)` | `suspend TResult` | —               | Core implementation; must call `next(request)` to continue the chain |
 
----
+### `Stage`
 
-### `RequestPreProcessor`
+Controls the absolute position of a `PipelineBehavior` in the chain.
 
-Hook that runs before the handler.
+| Value           | Position           |
+|-----------------|--------------------|
+| `Stage.Pre`     | Outermost wrappers |
+| `Stage.Default` | Middle *(default)* |
+| `Stage.Post`    | Innermost wrappers |
 
-```kotlin
-interface RequestPreProcessor {
-    val order: Int get() = 0
-    suspend fun process(requestContext: RequestContext, request: Request<*>)
-}
-```
-
----
-
-### `RequestPostProcessor`
-
-Hook that runs after the handler.
-
-```kotlin
-interface RequestPostProcessor {
-    val order: Int get() = 0
-    suspend fun process(requestContext: RequestContext, request: Request<*>, response: Any?)
-}
-```
-
----
-
-### `RequestExceptionHandler<TRequest, TResponse, TException>` · `com.fajrbahr.mediatork.handler`
-
-Converts a specific exception into a valid response.
-
-```kotlin
-interface RequestExceptionHandler<in TRequest, TResponse, in TException : Throwable> {
-    suspend fun handle(requestContext: RequestContext, request: TRequest, exception: TException): TResponse
-}
-```
+Stage always beats `order`. See [Pre / Post Behaviors](core/processors.md).
 
 ---
 
@@ -182,16 +157,17 @@ interface RequestExceptionHandler<in TRequest, TResponse, in TException : Throwa
 
 Stores all registered handlers. Populated by `MediatorRegistrar` implementations.
 
-| Method                                                 | Description                                                               |
-|--------------------------------------------------------|---------------------------------------------------------------------------|
-| `register(handler)`                                    | Register a request handler (infix, reified)                               |
-| `registerStream(handler)`                              | Register a stream request handler                                         |
-| `registerNotification(handler)`                        | Register a notification handler (infix, reified)                          |
-| `registerExceptionHandler(reqClass, exClass, handler)` | Register an exception handler                                             |
-| `scope { }`                                            | Group registrations for readability                                       |
-| `+handler`                                             | Operator shorthand for `register` / `registerNotification` inside `scope` |
-| `hasHandler(requestType)`                              | Returns `true` if a handler is registered for the given request type      |
-| `registeredRequestTypes()`                             | Returns the set of all request types that have a registered handler       |
+| Method                            | Description                                                               |
+|-----------------------------------|---------------------------------------------------------------------------|
+| `register(handler)`               | Register a request handler (infix, reified)                               |
+| `registerStream(handler)`         | Register a stream request handler (infix, reified)                        |
+| `registerNotification(handler)`   | Register a notification handler (infix, reified)                          |
+| `registerValidator(validator)`    | Register a request validator (reified)                                    |
+| `registerDynamic(klass, handler)` | Register a request handler without reified type (for DI frameworks)       |
+| `scope { }`                       | Group registrations for readability                                       |
+| `+handler`                        | Operator shorthand for `register` / `registerNotification` inside `scope` |
+| `hasHandler(requestType)`         | Returns `true` if a handler is registered for the given request type      |
+| `registeredRequestTypes()`        | Returns the set of all request types that have a registered handler       |
 
 ---
 
@@ -202,11 +178,11 @@ object MediatorFactory {
     fun create(
         registrars: List<MediatorRegistrar> = emptyList(),
         pipelineBehaviors: List<PipelineBehavior> = emptyList(),
-        preProcessors: List<RequestPreProcessor> = emptyList(),
-        notificationPublisher: NotificationPublisher = ParallelNotificationPublisher(),
-        postProcessors: List<RequestPostProcessor> = emptyList(),
+        streamPipelineBehaviors: List<StreamPipelineBehavior> = emptyList(),
+        notificationPublisher: NotificationPublishStrategy = ParallelNotificationPublisher(),
         verifyHandlers: Boolean = true,
         missingNotificationHandler: NotificationHandler<Notification> = ThrowMissingNotificationHandler(),
+        missingRequestHandler: RequestHandler<Request<Any?>, Any?> = ThrowMissingRequestHandler(),
     ): Mediator
 }
 ```
@@ -214,12 +190,12 @@ object MediatorFactory {
 | Parameter                    | Default                             | Description                                                                                      |
 |------------------------------|-------------------------------------|--------------------------------------------------------------------------------------------------|
 | `registrars`                 | `emptyList()`                       | Modules that contribute handlers to the registry                                                 |
-| `pipelineBehaviors`          | `emptyList()`                       | Cross-cutting decorators; sorted by `order`                                                      |
-| `preProcessors`              | `emptyList()`                       | Hooks that run before the handler; sorted by `order`                                             |
+| `pipelineBehaviors`          | `emptyList()`                       | Cross-cutting decorators; grouped by `Stage` then sorted by `order` within each group            |
+| `streamPipelineBehaviors`    | `emptyList()`                       | Cross-cutting decorators for `StreamRequest` dispatches; sorted by `order`                       |
 | `notificationPublisher`      | `ParallelNotificationPublisher()`   | Strategy for delivering notifications                                                            |
-| `postProcessors`             | `emptyList()`                       | Hooks that run after the handler; sorted by `order`                                              |
 | `verifyHandlers`             | `true`                              | When `true`, logs a warning for every request type with no handler after all registrars have run |
 | `missingNotificationHandler` | `ThrowMissingNotificationHandler()` | What to do when a notification is published with no registered handlers                          |
+| `missingRequestHandler`      | `ThrowMissingRequestHandler()`      | What to do when `send()` is called for an unregistered request type                              |
 
 ---
 
@@ -238,7 +214,7 @@ interface MediatorRegistrar {
 ## Mediator interface
 
 ```kotlin
-interface Mediator : Sender, Streamer, Publisher
+interface Mediator : Sender, IStreamRequest, Publisher
 ```
 
 | Method                             | Description                                                                                                 |
@@ -277,11 +253,13 @@ interface Mediator : Sender, Streamer, Publisher
 
 | Type                  | Description                                                                                                                  |
 |-----------------------|------------------------------------------------------------------------------------------------------------------------------|
-| `RequestValidator<T>` | Validates a request by throwing on failure (`require`, `check`, or `throw ValidationException`). Declares its `scope`.       |
-| `ValidationScope`     | `REQUEST` (pipeline, automatic) · `DOMAIN` (in handler, after load) · `PERSISTENCE` (in handler, before write)               |
-| `ValidationBehavior`  | Pre-built `PipelineBehavior` that runs `ValidationScope.REQUEST` validators and wraps failures in `ValidationException`      |
+| `RequestValidator<T>` | Validates a request and returns `ValidationResult`. Register via `registry.registerValidator(validator)`.                    |
+| `ValidationResult`    | Sealed class: `Valid` or `Invalid(errors: List<*>)`                                                                          |
+| `ValidationBehavior`  | Pre-built `PipelineBehavior` (order `-50`) that runs registered validators before the handler                                |
 | `ValidationException` | Thrown when validation fails; `errors: List<*>` carries all failure messages (any type — `String`, sealed class, enum, etc.) |
-| `rules { }`           | Collect-all DSL — evaluates every `check`/`require` and throws `ValidationException(errors)`                                 |
+| `rules { }`           | Collect-all DSL — all `check`/`require` calls run, errors accumulated                                                        |
+| `rulesFailFast { }`   | Stop-on-first DSL — execution stops at the first failing `check`/`require`                                                   |
+| `throwIfInvalid()`    | Extension on `ValidationResult` — throws `ValidationException` if the result is `Invalid`                                    |
 
 ---
 

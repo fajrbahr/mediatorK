@@ -4,46 +4,19 @@ import com.fajrbahr.mediatork.api.PipelineBehavior
 import com.fajrbahr.mediatork.api.Request
 import com.fajrbahr.mediatork.api.RequestContext
 import com.fajrbahr.mediatork.api.RequestHandlerDelegate
-import sample.context.traceNetworkMetrics
+import java.util.UUID
 
-class Mertix(traceName: String, metricName: String, value: Long) {
-    fun start() {
-    }
-}
-
-class Trace(traceName: String) {
-    fun start() {
-    }
-
-    fun stop() {}
-    fun putMetric(metricName: String, value: Long) {
-
-    }
-}
-
-class FirebasePerformance {
-    fun newTrace(requestName: String) = Trace(requestName)
-
-}
-
-class TracingPipelineBehavior(val tracker: FirebasePerformance = FirebasePerformance()) : PipelineBehavior {
-
-    override val order: Int = 3
+class TracingPipelineBehavior : PipelineBehavior {
+    override val order = -50
 
     override suspend fun <TRequest : Request<TResult>, TResult> process(
-        requestContext: RequestContext, next: RequestHandlerDelegate<TRequest, TResult>, request: TRequest
+        requestContext: RequestContext,
+        next: RequestHandlerDelegate<TRequest, TResult>,
+        request: TRequest,
     ): TResult {
-
-        val requestName = request::class.simpleName ?: "UnknownRequest"
-
-        val trace = tracker.newTrace(requestName)
-        trace.start()
-
-        val result = next(request)
-
-        requestContext.traceNetworkMetrics.map { trace.putMetric(it.name, it.value) }
-
-        trace.stop()
-        return result
+        val traceId = UUID.randomUUID().toString().take(8)
+        requestContext.put("traceId", traceId)
+        println("[TRACE] $traceId → ${request::class.simpleName}")
+        return next(request)
     }
 }

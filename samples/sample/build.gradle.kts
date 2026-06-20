@@ -10,8 +10,6 @@ repositories {
 }
 
 dependencies {
-    implementation("io.github.fajrbahr:mediatork:0.6.2")
-
     testImplementation(kotlin("test"))
     testImplementation(libs.coroutines.test)
     testImplementation(project(":mediatork-test"))

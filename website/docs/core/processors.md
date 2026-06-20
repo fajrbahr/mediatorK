@@ -1,79 +1,125 @@
 ---
 id: processors
-title: Pre / Post Processors
-sidebar_label: Pre / Post Processors
+title: Pre / Post Behaviors
+sidebar_label: Pre / Post Behaviors
 ---
 
-# Pre / Post Processors
+# Pre / Post Behaviors
 
-Processors are lightweight hooks that run before or after every handler — simpler than pipeline behaviors when you don't
-need to wrap or short-circuit, just observe or enrich.
+MediatorK uses a **three-stage pipeline** to give you precise control over where a cross-cutting concern runs relative
+to the handler and other behaviors. Every [PipelineBehavior](pipeline.md) declares a `stage` property:
+
+| Stage           | Position           | Typical use                                             |
+|-----------------|--------------------|---------------------------------------------------------|
+| `Stage.Pre`     | Outermost wrappers | Auth token injection, locale setup, trace-id population |
+| `Stage.Default` | Middle (default)   | Logging, retry, caching, circuit-breaking, timing       |
+| `Stage.Post`    | Innermost wrappers | Metrics emission, audit logging, response observation   |
+
+**Stage always wins over `order`.** Every `Stage.Pre` behavior executes before every `Stage.Default` behavior,
+regardless of their `order` values. `order` only controls sequencing *within* a stage.
 
 ---
 
-## Pre-processors
+## Pre-stage behaviors
 
-Run **before** the handler. Cannot mutate the response. Throw to abort the pipeline.
-
-Common uses: logging, populating `RequestContext`, auth checks, input sanitization.
+Set `override val stage = Stage.Pre` to run before all `Default`-stage behaviors. Common uses: populate
+`RequestContext`, inject auth context, set locale.
 
 ```kotlin
-class TraceIdPreProcessor : RequestPreProcessor {
-    override val order = 0
+import com.fajrbahr.mediatork.api.Stage
 
-    override suspend fun process(requestContext: RequestContext, request: Request<*>) {
-        requestContext.put("traceId", generateTraceId())
-    }
-}
-```
+class TraceIdBehavior : PipelineBehavior {
+    override val stage = Stage.Pre
+    override val order = 0  // ordering within Stage.Pre
 
-Multiple pre-processors run in ascending `order`.
-
----
-
-## Post-processors
-
-Run **after** the handler has returned. For observation only — cannot mutate the response. Throw to signal failure.
-
-Common uses: response logging, cache write-back, metrics, audit trails.
-
-```kotlin
-class AuditPostProcessor(private val log: AuditLog) : RequestPostProcessor {
-    override val order = 0
-
-    override suspend fun process(
+    override suspend fun <TRequest : Request<TResult>, TResult> process(
         requestContext: RequestContext,
-        request: Request<*>,
-        response: Any?,
-    ) {
-        log.record(request::class.simpleName ?: "Unknown", requestContext.getMetaDate("userId"))
+        next: RequestHandlerDelegate<TRequest, TResult>,
+        request: TRequest,
+    ): TResult {
+        requestContext.put("traceId", generateTraceId())
+        return next(request)
     }
 }
 ```
 
 ---
 
-## Registering processors
+## Post-stage behaviors
+
+Set `override val stage = Stage.Post` to run innermost — closest to the handler. They wrap the handler on the way in
+and unwind last on the way out. Common uses: emit metrics, write audit log entries.
+
+```kotlin
+class AuditBehavior(private val log: AuditLog) : PipelineBehavior {
+    override val stage = Stage.Post
+    override val order = 0
+
+    override suspend fun <TRequest : Request<TResult>, TResult> process(
+        requestContext: RequestContext,
+        next: RequestHandlerDelegate<TRequest, TResult>,
+        request: TRequest,
+    ): TResult {
+        val result = next(request)
+        val userId = requestContext.getMetaDate<String>("userId")
+        log.record(request::class.simpleName ?: "Unknown", userId)
+        return result
+    }
+}
+```
+
+---
+
+## Registering stage behaviors
+
+Stage behaviors are registered the same way as any other `PipelineBehavior` — just pass them in the
+`pipelineBehaviors` list:
 
 ```kotlin
 val mediator = MediatorFactory.create(
     registrars = listOf(AppRegistrar()),
-    preProcessors  = listOf(TraceIdPreProcessor()),
-    postProcessors = listOf(AuditPostProcessor(auditLog)),
+    pipelineBehaviors = listOf(
+        TraceIdBehavior(),           // Stage.Pre  — runs outermost
+        LoggingPipelineBehavior(),   // Stage.Default, order=-100
+        RetryPipelineBehavior(),     // Stage.Default, order=0
+        AuditBehavior(auditLog),     // Stage.Post — runs innermost
+    ),
 )
+```
+
+MediatorK sorts behaviors by stage first, then by `order` within each stage. Registration order does not matter.
+
+---
+
+## Execution order
+
+For a typical setup with one behavior in each stage:
+
+```
+Pre  (TraceIdBehavior) ─────────────────────────────────────────────────────┐
+  Default (LoggingBehavior, order=-100) ─────────────────────────────────┐  │
+    Default (RetryBehavior, order=0) ─────────────────────────────────┐  │  │
+      Post  (AuditBehavior) ─────────────────────────────────────┐    │  │  │
+                                                                  │    │  │  │
+                                                               Handler │  │  │
+                                                                  │    │  │  │
+      Post  (AuditBehavior) ◄────────────────────────────────────┘    │  │  │
+    Default (RetryBehavior) ◄─────────────────────────────────────────┘  │  │
+  Default (LoggingBehavior) ◄────────────────────────────────────────────┘  │
+Pre  (TraceIdBehavior) ◄────────────────────────────────────────────────────┘
 ```
 
 ---
 
-## Pre-processor vs Pipeline behavior
+## Pre/Post vs Pipeline behavior comparison
 
-|                              | Pre/Post Processor      | Pipeline Behavior                   |
-|------------------------------|-------------------------|-------------------------------------|
-| Can wrap the handler         | No                      | Yes                                 |
-| Can short-circuit            | Throw only              | Yes (return without calling `next`) |
-| Can modify response          | No                      | Yes                                 |
-| Applies to specific requests | No                      | Yes (`appliesTo`)                   |
-| Typical use                  | Enrich context, observe | Retry, cache, auth, transform       |
+|                              | Stage.Pre / Stage.Post | Stage.Default                 |
+|------------------------------|------------------------|-------------------------------|
+| Can wrap the handler         | Yes                    | Yes                           |
+| Can short-circuit            | Yes                    | Yes                           |
+| Can modify response          | Yes (Post)             | Yes                           |
+| Applies to specific requests | Yes (`appliesTo`)      | Yes (`appliesTo`)             |
+| Typical use                  | Context setup, audit   | Retry, cache, auth, transform |
 
 ---
 

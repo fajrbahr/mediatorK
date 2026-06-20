@@ -21,16 +21,16 @@ No kotlin-reflect. No annotation processing. No framework required.
 
 ## Why MediatorK?
 
-| Feature                        | Description                                                                          |
-|--------------------------------|--------------------------------------------------------------------------------------|
-| ⚡ **Coroutine-native**         | `suspend` all the way down — no callbacks, no blocking                               |
-| 🧩 **KMP ready**               | Works on JVM, Android, iOS, Linux, Windows, WASM, and more from one codebase         |
-| 🌊 **Streaming**               | `StreamRequest<T>` returns a cold `Flow<T>` — lazy, incremental, cancellable         |
-| 🔌 **Framework-agnostic**      | Works with Spring Boot, Ktor, KMP, or plain Kotlin                                   |
-| 🪶 **Zero magic**              | No kotlin-reflect, no code generation, no annotation processors                      |
-| 🛡️ **Three-layer validation** | Separate REQUEST, DOMAIN, and PERSISTENCE scopes — each runs at the right moment     |
-| 🔧 **Batteries included**      | 10+ built-in pipeline behaviors: caching, retry, circuit-breaker, dedup, and more    |
-| 🧪 **Testable by design**      | `buildHandlerTestHarness`, `FakeMediator`, `MediatorSpy` — no mocking library needed |
+| Feature                     | Description                                                                                            |
+|-----------------------------|--------------------------------------------------------------------------------------------------------|
+| ⚡ **Coroutine-native**      | `suspend` all the way down — no callbacks, no blocking                                                 |
+| 🧩 **KMP ready**            | Works on JVM, Android, iOS, Linux, Windows, WASM, and more from one codebase                           |
+| 🌊 **Streaming**            | `StreamRequest<T>` returns a cold `Flow<T>` — lazy, incremental, cancellable                           |
+| 🔌 **Framework-agnostic**   | Works with Spring Boot, Ktor, KMP, or plain Kotlin                                                     |
+| 🪶 **Zero magic**           | No kotlin-reflect, no code generation, no annotation processors                                        |
+| 🛡️ **Built-in validation** | Lightweight `RequestValidator` DSL with `rules { }` and `rulesFailFast { }` — no annotation processing |
+| 🔧 **Batteries included**   | 10+ built-in pipeline behaviors: caching, retry, circuit-breaker, dedup, and more                      |
+| 🧪 **Testable by design**   | `buildHandlerTestHarness`, `FakeMediator`, `MediatorSpy` — no mocking library needed                   |
 
 ---
 

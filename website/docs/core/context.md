@@ -24,13 +24,20 @@ it — all within one isolated request lifecycle.
 
 ## Writing to the context
 
-Pre-processors and pipeline behaviors populate the context:
+Pipeline behaviors (typically `Stage.Pre`) populate the context:
 
 ```kotlin
-class TraceIdPreProcessor : RequestPreProcessor {
-    override suspend fun process(requestContext: RequestContext, request: Request<*>) {
+class TraceIdBehavior : PipelineBehavior {
+    override val stage = Stage.Pre
+
+    override suspend fun <TRequest : Request<TResult>, TResult> process(
+        requestContext: RequestContext,
+        next: RequestHandlerDelegate<TRequest, TResult>,
+        request: TRequest,
+    ): TResult {
         requestContext.put("traceId", generateTraceId())
         requestContext.put("userId", resolveCurrentUser())
+        return next(request)
     }
 }
 ```
@@ -39,7 +46,7 @@ class TraceIdPreProcessor : RequestPreProcessor {
 
 ## Reading from the context
 
-Handlers and post-processors read values by key:
+Handlers and `Stage.Post` behaviors read values by key:
 
 ```kotlin
 class CreateOrderHandler : RequestHandler<CreateOrderCommand, Order> {
