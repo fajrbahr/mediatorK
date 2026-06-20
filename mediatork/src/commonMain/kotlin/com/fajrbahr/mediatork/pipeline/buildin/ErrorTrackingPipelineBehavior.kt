@@ -13,7 +13,6 @@ import com.fajrbahr.mediatork.api.RequestHandlerDelegate
  * the pipeline without touching handler code. The callback receives the original request
  * and the throwable — the exception is always rethrown after the callback returns.
  *
- *
  * @param onError callback invoked on every unhandled exception with `(request, throwable)`.
  * @param order position in the behavior chain. Defaults to `Int.MAX_VALUE` (innermost) so it
  *   fires closest to the handler, after retry/timeout behaviors have already given up.

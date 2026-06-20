@@ -3,6 +3,11 @@ package com.fajrbahr.mediatork.notification
 import com.fajrbahr.mediatork.AggregateException
 import com.fajrbahr.mediatork.api.Notification
 import com.fajrbahr.mediatork.api.NotificationHandler
+import com.fajrbahr.mediatork.notification.NotificationPublishStrategy.Companion.CONTINUE_ON_EXCEPTION
+import com.fajrbahr.mediatork.notification.NotificationPublishStrategy.Companion.DEFAULT
+import com.fajrbahr.mediatork.notification.NotificationPublishStrategy.Companion.PARALLEL
+import com.fajrbahr.mediatork.notification.NotificationPublishStrategy.Companion.SEQUENTIAL
+import com.fajrbahr.mediatork.notification.NotificationPublishStrategy.Companion.fireAndForget
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.joinAll
@@ -11,9 +16,9 @@ import kotlinx.coroutines.launch
 /**
  * Strategy that controls how a [com.fajrbahr.mediatork.api.Notification] is delivered to its handlers.
  *
- * Prefer the companion-object constants for one-off overrides at a publish site:
- *
- * Custom implementations can enforce ordering, add tracing, or apply retry logic.
+ * Use the companion-object constants ([DEFAULT], [PARALLEL], [SEQUENTIAL], [CONTINUE_ON_EXCEPTION],
+ * [fireAndForget]) for per-call overrides. Custom implementations can enforce ordering, add
+ * tracing, or apply retry logic.
  *
  * @see Publisher
  */

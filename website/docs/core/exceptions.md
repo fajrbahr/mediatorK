@@ -35,7 +35,9 @@ val mediator = MediatorFactory.create(
 )
 ```
 
-Use `order = Int.MAX_VALUE` (the default) so the tracker fires after retry and timeout behaviors have already given up.
+Use `order = Int.MAX_VALUE` (the default) to place the tracker innermost — it captures every exception directly from the
+handler before it bubbles up through retry or timeout. If you only want to report failures after all retries are
+exhausted, use an order lower than `RetryPipelineBehavior` (e.g. `Int.MIN_VALUE`) to place it outside the retry wrapper.
 
 ---
 

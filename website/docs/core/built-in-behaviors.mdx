@@ -6,20 +6,15 @@ sidebar_label: Built-in Behaviors
 
 import CodeBlock from '@theme/CodeBlock';
 import LoggingSource from '../../../mediatork/src/commonMain/kotlin/com/fajrbahr/mediatork/pipeline/buildin/LoggingPipelineBehavior.kt';
-import RetrySource from '../../../mediatork/src/commonMain/kotlin/com/fajrbahr/mediatork/pipeline/buildin/RetryPipelineBehavior.kt';
 import TimeoutSource from '../../../mediatork/src/commonMain/kotlin/com/fajrbahr/mediatork/pipeline/buildin/TimeoutPipelineBehavior.kt';
 import CounterSource from '../../../mediatork/src/commonMain/kotlin/com/fajrbahr/mediatork/pipeline/buildin/RequestCounterPipelineBehavior.kt';
 import CachingSource from '../../../mediatork/src/commonMain/kotlin/com/fajrbahr/mediatork/pipeline/buildin/CachingPipelineBehavior.kt';
-import DeduplicationSource from '../../../mediatork/src/commonMain/kotlin/com/fajrbahr/mediatork/pipeline/buildin/DeduplicationPipelineBehavior.kt';
-import RateLimitSource from '../../../mediatork/src/commonMain/kotlin/com/fajrbahr/mediatork/pipeline/buildin/RateLimitPipelineBehavior.kt';
 import TimingSource from '../../../mediatork/src/commonMain/kotlin/com/fajrbahr/mediatork/pipeline/buildin/TimingPipelineBehavior.kt';
 import ErrorTrackingSource from '../../../mediatork/src/commonMain/kotlin/com/fajrbahr/mediatork/pipeline/buildin/ErrorTrackingPipelineBehavior.kt';
-import AuthorizationSource from '../../../mediatork/src/commonMain/kotlin/com/fajrbahr/mediatork/pipeline/buildin/AuthorizationPipelineBehavior.kt';
-import CircuitBreakerSource from '../../../mediatork/src/commonMain/kotlin/com/fajrbahr/mediatork/pipeline/buildin/CircuitBreakerPipelineBehavior.kt';
 
 # Built-in Pipeline Behaviors
 
-MediatorK ships eleven ready-to-use pipeline behaviors. Drop them into `MediatorFactory.create` — no boilerplate required.
+MediatorK ships six ready-to-use pipeline behaviors. Drop them into `MediatorFactory.create` — no boilerplate required.
 
 ---
 
@@ -87,41 +82,6 @@ LoggingPipelineBehavior(logger = ::println, logResult = true)
 
 ---
 
-## RetryPipelineBehavior
-
-Retries the downstream pipeline when it throws, with an optional delay between attempts.
-
-```kotlin
-val mediator = MediatorFactory.create(
-    registrars = listOf(AppRegistrar()),
-    pipelineBehaviors = listOf(
-        RetryPipelineBehavior(
-            maxRetries = 3,
-            delayMillis = 200,
-            retryOn = { it is IOException },
-        ),
-    ),
-)
-```
-
-On each failure, if the thrown exception satisfies `retryOn`, the behavior waits `delayMillis` ms and tries again.
-Once `maxRetries` attempts are exhausted, the last exception is rethrown.
-
-### Parameters
-
-| Parameter | Type | Default | Description |
-|-----------|------|---------|-------------|
-| `maxRetries` | `Int` | `3` | Retry attempts after the first failure. Total attempts = `maxRetries + 1` |
-| `delayMillis` | `Long` | `0` | Milliseconds to wait between attempts |
-| `retryOn` | `(Throwable) -> Boolean` | `{ true }` | Predicate — return `false` to rethrow immediately |
-| `order` | `Int` | `0` | Position in the behavior chain |
-
-### Source
-
-<CodeBlock language="kotlin" title="RetryPipelineBehavior.kt">{RetrySource}</CodeBlock>
-
----
-
 ## TimeoutPipelineBehavior
 
 Cancels the downstream pipeline if it does not complete within the given deadline.
@@ -133,17 +93,6 @@ val mediator = MediatorFactory.create(
     pipelineBehaviors = listOf(
         TimeoutPipelineBehavior(timeoutMillis = 5_000),
     ),
-)
-```
-
-### Combining retry + timeout
-
-Put `TimeoutPipelineBehavior` at a lower `order` (outermost) so it wraps each individual attempt:
-
-```kotlin
-pipelineBehaviors = listOf(
-    TimeoutPipelineBehavior(timeoutMillis = 3_000, order = -1),
-    RetryPipelineBehavior(maxRetries = 3, delayMillis = 500, order = 0),
 )
 ```
 
@@ -232,52 +181,6 @@ CachingPipelineBehavior(
 
 ---
 
-## DeduplicationPipelineBehavior
-
-When two `send` calls arrive with the same key while the first is still executing, the second call awaits the first result instead of running a second pipeline. Prevents duplicate network calls caused by concurrent ViewModels or rapid user interactions.
-
-```kotlin
-DeduplicationPipelineBehavior(
-    // default: dedup by class name — all concurrent calls of the same type share one result
-    keyFor = { req -> "${req::class.simpleName}:${req}" } // or include identity
-)
-```
-
-### Parameters
-
-| Parameter | Type | Default | Description |
-|-----------|------|---------|-------------|
-| `keyFor` | `(Request<*>) -> String` | class simple name | Deduplication key function |
-| `order` | `Int` | `0` | Position in the behavior chain |
-
-### Source
-
-<CodeBlock language="kotlin" title="DeduplicationPipelineBehavior.kt">{DeduplicationSource}</CodeBlock>
-
----
-
-## RateLimitPipelineBehavior
-
-Enforces a maximum dispatch rate per request type using a sliding window. Requests that exceed the limit throw `RateLimitExceededException` immediately — they are never queued.
-
-```kotlin
-RateLimitPipelineBehavior(maxRequests = 5, windowMs = 1_000) // 5 req/s per type
-```
-
-### Parameters
-
-| Parameter | Type | Default | Description |
-|-----------|------|---------|-------------|
-| `maxRequests` | `Int` | — | Max dispatches allowed per window. Must be ≥ 1 |
-| `windowMs` | `Long` | — | Sliding window duration in milliseconds |
-| `order` | `Int` | `0` | Position in the behavior chain |
-
-### Source
-
-<CodeBlock language="kotlin" title="RateLimitPipelineBehavior.kt">{RateLimitSource}</CodeBlock>
-
----
-
 ## TimingPipelineBehavior
 
 Measures how long each request takes and reports it via a callback. Timing is always reported — even when the handler throws.
@@ -339,75 +242,6 @@ ErrorTrackingPipelineBehavior { request, error ->
 
 ---
 
-## AuthorizationPipelineBehavior
-
-Runs an authorization check for every request that implements the `AuthenticatedRequest` marker interface. Non-authenticated requests pass through untouched.
-
-```kotlin
-// Mark requests that need auth
-data class GetOrderQuery(val id: String) : Request<Order>, AuthenticatedRequest
-
-// Wire the behavior
-AuthorizationPipelineBehavior(authorize = { context, request ->
-    val token = context.getMetaDate<String>("token")
-        ?: throw UnauthorizedException("No token")
-    if (!tokenValidator.isValid(token)) throw UnauthorizedException("Invalid token")
-})
-```
-
-### Parameters
-
-| Parameter | Type | Default | Description |
-|-----------|------|---------|-------------|
-| `order` | `Int` | `-10` | Runs early — after logging, before business logic |
-| `authorize` | `suspend (RequestContext, Request<*>) -> Unit` | — | Throw to deny; return to allow |
-
-### Source
-
-<CodeBlock language="kotlin" title="AuthorizationPipelineBehavior.kt">{AuthorizationSource}</CodeBlock>
-
----
-
-## CircuitBreakerPipelineBehavior
-
-Implements the circuit-breaker resilience pattern. After `failureThreshold` consecutive failures the circuit opens and subsequent requests are rejected immediately with `CircuitOpenException`. After `resetTimeoutMs` one probe request is allowed through — success closes the circuit, failure re-opens it.
-
-```
-CLOSED ──(threshold reached)──► OPEN
-  ▲                                │
-  └──── probe success ◄─ HALF_OPEN ◄─(timeout expired)
-                         │
-                   probe failure → re-OPEN
-```
-
-```kotlin
-CircuitBreakerPipelineBehavior(
-    failureThreshold = 5,
-    resetTimeoutMs = 10_000,
-    onStateChange = { state -> println("Circuit: $state") },
-)
-```
-
-| API | Description |
-|-----|-------------|
-| `currentState` | Current `CircuitState` (CLOSED / OPEN / HALF_OPEN) |
-| `reset()` | Manually close the circuit and clear the failure counter |
-
-### Parameters
-
-| Parameter | Type | Default | Description |
-|-----------|------|---------|-------------|
-| `failureThreshold` | `Int` | `5` | Consecutive failures before tripping |
-| `resetTimeoutMs` | `Long` | `10_000` | Milliseconds to stay OPEN before trying HALF_OPEN |
-| `onStateChange` | `((CircuitState) -> Unit)?` | `null` | Optional callback on state transitions |
-| `order` | `Int` | `0` | Position in the behavior chain |
-
-### Source
-
-<CodeBlock language="kotlin" title="CircuitBreakerPipelineBehavior.kt">{CircuitBreakerSource}</CodeBlock>
-
----
-
 ## Registering multiple built-in behaviors
 
 ```kotlin
@@ -418,7 +252,6 @@ val mediator = MediatorFactory.create(
     pipelineBehaviors = listOf(
         LoggingPipelineBehavior(logger = ::println, order = -100),
         TimeoutPipelineBehavior(timeoutMillis = 5_000, order = -1),
-        RetryPipelineBehavior(maxRetries = 3, delayMillis = 200, order = 0),
         counter,
     ),
 )

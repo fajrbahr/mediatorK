@@ -13,7 +13,7 @@ Quick reference for all public types in `com.fajrbahr.mediatork`.
 | `com.fajrbahr.mediatork`              | Core: `Mediator`, `Request`, `StreamRequest`, `HandlerRegistry`, `MediatorFactory`, `MediatorException` hierarchy                                                                        |
 | `com.fajrbahr.mediatork.handler`      | `RequestHandler`, `StreamRequestHandler`, `FallbackRequestHandler` (`otherwise`), `Sender`, `trySend`                                                                                    |
 | `com.fajrbahr.mediatork.notification` | `Notification`, `NotificationHandler`, `FallbackNotificationHandler` (`otherwise`), all publisher implementations, `ThrowMissingNotificationHandler`, `SilentMissingNotificationHandler` |
-| `com.fajrbahr.mediatork.pipeline`     | `PipelineBehavior`, `Stage`, `StreamPipelineBehavior` and all built-in behaviors (logging, retry, caching, auth, circuit-breaker, transaction, etc.)                                     |
+| `com.fajrbahr.mediatork.pipeline`     | `PipelineBehavior`, `Stage`, `StreamPipelineBehavior` and all built-in behaviors (logging, caching, timeout, timing, error tracking, request counter)                                    |
 | `com.fajrbahr.mediatork.validator`    | `RequestValidator`, `ValidationBehavior`, `ValidationResult`, `ValidationException`, `rules`, `rulesFailFast`                                                                            |
 
 ---
@@ -261,47 +261,3 @@ interface Mediator : Sender, IStreamRequest, Publisher
 | `rulesFailFast { }`   | Stop-on-first DSL — execution stops at the first failing `check`/`require`                                                   |
 | `throwIfInvalid()`    | Extension on `ValidationResult` — throws `ValidationException` if the result is `Invalid`                                    |
 
----
-
-## Transaction pipeline · `com.fajrbahr.mediatork.pipeline`
-
-### `TransactionProvider`
-
-Abstraction over a transactional unit of work. Implement once per persistence layer and pass to
-`TransactionPipelineBehavior`.
-
-```kotlin
-interface TransactionProvider {
-    suspend fun <T> withTransaction(block: suspend () -> T): T
-}
-
-// Room
-val provider = object : TransactionProvider {
-    override suspend fun <T> withTransaction(block: suspend () -> T): T =
-        db.withTransaction { block() }
-}
-
-// Exposed
-val provider = object : TransactionProvider {
-    override suspend fun <T> withTransaction(block: suspend () -> T): T =
-        newSuspendedTransaction { block() }
-}
-```
-
-### `TransactionPipelineBehavior`
-
-Wraps each matching request in a transaction. Commits on success, rolls back and rethrows on any exception.
-
-```kotlin
-TransactionPipelineBehavior(
-    transactionProvider = provider,
-    appliesTo = { it is Request.Unit }, // limit to write commands
-    order = 0,
-)
-```
-
-| Parameter             | Default    | Description                                               |
-|-----------------------|------------|-----------------------------------------------------------|
-| `transactionProvider` | —          | Required. The unit-of-work implementation.                |
-| `appliesTo`           | `{ true }` | Predicate to restrict which requests run in a transaction |
-| `order`               | `0`        | Position in the behavior chain                            |

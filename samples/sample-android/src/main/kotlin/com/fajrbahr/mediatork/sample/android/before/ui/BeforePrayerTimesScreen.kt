@@ -114,7 +114,7 @@ private fun PrayerTimesContent(prayerTimes: TodayPrayerTimes) {
                     color = MaterialTheme.colorScheme.primary
                 )
                 Text(
-                    "$city · UTC",
+                    " · UTC",
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.45f)
                 )

@@ -18,7 +18,6 @@ import kotlin.time.TimeSource
  * Best suited for **query** requests whose results change infrequently. Commands that
  * produce side-effects should not be cached.
  *
- *
  * @param ttlMs time-to-live for each entry in milliseconds. Defaults to 60 000 (1 minute).
  * @param keyFor function that produces a cache key from a request. Defaults to `toString()`.
  * @param order position in the behavior chain. Defaults to `0`.
