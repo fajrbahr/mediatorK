@@ -6,7 +6,6 @@ import com.fajrbahr.mediatork.api.RequestContext
 import com.fajrbahr.mediatork.api.RequestHandlerDelegate
 import kotlinx.coroutines.TimeoutCancellationException
 import kotlinx.coroutines.withTimeout
-import kotlin.time.Duration.Companion.milliseconds
 
 /**
  * A [PipelineBehavior] that cancels the downstream pipeline if it does not complete
@@ -33,5 +32,5 @@ class TimeoutPipelineBehavior(
         requestContext: RequestContext,
         next: RequestHandlerDelegate<TRequest, TResult>,
         request: TRequest,
-    ): TResult = withTimeout(timeoutMillis.milliseconds) { next(request) }
+    ): TResult = withTimeout(timeoutMillis) { next(request) }
 }

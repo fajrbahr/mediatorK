@@ -10,7 +10,6 @@ import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
-import kotlin.time.Duration.Companion.milliseconds
 
 class TimeoutPipelineBehaviorTest {
 
@@ -30,7 +29,7 @@ class TimeoutPipelineBehaviorTest {
                 requestContext: RequestContext,
                 request: PingQuery
             ): String {
-                delay(10_000.milliseconds)
+                delay(10_000)
                 return "too late"
             }
         }
