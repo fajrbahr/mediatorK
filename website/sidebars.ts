@@ -20,7 +20,7 @@ const sidebars: SidebarsConfig = {
                     label: 'Pipeline Behaviors',
                     link: {type: 'doc', id: 'core/pipeline'},
                     collapsed: false,
-                    items: ['core/built-in-behaviors'],
+                    items: ['core/built-in-behaviors', 'core/free-aop'],
                 },
                 'core/processors',
                 'core/context',
