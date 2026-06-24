@@ -10,7 +10,7 @@
 [![Windows](https://img.shields.io/badge/Windows-supported-brightgreen.svg?logo=windows)](https://www.microsoft.com/windows)
 [![Web (JS/WASM)](https://img.shields.io/badge/Web%20(JS%2FWASM)-supported-brightgreen.svg?logo=javascript)](https://kotlinlang.org/docs/js-overview.html)
 [![CI](https://github.com/fajrbahr/mediatorK/actions/workflows/release.yml/badge.svg)](https://github.com/fajrbahr/mediatorK/actions/workflows/release.yml)
-[![Coverage](https://img.shields.io/badge/Coverage-84%25-brightgreen)](https://fajrbahr.github.io/mediatorK/the-promise)
+[![Coverage](https://img.shields.io/badge/Coverage-92%25-brightgreen)](https://fajrbahr.github.io/mediatorK/the-promise)
 [![License: CC0](https://img.shields.io/badge/License-CC0-brightgreen)](LICENSE)
 
 A coroutine-first Mediator library for Kotlin. Implements the CQRS and Vertical Slice patterns — requests go to exactly

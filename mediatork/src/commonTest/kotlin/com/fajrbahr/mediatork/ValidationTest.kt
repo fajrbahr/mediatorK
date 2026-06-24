@@ -301,4 +301,19 @@ class AggregateExceptionTest {
         val ex = AggregateException(listOf(RuntimeException("specific-error")))
         assertTrue(ex.message!!.contains("specific-error"))
     }
+
+    @Test
+    fun `AggregateException message falls back to class name when exception has no message`() {
+        val ex = AggregateException(listOf(object : RuntimeException() {}))
+        assertNotNull(ex.message)
+    }
+
+    @Test
+    fun `AggregateException with mixed null and non-null messages includes all`() {
+        val withMessage = RuntimeException("has-message")
+        val withoutMessage = RuntimeException()
+        val ex = AggregateException(listOf(withMessage, withoutMessage))
+        assertTrue(ex.message!!.contains("has-message"))
+        assertTrue(ex.message!!.contains("2"))
+    }
 }

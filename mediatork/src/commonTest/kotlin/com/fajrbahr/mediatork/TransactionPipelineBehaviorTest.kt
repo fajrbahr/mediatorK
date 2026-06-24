@@ -85,4 +85,44 @@ class TransactionPipelineBehaviorTest {
         m.send(PingQuery("b"))
         assertEquals(listOf("begin", "commit", "begin", "commit"), provider.log)
     }
+
+    @Test
+    fun `rollback is not called on success`() = runTest {
+        val provider = RecordingTransactionProvider()
+        val m = mediator(pipelineBehaviors = listOf(TransactionPipelineBehavior(provider))) {
+            register(PingHandler())
+        }
+        m.send(PingQuery("x"))
+        assertFalse("rollback" in provider.log)
+    }
+
+    @Test
+    fun `begin is called before handler and commit after`() = runTest {
+        val combined = mutableListOf<String>()
+        val provider = object : TransactionProvider {
+            override suspend fun begin() { combined += "begin" }
+            override suspend fun commit() { combined += "commit" }
+            override suspend fun rollback() { combined += "rollback" }
+        }
+        val m = mediator(pipelineBehaviors = listOf(TransactionPipelineBehavior(provider))) {
+            register(object : RequestHandler<PingQuery, String> {
+                override suspend fun handle(mediator: Mediator, requestContext: RequestContext, request: PingQuery): String {
+                    combined += "handler"
+                    return "ok"
+                }
+            })
+        }
+        m.send(PingQuery("x"))
+        assertEquals(listOf("begin", "handler", "commit"), combined)
+    }
+
+    @Test
+    fun `Unit handler commits transaction correctly`() = runTest {
+        val provider = RecordingTransactionProvider()
+        val m = mediator(pipelineBehaviors = listOf(TransactionPipelineBehavior(provider))) {
+            register(NoResultHandler())
+        }
+        m.send(NoResultCommand("test-id"))
+        assertEquals(listOf("begin", "commit"), provider.log)
+    }
 }

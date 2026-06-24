@@ -2,6 +2,7 @@ package com.fajrbahr.mediatork
 
 import com.fajrbahr.mediatork.api.*
 import com.fajrbahr.mediatork.notification.NotificationPublishStrategy
+import com.fajrbahr.mediatork.validator.ValidationResult
 import kotlinx.coroutines.test.runTest
 import kotlin.test.*
 
@@ -149,4 +150,177 @@ class HandlerRegistryTest {
         val returned = registry.registerNotification(h)
         assertSame(registry, returned)
     }
+
+    // ── registerValidator ─────────────────────────────────────────────────────
+
+    @Test
+    fun `registerValidator stores validator for request type`() = runTest {
+        val registry = HandlerRegistry()
+        val validator = object : RequestValidator<PingQuery> {
+            override fun validate(request: PingQuery): ValidationResult = ValidationResult.Valid
+        }
+        registry.registerValidator(validator)
+        assertTrue(registry.anyValidators().containsKey(PingQuery::class))
+        assertEquals(1, registry.anyValidators()[PingQuery::class]?.size)
+    }
+
+    @Test
+    fun `registerValidator appends multiple validators for same type`() = runTest {
+        val registry = HandlerRegistry()
+        val v1 = object : RequestValidator<PingQuery> {
+            override fun validate(request: PingQuery): ValidationResult = ValidationResult.Valid
+        }
+        val v2 = object : RequestValidator<PingQuery> {
+            override fun validate(request: PingQuery): ValidationResult = ValidationResult.Valid
+        }
+        registry.registerValidator(v1)
+        registry.registerValidator(v2)
+        assertEquals(2, registry.anyValidators()[PingQuery::class]?.size)
+    }
+
+    @Test
+    fun `unaryPlus registers validator`() = runTest {
+        val registry = HandlerRegistry()
+        val validator = object : RequestValidator<PingQuery> {
+            override fun validate(request: PingQuery): ValidationResult = ValidationResult.Valid
+        }
+        with(registry) { +validator }
+        assertTrue(registry.anyValidators().containsKey(PingQuery::class))
+    }
+
+    @Test
+    fun `unaryPlus registers stream handler`() = runTest {
+        val registry = HandlerRegistry()
+        val handler = object : StreamRequestHandler<StreamNumbersQuery, Int> {
+            override fun handle(
+                mediator: com.fajrbahr.mediatork.api.Mediator,
+                requestContext: RequestContext,
+                request: StreamNumbersQuery,
+            ): kotlinx.coroutines.flow.Flow<Int> = kotlinx.coroutines.flow.emptyFlow()
+        }
+        with(registry) { +handler }
+        assertTrue(registry.hasStreamHandler(StreamNumbersQuery::class))
+    }
+
+    // ── Dynamic registration ──────────────────────────────────────────────────
+
+    @Test
+    fun `registerDynamic registers handler by KClass`() = runTest {
+        val registry = HandlerRegistry()
+        registry.registerDynamic(PingQuery::class, PingHandler())
+        assertTrue(registry.hasHandler(PingQuery::class))
+    }
+
+    @Test
+    fun `registerDynamic returns registry for chaining`() {
+        val registry = HandlerRegistry()
+        val returned = registry.registerDynamic(PingQuery::class, PingHandler())
+        assertSame(registry, returned)
+    }
+
+    @Test
+    fun `registerStreamDynamic registers stream handler by KClass`() {
+        val registry = HandlerRegistry()
+        val handler = object : StreamRequestHandler<StreamNumbersQuery, Int> {
+            override fun handle(
+                mediator: com.fajrbahr.mediatork.api.Mediator,
+                requestContext: RequestContext,
+                request: StreamNumbersQuery,
+            ): kotlinx.coroutines.flow.Flow<Int> = kotlinx.coroutines.flow.emptyFlow()
+        }
+        registry.registerStreamDynamic(StreamNumbersQuery::class, handler)
+        assertTrue(registry.hasStreamHandler(StreamNumbersQuery::class))
+    }
+
+    @Test
+    fun `registerStreamDynamic returns registry for chaining`() {
+        val registry = HandlerRegistry()
+        val handler = object : StreamRequestHandler<StreamNumbersQuery, Int> {
+            override fun handle(
+                mediator: com.fajrbahr.mediatork.api.Mediator,
+                requestContext: RequestContext,
+                request: StreamNumbersQuery,
+            ): kotlinx.coroutines.flow.Flow<Int> = kotlinx.coroutines.flow.emptyFlow()
+        }
+        val returned = registry.registerStreamDynamic(StreamNumbersQuery::class, handler)
+        assertSame(registry, returned)
+    }
+
+    @Test
+    fun `registerNotificationDynamic appends handler by KClass`() = runTest {
+        val registry = HandlerRegistry()
+        val h = RecordingNotificationHandler()
+        registry.registerNotificationDynamic(PingNotification::class, h)
+        assertEquals(1, registry.resolveNotificationHandlers(PingNotification("x")).size)
+    }
+
+    @Test
+    fun `registerNotificationDynamic returns registry for chaining`() {
+        val registry = HandlerRegistry()
+        val returned = registry.registerNotificationDynamic(PingNotification::class, RecordingNotificationHandler())
+        assertSame(registry, returned)
+    }
+
+    // ── Queries ───────────────────────────────────────────────────────────────
+
+    @Test
+    fun `registeredRequestTypes returns all registered request types`() {
+        val registry = HandlerRegistry()
+        registry.register(PingHandler())
+        registry.register(AddHandler())
+        val types = registry.registeredRequestTypes()
+        assertTrue(PingQuery::class in types)
+        assertTrue(AddCommand::class in types)
+        assertEquals(2, types.size)
+    }
+
+    @Test
+    fun `registeredRequestTypes is empty when nothing registered`() {
+        val registry = HandlerRegistry()
+        assertTrue(registry.registeredRequestTypes().isEmpty())
+    }
+
+    @Test
+    fun `registeredStreamRequestTypes returns registered stream types`() {
+        val registry = HandlerRegistry()
+        val handler = object : StreamRequestHandler<StreamNumbersQuery, Int> {
+            override fun handle(
+                mediator: com.fajrbahr.mediatork.api.Mediator,
+                requestContext: RequestContext,
+                request: StreamNumbersQuery,
+            ): kotlinx.coroutines.flow.Flow<Int> = kotlinx.coroutines.flow.emptyFlow()
+        }
+        registry.registerStream(handler)
+        val types = registry.registeredStreamRequestTypes()
+        assertTrue(StreamNumbersQuery::class in types)
+    }
+
+    @Test
+    fun `registeredStreamRequestTypes is empty when nothing registered`() {
+        val registry = HandlerRegistry()
+        assertTrue(registry.registeredStreamRequestTypes().isEmpty())
+    }
+
+    @Test
+    fun `hasStreamHandler returns true after registerStreamDynamic`() {
+        val registry = HandlerRegistry()
+        val handler = object : StreamRequestHandler<StreamNumbersQuery, Int> {
+            override fun handle(
+                mediator: com.fajrbahr.mediatork.api.Mediator,
+                requestContext: RequestContext,
+                request: StreamNumbersQuery,
+            ): kotlinx.coroutines.flow.Flow<Int> = kotlinx.coroutines.flow.emptyFlow()
+        }
+        registry.registerStreamDynamic(StreamNumbersQuery::class, handler)
+        assertTrue(registry.hasStreamHandler(StreamNumbersQuery::class))
+    }
+
+    @Test
+    fun `hasNotificationHandler returns true after registerNotificationDynamic`() {
+        val registry = HandlerRegistry()
+        registry.registerNotificationDynamic(PingNotification::class, RecordingNotificationHandler())
+        assertTrue(registry.hasNotificationHandler(PingNotification::class))
+    }
 }
+
+private data class StreamNumbersQuery(val n: Int) : StreamRequest<Int>

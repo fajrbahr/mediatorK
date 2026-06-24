@@ -280,4 +280,60 @@ class NotificationTest {
         m.publish(PingNotification("ok"))
         assertEquals(listOf("ok"), h.received)
     }
+
+    // ── NotificationPublishStrategy companion constants ────────────────────────
+
+    @Test
+    fun `DEFAULT companion constant delivers to all handlers`() = runTest {
+        val h1 = RecordingNotificationHandler()
+        val h2 = RecordingNotificationHandler()
+        val pub = NotificationPublishStrategy.DEFAULT
+        pub.publish(PingNotification("def"), listOf(h1, h2))
+        assertEquals(listOf("def"), h1.received)
+        assertEquals(listOf("def"), h2.received)
+    }
+
+    @Test
+    fun `PARALLEL companion constant delivers to all handlers`() = runTest {
+        val h = RecordingNotificationHandler()
+        val pub = NotificationPublishStrategy.PARALLEL
+        pub.publish(PingNotification("par"), listOf(h))
+        assertEquals(listOf("par"), h.received)
+    }
+
+    @Test
+    fun `SEQUENTIAL companion constant delivers in registration order`() = runTest {
+        val order = mutableListOf<String>()
+        val h1 = object : NotificationHandler<PingNotification> {
+            override suspend fun handle(notification: PingNotification) { order += "h1" }
+        }
+        val h2 = object : NotificationHandler<PingNotification> {
+            override suspend fun handle(notification: PingNotification) { order += "h2" }
+        }
+        NotificationPublishStrategy.SEQUENTIAL.publish(PingNotification("x"), listOf(h1, h2))
+        assertEquals(listOf("h1", "h2"), order)
+    }
+
+    @Test
+    fun `CONTINUE_ON_EXCEPTION companion constant collects all failures`() = runTest {
+        val h1 = object : NotificationHandler<PingNotification> {
+            override suspend fun handle(notification: PingNotification) = throw RuntimeException("e1")
+        }
+        val h2 = object : NotificationHandler<PingNotification> {
+            override suspend fun handle(notification: PingNotification) = throw RuntimeException("e2")
+        }
+        val ex = assertFailsWith<AggregateException> {
+            NotificationPublishStrategy.CONTINUE_ON_EXCEPTION.publish(PingNotification("x"), listOf(h1, h2))
+        }
+        assertTrue(ex.message!!.contains("2"))
+    }
+
+    @Test
+    fun `fireAndForget companion function returns FireAndForgetPublisher`() = runTest {
+        val h = RecordingNotificationHandler()
+        val scope = CoroutineScope(UnconfinedTestDispatcher(testScheduler))
+        val pub = NotificationPublishStrategy.fireAndForget(scope)
+        pub.publish(PingNotification("ff"), listOf(h))
+        assertEquals(listOf("ff"), h.received)
+    }
 }
