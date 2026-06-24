@@ -88,4 +88,53 @@ class CachingPipelineBehaviorTest {
         m.send(PingQuery("b"))
         assertEquals(1, handlerCallCount)
     }
+
+    @Test
+    fun `size is zero before any request is sent`() = runTest {
+        val cache = CachingPipelineBehavior(ttlMs = 60_000)
+        assertEquals(0, cache.size())
+    }
+
+    @Test
+    fun `size decrements after invalidate`() = runTest {
+        val cache = CachingPipelineBehavior(ttlMs = 60_000)
+        val m = mediator(pipelineBehaviors = listOf(cache)) { register(countingHandler()) }
+        val req = PingQuery("x")
+        m.send(req)
+        assertEquals(1, cache.size())
+        cache.invalidate(req.toString())
+        assertEquals(0, cache.size())
+    }
+
+    @Test
+    fun `cached result equals original handler result`() = runTest {
+        val cache = CachingPipelineBehavior(ttlMs = 60_000)
+        val m = mediator(pipelineBehaviors = listOf(cache)) { register(countingHandler()) }
+        val first = m.send(PingQuery("z"))
+        val second = m.send(PingQuery("z"))
+        assertEquals(first, second)
+        assertEquals(1, handlerCallCount)
+    }
+
+    @Test
+    fun `invalidate of unknown key is a no-op`() = runTest {
+        val cache = CachingPipelineBehavior(ttlMs = 60_000)
+        cache.invalidate("nonexistent-key")
+        assertEquals(0, cache.size())
+    }
+
+    @Test
+    fun `clear on empty cache is a no-op`() = runTest {
+        val cache = CachingPipelineBehavior(ttlMs = 60_000)
+        cache.clear()
+        assertEquals(0, cache.size())
+    }
+
+    @Test
+    fun `result is returned correctly after cache hit`() = runTest {
+        val cache = CachingPipelineBehavior(ttlMs = 60_000)
+        val m = mediator(pipelineBehaviors = listOf(cache)) { register(countingHandler()) }
+        assertEquals("pong:hi", m.send(PingQuery("hi")))
+        assertEquals("pong:hi", m.send(PingQuery("hi")))
+    }
 }

@@ -1,5 +1,8 @@
 package com.fajrbahr.mediatork
 
+import com.fajrbahr.mediatork.api.Mediator
+import com.fajrbahr.mediatork.api.RequestContext
+import com.fajrbahr.mediatork.api.RequestHandler
 import com.fajrbahr.mediatork.pipeline.buildin.RequestCounterPipelineBehavior
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
@@ -58,5 +61,50 @@ class RequestCounterPipelineBehaviorTest {
     fun `returns zero for unseen request type`() = runTest {
         val counter = RequestCounterPipelineBehavior()
         assertEquals(0L, counter.countFor(PingQuery::class))
+    }
+
+    @Test
+    fun `snapshot is empty initially`() = runTest {
+        val counter = RequestCounterPipelineBehavior()
+        assertEquals(emptyMap(), counter.snapshot())
+    }
+
+    @Test
+    fun `count increments even when handler throws`() = runTest {
+        val counter = RequestCounterPipelineBehavior()
+        val m = mediator(pipelineBehaviors = listOf(counter)) {
+            register(object : RequestHandler<PingQuery, String> {
+                override suspend fun handle(
+                    mediator: Mediator,
+                    requestContext: RequestContext,
+                    request: PingQuery,
+                ): String = throw RuntimeException("always fails")
+            })
+        }
+        runCatching { m.send(PingQuery("x")) }
+        assertEquals(1L, counter.countFor(PingQuery::class))
+    }
+
+    @Test
+    fun `default order is 0`() {
+        assertEquals(0, RequestCounterPipelineBehavior().order)
+    }
+
+    @Test
+    fun `custom order value is reflected on instance`() {
+        assertEquals(5, RequestCounterPipelineBehavior(order = 5).order)
+    }
+
+    @Test
+    fun `reset leaves snapshot empty`() = runTest {
+        val counter = RequestCounterPipelineBehavior()
+        val m = mediator(pipelineBehaviors = listOf(counter)) {
+            register(PingHandler())
+            register(AddHandler())
+        }
+        m.send(PingQuery("x"))
+        m.send(AddCommand(1, 2))
+        counter.reset()
+        assertEquals(emptyMap(), counter.snapshot())
     }
 }

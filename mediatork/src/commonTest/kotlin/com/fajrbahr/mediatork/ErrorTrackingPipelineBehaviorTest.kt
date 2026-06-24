@@ -9,6 +9,7 @@ import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
+import kotlin.test.assertIs
 import kotlin.test.assertNull
 
 class ErrorTrackingPipelineBehaviorTest {
@@ -54,5 +55,70 @@ class ErrorTrackingPipelineBehaviorTest {
         }
         val m = mediator(pipelineBehaviors = listOf(tracker)) { register(handler) }
         assertFailsWith<IllegalStateException> { m.send(PingQuery("x")) }
+    }
+
+    @Test
+    fun `default order is Int_MAX_VALUE`() {
+        assertEquals(Int.MAX_VALUE, ErrorTrackingPipelineBehavior { _, _ -> }.order)
+    }
+
+    @Test
+    fun `result is returned unchanged on success`() = runTest {
+        val tracker = ErrorTrackingPipelineBehavior { _, _ -> }
+        val m = mediator(pipelineBehaviors = listOf(tracker)) { register(PingHandler()) }
+        assertEquals("pong:hello", m.send(PingQuery("hello")))
+    }
+
+    @Test
+    fun `callback not called for multiple successful requests`() = runTest {
+        var callCount = 0
+        val tracker = ErrorTrackingPipelineBehavior { _, _ -> callCount++ }
+        val m = mediator(pipelineBehaviors = listOf(tracker)) { register(PingHandler()) }
+        repeat(3) { m.send(PingQuery("x")) }
+        assertEquals(0, callCount)
+    }
+
+    @Test
+    fun `callback receives the correct exception type`() = runTest {
+        var captured: Throwable? = null
+        val tracker = ErrorTrackingPipelineBehavior { _, e -> captured = e }
+        val m = mediator(pipelineBehaviors = listOf(tracker)) {
+            register(object : RequestHandler<PingQuery, String> {
+                override suspend fun handle(mediator: Mediator, requestContext: RequestContext, request: PingQuery): String =
+                    throw IllegalArgumentException("bad arg")
+            })
+        }
+        runCatching { m.send(PingQuery("x")) }
+        assertIs<IllegalArgumentException>(captured)
+        assertEquals("bad arg", captured?.message)
+    }
+
+    @Test
+    fun `only failing requests trigger callback when mixed with successful ones`() = runTest {
+        val capturedRequests: MutableList<Request<*>> = mutableListOf()
+        val tracker = ErrorTrackingPipelineBehavior { req, _ -> capturedRequests += req }
+        val failOnB = object : RequestHandler<PingQuery, String> {
+            override suspend fun handle(mediator: Mediator, requestContext: RequestContext, request: PingQuery): String =
+                if (request.value == "b") throw RuntimeException("fail on b") else "ok"
+        }
+        val m = mediator(pipelineBehaviors = listOf(tracker)) { register(failOnB) }
+        m.send(PingQuery("a"))
+        runCatching { m.send(PingQuery("b")) }
+        m.send(PingQuery("c"))
+        assertEquals(listOf<Request<*>>(PingQuery("b")), capturedRequests)
+    }
+
+    @Test
+    fun `callback receives AddCommand when AddHandler throws`() = runTest {
+        var capturedRequest: Request<*>? = null
+        val tracker = ErrorTrackingPipelineBehavior { req, _ -> capturedRequest = req }
+        val m = mediator(pipelineBehaviors = listOf(tracker)) {
+            register(object : RequestHandler<AddCommand, Int> {
+                override suspend fun handle(mediator: Mediator, requestContext: RequestContext, request: AddCommand): Int =
+                    throw RuntimeException("add failed")
+            })
+        }
+        runCatching { m.send(AddCommand(1, 2)) }
+        assertEquals(AddCommand(1, 2), capturedRequest)
     }
 }
