@@ -9,6 +9,9 @@ import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.test.runTest
 import sample.behaviors.*
+import sample.context.CurrentUser
+import sample.context.currentUser
+import sample.context.locale
 import sample.orders.queries.getorder.GetOrderQuery
 import sample.orders.queries.getorder.GetOrderRegistrar
 import kotlin.test.*
@@ -228,5 +231,162 @@ class BehaviorTest {
         assertFailsWith<ValidationException> {
             mediator.send(GetOrderQuery(orderId = "ORD-1", customerId = ""))
         }
+    }
+
+    // ── Context-capturing helper ──────────────────────────────────────────────
+
+    private fun contextCapturingMediator(
+        behaviors: List<PipelineBehavior> = emptyList(),
+        handler: suspend (PingRequest, RequestContext) -> String,
+    ) = MediatorFactory.create(
+        registrars = listOf(object : MediatorRegistrar {
+            override fun register(registry: HandlerRegistry) {
+                registry register object : RequestHandler<PingRequest, String> {
+                    override suspend fun handle(
+                        mediator: Mediator,
+                        requestContext: RequestContext,
+                        request: PingRequest,
+                    ) = handler(request, requestContext)
+                }
+            }
+        }),
+        pipelineBehaviors = behaviors,
+        verifyHandlers = false,
+    )
+
+    // ── LoggingBehavior ───────────────────────────────────────────────────────
+
+    @Test
+    fun `logging behavior passes result through unchanged`() = runTest {
+        val mediator = pingMediator(behaviors = listOf(LoggingBehavior()))
+        assertEquals("pong-1", mediator.send(PingRequest("1")))
+    }
+
+    @Test
+    fun `logging behavior has order 1`() {
+        assertEquals(1, LoggingBehavior().order)
+    }
+
+    @Test
+    fun `logging behavior propagates handler exception`() = runTest {
+        val mediator = pingMediator(
+            behaviors = listOf(LoggingBehavior()),
+            handler = { throw RuntimeException("domain error") },
+        )
+        val ex = assertFailsWith<RuntimeException> { mediator.send(PingRequest("1")) }
+        assertEquals("domain error", ex.message)
+    }
+
+    // ── TracingPipelineBehavior ───────────────────────────────────────────────
+
+    @Test
+    fun `tracing behavior injects traceId into request context`() = runTest {
+        var capturedId: String? = null
+        val mediator = contextCapturingMediator(behaviors = listOf(TracingPipelineBehavior())) { _, ctx ->
+            capturedId = ctx.getMetaDate("traceId")
+            "ok"
+        }
+        mediator.send(PingRequest("t"))
+        assertNotNull(capturedId)
+        assertEquals(8, capturedId!!.length)
+    }
+
+    @Test
+    fun `tracing behavior order is negative 50`() {
+        assertEquals(-50, TracingPipelineBehavior().order)
+    }
+
+    @Test
+    fun `tracing behavior result passes through unchanged`() = runTest {
+        val mediator = pingMediator(behaviors = listOf(TracingPipelineBehavior()))
+        assertEquals("pong-z", mediator.send(PingRequest("z")))
+    }
+
+    // ── MetricsBehavior ───────────────────────────────────────────────────────
+
+    @Test
+    fun `metrics snapshot is empty before any request`() {
+        assertTrue(MetricsBehavior().snapshot().isEmpty())
+    }
+
+    @Test
+    fun `metrics increments count per request type`() = runTest {
+        val metrics = MetricsBehavior()
+        val mediator = pingMediator(behaviors = listOf(metrics))
+        repeat(3) { mediator.send(PingRequest("m")) }
+        assertEquals(3L, metrics.snapshot()["PingRequest"])
+    }
+
+    @Test
+    fun `metrics behavior order is 100`() {
+        assertEquals(100, MetricsBehavior().order)
+    }
+
+    @Test
+    fun `metrics behavior passes result through unchanged`() = runTest {
+        val mediator = pingMediator(behaviors = listOf(MetricsBehavior()))
+        assertEquals("pong-m", mediator.send(PingRequest("m")))
+    }
+
+    // ── MeasurePipelineBehaviour ──────────────────────────────────────────────
+
+    @Test
+    fun `measure behavior returns handler result unchanged`() = runTest {
+        val mediator = pingMediator(behaviors = listOf(MeasurePipelineBehaviour()))
+        assertEquals("pong-q", mediator.send(PingRequest("q")))
+    }
+
+    @Test
+    fun `measure behavior order is 10`() {
+        assertEquals(10, MeasurePipelineBehaviour().order)
+    }
+
+    @Test
+    fun `measure behavior propagates exception from handler`() = runTest {
+        val mediator = pingMediator(
+            behaviors = listOf(MeasurePipelineBehaviour()),
+            handler = { throw IllegalStateException("timed-out-domain") },
+        )
+        assertFailsWith<IllegalStateException> { mediator.send(PingRequest("x")) }
+    }
+
+    // ── AuthBehavior ──────────────────────────────────────────────────────────
+
+    @Test
+    fun `auth behavior populates currentUser in request context`() = runTest {
+        var captured: CurrentUser? = null
+        val mediator = contextCapturingMediator(behaviors = listOf(AuthBehavior())) { _, ctx ->
+            captured = ctx.currentUser
+            "ok"
+        }
+        mediator.send(PingRequest("a"))
+        assertNotNull(captured)
+        assertEquals("Alice", captured!!.name)
+        assertEquals("user-123", captured!!.id)
+        assertTrue("admin" in captured!!.roles)
+    }
+
+    @Test
+    fun `auth behavior stage is Pre`() {
+        assertEquals(Stage.Pre, AuthBehavior().stage)
+    }
+
+    // ── LocaleBehavior ────────────────────────────────────────────────────────
+
+    @Test
+    fun `locale behavior sets locale in request context`() = runTest {
+        var capturedLocale: String? = null
+        val mediator = contextCapturingMediator(behaviors = listOf(LocaleBehavior())) { _, ctx ->
+            capturedLocale = ctx.locale
+            "ok"
+        }
+        mediator.send(PingRequest("l"))
+        assertNotNull(capturedLocale)
+        assertTrue(capturedLocale.isNotEmpty())
+    }
+
+    @Test
+    fun `locale behavior stage is Pre`() {
+        assertEquals(Stage.Pre, LocaleBehavior().stage)
     }
 }
