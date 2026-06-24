@@ -4,6 +4,7 @@ plugins {
     alias(libs.plugins.nmcp)
     `maven-publish`
     signing
+    id("org.jetbrains.kotlinx.kover") version "0.9.1"
 }
 
 group = "io.github.fajrbahr"
