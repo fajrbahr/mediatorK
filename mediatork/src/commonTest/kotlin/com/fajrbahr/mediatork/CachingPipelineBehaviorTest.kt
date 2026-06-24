@@ -7,6 +7,7 @@ import com.fajrbahr.mediatork.pipeline.buildin.CachingPipelineBehavior
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
 
 class CachingPipelineBehaviorTest {
 
@@ -67,5 +68,24 @@ class CachingPipelineBehaviorTest {
         m.send(PingQuery("a"))
         m.send(PingQuery("b"))
         assertEquals(2, cache.size())
+    }
+
+    @Test
+    fun `zero ttlMs throws IllegalArgumentException`() {
+        assertFailsWith<IllegalArgumentException> { CachingPipelineBehavior(ttlMs = 0) }
+    }
+
+    @Test
+    fun `negative ttlMs throws IllegalArgumentException`() {
+        assertFailsWith<IllegalArgumentException> { CachingPipelineBehavior(ttlMs = -1) }
+    }
+
+    @Test
+    fun `custom keyFor groups different requests under the same cache key`() = runTest {
+        val cache = CachingPipelineBehavior(ttlMs = 60_000, keyFor = { "fixed-key" })
+        val m = mediator(pipelineBehaviors = listOf(cache)) { register(countingHandler()) }
+        m.send(PingQuery("a"))
+        m.send(PingQuery("b"))
+        assertEquals(1, handlerCallCount)
     }
 }

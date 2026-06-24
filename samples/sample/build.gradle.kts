@@ -1,5 +1,6 @@
 plugins {
     alias(libs.plugins.kotlin.jvm)
+    id("org.jetbrains.kotlinx.kover") version "0.9.1"
 }
 
 group = "com.fajrbahr.mediatork"
@@ -15,7 +16,6 @@ dependencies {
     testImplementation(project(":mediatork-test"))
     implementation(project(":mediatork"))
     implementation(libs.coroutines.core)
-
 }
 
 kotlin {
@@ -24,4 +24,31 @@ kotlin {
 
 tasks.test {
     useJUnitPlatform()
+}
+
+kover {
+    reports {
+        // Exclude root-package demo code and Spring stubs from coverage measurement.
+        // All real business logic lives in sub-packages (invoice/, behaviors/, android/, …).
+        filters {
+            excludes {
+                classes(
+                    "sample.MainKt",
+                    "sample.MainKt\$*",
+                    "sample.Test*",
+                    "sample.AuthenticatedGetOrderQuery",
+                    "sample.spring.*",
+                    "sample.OrderController",
+                )
+            }
+        }
+
+        verify {
+            rule {
+                bound {
+                    minValue = 66
+                }
+            }
+        }
+    }
 }
