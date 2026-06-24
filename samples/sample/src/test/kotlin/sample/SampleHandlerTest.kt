@@ -125,6 +125,79 @@ class SampleHandlerTest {
         }
     }
 
+    // ── Context metadata — pattern from MediatorK docs ───────────────────────
+
+    @Test
+    fun `handler reads metadata injected by pipeline behavior`() = runTest {
+        var capturedToken: String? = null
+        val tokenBehavior = object : PipelineBehavior {
+            override suspend fun <TRequest : Request<TResult>, TResult> process(
+                requestContext: RequestContext,
+                next: RequestHandlerDelegate<TRequest, TResult>,
+                request: TRequest,
+            ): TResult {
+                requestContext.put("token", "Bearer abc123")
+                return next(request)
+            }
+        }
+        val mediator = MediatorFactory.create(
+            registrars = listOf(object : MediatorRegistrar {
+                override fun register(registry: HandlerRegistry) {
+                    registry register object : RequestHandler<FetchUserQuery, User> {
+                        override suspend fun handle(
+                            mediator: Mediator,
+                            requestContext: RequestContext,
+                            request: FetchUserQuery,
+                        ): User {
+                            capturedToken = requestContext.getMetaDate("token")
+                            return User(name = "ctx-user", email = "ctx@beno.com")
+                        }
+                    }
+                }
+            }),
+            pipelineBehaviors = listOf(tokenBehavior),
+        )
+        mediator.send(FetchUserQuery(id = "1", amount = 0.0))
+        assertEquals("Bearer abc123", capturedToken)
+    }
+
+    // ── Multiple behaviors run in pipeline order ──────────────────────────────
+
+    @Test
+    fun `multiple behaviors execute in declared order`() = runTest {
+        val log = mutableListOf<String>()
+        fun step(name: String, o: Int) = object : PipelineBehavior {
+            override val order = o
+            override suspend fun <TRequest : Request<TResult>, TResult> process(
+                requestContext: RequestContext,
+                next: RequestHandlerDelegate<TRequest, TResult>,
+                request: TRequest,
+            ): TResult {
+                log += "$name:before"
+                return next(request).also { log += "$name:after" }
+            }
+        }
+        val mediator = MediatorFactory.create(
+            registrars = listOf(object : MediatorRegistrar {
+                override fun register(registry: HandlerRegistry) {
+                    registry register object : RequestHandler<FetchUserQuery, User> {
+                        override suspend fun handle(
+                            mediator: Mediator,
+                            requestContext: RequestContext,
+                            request: FetchUserQuery,
+                        ) = User(name = "ordered", email = "").also { log += "handler" }
+                    }
+                }
+            }),
+            pipelineBehaviors = listOf(step("outer", -10), step("inner", 10)),
+        )
+        mediator.send(FetchUserQuery(id = "x", amount = 0.0))
+        assertEquals(
+            listOf("outer:before", "inner:before", "handler", "inner:after", "outer:after"),
+            log,
+        )
+    }
+
     // ── Pipeline behavior — verify cross-cutting logic runs ───────────────────
 
     @Test
