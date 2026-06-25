@@ -10,7 +10,7 @@ import com.fajrbahr.mediatork.api.NotificationHandler
  *
  * Compose with [otherwise] instead of constructing directly.
  */
-class FallbackNotificationHandler<T : Notification>(
+internal class FallbackNotificationHandler<T : Notification>(
     private val handlers: List<NotificationHandler<T>>,
 ) : NotificationHandler<T> {
 
@@ -39,7 +39,7 @@ class FallbackNotificationHandler<T : Notification>(
  */
 infix fun <T : Notification> NotificationHandler<T>.otherwise(
     fallback: NotificationHandler<T>,
-): FallbackNotificationHandler<T> = when (this) {
+): NotificationHandler<T> = when (this) {
     is FallbackNotificationHandler -> withFallback(fallback)
     else -> FallbackNotificationHandler(listOf(this, fallback))
 }
