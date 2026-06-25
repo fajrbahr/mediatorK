@@ -11,7 +11,7 @@ package com.fajrbahr.mediatork
  * @param onMissingHandler invoked for each request type that has no registered handler.
  *   Defaults to a no-op; callers typically supply a logger or `println` call.
  */
-fun HandlerRegistry.verify(
+internal fun HandlerRegistry.verify(
     onMissingHandler: (typeName: String) -> Unit = {},
 ) {
     requestHandlers.keys.forEach { requestType ->

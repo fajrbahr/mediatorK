@@ -12,7 +12,7 @@ import com.fajrbahr.mediatork.api.RequestHandler
  *
  * Compose with [otherwise] instead of constructing directly.
  */
-class FallbackRequestHandler<TRequest : Request<TResult>, TResult>(
+internal class FallbackRequestHandler<TRequest : Request<TResult>, TResult>(
     private val handlers: List<RequestHandler<TRequest, TResult>>,
 ) : RequestHandler<TRequest, TResult> {
 
@@ -44,7 +44,7 @@ class FallbackRequestHandler<TRequest : Request<TResult>, TResult>(
  */
 infix fun <TRequest : Request<TResult>, TResult> RequestHandler<TRequest, TResult>.otherwise(
     fallback: RequestHandler<TRequest, TResult>,
-): FallbackRequestHandler<TRequest, TResult> = when (this) {
+): RequestHandler<TRequest, TResult> = when (this) {
     is FallbackRequestHandler -> withFallback(fallback)
     else -> FallbackRequestHandler(listOf(this, fallback))
 }
