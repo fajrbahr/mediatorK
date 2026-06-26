@@ -22,7 +22,6 @@ const sidebars: SidebarsConfig = {
                     collapsed: false,
                     items: ['core/free-aop', 'core/built-in-behaviors', 'core/processors'],
                 },
-                'core/exceptions',
                 'core/validation',
                 'core/factory',
                 'core/ab-testing',
@@ -33,8 +32,9 @@ const sidebars: SidebarsConfig = {
             label: 'Advanced',
             collapsed: false,
             items: [
-                'core/stream',
                 'core/context',
+                'core/exceptions',
+                'core/stream',
                 'core/fallback',
             ],
         },
@@ -55,7 +55,7 @@ const sidebars: SidebarsConfig = {
             type: 'category',
             label: 'Samples',
             collapsed: false,
-            items: ['examples/basic', 'examples/spring-boot-3', 'sample'],
+            items: ['sample'],
         },
         {
             type: 'category',

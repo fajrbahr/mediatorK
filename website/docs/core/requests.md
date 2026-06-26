@@ -75,26 +75,14 @@ The `registry register handler` infix call is the standard way to register a han
 val user: User = mediator.send(GetUserQuery("user-1"))
 val order: Order = mediator.send(CreateOrderCommand("cart-42"))
 mediator.send(DeleteAccountCommand("user-1")) // returns Unit
+
+// trySend — wraps the result in Result instead of throwing
+val result: Result<User> = mediator.trySend(GetUserQuery("user-1"))
+result.onSuccess { user -> /* handle */ }
+result.onFailure { error -> /* handle */ }
 ```
 
 `send` is a `suspend` function — call it from a coroutine or another `suspend` context.
-
----
-
-## Fallback chain
-
-Register multiple handlers for the same request type with the `otherwise` infix operator. Handlers are tried in order;
-the first one that succeeds wins.
-
-```kotlin
-registry register (
-    CreateOrderHandler(liveApi)
-        otherwise CreateOrderHandler(stagingApi)
-        otherwise CreateOrderStubHandler()
-)
-```
-
-→ See [Fallback Chains](fallback.md) for the full guide.
 
 ---
 
