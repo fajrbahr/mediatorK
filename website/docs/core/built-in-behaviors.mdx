@@ -6,14 +6,14 @@ sidebar_label: Built-in Behaviors
 
 # Built-in Pipeline Behaviors
 
-MediatorK ships six ready-to-use pipeline behaviors. Drop them into `MediatorFactory.create` — no boilerplate required.
+MediatorK ships six ready-to-use pipeline behaviors. Drop them into `MediatorFactory.create`, no boilerplate required.
 
-1. `LoggingPipelineBehavior` — logs every request in and out
-2. `TimeoutPipelineBehavior` — cancels requests that exceed a deadline
-3. `RequestCounterPipelineBehavior` — counts dispatches per request type
-4. `CachingPipelineBehavior` — skips the handler on a cache hit
-5. `TimingPipelineBehavior` — measures handler duration
-6. `ErrorTrackingPipelineBehavior` — forwards exceptions to crash reporters
+1. `LoggingPipelineBehavior`: logs every request in and out
+2. `TimeoutPipelineBehavior`: cancels requests that exceed a deadline
+3. `RequestCounterPipelineBehavior`: counts dispatches per request type
+4. `CachingPipelineBehavior`: skips the handler on a cache hit
+5. `TimingPipelineBehavior`: measures handler duration
+6. `ErrorTrackingPipelineBehavior`: forwards exceptions to crash reporters
 
 ---
 
@@ -38,7 +38,7 @@ Output:
 ← GetUserQuery
 ```
 
-### JVM — SLF4J
+### JVM: SLF4J
 
 ```kotlin
 import org.slf4j.LoggerFactory
@@ -48,13 +48,13 @@ val log = LoggerFactory.getLogger("Mediator")
 LoggingPipelineBehavior(logger = log::info)
 ```
 
-### Android — Logcat
+### Android: Logcat
 
 ```kotlin
 LoggingPipelineBehavior(logger = { msg -> Log.d("Mediator", msg) })
 ```
 
-### JS / browser — console
+### JS / browser: console
 
 ```kotlin
 LoggingPipelineBehavior(logger = { msg -> console.log(msg) })
@@ -73,7 +73,7 @@ LoggingPipelineBehavior(logger = ::println, logResult = true)
 |-----------|------|---------|-------------|
 | `logger` | `(String) -> Unit` | `::println` | Function that receives each log line |
 | `logResult` | `Boolean` | `false` | Append the result to the exit log line |
-| `order` | `Int` | `-100` | Low number = outermost — logs before any other behavior |
+| `order` | `Int` | `-100` | Low number = outermost, logs before any other behavior |
 
 ---
 
@@ -95,7 +95,7 @@ val mediator = MediatorFactory.create(
 
 | Parameter | Type | Default | Description |
 |-----------|------|---------|-------------|
-| `timeoutMillis` | `Long` | — | Maximum allowed duration per dispatch. Must be > 0 |
+| `timeoutMillis` | `Long` | required | Maximum allowed duration per dispatch. Must be > 0 |
 | `order` | `Int` | `0` | Position in the behavior chain |
 
 ---
@@ -166,7 +166,7 @@ CachingPipelineBehavior(
 
 ## TimingPipelineBehavior
 
-Measures how long each request takes and reports it via a callback. Timing is always reported — even when the handler throws.
+Measures how long each request takes and reports it via a callback. Timing is always reported, even when the handler throws.
 
 ```kotlin
 // KMP / println
@@ -187,7 +187,7 @@ TimingPipelineBehavior(onTiming = { name, ms ->
 
 | Parameter | Type | Default | Description |
 |-----------|------|---------|-------------|
-| `onTiming` | `(String, Long) -> Unit` | — | Callback with `(requestName, durationMs)` |
+| `onTiming` | `(String, Long) -> Unit` | required | Callback with `(requestName, durationMs)` |
 | `order` | `Int` | `0` | Position in the behavior chain |
 
 ---
@@ -212,8 +212,8 @@ ErrorTrackingPipelineBehavior { request, error ->
 
 | Parameter | Type | Default | Description |
 |-----------|------|---------|-------------|
-| `order` | `Int` | `Int.MAX_VALUE` | Innermost by default — fires closest to the handler |
-| `onError` | `(Request<*>, Throwable) -> Unit` | — | Callback with the request and the exception |
+| `order` | `Int` | `Int.MAX_VALUE` | Innermost by default, fires closest to the handler |
+| `onError` | `(Request<*>, Throwable) -> Unit` | required | Callback with the request and the exception |
 
 ---
 

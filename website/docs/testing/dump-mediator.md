@@ -8,8 +8,8 @@ sidebar_label: DummyMediator
 
 `DummyMediator` is a no-op `Mediator` included in `mediatork-test` for use in tests.
 
-- `publish` does nothing — fire and forget, no handlers called.
-- `send` returns silently — no exception, no result processing.
+- `publish` does nothing; fire and forget, no handlers called.
+- `send` returns silently; no exception, no result processing.
 
 No fake class to write, no mocking library needed.
 

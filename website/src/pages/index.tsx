@@ -93,7 +93,7 @@ const FEATURES = [
     {
         icon: '⚡',
         title: 'Coroutine-native',
-        desc: 'suspend all the way down — no callbacks, no blocking wrappers.',
+        desc: 'suspend all the way down, no callbacks, no blocking wrappers.',
     },
     {
         icon: '🧩',
@@ -103,7 +103,7 @@ const FEATURES = [
     {
         icon: '🔌',
         title: 'Framework-agnostic',
-        desc: 'Spring Boot, Ktor, Koin, or plain Kotlin — all first-class.',
+        desc: 'Spring Boot, Ktor, Koin, or plain Kotlin, all first-class.',
     },
     {
         icon: '🪶',
@@ -113,7 +113,7 @@ const FEATURES = [
     {
         icon: '🧪',
         title: 'Testable by design',
-        desc: 'ViewModel tests need zero mocking — swap real handlers for fakes.',
+        desc: 'ViewModel tests need zero mocking; swap real handlers for fakes.',
     },
     {
         icon: '🛡️',
@@ -136,7 +136,7 @@ const PLATFORMS = [
 export default function Home(): ReactNode {
     return (
         <Layout
-            title="MediatorK — Coroutine-first Mediator for Kotlin"
+            title="MediatorK: Coroutine-first Mediator for Kotlin"
             description="A coroutine-first Mediator library for Kotlin and Kotlin Multiplatform implementing CQRS and Vertical Slice patterns."
         >
             {/* Hero */}
@@ -171,12 +171,12 @@ export default function Home(): ReactNode {
             </header>
 
             <main>
-                {/* The promise — before / after */}
+                {/* The promise: before / after */}
                 <section className={styles.promiseSection}>
                     <div className="container">
                         <h2 className={styles.sectionTitle}>The Promise</h2>
                         <p className={styles.sectionSub}>
-                            From a ViewModel with 10+ constructor parameters — down to one.
+                            From a ViewModel with 10+ constructor parameters, down to one.
                         </p>
                         <div className={styles.beforeAfterGrid}>
                             <div className={styles.beforeAfterCard}>
@@ -188,7 +188,7 @@ export default function Home(): ReactNode {
                                 <CodeBlock language="kotlin">{AFTER_CODE}</CodeBlock>
                                 <p className={styles.afterNote}>
                                     Every action becomes <code>mediator.send(...)</code>. Each use-case moves
-                                    into a focused handler — testable in isolation, no mocking library needed.
+                                    into a focused handler, testable in isolation, no mocking library needed.
                                 </p>
                             </div>
                         </div>
@@ -209,16 +209,16 @@ export default function Home(): ReactNode {
                         </p>
                         <div className={styles.beforeAfterGrid}>
                             <div className={styles.beforeAfterCard}>
-                                <div className={clsx(styles.beforeAfterLabel, styles.beforeLabel)}>Before — Mockk hell
+                                <div className={clsx(styles.beforeAfterLabel, styles.beforeLabel)}>Before: Mockk hell
                                 </div>
                                 <CodeBlock language="kotlin">{MOCK_BEFORE_CODE}</CodeBlock>
                             </div>
                             <div className={styles.beforeAfterCard}>
-                                <div className={clsx(styles.beforeAfterLabel, styles.afterLabel)}>After — Just a fake
+                                <div className={clsx(styles.beforeAfterLabel, styles.afterLabel)}>After: Just a fake
                                 </div>
                                 <CodeBlock language="kotlin">{MOCK_AFTER_CODE}</CodeBlock>
                                 <p className={styles.afterNote}>
-                                    Each handler is a pure function. Swap it with a fake object in tests —
+                                    Each handler is a pure function. Swap it with a fake object in tests;
                                     no mocking framework, no <code>every/verify</code> incantations.
                                 </p>
                             </div>
@@ -264,7 +264,7 @@ export default function Home(): ReactNode {
                     <div className="container">
                         <h2 className={styles.sectionTitle}>Supported Platforms</h2>
                         <p className={styles.sectionSub}>
-                            All APIs live in <code>commonMain</code> — one dependency, every target.
+                            All APIs live in <code>commonMain</code>; one dependency, every target.
                         </p>
                         <div className={styles.platformGrid}>
                             {PLATFORMS.map(({name, detail}) => (

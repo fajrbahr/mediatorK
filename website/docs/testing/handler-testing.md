@@ -8,7 +8,7 @@ sidebar_label: Testing Handlers
 
 ## Handlers are glue, not logic
 
-A handler's job is to orchestrate — call a repository, map a result, return a value. It is a glue class, not a
+A handler's job is to orchestrate: call a repository, map a result, return a value. It is a glue class, not a
 business-logic class. The distinction matters because it determines how you test it.
 
 **Integration test the handler.** Wire it against a real (or in-memory) database, a real repository, or a real service.
@@ -22,7 +22,7 @@ belongs in a pure class is still sitting inside the handler.
 
 ---
 
-## Before — logic inside the handler
+## Before: logic inside the handler
 
 ```kotlin
 class ValidateCardHandler(
@@ -57,7 +57,7 @@ To unit test the date validation branch you need to stub `CardRepository`. The l
 
 ---
 
-## After — logic extracted to a pure value class
+## After: logic extracted to a pure value class
 
 Move the rules out of the handler into an `@Immutable` value class with no dependencies:
 
@@ -81,7 +81,7 @@ data class ExpirationDate(val value: String) {
 }
 ```
 
-The handler becomes glue — it delegates validation to `ExpirationDate` and touches the repository only when the input is
+The handler becomes glue; it delegates validation to `ExpirationDate` and touches the repository only when the input is
 already known-good:
 
 ```kotlin
@@ -110,7 +110,7 @@ class ValidateCardHandler(
 
 ---
 
-## Unit test the pure class — no mocks, no setup
+## Unit test the pure class: no mocks, no setup
 
 ```kotlin
 class ExpirationDateTest {
@@ -144,7 +144,7 @@ probably belongs somewhere else.
 
 ## Integration test the handler
 
-The handler test verifies the wiring — repository call, result mapping — not the business rules:
+The handler test verifies the wiring (repository call, result mapping), not the business rules:
 
 ```kotlin
 class ValidateCardHandlerTest {
@@ -172,14 +172,14 @@ class ValidateCardHandlerTest {
 }
 ```
 
-The test is short because there is nothing to fake — the date logic is already proven by `ExpirationDateTest`, and the
+The test is short because there is nothing to fake; the date logic is already proven by `ExpirationDateTest`, and the
 handler test only checks the paths that require the repository.
 
 ---
 
 ## Custom mediator
 
-Remember — you can always extend `Mediator` however you need. `FakeMediator` and `DummyMediator` are conveniences, not
+Remember, you can always extend `Mediator` however you need. `FakeMediator` and `DummyMediator` are conveniences, not
 constraints. If your test scenario calls for something more specific, implement the interface directly:
 
 ```kotlin

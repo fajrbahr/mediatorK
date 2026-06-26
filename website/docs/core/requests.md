@@ -82,7 +82,7 @@ result.onSuccess { user -> /* handle */ }
 result.onFailure { error -> /* handle */ }
 ```
 
-`send` is a `suspend` function — call it from a coroutine or another `suspend` context.
+`send` is a `suspend` function; call it from a coroutine or another `suspend` context.
 
 ---
 
@@ -98,5 +98,5 @@ result.onFailure { error -> /* handle */ }
 
 ## Next
 
-→ [Notifications](notifications.md) — broadcast events to zero-or-many handlers  
-→ [Validation](validation.md) — REQUEST, DOMAIN, and PERSISTENCE scopes
+→ [Notifications](notifications.md): broadcast events to zero-or-many handlers  
+→ [Validation](validation.md): REQUEST, DOMAIN, and PERSISTENCE scopes

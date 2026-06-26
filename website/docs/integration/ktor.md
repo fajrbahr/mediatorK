@@ -6,7 +6,7 @@ sidebar_label: Ktor
 
 # Ktor
 
-MediatorK works naturally with Ktor — register the mediator as a singleton in your DI module and inject it into your
+MediatorK works naturally with Ktor; register the mediator as a singleton in your DI module and inject it into your
 route configuration.
 
 See [Installation](../installation.md) for dependency coordinates.
@@ -79,7 +79,7 @@ fun Application.module() {
 
 ---
 
-## Sample — Prayer Times API
+## Sample: Prayer Times API
 
 The [`/samples/sample-ktor`](https://github.com/fajrbahr/MediatorK/tree/main/samples/sample-ktor) module is a runnable
 Ktor server

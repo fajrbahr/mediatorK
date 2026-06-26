@@ -29,7 +29,7 @@ interface Request<out TResponse>
 ```
 
 **Nested type:**  
-`Request.Unit` — convenience marker for commands that return no value. Equivalent to `Request<Unit>`.
+`Request.Unit`: convenience marker for commands that return no value. Equivalent to `Request<Unit>`.
 
 ---
 
@@ -53,14 +53,14 @@ Marker interface for requests that return a lazy `Flow<T>` instead of a single v
 interface StreamRequest<out T>
 ```
 
-Use when the response is a sequence produced over time — large result sets, live feeds, cursor-based exports, or
+Use when the response is a sequence produced over time: large result sets, live feeds, cursor-based exports, or
 anything better consumed incrementally than batched into a list.
 
 ---
 
 ### `StreamRequestHandler<TRequest, T>` · `com.fajrbahr.mediatork.handler`
 
-Handles a `StreamRequest` and returns a cold `Flow<T>`. The interface is **not** `suspend` — it returns the flow
+Handles a `StreamRequest` and returns a cold `Flow<T>`. The interface is **not** `suspend`; it returns the flow
 immediately; work begins when the caller collects it.
 
 ```kotlin
@@ -135,7 +135,7 @@ Cross-cutting decorator that wraps each request pipeline.
 | `order`                   | `Int`             | `0`             | Position within the stage; lower = outermost                         |
 | `isEnabled`               | `Boolean`         | `true`          | Skip entirely when `false`                                           |
 | `appliesTo(request)`      | `Boolean`         | `true`          | Opt out for specific request types                                   |
-| `process(ctx, next, req)` | `suspend TResult` | —               | Core implementation; must call `next(request)` to continue the chain |
+| `process(ctx, next, req)` | `suspend TResult` | required        | Core implementation; must call `next(request)` to continue the chain |
 
 ### `Stage`
 
@@ -256,8 +256,8 @@ interface Mediator : Sender, IStreamRequest, Publisher
 | `RequestValidator<T>` | Validates a request and returns `ValidationResult`. Register via `registry.registerValidator(validator)`.                    |
 | `ValidationResult`    | Sealed class: `Valid` or `Invalid(errors: List<*>)`                                                                          |
 | `ValidationBehavior`  | Pre-built `PipelineBehavior` (order `-50`) that runs registered validators before the handler                                |
-| `ValidationException` | Thrown when validation fails; `errors: List<*>` carries all failure messages (any type — `String`, sealed class, enum, etc.) |
-| `rules { }`           | Collect-all DSL — all `check`/`require` calls run, errors accumulated                                                        |
-| `rulesFailFast { }`   | Stop-on-first DSL — execution stops at the first failing `check`/`require`                                                   |
-| `throwIfInvalid()`    | Extension on `ValidationResult` — throws `ValidationException` if the result is `Invalid`                                    |
+| `ValidationException` | Thrown when validation fails; `errors: List<*>` carries all failure messages (any type: `String`, sealed class, enum, etc.) |
+| `rules { }`           | Collect-all DSL; all `check`/`require` calls run, errors accumulated                                                        |
+| `rulesFailFast { }`   | Stop-on-first DSL; execution stops at the first failing `check`/`require`                                                   |
+| `throwIfInvalid()`    | Extension on `ValidationResult`; throws `ValidationException` if the result is `Invalid`                                    |
 

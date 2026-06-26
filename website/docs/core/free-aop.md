@@ -6,7 +6,7 @@ sidebar_label: Free AOP
 
 # Free AOP
 
-**Aspect-Oriented Programming (AOP)** separates cross-cutting concerns — logging, auth, caching, metrics — from business
+**Aspect-Oriented Programming (AOP)** separates cross-cutting concerns (logging, auth, caching, metrics) from business
 logic without modifying the core code.
 
 MediatorK gives you AOP for free through pipeline behaviors. Every behavior you register applies to **all** handlers
@@ -14,7 +14,7 @@ automatically. Your handler code stays completely untouched.
 
 Command handlers get audit logging. Query handlers are unaffected. Zero handler changes either way.
 
-Cross-cutting concerns live in one place and apply to all handlers automatically. None of these touch a single handler. The handler is pure business logic — the pipeline is pure infrastructure.
+Cross-cutting concerns live in one place and apply to all handlers automatically. None of these touch a single handler. The handler is pure business logic; the pipeline is pure infrastructure.
 
 ---
 
@@ -85,7 +85,7 @@ val mediator = MediatorFactory.create(
 )
 ```
 
-None of these touch a single handler. The handler is pure business logic — the pipeline is pure infrastructure.
+None of these touch a single handler. The handler is pure business logic; the pipeline is pure infrastructure.
 
 ---
 
