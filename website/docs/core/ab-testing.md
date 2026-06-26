@@ -83,8 +83,3 @@ class CheckoutViewModel(
 | Testable                 | Test each variant independently by sending its command directly          |
 | Pipeline applies to both | `LoggingBehavior`, `AuthBehavior`, etc. wrap both variants automatically |
 
----
-
-## Next
-
-→ [Pipeline Behaviors](pipeline.md) — add cross-cutting concerns like logging and auth that apply to all variants

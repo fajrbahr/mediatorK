@@ -19,19 +19,6 @@ No kotlin-reflect. No annotation processing. No framework required.
 
 ---
 
-## Why MediatorK?
-
-| Feature                     | Description                                                                                            |
-|-----------------------------|--------------------------------------------------------------------------------------------------------|
-| ⚡ **Coroutine-native**      | `suspend` all the way down — no callbacks, no blocking                                                 |
-| 🧩 **KMP ready**            | Works on JVM, Android, iOS, Linux, Windows, WASM, and more from one codebase                           |
-| 🌊 **Streaming**            | `StreamRequest<T>` returns a cold `Flow<T>` — lazy, incremental, cancellable                           |
-| 🔌 **Framework-agnostic**   | Works with Spring Boot, Ktor, KMP, or plain Kotlin                                                     |
-| 🪶 **Zero magic**           | No kotlin-reflect, no code generation, no annotation processors                                        |
-| 🛡️ **Built-in validation** | Lightweight `RequestValidator` DSL with `rules { }` and `rulesFailFast { }` — no annotation processing |
-| 🔧 **Batteries included**   | 6 built-in pipeline behaviors: caching, logging, timeout, timing, error tracking, and more             |
-| 🧪 **Testable by design**   | `buildHandlerTestHarness`, `FakeMediator`, `MediatorSpy` — no mocking library needed                   |
-
 ---
 
 ## Quick Example
@@ -62,20 +49,4 @@ val mediator = MediatorFactory.create(
 val user = mediator.send(GetUserQuery("user-1"))
 ```
 
----
-
-## Supported Targets
-
-| Platform   | Targets                                                                                                 |
-|------------|---------------------------------------------------------------------------------------------------------|
-| JVM        | `jvm`                                                                                                   |
-| Android    | `androidTarget` · `androidNativeArm32` · `androidNativeArm64` · `androidNativeX64` · `androidNativeX86` |
-| iOS        | `iosArm64` · `iosSimulatorArm64` · `iosX64`                                                             |
-| macOS      | `macosArm64` · `macosX64`                                                                               |
-| tvOS       | `tvosArm64` · `tvosSimulatorArm64` · `tvosX64`                                                          |
-| watchOS    | `watchosArm32` · `watchosArm64` · `watchosDeviceArm64` · `watchosSimulatorArm64` · `watchosX64`         |
-| Linux      | `linuxArm64` · `linuxX64`                                                                               |
-| Windows    | `mingwX64`                                                                                              |
-| Web / Wasm | `js` · `wasmJs` · `wasmWasi`                                                                            |
-
-Ready to start? [See the promise MediatorK makes →](the-promise.md)
+Ready to start? [See the promise MediatorK makes →](the-promise.mdx)

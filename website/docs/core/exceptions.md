@@ -106,8 +106,3 @@ result.onSuccess { user -> ... }
 result.onFailure { error -> ... }
 ```
 
----
-
-## Next
-
-→ [Validation](validation.md)
