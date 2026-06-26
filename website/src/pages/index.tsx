@@ -38,7 +38,7 @@ fun \`place order - notifies user on success\`() {
     every { orderRepo.save(any()) } returns order
     every { paymentGateway.charge(any()) } returns receipt
     every { notificationService.notify(any()) } just Runs
-    // … 12 more stubs …
+    // … 10+ more stubs …
 
     val vm = OrderViewModel(
         notificationService, inventoryRepo,
@@ -176,7 +176,7 @@ export default function Home(): ReactNode {
                     <div className="container">
                         <h2 className={styles.sectionTitle}>The Promise</h2>
                         <p className={styles.sectionSub}>
-                            From a ViewModel with 12 constructor parameters — down to one.
+                            From a ViewModel with 10+ constructor parameters — down to one.
                         </p>
                         <div className={styles.beforeAfterGrid}>
                             <div className={styles.beforeAfterCard}>
@@ -203,7 +203,7 @@ export default function Home(): ReactNode {
                 {/* Hello Mocking */}
                 <section className={styles.mockingSection}>
                     <div className="container">
-                        <h2 className={styles.sectionTitle}>Hello, Mocking 👋</h2>
+                        <h2 className={styles.sectionTitle}>zero mocking setup</h2>
                         <p className={styles.sectionSub}>
                             No mocking library. No 20-line setup. Just a plain fake handler.
                         </p>
