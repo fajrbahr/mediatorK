@@ -6,11 +6,11 @@ sidebar_label: The Promise
 
 # The Promise
 
-> **From a ViewModel with 12 constructor parameters — down to one. And tests that cover 70 %+ of your business logic without a single mock.**
+> **From a ViewModel with 10+ constructor parameters — down to one. And tests that cover 70 %+ of your business logic without a single mock.**
 
 :::tip ViewModel Weight-Loss Program™
 **Diet your fat ViewModel — results in one week.**
-Before: 12 constructor parameters, 40 lines of mock setup, a test suite that dreads every refactor.
+Before: 10+ constructor parameters, 40 lines of mock setup, a test suite that dreads every refactor.
 After: 1 dependency, 5-line tests, zero mocking libraries.
 *Not a real program. Typical results achieved in the first PR.*
 :::
@@ -43,7 +43,7 @@ class InitialViewModel(
 ) : ViewModel()
 ```
 
-Twelve dependencies. Testing this requires constructing or mocking all twelve — even for a test that only cares about one use-case. The mock setup often dwarfs the actual test logic.
+10+ dependencies. Testing this requires constructing or mocking all 10+ — even for a test that only cares about one use-case. The mock setup often dwarfs the actual test logic.
 
 ---
 
@@ -74,17 +74,17 @@ Every action becomes a `mediator.send(...)` call. The ViewModel no longer knows 
 
 ## The Testing Story
 
-Reducing the ViewModel to one dependency changes how you test it. Instead of constructing or mocking all twelve real dependencies, you swap in a single `FakeMediator` and register whatever handler the test needs:
+Reducing the ViewModel to one dependency changes how you test it. Instead of constructing or mocking all 10+ real dependencies, you swap in a single `FakeMediator` and register whatever handler the test needs:
 
 ```kotlin
-// Before — mock twelve dependencies just to test one scenario
+// Before — mock 10+ dependencies just to test one scenario
 @Test
 fun `place order - notifies user on success`() {
     val notificationService = mockk<NotificationService>()
     val inventoryRepo = mockk<InventoryRepository>()
     val orderRepo = mockk<OrderRepository>()
     val paymentGateway = mockk<PaymentGateway>()
-    // … 8 more mocks, 12 stubs …
+    // … 8 more mocks, 10+ stubs …
 
     val vm = OrderViewModel(notificationService, inventoryRepo, orderRepo, paymentGateway, …)
     vm.placeOrder(cart)
@@ -117,56 +117,11 @@ The ViewModel test does not import a mocking library. It does not know about rep
 
 ---
 
-## Handlers Are Pure Functions
-
-Handlers have no global state. They receive a request, do their work, and return a result. That makes them trivially testable with `buildHandlerTestHarness` — a helper that wires a real mediator with real handlers but no production infrastructure:
-
-```kotlin
-@Test
-fun `approved invoice transitions to APPROVED`() = runTest {
-    val repo = InvoiceRepository()          // real in-memory repo
-    val harness = buildHandlerTestHarness {
-        +CreateInvoiceHandler(repo, CreateInvoiceDomainValidator(repo), CreateInvoicePersistenceValidator(repo))
-        +ApproveInvoiceHandler(repo)
-        +GetInvoiceHandler(repo)
-    }
-
-    harness.given(CreateInvoiceCommand(id = "INV-200", amount = 500.0))
-    harness.send(ApproveInvoiceCommand(id = "INV-200"))
-
-    val invoice = harness.query(GetInvoiceQuery(id = "INV-200"))
-    assertEquals(InvoiceStatus.APPROVED, invoice.status)
-}
-```
-
-No mocking. No `every { ... } returns`. Just real objects exercising the real path.
-
----
-
-## What 66 % Coverage Looks Like
-
-The sample project ships with **24 tests across 4 test files** and achieves **71 %+ line coverage** of business logic with zero mocking libraries.
-
-The tests cover:
-
-| Test class | What it tests |
-|---|---|
-| `InvoiceIntegrationTest` | Full invoice slice — create, approve, validate, stream, rollback |
-| `OrderViewModelTest` | ViewModel happy path, error path, loading state, event emission |
-| `BehaviorTest` | Retry, RateLimit, CircuitBreaker, Deduplication, Authorization |
-| `SampleHandlerTest` | Basic handler stubs, notification fan-out, pipeline behaviors |
-| `HandlerTest` | FetchBookings validation, ShipOrder fallback chain |
-| `HandlerCoverageTest` | Registration completeness — every handler is wired |
-
-The only files excluded from the coverage count are the `Main.kt` demo scenarios (integration scripts run manually from the IDE, not unit tests) and the Spring annotation stubs.
-
----
-
 ## Summary
 
 | | Before | After |
 |---|---|---|
-| ViewModel constructor params | 12 | 1 |
+| ViewModel constructor params | 10+ | 1 |
 | Mocking library required | Yes | No |
 | Test setup lines per test | 20 – 40 | 3 – 8 |
 | Coverage target achievable | Hard | Straightforward |

@@ -29,7 +29,7 @@ class InitialViewModel(
 ) : ViewModel()
 ```
 
-To instantiate this in a test you must stub every one of those twelve parameters — even if the test only touches two of
+To instantiate this in a test you must stub every one of those 10+ parameters — even if the test only touches two of
 them. Every new use-case added to the ViewModel breaks every existing test that constructs it.
 
 With MediatorK the constructor collapses to one dependency:

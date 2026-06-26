@@ -111,18 +111,6 @@ Pre  (TraceIdBehavior) ◄──────────────────
 
 ---
 
-## Pre/Post vs Pipeline behavior comparison
-
-|                              | Stage.Pre / Stage.Post | Stage.Default                 |
-|------------------------------|------------------------|-------------------------------|
-| Can wrap the handler         | Yes                    | Yes                           |
-| Can short-circuit            | Yes                    | Yes                           |
-| Can modify response          | Yes (Post)             | Yes                           |
-| Applies to specific requests | Yes (`appliesTo`)      | Yes (`appliesTo`)             |
-| Typical use                  | Context setup, audit   | Retry, cache, auth, transform |
-
----
-
 ## Next
 
 → [Request Context](context.md)
