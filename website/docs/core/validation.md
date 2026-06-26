@@ -6,7 +6,7 @@ sidebar_label: Validation
 
 # Validation
 
-MediatorK ships a lightweight validation API in the `com.fajrbahr.mediatork.validator` package — no annotation
+MediatorK ships a lightweight validation API in the `com.fajrbahr.mediatork.validator` package, with no annotation
 processing, no reflection, no external dependencies.
 
 ---
@@ -21,9 +21,9 @@ interface RequestValidator<TRequest : Any> {
 }
 ```
 
-### Fail-fast — stop at first error
+### Fail-fast: stop at first error
 
-Use `rulesFailFast { }` or Kotlin's own `require`/`check` (thrown as `IllegalArgumentException`):
+Use `rulesFailFast { }` to stop at the first error:
 
 ```kotlin
 class CreateTodoValidator : RequestValidator<CreateTodoCommand> {
@@ -37,7 +37,7 @@ class CreateTodoValidator : RequestValidator<CreateTodoCommand> {
 
 Execution stops at the first failure. Only the first error is included in the result.
 
-### Collect all errors — `rules { }`
+### Collect all errors: `rules { }`
 
 Use `rules { }` when you want every failure reported in one pass (e.g. form validation):
 
@@ -98,7 +98,7 @@ registry.scope {
 
 MediatorK ships a ready-to-use `ValidationBehavior` that runs automatically when any validators are registered.
 When you call `MediatorFactory.create`, it detects registered validators and injects `ValidationBehavior` at
-`order = -50` automatically — no manual setup needed.
+`order = -50` automatically, with no manual setup needed.
 
 If you need to customize the behavior order, you can construct and add it explicitly:
 
@@ -134,7 +134,7 @@ try {
 }
 ```
 
-`ValidationException.errors` is a `List<*>` — cast to your error type if you used a custom type in `rules { }`.
+`ValidationException.errors` is a `List<*>`; cast to your error type if you used a custom type in `rules { }`.
 
 ---
 
@@ -149,6 +149,30 @@ sealed class ValidationResult {
 // Throw directly if invalid
 result.throwIfInvalid()
 ```
+
+---
+
+## Using Kotlin's `require` / `check`
+
+You can use Kotlin's built-in `require` and `check` directly inside a handler instead of a `RequestValidator`. Both throw `IllegalArgumentException` on failure and integrate naturally with MediatorK's exception handling.
+
+```kotlin
+class CreateOrderHandler(private val orders: OrderRepository) : RequestHandler<CreateOrderCommand, OrderId> {
+    override suspend fun handle(
+        mediator: Mediator,
+        requestContext: RequestContext,
+        request: CreateOrderCommand,
+    ): OrderId {
+        require(request.items.isNotEmpty()) { "Order must contain at least one item" }
+        require(request.totalAmount > 0) { "Order total must be positive" }
+        val id = orders.save(request.toOrder())
+        mediator.publish(OrderCreatedNotification(id))
+        return id
+    }
+}
+```
+
+Use `require` for preconditions on input values, `check` for invariants on internal state. Once validation passes, use `mediator.publish()` to fan out notifications to any interested handlers, with no direct coupling between the handler and its subscribers. Prefer `RequestValidator` when you need structured `ValidationResult` objects (e.g. returning multiple errors to a UI).
 
 ---
 

@@ -30,7 +30,7 @@ fun `initial state is empty and not loading`() {
 }
 ```
 
-`send` returns `Unit` silently — no exception, no result processing. If your test does call `send` and the result
+`send` returns `Unit` silently; no exception, no result processing. If your test does call `send` and the result
 matters, use `FakeMediator` instead.
 
 ---
@@ -51,7 +51,7 @@ val mediator = FakeMediator {
 
 ### Register handlers after construction
 
-Handlers can also be added mid-test — useful for changing behaviour between calls in the same test:
+Handlers can also be added mid-test, useful for changing behaviour between calls in the same test:
 
 ```kotlin
 @Test
@@ -92,7 +92,7 @@ val mediator = FakeMediator(
 
 ## fakeHandler
 
-`fakeHandler` builds a `RequestHandler` from a suspend lambda. The type arguments pin the request and result types — no
+`fakeHandler` builds a `RequestHandler` from a suspend lambda. The type arguments pin the request and result types, with no
 anonymous object boilerplate.
 
 ```kotlin

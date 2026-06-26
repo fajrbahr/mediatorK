@@ -9,8 +9,8 @@ sidebar_label: MediatorSpy
 `MediatorSpy` wraps any `Mediator` and records every `send` and `publish` call while still delegating to the real
 handlers underneath. No mocking library needed.
 
-Use it when you want to assert *what* was dispatched — which requests were sent, which notifications were published, and
-how many times — while your actual handler logic still runs and returns real results.
+Use it when you want to assert *what* was dispatched: which requests were sent, which notifications were published, and
+how many times, while your actual handler logic still runs and returns real results.
 
 ---
 

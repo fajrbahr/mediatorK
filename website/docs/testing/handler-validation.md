@@ -6,7 +6,7 @@ sidebar_label: Handler Validation
 
 # Handler Validation
 
-MediatorK ships a companion test utilities artifact — `mediatork-test` — that helps you catch missing handler
+MediatorK ships a companion test utilities artifact, `mediatork-test`, that helps you catch missing handler
 registrations at test time instead of as a runtime crash.
 
 ---
@@ -21,7 +21,7 @@ of crashing at runtime when the request is first dispatched.
 
 ### Basic usage
 
-Scan the entire classpath — simplest setup, works for most projects:
+Scan the entire classpath; simplest setup, works for most projects:
 
 ```kotlin
 import com.fajrbahr.mediatork.test.MediatorTestUtils
@@ -74,5 +74,5 @@ Unregistered handlers found:
 
 | Parameter    | Type                      | Default       | Description                                               |
 |--------------|---------------------------|---------------|-----------------------------------------------------------|
-| `registrars` | `List<MediatorRegistrar>` | —             | The same registrars you pass to `MediatorFactory.create`. |
+| `registrars` | `List<MediatorRegistrar>` | required      | The same registrars you pass to `MediatorFactory.create`. |
 | `packages`   | `List<String>`            | `emptyList()` | Packages to scan. Empty list scans the entire classpath.  |

@@ -49,7 +49,7 @@ dependencies {
 **Maven**
 
 :::info
-Maven does not resolve Kotlin Multiplatform metadata — use the `-jvm` artifact ID.
+Maven does not resolve Kotlin Multiplatform metadata; use the `-jvm` artifact ID.
 :::
 
 ```xml

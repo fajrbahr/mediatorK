@@ -6,7 +6,7 @@ sidebar_label: ViewModel
 
 # ViewModel
 
-MediatorK works naturally with Android `ViewModel` — inject the mediator and dispatch requests from `viewModelScope`.
+MediatorK works naturally with Android `ViewModel`; inject the mediator and dispatch requests from `viewModelScope`.
 
 ---
 

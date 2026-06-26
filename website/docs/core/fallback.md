@@ -7,7 +7,7 @@ sidebar_label: Fallback Chains
 # Fallback Chains
 
 The `otherwise` infix operator lets you chain multiple handlers for the same request or notification type. Each
-candidate is tried in order — the first one that succeeds wins, and the rest are skipped. If every handler throws, the
+candidate is tried in order; the first one that succeeds wins, and the rest are skipped. If every handler throws, the
 last exception is re-thrown.
 
 ```
@@ -59,7 +59,7 @@ class OrderRegistrar(
 }
 ```
 
-Dispatch is unchanged — callers don't know a fallback chain exists:
+Dispatch is unchanged; callers don't know a fallback chain exists:
 
 ```kotlin
 val order: Order = mediator.send(CreateOrderCommand(cartId = "cart-42"))
@@ -104,7 +104,7 @@ class NotificationRegistrar(
 | First throws, second succeeds | Second result returned                                 |
 | All handlers throw            | Last exception re-thrown                               |
 | Single `otherwise` call       | Creates a `FallbackRequestHandler` with two candidates |
-| Chained `otherwise` calls     | All candidates collected into one handler — no nesting |
+| Chained `otherwise` calls     | All candidates collected into one handler, no nesting |
 
 ---
 
@@ -124,4 +124,4 @@ registry.scope {
 
 ## Next
 
-→ [Exceptions](exceptions.md) — per-request exception handlers that transform errors into responses
+→ [Exceptions](exceptions.md): per-request exception handlers that transform errors into responses

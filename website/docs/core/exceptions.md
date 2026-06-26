@@ -29,7 +29,7 @@ val mediator = MediatorFactory.create(
 
 :::danger
 `SilentMissingRequestHandler` silently drops requests. Only use it when unhandled
-requests are intentional — misconfiguration will produce no error and no trace.
+requests are intentional; misconfiguration will produce no error and no trace.
 :::
 
 ---
@@ -43,7 +43,7 @@ Control what happens when a notification is published with no registered handler
 |------------------------------------|----------------------------------------------------------|
 | `ThrowMissingNotificationHandler`  | Throws `MissingNotificationHandlerException` *(default)* |
 | `SilentMissingNotificationHandler` | Drops the notification silently                          |
-| Your own implementation            | Anything — dead-letter queue, logging, alerting, etc.    |
+| Your own implementation            | Anything: dead-letter queue, logging, alerting, etc.    |
 
 ```kotlin
 // default — throws if no handler is registered
@@ -67,11 +67,11 @@ val mediator = MediatorFactory.create(
 
 :::danger
 `SilentMissingNotificationHandler` silently drops notifications. Only use it when
-unhandled notifications are intentional — misconfiguration will produce no error and
+unhandled notifications are intentional; misconfiguration will produce no error and
 no trace, making it very hard to debug.
 :::
 
-The parameter type is `NotificationHandler<Notification>` — the same interface you already
+The parameter type is `NotificationHandler<Notification>`, the same interface you already
 use for regular handlers. Implement it directly for a custom behavior:
 
 ```kotlin
@@ -91,7 +91,7 @@ class DeadLetterNotificationHandler(
 ## ErrorTrackingPipelineBehavior
 
 Register this behavior to wire crash-reporting services (Firebase Crashlytics, Sentry, Bugsnag, etc.) into the pipeline
-without touching handler code. The callback receives the original request and the throwable — the exception is always
+without touching handler code. The callback receives the original request and the throwable; the exception is always
 rethrown after the callback returns.
 
 ```kotlin
@@ -108,7 +108,7 @@ val mediator = MediatorFactory.create(
 )
 ```
 
-Use `order = Int.MAX_VALUE` (the default) to place the tracker innermost — it captures every exception directly from the
+Use `order = Int.MAX_VALUE` (the default) to place the tracker innermost; it captures every exception directly from the
 handler before it bubbles up through retry or timeout. If you only want to report failures after all retries are
 exhausted, use an order lower than `RetryPipelineBehavior` (e.g. `Int.MIN_VALUE`) to place it outside the retry wrapper.
 
@@ -122,7 +122,7 @@ exhausted, use an order lower than `RetryPipelineBehavior` (e.g. `Int.MIN_VALUE`
 | `MissingHandlerException`             | `send()` called for a request type with no registered handler                                          |
 | `MissingStreamHandlerException`       | `stream()` called for a stream request type with no registered handler                                 |
 | `MissingNotificationHandlerException` | Notification published with no registered handlers (only when using `ThrowMissingNotificationHandler`) |
-| `AggregateException`                  | `ContinueOnExceptionNotificationPublisher` — one or more notification handlers failed                  |
+| `AggregateException`                  | `ContinueOnExceptionNotificationPublisher`, one or more notification handlers failed                  |
 
 ### MissingHandlerException
 
@@ -143,7 +143,7 @@ try {
 
 ---
 
-## trySend — Result wrapper
+## trySend: Result wrapper
 
 Use `trySend` when you want to handle errors as `Result` instead of catching exceptions:
 

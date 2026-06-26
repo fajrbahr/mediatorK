@@ -6,27 +6,20 @@ sidebar_label: The Promise
 
 # The Promise
 
-> **From a ViewModel with 10+ constructor parameters — down to one. And tests that cover 70 %+ of your business logic without a single mock.**
-
 import Admonition from '@theme/Admonition';
 
 <Admonition type="tip" title="ViewModel Weight-Loss Program™">
 
-**Diet your fat ViewModel — results in one week.**
+**Diet your fat ViewModel, results in one week.**
 Before: 10+ constructor parameters, 40 lines of mock setup, a test suite that dreads every refactor.
 After: 1 dependency, 5-line tests, zero mocking libraries.
 *Not a real program. Typical results achieved in the first PR.*
 
 </Admonition>
 
-This page shows the two concrete promises MediatorK makes:
-
-1. Your ViewModel becomes a thin dispatcher with exactly **one** dependency.
-2. Every piece of logic moves into a focused handler that is **testable in isolation**, using real implementations instead of mocks.
-
 ---
 
-## The Problem — an XXL ViewModel
+## The Problem: an XXL ViewModel
 
 Real-world ViewModels tend to grow. Each new feature pulls in another dependency until the constructor looks like this:
 
@@ -47,11 +40,11 @@ class InitialViewModel(
 ) : ViewModel()
 ```
 
-10+ dependencies. Testing this requires constructing or mocking all 10+ — even for a test that only cares about one use-case. The mock setup often dwarfs the actual test logic.
+10+ dependencies. Testing this requires constructing or mocking all 10+, even for a test that only cares about one use-case. The mock setup often dwarfs the actual test logic.
 
 ---
 
-## The Solution — an XXS ViewModel
+## The Solution: an XXS ViewModel
 
 With MediatorK the ViewModel has exactly one dependency:
 
@@ -72,7 +65,7 @@ class OrderViewModel(private val mediator: Mediator) : ViewModel() {
 }
 ```
 
-Every action becomes a `mediator.send(...)` call. The ViewModel no longer knows which use-case, repository, or data source handles the request — it just dispatches.
+Every action becomes a `mediator.send(...)` call. The ViewModel no longer knows which use-case, repository, or data source handles the request; it just dispatches.
 
 ---
 

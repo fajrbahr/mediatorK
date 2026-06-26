@@ -6,7 +6,7 @@ sidebar_label: Pipeline Behaviors
 
 # Pipeline Behaviors
 
-A **pipeline behavior** wraps every request in a decorator chain — cross-cutting concerns like logging, retry, caching,
+A **pipeline behavior** wraps every request in a decorator chain; cross-cutting concerns like logging, retry, caching,
 auth, and timing without touching handler code.
 
 ```
@@ -77,7 +77,7 @@ Call `next(request)` to continue. Return without calling it to short-circuit.
 
 ---
 
-## Selective behaviors — `appliesTo`
+## Selective behaviors: `appliesTo`
 
 Restrict a behavior to specific request types without modifying handler code:
 
@@ -104,12 +104,12 @@ class AuthBehavior(
 }
 ```
 
-Pass `auth0Enabled = true` when Auth0 is configured in your environment — the behavior skips token validation entirely
+Pass `auth0Enabled = true` when Auth0 is configured in your environment; the behavior skips token validation entirely
 when it is `false`.
 
 ---
 
-## Disabling a behavior — `isEnabled`
+## Disabling a behavior: `isEnabled`
 
 ```kotlin
 class MetricsBehavior(private val config: AppConfig) : PipelineBehavior {
@@ -133,9 +133,9 @@ val mediator = MediatorFactory.create(
 )
 ```
 
-Behaviors are sorted by `order` at dispatch time — registration order doesn't matter.
+Behaviors are sorted by `order` at dispatch time; registration order doesn't matter.
 
-![MediatorK pipeline behaviors — neon dispatch](../../static/img/mediator-night.png)
+![MediatorK pipeline behaviors, neon dispatch](../../static/img/mediator-night.png)
 
 ---
 

@@ -6,7 +6,7 @@ sidebar_label: MediatorFactory
 
 # MediatorFactory
 
-`MediatorFactory.create` is the single entry point for wiring everything together — registrars, pipeline behaviors,
+`MediatorFactory.create` is the single entry point for wiring everything together: registrars, pipeline behaviors,
 validators, and the notification strategy all go here.
 
 ---
@@ -103,7 +103,7 @@ caching, and retry behaviors at `order = 0`.
 `verifyHandlers = true` enables startup verification, but it has known limitations:
 
 :::warning
-**The verifier can only see what was registered — it cannot detect what was never registered.**
+**The verifier can only see what was registered; it cannot detect what was never registered.**
 
 A missing handler is invisible at startup. It only surfaces at runtime when `send()` or
 `publish()` is called for a type with no handler.
@@ -116,7 +116,7 @@ A missing handler is invisible at startup. It only surfaces at runtime when `sen
 | Misconfigured registrars that run but register nothing                 | Unsatisfied constructor dependencies inside a handler         |
 
 **Unsatisfied dependencies** (e.g. a null `Repository` injected into a handler) are outside
-MediatorK's scope — that is your DI container's responsibility (Koin, Hilt, etc.).
+MediatorK's scope; that is your DI container's responsibility (Koin, Hilt, etc.).
 
 Use `MediatorTestUtils.assertAllHandlersRegistered(registrars)` from the `mediatork-test` module to catch missing
 registrations in tests rather than at runtime.

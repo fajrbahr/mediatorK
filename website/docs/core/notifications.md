@@ -6,7 +6,7 @@ sidebar_label: Notifications
 
 # Notifications
 
-A **notification** is a broadcast event: the publisher fires it and doesn't care who — or how many — handlers react.
+A **notification** is a broadcast event: the publisher fires it and doesn't care who, or how many, handlers react.
 By default, publishing a notification with no registered handlers throws `MissingNotificationHandlerException`.
 
 Use notifications when something *happened* and other parts of the system should react independently.
@@ -46,7 +46,7 @@ class UpdateInventoryHandler(private val inventory: InventoryService) : Notifica
 
 ## Registering handlers
 
-Use `+handler` as shorthand or call `registerNotification()` directly — both are equivalent:
+Use `+handler` as shorthand or call `registerNotification()` directly; both are equivalent:
 
 ```kotlin
 class NotificationRegistrar : MediatorRegistrar {
@@ -65,6 +65,15 @@ class NotificationRegistrar : MediatorRegistrar {
 
 ```kotlin
 mediator.publish(BookingPurchasedNotification(bookingId = "b-1", amount = 250.0))
+```
+
+Pass a strategy directly on the call to override the default for a single publish:
+
+```kotlin
+mediator.publish(
+    BookingPurchasedNotification(bookingId = "b-1", amount = 250.0),
+    publisher = ContinueOnExceptionNotificationPublisher(),
+)
 ```
 
 ---

@@ -6,7 +6,7 @@ sidebar_label: Spring Boot
 
 # Spring Boot
 
-MediatorK integrates with Spring Boot without any special plugin — just register handlers as beans and create the
+MediatorK integrates with Spring Boot without any special plugin; just register handlers as beans and create the
 mediator in a `@Configuration` class.
 
 See the [full Spring Boot example](../examples/spring-boot-3.md) for a complete WebFlux CRUD API.
@@ -16,7 +16,7 @@ See the [full Spring Boot example](../examples/spring-boot-3.md) for a complete 
 ## Setup
 
 For the MediatorK dependency see [Installation](../installation.md). For Spring Boot itself, follow
-the [official Spring Initializr setup](https://start.spring.io/) — select **Kotlin**, **Gradle**, and the **Spring
+the [official Spring Initializr setup](https://start.spring.io/); select **Kotlin**, **Gradle**, and the **Spring
 WebFlux** starter.
 
 ---
@@ -85,7 +85,7 @@ class UserController(private val mediator: Mediator) {
 
 ---
 
-## Sample — Prayer Times API
+## Sample: Prayer Times API
 
 The [`/samples/sample-spring`](https://github.com/fajrbahr/MediatorK/tree/main/samples/sample-spring) module is a
 runnable Spring Boot

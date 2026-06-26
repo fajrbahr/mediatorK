@@ -7,17 +7,17 @@ sidebar_label: Request Context
 # Request Context
 
 `RequestContext` is a **mutable key-value bag** scoped to a single pipeline execution. A fresh instance is created for
-every `mediator.send(...)` call — values are never shared between concurrent requests, even when the mediator is a
+every `mediator.send(...)` call; values are never shared between concurrent requests, even when the mediator is a
 singleton.
 
 :::info Why a fresh context per request, not a shared property?
-`MediatorImpl` is a singleton. If `RequestContext` were a class-level property, concurrent `send()` calls — two
-ViewModels firing at the same time, for example — would overwrite each other's locale, auth token, or any other bag
+`MediatorImpl` is a singleton. If `RequestContext` were a class-level property, concurrent `send()` calls, two
+ViewModels firing at the same time, for example, would overwrite each other's locale, auth token, or any other bag
 value.
 
 Creating it inside `send()` scopes the context to that single pipeline execution, the same way ASP.NET Core scopes
 `HttpContext` per HTTP request. Pipeline behaviors (like `LocalePipelineBehavior`) populate it, and handlers consume
-it — all within one isolated request lifecycle.
+it; all within one isolated request lifecycle.
 :::
 
 ---
@@ -110,7 +110,7 @@ object ContextKeys {
 requestContext.put(ContextKeys.TRACE_ID, traceId)
 ```
 
-**Option 2** — read back with a typed call:
+**Option 2:** read back with a typed call:
 
 ```kotlin
 val traceId = requestContext.getMetaDate<String>(ContextKeys.TRACE_ID)

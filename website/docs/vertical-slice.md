@@ -35,7 +35,7 @@ UI
 
 ---
 
-## All the components — Order example
+## All the components: Order example
 
 - `OrderRemoteDataSource` *(interface)*
 - `OrderRemoteDataSourceImpl`
@@ -46,7 +46,7 @@ UI
 - `PlaceOrderUseCase`
 - `OrderViewModel`
 
-In the handler the `HttpClient` and `SqlDriver` are injected directly — no extra abstraction layers required:
+In the handler the `HttpClient` and `SqlDriver` are injected directly, with no extra abstraction layers required:
 
 ---
 
@@ -87,7 +87,7 @@ class PlaceOrderHandler(
 }
 ```
 
-The ViewModel stays thin — it only dispatches:
+The ViewModel stays thin; it only dispatches:
 
 ```kotlin
 class OrderViewModel(
@@ -110,7 +110,7 @@ class OrderViewModel(
 }
 ```
 
-Each feature gets its own `Command`/`Query` + `Handler` — no cross-feature coupling, no shared ViewModel god-class.
+Each feature gets its own `Command`/`Query` + `Handler`, with no cross-feature coupling, no shared ViewModel god-class.
 
 ---
 

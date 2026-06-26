@@ -6,7 +6,7 @@ sidebar_label: A/B Testing
 
 # A/B Testing & Feature Flags
 
-MediatorK makes A/B testing straightforward — define one command per variant, register a handler for each, then let the
+MediatorK makes A/B testing straightforward: define one command per variant, register a handler for each, then let the
 caller pick which command to send based on a feature flag. The mediator and handlers stay completely unaware of each
 other.
 
@@ -14,7 +14,7 @@ other.
 
 ## How it works
 
-Each variant is its own command that shares the same response type. The flag decision happens at the call site — before
+Each variant is its own command that shares the same response type. The flag decision happens at the call site, before
 `send()` is called.
 
 ```kotlin

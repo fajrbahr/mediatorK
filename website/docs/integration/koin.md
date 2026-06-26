@@ -28,7 +28,7 @@ dependencies {
 
 ## Define a Koin module
 
-Declare each registrar and behavior as its own binding, then use `getAll<T>()` to collect them automatically — no manual
+Declare each registrar and behavior as its own binding, then use `getAll<T>()` to collect them automatically, with no manual
 list construction needed:
 
 ```kotlin
@@ -55,11 +55,11 @@ val mediatorModule = module {
 ```
 
 `getAll<T>()` resolves every Koin binding for the given type, so adding a new registrar or behavior is a one-line
-change — the mediator picks it up automatically.
+change; the mediator picks it up automatically.
 
 ---
 
-## Android — start Koin in Application
+## Android: start Koin in Application
 
 ```kotlin
 class MyApp : Application() {

@@ -6,7 +6,7 @@ sidebar_label: Kotlin JVM
 
 # Kotlin JVM
 
-Use MediatorK in any JVM project — CLI tools, plain Kotlin, or as the foundation for framework-specific integrations.
+Use MediatorK in any JVM project: CLI tools, plain Kotlin, or as the foundation for framework-specific integrations.
 
 See [Installation](../installation.md) for dependency coordinates.
 

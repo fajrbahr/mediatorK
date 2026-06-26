@@ -47,7 +47,7 @@ class TraceIdBehavior : PipelineBehavior {
 
 ## Post-stage behaviors
 
-Set `override val stage = Stage.Post` to run innermost — closest to the handler. They wrap the handler on the way in
+Set `override val stage = Stage.Post` to run innermost, closest to the handler. They wrap the handler on the way in
 and unwind last on the way out. Common uses: emit metrics, write audit log entries.
 
 ```kotlin
@@ -72,7 +72,7 @@ class AuditBehavior(private val log: AuditLog) : PipelineBehavior {
 
 ## Registering stage behaviors
 
-Stage behaviors are registered the same way as any other `PipelineBehavior` — just pass them in the
+Stage behaviors are registered the same way as any other `PipelineBehavior`; just pass them in the
 `pipelineBehaviors` list:
 
 ```kotlin
