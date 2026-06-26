@@ -4,17 +4,16 @@ title: Built-in Pipeline Behaviors
 sidebar_label: Built-in Behaviors
 ---
 
-import CodeBlock from '@theme/CodeBlock';
-import LoggingSource from '../../../mediatork/src/commonMain/kotlin/com/fajrbahr/mediatork/pipeline/buildin/LoggingPipelineBehavior.kt';
-import TimeoutSource from '../../../mediatork/src/commonMain/kotlin/com/fajrbahr/mediatork/pipeline/buildin/TimeoutPipelineBehavior.kt';
-import CounterSource from '../../../mediatork/src/commonMain/kotlin/com/fajrbahr/mediatork/pipeline/buildin/RequestCounterPipelineBehavior.kt';
-import CachingSource from '../../../mediatork/src/commonMain/kotlin/com/fajrbahr/mediatork/pipeline/buildin/CachingPipelineBehavior.kt';
-import TimingSource from '../../../mediatork/src/commonMain/kotlin/com/fajrbahr/mediatork/pipeline/buildin/TimingPipelineBehavior.kt';
-import ErrorTrackingSource from '../../../mediatork/src/commonMain/kotlin/com/fajrbahr/mediatork/pipeline/buildin/ErrorTrackingPipelineBehavior.kt';
-
 # Built-in Pipeline Behaviors
 
 MediatorK ships six ready-to-use pipeline behaviors. Drop them into `MediatorFactory.create` — no boilerplate required.
+
+1. `LoggingPipelineBehavior` — logs every request in and out
+2. `TimeoutPipelineBehavior` — cancels requests that exceed a deadline
+3. `RequestCounterPipelineBehavior` — counts dispatches per request type
+4. `CachingPipelineBehavior` — skips the handler on a cache hit
+5. `TimingPipelineBehavior` — measures handler duration
+6. `ErrorTrackingPipelineBehavior` — forwards exceptions to crash reporters
 
 ---
 
@@ -76,10 +75,6 @@ LoggingPipelineBehavior(logger = ::println, logResult = true)
 | `logResult` | `Boolean` | `false` | Append the result to the exit log line |
 | `order` | `Int` | `-100` | Low number = outermost — logs before any other behavior |
 
-### Source
-
-<CodeBlock language="kotlin" title="LoggingPipelineBehavior.kt">{LoggingSource}</CodeBlock>
-
 ---
 
 ## TimeoutPipelineBehavior
@@ -102,10 +97,6 @@ val mediator = MediatorFactory.create(
 |-----------|------|---------|-------------|
 | `timeoutMillis` | `Long` | — | Maximum allowed duration per dispatch. Must be > 0 |
 | `order` | `Int` | `0` | Position in the behavior chain |
-
-### Source
-
-<CodeBlock language="kotlin" title="TimeoutPipelineBehavior.kt">{TimeoutSource}</CodeBlock>
 
 ---
 
@@ -144,10 +135,6 @@ counter.snapshot()                          // {"GetUserQuery" to 2, "CreateOrde
 |-----------|------|---------|-------------|
 | `order` | `Int` | `0` | Position in the behavior chain |
 
-### Source
-
-<CodeBlock language="kotlin" title="RequestCounterPipelineBehavior.kt">{CounterSource}</CodeBlock>
-
 ---
 
 ## CachingPipelineBehavior
@@ -174,10 +161,6 @@ CachingPipelineBehavior(
 | `ttlMs` | `Long` | `60_000` | Time-to-live per entry in milliseconds |
 | `keyFor` | `(Request<*>) -> String` | `toString()` | Cache key function |
 | `order` | `Int` | `0` | Position in the behavior chain |
-
-### Source
-
-<CodeBlock language="kotlin" title="CachingPipelineBehavior.kt">{CachingSource}</CodeBlock>
 
 ---
 
@@ -207,10 +190,6 @@ TimingPipelineBehavior(onTiming = { name, ms ->
 | `onTiming` | `(String, Long) -> Unit` | — | Callback with `(requestName, durationMs)` |
 | `order` | `Int` | `0` | Position in the behavior chain |
 
-### Source
-
-<CodeBlock language="kotlin" title="TimingPipelineBehavior.kt">{TimingSource}</CodeBlock>
-
 ---
 
 ## ErrorTrackingPipelineBehavior
@@ -236,10 +215,6 @@ ErrorTrackingPipelineBehavior { request, error ->
 | `order` | `Int` | `Int.MAX_VALUE` | Innermost by default — fires closest to the handler |
 | `onError` | `(Request<*>, Throwable) -> Unit` | — | Callback with the request and the exception |
 
-### Source
-
-<CodeBlock language="kotlin" title="ErrorTrackingPipelineBehavior.kt">{ErrorTrackingSource}</CodeBlock>
-
 ---
 
 ## Registering multiple built-in behaviors
@@ -256,9 +231,3 @@ val mediator = MediatorFactory.create(
     ),
 )
 ```
-
----
-
-## Next
-
-→ [Pre / Post Processors](processors.md)
