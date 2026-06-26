@@ -6,12 +6,85 @@ sidebar_label: Exception Handling
 
 # Exception Handling
 
-MediatorK provides two layers of exception handling:
+---
 
-1. **`ErrorTrackingPipelineBehavior`** — intercept every unhandled exception in the pipeline and forward it to a
-   callback (e.g. crash reporting) before rethrowing.
-2. **`AggregateException`** — thrown by `ContinueOnExceptionNotificationPublisher` when multiple notification handlers
-   fail.
+## Handling missing handlers
+
+By default, `send()` for an unregistered request type throws `MissingHandlerException`.
+Customize this behavior via `missingRequestHandler` in `MediatorFactory.create`:
+
+```kotlin
+// Default — throws immediately
+val mediator = MediatorFactory.create(
+    registrars = listOf(AppRegistrar()),
+    missingRequestHandler = ThrowMissingRequestHandler(), // default
+)
+
+// Silent — returns a default value instead of throwing
+val mediator = MediatorFactory.create(
+    registrars = listOf(AppRegistrar()),
+    missingRequestHandler = SilentMissingRequestHandler(default = null),
+)
+```
+
+:::danger
+`SilentMissingRequestHandler` silently drops requests. Only use it when unhandled
+requests are intentional — misconfiguration will produce no error and no trace.
+:::
+
+---
+
+## Missing notification handler
+
+Control what happens when a notification is published with no registered handlers via
+`missingNotificationHandler` in `MediatorFactory.create`.
+
+| Implementation                     | Behaviour                                                |
+|------------------------------------|----------------------------------------------------------|
+| `ThrowMissingNotificationHandler`  | Throws `MissingNotificationHandlerException` *(default)* |
+| `SilentMissingNotificationHandler` | Drops the notification silently                          |
+| Your own implementation            | Anything — dead-letter queue, logging, alerting, etc.    |
+
+```kotlin
+// default — throws if no handler is registered
+val mediator = MediatorFactory.create(
+    registrars = listOf(AppRegistrar()),
+    missingNotificationHandler = ThrowMissingNotificationHandler(),
+)
+
+// silent — notification dropped with no error
+val mediator = MediatorFactory.create(
+    registrars = listOf(AppRegistrar()),
+    missingNotificationHandler = SilentMissingNotificationHandler(),
+)
+
+// custom — dead-letter queue, logging, alerting
+val mediator = MediatorFactory.create(
+    registrars = listOf(AppRegistrar()),
+    missingNotificationHandler = DeadLetterNotificationHandler(queue, logger),
+)
+```
+
+:::danger
+`SilentMissingNotificationHandler` silently drops notifications. Only use it when
+unhandled notifications are intentional — misconfiguration will produce no error and
+no trace, making it very hard to debug.
+:::
+
+The parameter type is `NotificationHandler<Notification>` — the same interface you already
+use for regular handlers. Implement it directly for a custom behavior:
+
+```kotlin
+class DeadLetterNotificationHandler(
+    private val queue: DeadLetterQueue,
+    private val logger: Logger,
+) : NotificationHandler<Notification> {
+    override suspend fun handle(notification: Notification) {
+        logger.warn("No handler for ${notification::class.simpleName}")
+        queue.enqueue(notification)
+    }
+}
+```
 
 ---
 
@@ -38,32 +111,6 @@ val mediator = MediatorFactory.create(
 Use `order = Int.MAX_VALUE` (the default) to place the tracker innermost — it captures every exception directly from the
 handler before it bubbles up through retry or timeout. If you only want to report failures after all retries are
 exhausted, use an order lower than `RetryPipelineBehavior` (e.g. `Int.MIN_VALUE`) to place it outside the retry wrapper.
-
----
-
-## Handling missing handlers
-
-By default, `send()` for an unregistered request type throws `MissingHandlerException`.
-Customize this behavior via `missingRequestHandler` in `MediatorFactory.create`:
-
-```kotlin
-// Default — throws immediately
-val mediator = MediatorFactory.create(
-    registrars = listOf(AppRegistrar()),
-    missingRequestHandler = ThrowMissingRequestHandler(), // default
-)
-
-// Silent — returns a default value instead of throwing
-val mediator = MediatorFactory.create(
-    registrars = listOf(AppRegistrar()),
-    missingRequestHandler = SilentMissingRequestHandler(default = null),
-)
-```
-
-:::danger
-`SilentMissingRequestHandler` silently drops requests. Only use it when unhandled
-requests are intentional — misconfiguration will produce no error and no trace.
-:::
 
 ---
 
@@ -105,4 +152,3 @@ val result: Result<User> = mediator.trySend(GetUserQuery("user-1"))
 result.onSuccess { user -> ... }
 result.onFailure { error -> ... }
 ```
-
