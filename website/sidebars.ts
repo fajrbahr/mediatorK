@@ -58,6 +58,7 @@ const sidebars: SidebarsConfig = {
             collapsed: false,
             items: ['testing/before-mediator', 'testing/dump-mediator', 'testing/fake-mediator', 'testing/spy', 'testing/notification-testing', 'testing/handler-testing', 'testing/viewmodel-testing', 'testing/handler-validation'],
         },
+        'ai-prompts',
         'about',
         'resources',
     ],
