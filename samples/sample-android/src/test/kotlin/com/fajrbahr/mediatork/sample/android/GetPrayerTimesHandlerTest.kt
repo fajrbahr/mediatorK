@@ -1,20 +1,15 @@
 package com.fajrbahr.mediatork.sample.android
 
 import com.fajrbahr.mediatork.MediatorFactory
-import com.fajrbahr.mediatork.sample.android.after.data.cache.AladhanCacheDataSource
-import com.fajrbahr.mediatork.sample.android.after.domain.GetPrayerTimesRequest
-import com.fajrbahr.mediatork.sample.android.after.domain.PrayerTimesRegistrar
-import com.fajrbahr.mediatork.sample.android.after.model.PrayerTime
-import com.fajrbahr.mediatork.sample.android.after.model.TodayPrayerTimes
+import com.fajrbahr.mediatork.sample.android.after.AladhanCacheDataSource
+import com.fajrbahr.mediatork.sample.android.after.times.GetPrayerTimesRequest
+import com.fajrbahr.mediatork.sample.android.after.times.PrayerTimesRegistrar
+import com.fajrbahr.mediatork.sample.android.after.times.PrayerTime
+import com.fajrbahr.mediatork.sample.android.after.times.TodayPrayerTimes
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
-/**
- * Tests for [GetPrayerTimesHandler] exercising the cache-hit path so no network is
- * required.  The handler checks the cache first and returns immediately on a hit —
- * wiring the mediator through [PrayerTimesRegistrar] confirms the full slice works.
- */
 class GetPrayerTimesHandlerTest {
 
     private fun makePrayerTimes() = TodayPrayerTimes(

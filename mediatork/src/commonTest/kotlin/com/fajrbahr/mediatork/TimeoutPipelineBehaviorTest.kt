@@ -1,7 +1,6 @@
 package com.fajrbahr.mediatork
 
 import com.fajrbahr.mediatork.api.Mediator
-import com.fajrbahr.mediatork.api.Request
 import com.fajrbahr.mediatork.api.RequestContext
 import com.fajrbahr.mediatork.api.RequestHandler
 import com.fajrbahr.mediatork.pipeline.buildin.TimeoutPipelineBehavior
@@ -11,7 +10,6 @@ import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
-import kotlin.test.assertFalse
 
 class TimeoutPipelineBehaviorTest {
 

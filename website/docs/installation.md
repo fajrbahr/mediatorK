@@ -124,3 +124,9 @@ See [Handler Validation](testing/handler-validation.md) for usage.
 | Kotlin             | 2.0+    |
 | kotlinx-coroutines | 1.10+   |
 | JVM target         | 11+     |
+
+---
+
+## Next
+
+→ [Requests & Handlers](core/requests.md)

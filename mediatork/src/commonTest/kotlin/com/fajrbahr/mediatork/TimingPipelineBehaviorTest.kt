@@ -5,11 +5,7 @@ import com.fajrbahr.mediatork.api.RequestContext
 import com.fajrbahr.mediatork.api.RequestHandler
 import com.fajrbahr.mediatork.pipeline.buildin.TimingPipelineBehavior
 import kotlinx.coroutines.test.runTest
-import kotlin.test.Test
-import kotlin.test.assertEquals
-import kotlin.test.assertFailsWith
-import kotlin.test.assertNotNull
-import kotlin.test.assertTrue
+import kotlin.test.*
 
 class TimingPipelineBehaviorTest {
 
@@ -78,7 +74,11 @@ class TimingPipelineBehaviorTest {
         val timing = TimingPipelineBehavior(onTiming = { _, _ -> })
         val m = mediator(pipelineBehaviors = listOf(timing)) {
             register(object : RequestHandler<PingQuery, String> {
-                override suspend fun handle(mediator: Mediator, requestContext: RequestContext, request: PingQuery): String =
+                override suspend fun handle(
+                    mediator: Mediator,
+                    requestContext: RequestContext,
+                    request: PingQuery
+                ): String =
                     throw IllegalStateException("domain error")
             })
         }

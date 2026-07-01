@@ -4,7 +4,6 @@ import com.fajrbahr.mediatork.api.Mediator
 import com.fajrbahr.mediatork.api.Request
 import com.fajrbahr.mediatork.api.RequestContext
 import com.fajrbahr.mediatork.api.RequestHandler
-import com.fajrbahr.mediatork.pipeline.buildin.AuthenticatedRequest
 import com.fajrbahr.mediatork.sample.ktor.after.data.cache.AladhanCacheDataSource
 import com.fajrbahr.mediatork.sample.ktor.after.model.PrayerTime
 import com.fajrbahr.mediatork.sample.ktor.after.model.TodayPrayerTimes
@@ -14,8 +13,7 @@ import org.json.JSONObject
 import java.net.HttpURLConnection
 import java.net.URL
 
-data class GetPrayerTimesRequest(val city: String, val method: Int = 3) : Request<TodayPrayerTimes>,
-    AuthenticatedRequest
+data class GetPrayerTimesRequest(val city: String, val method: Int = 3) : Request<TodayPrayerTimes>
 
 class GetPrayerTimesHandler(
     private val cache: AladhanCacheDataSource,

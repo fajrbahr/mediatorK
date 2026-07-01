@@ -10,8 +10,8 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.Color
-import com.fajrbahr.mediatork.sample.android.after.ui.AfterIslamicMonthsScreen
-import com.fajrbahr.mediatork.sample.android.after.ui.AfterPrayerTimesScreen
+import com.fajrbahr.mediatork.sample.android.after.islamicMonths.AfterIslamicMonthsScreen
+import com.fajrbahr.mediatork.sample.android.after.times.AfterPrayerTimesScreen
 import com.fajrbahr.mediatork.sample.android.before.ui.BeforeIslamicMonthsScreen
 import com.fajrbahr.mediatork.sample.android.before.ui.BeforePrayerTimesScreen
 import com.fajrbahr.mediatork.sample.android.ui.theme.PrayerTimesTheme

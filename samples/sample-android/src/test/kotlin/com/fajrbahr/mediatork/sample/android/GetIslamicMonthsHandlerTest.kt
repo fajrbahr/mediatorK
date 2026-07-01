@@ -1,18 +1,14 @@
 package com.fajrbahr.mediatork.sample.android
 
 import com.fajrbahr.mediatork.MediatorFactory
-import com.fajrbahr.mediatork.sample.android.after.data.cache.AladhanCacheDataSource
-import com.fajrbahr.mediatork.sample.android.after.domain.GetIslamicMonthsRequest
-import com.fajrbahr.mediatork.sample.android.after.domain.IslamicMonthsRegistrar
-import com.fajrbahr.mediatork.sample.android.after.model.IslamicMonth
+import com.fajrbahr.mediatork.sample.android.after.AladhanCacheDataSource
+import com.fajrbahr.mediatork.sample.android.after.islamicMonths.GetIslamicMonthsRequest
+import com.fajrbahr.mediatork.sample.android.after.islamicMonths.IslamicMonthsRegistrar
+import com.fajrbahr.mediatork.sample.android.after.islamicMonths.IslamicMonth
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
-/**
- * Tests for [GetIslamicMonthsHandler] exercising the cache-hit path.
- * No network call is made — the cache is pre-populated in each test.
- */
 class GetIslamicMonthsHandlerTest {
 
     private val twelveMonths = (1..12).map { i ->

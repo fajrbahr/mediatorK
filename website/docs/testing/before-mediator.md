@@ -8,29 +8,12 @@ sidebar_label: Life Before MediatorK
 
 ## Testing without a mocking library
 
-The biggest testing win from MediatorK is what it does to your ViewModel constructor.
+The biggest testing win from MediatorK is what it does to your ViewModel constructor. A typical ViewModel that manages
+its own dependencies directly ends up with 10+ constructor parameters; see
+[The Promise](../the-promise.mdx) for the full before/after comparison.
 
-A typical ViewModel that manages its own dependencies directly ends up looking like this:
-
-```kotlin
-class InitialViewModel(
-    private val applicationMetadata: ApplicationMetadata,
-    private val retrieveAndStoreTogglesUseCase: RetrieveAndStoreTogglesUseCase,
-    watchTogglesUseCase: WatchTogglesUseCase,
-    private val persistCachedInfoUseCase: PersistCachedInfoUseCase,
-    private val fetchActiveUserAndStoreUseCase: FetchActiveUserAndStoreUseCase,
-    fetchPreferredLocaleUseCase: FetchPreferredLocaleUseCase,
-    fetchVisualThemeUseCase: FetchVisualThemeUseCase,
-    private val metricsReporterPort: MetricsReporterPort,
-    val runtimeSettings: RuntimeSettings,
-    val speedMonitor: SpeedMonitor,
-    val cloudPerformanceTracker: PerformanceTraceListener,
-    val simpleLoggingTracker: SimpleLoggingTracker,
-) : ViewModel()
-```
-
-To instantiate this in a test you must stub every one of those 10+ parameters, even if the test only touches two of
-them. Every new use-case added to the ViewModel breaks every existing test that constructs it.
+To instantiate such a ViewModel in a test you must stub every one of those parameters, even if the test only touches
+two of them. Every new use-case added to the ViewModel breaks every existing test that constructs it.
 
 With MediatorK the constructor collapses to one dependency:
 
@@ -47,7 +30,7 @@ val vm = InitialViewModel(DummyMediator())   // never calls send
 val vm = InitialViewModel(FakeMediator())    // register handlers as needed
 ```
 
-The use-cases, metrics reporters, toggle observers, and performance trackers are all moved into individual
+The use-cases, metrics reporters, toggle observers, and performance trackers all move into individual
 `RequestHandler` implementations. Each handler is tested in isolation. The ViewModel test only verifies how the
 ViewModel reacts to success or failure; it never needs to know which use-cases exist.
 
@@ -55,8 +38,16 @@ ViewModel reacts to success or failure; it never needs to know which use-cases e
 
 ## Installation
 
+Add the test utilities artifact (see [Installation](../installation.md) for all coordinates):
+
 ```kotlin
 dependencies {
-    testImplementation("io.github.fajrbahr:mediatork-test:0.6.2")
+    testImplementation("io.github.fajrbahr:mediatork-test:0.6.3")
 }
 ```
+
+---
+
+## Next
+
+→ [DummyMediator](dummy-mediator.md)

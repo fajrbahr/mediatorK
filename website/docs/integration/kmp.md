@@ -53,4 +53,4 @@ See [Koin integration](koin.md) for a complete setup that works across Android a
 
 ## Next
 
-→ [Spring Boot](spring.md)
+→ [Ktor](ktor.md)

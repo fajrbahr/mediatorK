@@ -87,15 +87,16 @@ Requirements:
 
 ---
 
-## Create a Validation Behavior
+## Add Validation to a Request
 
 ```
-Using MediatorK, create a validation pipeline behavior that validates requests before they reach their handler.
+Using MediatorK, add inline validation to a request by overriding the validate() method on the Request class.
 
 [describe validation rules, e.g. "ensure CreateOrderCommand has a non-blank cartId and a positive amount"]
 
 Requirements:
-- Use a ValidationBehavior or a generic PipelineBehavior
-- Throw a descriptive exception on invalid input
-- Short-circuit the pipeline — do not call next() if validation fails
+- Override validate() directly on the data class using rules { } or rulesFailFast { }
+- MediatorK's built-in ValidationBehavior runs validate() automatically before the handler
+- No separate validator class or registration needed
+- If the validator needs injected dependencies, use a separate RequestValidator<T> class instead
 ```

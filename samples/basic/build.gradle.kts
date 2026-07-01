@@ -1,5 +1,5 @@
 plugins {
-    alias(libs.plugins.kotlin.jvm)
+    kotlin("jvm") version "2.3.21"
 }
 
 group = "com.fajrbahr.mediatork"
@@ -10,20 +10,18 @@ repositories {
 }
 
 dependencies {
+    testImplementation(kotlin("test"))
+    testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.10.2")
     implementation("io.github.fajrbahr:mediatork:0.6.2")
 
-    testImplementation(kotlin("test"))
-    testImplementation(libs.coroutines.test)
-    testImplementation(project(":mediatork-test"))
-    implementation(project(":mediatork"))
-    implementation(libs.coroutines.core)
-
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.10.2")
 }
 
 kotlin {
-    jvmToolchain(libs.versions.jvmToolchain.get().toInt())
+    jvmToolchain(21)
 }
 
 tasks.test {
     useJUnitPlatform()
 }
+

@@ -227,7 +227,9 @@ class MissingHandlerTest {
                     mediator: Mediator,
                     requestContext: RequestContext,
                     request: Request<Any?>,
-                ): Any? { called = true; return null }
+                ): Any? {
+                    called = true; return null
+                }
             },
         )
         mediator.send(PingRequest)
@@ -240,7 +242,8 @@ class MissingHandlerTest {
     fun `create with registry overload builds working mediator`() = runTest {
         val registry = HandlerRegistry()
         registry register object : RequestHandler<PingRequest, String> {
-            override suspend fun handle(mediator: Mediator, requestContext: RequestContext, request: PingRequest) = "pong"
+            override suspend fun handle(mediator: Mediator, requestContext: RequestContext, request: PingRequest) =
+                "pong"
         }
         val m = MediatorFactory.create(registry = registry)
         assertEquals("pong", m.send(PingRequest))
@@ -251,7 +254,9 @@ class MissingHandlerTest {
         val log = mutableListOf<String>()
         val registry = HandlerRegistry()
         registry registerNotification object : NotificationHandler<OrderPlaced> {
-            override suspend fun handle(notification: OrderPlaced) { log += "fired" }
+            override suspend fun handle(notification: OrderPlaced) {
+                log += "fired"
+            }
         }
         val m = MediatorFactory.create(registry = registry)
         m.publish(OrderPlaced)

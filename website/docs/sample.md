@@ -1,10 +1,14 @@
 ---
 id: sample
-title: Sample
+title: Samples
 sidebar_label: Samples
 ---
 
 # Samples
+
+:::tip How to run
+Each sample is a standalone Gradle project. Open the sample folder directly in IntelliJ IDEA (**File → Open** → select the sample directory) — do not open the root MediatorK project.
+:::
 
 ## Basic
 
@@ -43,3 +47,9 @@ Spring Boot WebFlux application with the same three-layer progression, exposing 
 [`/samples/sample`](https://github.com/fajrbahr/MediatorK/tree/main/samples/sample)
 
 Plain JVM sample covering commands, queries, notifications, pipeline behaviors, and a complete vertical invoice slice with streaming, validation, and transaction support.
+
+---
+
+## Next
+
+→ [Life Before MediatorK](testing/before-mediator.md)

@@ -192,9 +192,17 @@ class CapturingMediator : Mediator {
         return Unit as TResult
     }
 
+    override fun <TRequest : StreamRequest<T>, T> stream(request: TRequest): Flow<T> = emptyFlow()
+
     override suspend fun <T : Notification> publish(notification: T) = Unit
-    override suspend fun <T : Notification> publish(notification: T, publisher: NotificationPublisher) = Unit
+    override suspend fun <T : Notification> publish(notification: T, publisher: NotificationPublishStrategy) = Unit
 }
 ```
 
 The `Mediator` interface is yours to implement, wrap, decorate, or proxy in any way the test requires.
+
+---
+
+## Next
+
+→ [Testing ViewModels](viewmodel-testing.md)

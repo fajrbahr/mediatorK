@@ -13,8 +13,9 @@ rootProject.name = "MediatorK"
 
 include("mediatork")
 include("mediatork-test")
+include("mediatork-ksp-koin")
 include("publishMaven")
-include("samples:sample")
+
 
 dependencyResolutionManagement {
     repositories {

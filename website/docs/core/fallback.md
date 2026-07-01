@@ -96,7 +96,7 @@ class NotificationRegistrar(
 
 ---
 
-## Behaviour at a glance
+## Behavior at a glance
 
 | Scenario                      | Result                                                 |
 |-------------------------------|--------------------------------------------------------|
@@ -124,4 +124,4 @@ registry.scope {
 
 ## Next
 
-→ [Exceptions](exceptions.md): per-request exception handlers that transform errors into responses
+→ [Kotlin JVM](../integration/jvm.md)

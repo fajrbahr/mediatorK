@@ -6,15 +6,26 @@ import com.fajrbahr.mediatork.api.RequestHandler
 import com.fajrbahr.mediatork.pipeline.buildin.TransactionPipelineBehavior
 import com.fajrbahr.mediatork.pipeline.buildin.TransactionProvider
 import kotlinx.coroutines.test.runTest
-import kotlin.test.*
+import kotlin.test.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
+import kotlin.test.assertFalse
 
 class TransactionPipelineBehaviorTest {
 
     private class RecordingTransactionProvider : TransactionProvider {
         val log = mutableListOf<String>()
-        override suspend fun begin() { log += "begin" }
-        override suspend fun commit() { log += "commit" }
-        override suspend fun rollback() { log += "rollback" }
+        override suspend fun begin() {
+            log += "begin"
+        }
+
+        override suspend fun commit() {
+            log += "commit"
+        }
+
+        override suspend fun rollback() {
+            log += "rollback"
+        }
     }
 
     @Test
@@ -32,7 +43,11 @@ class TransactionPipelineBehaviorTest {
         val provider = RecordingTransactionProvider()
         val m = mediator(pipelineBehaviors = listOf(TransactionPipelineBehavior(provider))) {
             register(object : RequestHandler<PingQuery, String> {
-                override suspend fun handle(mediator: Mediator, requestContext: RequestContext, request: PingQuery): String =
+                override suspend fun handle(
+                    mediator: Mediator,
+                    requestContext: RequestContext,
+                    request: PingQuery
+                ): String =
                     throw RuntimeException("handler failed")
             })
         }
@@ -45,7 +60,11 @@ class TransactionPipelineBehaviorTest {
         val provider = RecordingTransactionProvider()
         val m = mediator(pipelineBehaviors = listOf(TransactionPipelineBehavior(provider))) {
             register(object : RequestHandler<PingQuery, String> {
-                override suspend fun handle(mediator: Mediator, requestContext: RequestContext, request: PingQuery): String =
+                override suspend fun handle(
+                    mediator: Mediator,
+                    requestContext: RequestContext,
+                    request: PingQuery
+                ): String =
                     throw IllegalStateException("domain error")
             })
         }
@@ -67,7 +86,11 @@ class TransactionPipelineBehaviorTest {
         val provider = RecordingTransactionProvider()
         val m = mediator(pipelineBehaviors = listOf(TransactionPipelineBehavior(provider))) {
             register(object : RequestHandler<PingQuery, String> {
-                override suspend fun handle(mediator: Mediator, requestContext: RequestContext, request: PingQuery): String =
+                override suspend fun handle(
+                    mediator: Mediator,
+                    requestContext: RequestContext,
+                    request: PingQuery
+                ): String =
                     throw RuntimeException("boom")
             })
         }
@@ -100,13 +123,25 @@ class TransactionPipelineBehaviorTest {
     fun `begin is called before handler and commit after`() = runTest {
         val combined = mutableListOf<String>()
         val provider = object : TransactionProvider {
-            override suspend fun begin() { combined += "begin" }
-            override suspend fun commit() { combined += "commit" }
-            override suspend fun rollback() { combined += "rollback" }
+            override suspend fun begin() {
+                combined += "begin"
+            }
+
+            override suspend fun commit() {
+                combined += "commit"
+            }
+
+            override suspend fun rollback() {
+                combined += "rollback"
+            }
         }
         val m = mediator(pipelineBehaviors = listOf(TransactionPipelineBehavior(provider))) {
             register(object : RequestHandler<PingQuery, String> {
-                override suspend fun handle(mediator: Mediator, requestContext: RequestContext, request: PingQuery): String {
+                override suspend fun handle(
+                    mediator: Mediator,
+                    requestContext: RequestContext,
+                    request: PingQuery
+                ): String {
                     combined += "handler"
                     return "ok"
                 }

@@ -1,9 +1,9 @@
 package com.fajrbahr.mediatork.sample.android
 
-import com.fajrbahr.mediatork.sample.android.after.data.cache.AladhanCacheDataSource
-import com.fajrbahr.mediatork.sample.android.after.model.IslamicMonth
-import com.fajrbahr.mediatork.sample.android.after.model.PrayerTime
-import com.fajrbahr.mediatork.sample.android.after.model.TodayPrayerTimes
+import com.fajrbahr.mediatork.sample.android.after.AladhanCacheDataSource
+import com.fajrbahr.mediatork.sample.android.after.islamicMonths.IslamicMonth
+import com.fajrbahr.mediatork.sample.android.after.times.PrayerTime
+import com.fajrbahr.mediatork.sample.android.after.times.TodayPrayerTimes
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNull

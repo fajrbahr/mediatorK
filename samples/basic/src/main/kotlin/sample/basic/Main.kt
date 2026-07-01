@@ -1,8 +1,6 @@
 package sample.basic
 
-import com.fajrbahr.mediatork.HandlerRegistry
 import com.fajrbahr.mediatork.MediatorFactory
-import com.fajrbahr.mediatork.api.MediatorRegistrar
 import kotlinx.coroutines.runBlocking
 
 // ── Entry point ───────────────────────────────────────────────────────────────

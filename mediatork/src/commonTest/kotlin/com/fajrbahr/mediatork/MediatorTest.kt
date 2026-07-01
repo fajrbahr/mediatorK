@@ -164,7 +164,7 @@ class MediatorTest {
                 requestContext: RequestContext,
                 request: PingQuery
             ): String {
-                contextValue = requestContext.getMetaDate("key"); return "ok"
+                contextValue = requestContext.getMetaData("key"); return "ok"
             }
         }
 

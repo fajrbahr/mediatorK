@@ -305,10 +305,14 @@ class NotificationTest {
     fun `SEQUENTIAL companion constant delivers in registration order`() = runTest {
         val order = mutableListOf<String>()
         val h1 = object : NotificationHandler<PingNotification> {
-            override suspend fun handle(notification: PingNotification) { order += "h1" }
+            override suspend fun handle(notification: PingNotification) {
+                order += "h1"
+            }
         }
         val h2 = object : NotificationHandler<PingNotification> {
-            override suspend fun handle(notification: PingNotification) { order += "h2" }
+            override suspend fun handle(notification: PingNotification) {
+                order += "h2"
+            }
         }
         NotificationPublishStrategy.SEQUENTIAL.publish(PingNotification("x"), listOf(h1, h2))
         assertEquals(listOf("h1", "h2"), order)

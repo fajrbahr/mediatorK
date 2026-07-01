@@ -1,6 +1,5 @@
 plugins {
-    alias(libs.plugins.kotlin.jvm)
-    id("org.jetbrains.kotlinx.kover") version "0.9.1"
+    kotlin("jvm") version "2.3.21"
 }
 
 group = "com.fajrbahr.mediatork"
@@ -12,43 +11,17 @@ repositories {
 
 dependencies {
     testImplementation(kotlin("test"))
-    testImplementation(libs.coroutines.test)
-    testImplementation(project(":mediatork-test"))
-    implementation(project(":mediatork"))
-    implementation(libs.coroutines.core)
+    testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.10.2")
+    implementation("io.github.fajrbahr:mediatork:0.6.2")
+
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.10.2")
 }
 
 kotlin {
-    jvmToolchain(libs.versions.jvmToolchain.get().toInt())
+    jvmToolchain(21)
 }
 
 tasks.test {
     useJUnitPlatform()
 }
 
-kover {
-    reports {
-        // Exclude root-package demo code and Spring stubs from coverage measurement.
-        // All real business logic lives in sub-packages (invoice/, behaviors/, android/, …).
-        filters {
-            excludes {
-                classes(
-                    "sample.MainKt",
-                    "sample.MainKt\$*",
-                    "sample.Test*",
-                    "sample.AuthenticatedGetOrderQuery",
-                    "sample.spring.*",
-                    "sample.OrderController",
-                )
-            }
-        }
-
-        verify {
-            rule {
-                bound {
-                    minValue = 66
-                }
-            }
-        }
-    }
-}

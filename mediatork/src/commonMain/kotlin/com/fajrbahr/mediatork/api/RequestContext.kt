@@ -26,7 +26,7 @@ class RequestContext {
      * @return the cast value, or `null` if the key is absent or the cast fails.
      */
     @Suppress("UNCHECKED_CAST")
-    fun <T> getMetaDate(key: String): T? = metadata[key] as? T
+    fun <T> getMetaData(key: String): T? = metadata[key] as? T
 
     /**
      * Stores [value] under [key], replacing any previously stored value.

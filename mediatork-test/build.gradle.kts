@@ -1,27 +1,91 @@
 plugins {
-    alias(libs.plugins.kotlin.jvm)
+    alias(libs.plugins.kotlin.multiplatform)
+    alias(libs.plugins.android.library)
     alias(libs.plugins.nmcp)
     `maven-publish`
     signing
 }
 
-group = "io.github.fajrbahr"
-version = "0.6.2"
+// group and version come from the root gradle.properties — the single source of
+// truth for every published module.
 
 repositories {
     mavenCentral()
+    google()
 }
 
-dependencies {
-    implementation(project(":mediatork"))
-    implementation(libs.classgraph)
-    implementation(kotlin("test"))
-    implementation(libs.coroutines.core)
-    testImplementation(libs.coroutines.test)
+android {
+    namespace = "com.fajrbahr.mediatork.test"
+    compileSdk = libs.versions.compileSdk.get().toInt()
+    defaultConfig {
+        minSdk = libs.versions.minSdk.get().toInt()
+    }
 }
 
 kotlin {
     jvmToolchain(libs.versions.jvmToolchain.get().toInt())
+
+    androidTarget {
+        publishLibraryVariants("release")
+    }
+
+    androidNativeX64()
+    androidNativeX86()
+    androidNativeArm32()
+    androidNativeArm64()
+
+    iosArm64()
+    iosSimulatorArm64()
+    iosX64()
+
+    js {
+        browser()
+    }
+
+    jvm()
+
+    linuxArm64()
+    linuxX64()
+
+    macosArm64()
+
+    mingwX64()
+
+    tvosArm64()
+    tvosSimulatorArm64()
+
+    @OptIn(org.jetbrains.kotlin.gradle.ExperimentalWasmDsl::class)
+    wasmJs {
+        browser()
+    }
+
+    @OptIn(org.jetbrains.kotlin.gradle.ExperimentalWasmDsl::class)
+    wasmWasi {
+        nodejs()
+    }
+
+    watchosArm32()
+    watchosArm64()
+    watchosDeviceArm64()
+    watchosSimulatorArm64()
+
+    sourceSets {
+        commonMain.dependencies {
+            // Core types (Mediator, HandlerRegistry, …) appear in this module's
+            // public API, and the assertion helpers surface kotlin.test at call
+            // sites via inline functions — both must be `api`.
+            api(project(":mediatork"))
+            api(kotlin("test"))
+            implementation(libs.coroutines.core)
+        }
+        jvmMain.dependencies {
+            // Classpath scanning for MediatorTestUtils.assertAllHandlersRegistered (JVM-only).
+            implementation(libs.classgraph)
+        }
+        commonTest.dependencies {
+            implementation(libs.coroutines.test)
+        }
+    }
 }
 
 val javadocJar by tasks.registering(Jar::class) {
@@ -29,36 +93,32 @@ val javadocJar by tasks.registering(Jar::class) {
 }
 
 publishing {
-    publications {
-        create<MavenPublication>("maven") {
-            artifactId = "mediatork-test"
-            from(components["java"])
-            artifact(javadocJar)
+    publications.withType<MavenPublication> {
+        artifact(javadocJar)
 
-            pom {
-                name.set("MediatorK Test")
-                description.set("Test utilities for MediatorK — assert all handlers are registered")
+        pom {
+            name.set("MediatorK Test")
+            description.set("Test utilities for MediatorK — assert all handlers are registered")
+            url.set("https://github.com/fajrbahr/MediatorK")
+
+            licenses {
+                license {
+                    name.set("CC0-1.0")
+                    url.set("https://creativecommons.org/publicdomain/zero/1.0/")
+                }
+            }
+
+            developers {
+                developer {
+                    id.set("fajrbahr")
+                    name.set("FajrBahr")
+                }
+            }
+
+            scm {
+                connection.set("scm:git:git://github.com/fajrbahr/MediatorK.git")
+                developerConnection.set("scm:git:ssh://github.com/fajrbahr/MediatorK.git")
                 url.set("https://github.com/fajrbahr/MediatorK")
-
-                licenses {
-                    license {
-                        name.set("CC0-1.0")
-                        url.set("https://creativecommons.org/publicdomain/zero/1.0/")
-                    }
-                }
-
-                developers {
-                    developer {
-                        id.set("fajrbahr")
-                        name.set("FajrBahr")
-                    }
-                }
-
-                scm {
-                    connection.set("scm:git:git://github.com/fajrbahr/MediatorK.git")
-                    developerConnection.set("scm:git:ssh://github.com/fajrbahr/MediatorK.git")
-                    url.set("https://github.com/fajrbahr/MediatorK")
-                }
             }
         }
     }
