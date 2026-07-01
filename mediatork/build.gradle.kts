@@ -2,13 +2,14 @@ plugins {
     alias(libs.plugins.kotlin.multiplatform)
     alias(libs.plugins.android.library)
     alias(libs.plugins.nmcp)
+    alias(libs.plugins.dokka)
     `maven-publish`
     signing
     id("org.jetbrains.kotlinx.kover") version "0.9.1"
 }
 
-group = "io.github.fajrbahr"
-version = "0.6.3"
+// group and version come from the root gradle.properties — the single source of
+// truth for every published module.
 
 repositories {
     mavenCentral()
@@ -41,6 +42,7 @@ kotlin {
 
     js {
         browser()
+        nodejs()
     }
 
     jvm()

@@ -8,13 +8,14 @@ sidebar_label: API Reference
 
 Quick reference for all public types in `com.fajrbahr.mediatork`.
 
-| Subpackage                            | Contents                                                                                                                                                                                 |
-|---------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `com.fajrbahr.mediatork`              | Core: `Mediator`, `Request`, `StreamRequest`, `HandlerRegistry`, `MediatorFactory`, `MediatorException` hierarchy                                                                        |
-| `com.fajrbahr.mediatork.handler`      | `RequestHandler`, `StreamRequestHandler`, `FallbackRequestHandler` (`otherwise`), `Sender`, `trySend`                                                                                    |
-| `com.fajrbahr.mediatork.notification` | `Notification`, `NotificationHandler`, `FallbackNotificationHandler` (`otherwise`), all publisher implementations, `ThrowMissingNotificationHandler`, `SilentMissingNotificationHandler` |
-| `com.fajrbahr.mediatork.pipeline`     | `PipelineBehavior`, `Stage`, `StreamPipelineBehavior` and all built-in behaviors (logging, caching, timeout, timing, error tracking, request counter)                                    |
-| `com.fajrbahr.mediatork.validator`    | `RequestValidator`, `ValidationBehavior`, `ValidationResult`, `ValidationException`, `rules`, `rulesFailFast`                                                                            |
+| Subpackage                                | Contents                                                                                                                                                        |
+|--------------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `com.fajrbahr.mediatork`                  | `HandlerRegistry`, `MediatorFactory`, `MediatorException` hierarchy                                                                                             |
+| `com.fajrbahr.mediatork.api`              | Core interfaces: `Mediator`, `Request`, `StreamRequest`, `RequestHandler`, `StreamRequestHandler`, `Notification`, `NotificationHandler`, `RequestContext`, `PipelineBehavior`, `Stage`, `MediatorRegistrar`, `RequestValidator` |
+| `com.fajrbahr.mediatork.handler`          | `Sender` (`send`, `trySend`), `otherwise` fallback chaining for request handlers, missing-request-handler strategies                                            |
+| `com.fajrbahr.mediatork.notification`     | All publish strategies, `otherwise` fallback chaining for notification handlers, `ThrowMissingNotificationHandler`, `SilentMissingNotificationHandler`          |
+| `com.fajrbahr.mediatork.pipeline.buildin` | Built-in behaviors: logging, caching, timeout, timing, error tracking, request counter, transaction                                                             |
+| `com.fajrbahr.mediatork.validator`        | `ValidationBehavior`, `ValidationResult`, `ValidationException`, `rules`, `rulesFailFast`                                                                       |
 
 ---
 
@@ -33,7 +34,7 @@ interface Request<out TResponse>
 
 ---
 
-### `RequestHandler<TRequest, TResult>` · `com.fajrbahr.mediatork.handler`
+### `RequestHandler<TRequest, TResult>` · `com.fajrbahr.mediatork.api`
 
 Handles a specific `Request` type.
 
@@ -58,7 +59,7 @@ anything better consumed incrementally than batched into a list.
 
 ---
 
-### `StreamRequestHandler<TRequest, T>` · `com.fajrbahr.mediatork.handler`
+### `StreamRequestHandler<TRequest, T>` · `com.fajrbahr.mediatork.api`
 
 Handles a `StreamRequest` and returns a cold `Flow<T>`. The interface is **not** `suspend`; it returns the flow
 immediately; work begins when the caller collects it.
@@ -103,7 +104,7 @@ interface IStreamRequest {
 
 ---
 
-### `Notification` · `com.fajrbahr.mediatork.notification`
+### `Notification` · `com.fajrbahr.mediatork.api`
 
 Marker interface for broadcast events with no response.
 
@@ -113,7 +114,7 @@ interface Notification
 
 ---
 
-### `NotificationHandler<T>` · `com.fajrbahr.mediatork.notification`
+### `NotificationHandler<T>` · `com.fajrbahr.mediatork.api`
 
 Reacts to a `Notification`. Multiple handlers per notification type are allowed.
 
@@ -125,7 +126,7 @@ interface NotificationHandler<in T : Notification> {
 
 ---
 
-### `PipelineBehavior` · `com.fajrbahr.mediatork.pipeline`
+### `PipelineBehavior` · `com.fajrbahr.mediatork.api`
 
 Cross-cutting decorator that wraps each request pipeline.
 
@@ -228,7 +229,7 @@ interface Mediator : Sender, IStreamRequest, Publisher
 
 ## Notification publishers · `com.fajrbahr.mediatork.notification`
 
-| Class                                      | Behaviour                                                    |
+| Class                                      | Behavior                                                     |
 |--------------------------------------------|--------------------------------------------------------------|
 | `ParallelNotificationPublisher`            | All handlers run concurrently *(default)*                    |
 | `SequentialNotificationPublisher`          | Handlers run one-by-one; stops on first error                |

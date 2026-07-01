@@ -80,9 +80,9 @@ mediator.publish(
 
 ## Publish strategies
 
-Control how handlers are invoked by passing a `NotificationPublisher` to `MediatorFactory.create`:
+Control how handlers are invoked by passing a `NotificationPublishStrategy` to `MediatorFactory.create`:
 
-| Strategy                                   | Behaviour                                                                      |
+| Strategy                                   | Behavior                                                                       |
 |--------------------------------------------|--------------------------------------------------------------------------------|
 | `ParallelNotificationPublisher`            | All handlers run concurrently *(default)*                                      |
 | `SequentialNotificationPublisher`          | Handlers run one-by-one; stops on first error                                  |
@@ -95,7 +95,6 @@ val mediator = MediatorFactory.create(
     notificationPublisher = ContinueOnExceptionNotificationPublisher(),
 )
 ```
-
 
 ---
 

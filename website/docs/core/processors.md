@@ -61,7 +61,7 @@ class AuditBehavior(private val log: AuditLog) : PipelineBehavior {
         request: TRequest,
     ): TResult {
         val result = next(request)
-        val userId = requestContext.getMetaDate<String>("userId")
+        val userId = requestContext.getMetadata<String>("userId")
         log.record(request::class.simpleName ?: "Unknown", userId)
         return result
     }
@@ -79,10 +79,10 @@ Stage behaviors are registered the same way as any other `PipelineBehavior`; jus
 val mediator = MediatorFactory.create(
     registrars = listOf(AppRegistrar()),
     pipelineBehaviors = listOf(
-        TraceIdBehavior(),           // Stage.Pre  — runs outermost
-        LoggingPipelineBehavior(),   // Stage.Default, order=-100
-        RetryPipelineBehavior(),     // Stage.Default, order=0
-        AuditBehavior(auditLog),     // Stage.Post — runs innermost
+        TraceIdBehavior(),                              // Stage.Pre  — runs outermost
+        LoggingPipelineBehavior(),                      // Stage.Default, order=-100
+        TimeoutPipelineBehavior(timeoutMillis = 5_000), // Stage.Default, order=0
+        AuditBehavior(auditLog),                        // Stage.Post — runs innermost
     ),
 )
 ```
@@ -98,13 +98,13 @@ For a typical setup with one behavior in each stage:
 ```
 Pre  (TraceIdBehavior) ─────────────────────────────────────────────────────┐
   Default (LoggingBehavior, order=-100) ─────────────────────────────────┐  │
-    Default (RetryBehavior, order=0) ─────────────────────────────────┐  │  │
+    Default (TimeoutBehavior, order=0) ───────────────────────────────┐  │  │
       Post  (AuditBehavior) ─────────────────────────────────────┐    │  │  │
                                                                   │    │  │  │
                                                                Handler │  │  │
                                                                   │    │  │  │
       Post  (AuditBehavior) ◄────────────────────────────────────┘    │  │  │
-    Default (RetryBehavior) ◄─────────────────────────────────────────┘  │  │
+    Default (TimeoutBehavior) ◄───────────────────────────────────────┘  │  │
   Default (LoggingBehavior) ◄────────────────────────────────────────────┘  │
 Pre  (TraceIdBehavior) ◄────────────────────────────────────────────────────┘
 ```
@@ -113,4 +113,4 @@ Pre  (TraceIdBehavior) ◄──────────────────
 
 ## Next
 
-→ [Request Context](context.md)
+→ [Resilience Patterns](resilience.md)

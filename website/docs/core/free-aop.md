@@ -10,11 +10,8 @@ sidebar_label: Free AOP
 logic without modifying the core code.
 
 MediatorK gives you AOP for free through pipeline behaviors. Every behavior you register applies to **all** handlers
-automatically. Your handler code stays completely untouched.
-
-Command handlers get audit logging. Query handlers are unaffected. Zero handler changes either way.
-
-Cross-cutting concerns live in one place and apply to all handlers automatically. None of these touch a single handler. The handler is pure business logic; the pipeline is pure infrastructure.
+automatically; your handler code stays completely untouched. The handler is pure business logic; the pipeline is pure
+infrastructure.
 
 ---
 
@@ -61,7 +58,7 @@ val mediator = MediatorFactory.create(
 Output for every request dispatched:
 ```
 → GetUserQuery
-← GetUserQuery
+← GetUserQuery result=User(id=user-1, name=Alice)
 ```
 
 ---
@@ -85,10 +82,10 @@ val mediator = MediatorFactory.create(
 )
 ```
 
-None of these touch a single handler. The handler is pure business logic; the pipeline is pure infrastructure.
+None of these touch a single handler.
 
 ---
 
 ## Next
 
-→ [Pre / Post Processors](processors.md)
+→ [Built-in Behaviors](built-in-behaviors.mdx)

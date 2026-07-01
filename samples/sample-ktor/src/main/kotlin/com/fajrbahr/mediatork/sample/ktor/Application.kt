@@ -1,7 +1,6 @@
 package com.fajrbahr.mediatork.sample.ktor
 
 import com.fajrbahr.mediatork.sample.ktor.after.routes.configureAfterRoutes
-import com.fajrbahr.mediatork.sample.ktor.aftersuper.routes.configureAfterSuperRoutes
 import com.fajrbahr.mediatork.sample.ktor.before.routes.configureBeforeRoutes
 import io.ktor.serialization.kotlinx.json.*
 import io.ktor.server.application.*
@@ -17,5 +16,4 @@ fun Application.module() {
     install(ContentNegotiation) { json() }
     configureBeforeRoutes()
     configureAfterRoutes()
-    configureAfterSuperRoutes()
 }

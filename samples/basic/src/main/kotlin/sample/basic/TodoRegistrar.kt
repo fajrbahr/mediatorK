@@ -1,3 +1,8 @@
+package sample.basic
+
+import com.fajrbahr.mediatork.HandlerRegistry
+import com.fajrbahr.mediatork.MediatorRegistrar
+
 // ── Domain model ──────────────────────────────────────────────────────────────
 
 data class Todo(val id: String, val title: String, val done: Boolean = false)

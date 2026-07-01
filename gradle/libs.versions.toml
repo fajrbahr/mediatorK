@@ -5,6 +5,9 @@ coroutines = "1.10.2"
 ksp = "2.0.21-1.0.28"
 classgraph = "4.8.179"
 nmcp = "1.5.0"
+detekt = "1.23.8"
+binaryCompatibilityValidator = "0.18.1"
+dokka = "2.0.0"
 jvmToolchain = "21"
 compileSdk = "35"
 minSdk = "21"
@@ -20,3 +23,6 @@ kotlin-multiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref 
 kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
 android-library = { id = "com.android.library", version.ref = "agp" }
 nmcp = { id = "com.gradleup.nmcp", version.ref = "nmcp" }
+detekt = { id = "io.gitlab.arturbosch.detekt", version.ref = "detekt" }
+binary-compatibility-validator = { id = "org.jetbrains.kotlinx.binary-compatibility-validator", version.ref = "binaryCompatibilityValidator" }
+dokka = { id = "org.jetbrains.dokka", version.ref = "dokka" }

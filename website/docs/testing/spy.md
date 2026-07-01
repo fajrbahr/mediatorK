@@ -130,18 +130,10 @@ fun `two independent scenarios in one test`() = runTest {
 
 ---
 
-## Choosing the right helper
-
-| Situation                                          | Use                                             |
-|----------------------------------------------------|-------------------------------------------------|
-| Test only checks initial state, never calls `send` | `DummyMediator`                                 |
-| Test controls what `send` returns                  | `FakeMediator` + `fakeHandler`                  |
-| Test asserts *which* requests were sent            | `MediatorSpy`                                   |
-| Test captures published notifications              | `captureNotifications` or `MediatorSpy`         |
-| Test verifies all handlers are wired up            | `MediatorTestUtils.assertAllHandlersRegistered` |
+Not sure whether you need a spy? See [Choosing the right helper](fake-mediator.md#choosing-the-right-helper).
 
 ---
 
 ## Next
 
-→ [Handler Validation](handler-validation.md)
+→ [Testing Notifications](notification-testing.md)

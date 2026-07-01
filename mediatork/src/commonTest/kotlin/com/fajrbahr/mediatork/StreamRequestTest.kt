@@ -24,7 +24,11 @@ class StreamRequestTest {
     fun `stream dispatches to handler and emits all items`() = runTest {
         val m = streamMediator {
             registerStream(object : StreamRequestHandler<NumbersQuery, Int> {
-                override fun handle(mediator: Mediator, requestContext: RequestContext, request: NumbersQuery): Flow<Int> =
+                override fun handle(
+                    mediator: Mediator,
+                    requestContext: RequestContext,
+                    request: NumbersQuery
+                ): Flow<Int> =
                     (1..request.count).asFlow()
             })
         }
@@ -35,7 +39,11 @@ class StreamRequestTest {
     fun `stream with empty flow emits no items`() = runTest {
         val m = streamMediator {
             registerStream(object : StreamRequestHandler<NumbersQuery, Int> {
-                override fun handle(mediator: Mediator, requestContext: RequestContext, request: NumbersQuery): Flow<Int> =
+                override fun handle(
+                    mediator: Mediator,
+                    requestContext: RequestContext,
+                    request: NumbersQuery
+                ): Flow<Int> =
                     emptyFlow()
             })
         }
@@ -74,7 +82,11 @@ class StreamRequestTest {
         }
         val m = streamMediator(streamBehaviors = listOf(trackingBehavior)) {
             registerStream(object : StreamRequestHandler<NumbersQuery, Int> {
-                override fun handle(mediator: Mediator, requestContext: RequestContext, request: NumbersQuery): Flow<Int> =
+                override fun handle(
+                    mediator: Mediator,
+                    requestContext: RequestContext,
+                    request: NumbersQuery
+                ): Flow<Int> =
                     (1..2).asFlow()
             })
         }
@@ -98,7 +110,11 @@ class StreamRequestTest {
         }
         val m = streamMediator(streamBehaviors = listOf(disabledBehavior)) {
             registerStream(object : StreamRequestHandler<NumbersQuery, Int> {
-                override fun handle(mediator: Mediator, requestContext: RequestContext, request: NumbersQuery): Flow<Int> =
+                override fun handle(
+                    mediator: Mediator,
+                    requestContext: RequestContext,
+                    request: NumbersQuery
+                ): Flow<Int> =
                     (1..2).asFlow()
             })
         }
@@ -122,7 +138,11 @@ class StreamRequestTest {
         }
         val m = streamMediator(streamBehaviors = listOf(selectiveBehavior)) {
             registerStream(object : StreamRequestHandler<NumbersQuery, Int> {
-                override fun handle(mediator: Mediator, requestContext: RequestContext, request: NumbersQuery): Flow<Int> =
+                override fun handle(
+                    mediator: Mediator,
+                    requestContext: RequestContext,
+                    request: NumbersQuery
+                ): Flow<Int> =
                     (1..2).asFlow()
             })
         }
@@ -150,7 +170,11 @@ class StreamRequestTest {
             streamBehaviors = listOf(trackingBehavior(id = 2, orderVal = 20), trackingBehavior(id = 1, orderVal = 10)),
         ) {
             registerStream(object : StreamRequestHandler<NumbersQuery, Int> {
-                override fun handle(mediator: Mediator, requestContext: RequestContext, request: NumbersQuery): Flow<Int> =
+                override fun handle(
+                    mediator: Mediator,
+                    requestContext: RequestContext,
+                    request: NumbersQuery
+                ): Flow<Int> =
                     (1..1).asFlow()
             })
         }
@@ -172,7 +196,11 @@ class StreamRequestTest {
         }
         val m = streamMediator(streamBehaviors = listOf(doubling)) {
             registerStream(object : StreamRequestHandler<NumbersQuery, Int> {
-                override fun handle(mediator: Mediator, requestContext: RequestContext, request: NumbersQuery): Flow<Int> =
+                override fun handle(
+                    mediator: Mediator,
+                    requestContext: RequestContext,
+                    request: NumbersQuery
+                ): Flow<Int> =
                     (1..3).asFlow()
             })
         }
@@ -194,7 +222,11 @@ class StreamRequestTest {
         }
         val m = streamMediator(streamBehaviors = listOf(counting)) {
             registerStream(object : StreamRequestHandler<NumbersQuery, Int> {
-                override fun handle(mediator: Mediator, requestContext: RequestContext, request: NumbersQuery): Flow<Int> =
+                override fun handle(
+                    mediator: Mediator,
+                    requestContext: RequestContext,
+                    request: NumbersQuery
+                ): Flow<Int> =
                     (1..1).asFlow()
             })
         }
@@ -208,7 +240,11 @@ class StreamRequestTest {
         var receivedCount = -1
         val m = streamMediator {
             registerStream(object : StreamRequestHandler<NumbersQuery, Int> {
-                override fun handle(mediator: Mediator, requestContext: RequestContext, request: NumbersQuery): Flow<Int> {
+                override fun handle(
+                    mediator: Mediator,
+                    requestContext: RequestContext,
+                    request: NumbersQuery
+                ): Flow<Int> {
                     receivedCount = request.count
                     return (1..request.count).asFlow()
                 }

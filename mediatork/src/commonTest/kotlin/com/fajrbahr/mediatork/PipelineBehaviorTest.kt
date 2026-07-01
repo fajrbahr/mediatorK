@@ -131,7 +131,7 @@ class PipelineBehaviorTest {
                 requestContext: RequestContext,
                 request: PingQuery
             ): String {
-                captured = requestContext.getMetaDate("from-behavior")
+                captured = requestContext.getMetaData("from-behavior")
                 return "ok"
             }
         }

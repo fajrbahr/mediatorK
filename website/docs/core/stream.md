@@ -48,3 +48,11 @@ val all = mediator.stream(StreamInvoicesQuery()).toList()
 begins only when the caller collects. Each collection creates a fresh `RequestContext`.
 
 Dispatching with no registered stream handler throws `MissingStreamHandlerException`.
+
+**See also:** [Stream Pipeline Behaviors](stream-behaviors.md) — wrap stream handlers with logging, throttling, and other cross-cutting concerns.
+
+---
+
+## Next
+
+→ [Stream Pipeline Behaviors](stream-behaviors.md)

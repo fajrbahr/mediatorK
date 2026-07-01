@@ -57,7 +57,7 @@ class PrePostProcessorTest {
                 requestContext: RequestContext,
                 request: PingQuery
             ): String {
-                captured = requestContext.getMetaDate("token"); return "ok"
+                captured = requestContext.getMetaData("token"); return "ok"
             }
         }
         val m = mediator(pipelineBehaviors = listOf(pre)) { register(handler) }
@@ -261,7 +261,7 @@ class PrePostProcessorTest {
                 next: RequestHandlerDelegate<TRequest, TResult>,
                 request: TRequest,
             ): TResult {
-                val r = next(request); postSawValue = requestContext.getMetaDate("shared"); return r
+                val r = next(request); postSawValue = requestContext.getMetaData("shared"); return r
             }
         }
         val m = mediator(pipelineBehaviors = listOf(pre, post)) { register(PingHandler()) }

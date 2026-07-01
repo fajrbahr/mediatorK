@@ -19,5 +19,33 @@ jobs:
 
       - uses: gradle/actions/setup-gradle@v4
 
-      - name: Test
-        run: ./gradlew :mediatork:test
+      - name: Binary compatibility check
+        run: ./gradlew apiCheck
+
+      - name: Static analysis (detekt)
+        run: ./gradlew detekt
+
+      - name: JVM tests + coverage
+        run: ./gradlew :mediatork:jvmTest :mediatork:koverXmlReport
+
+      - name: JS tests (Node)
+        run: ./gradlew :mediatork:jsNodeTest
+
+      - name: Native tests (macOS arm64)
+        run: ./gradlew :mediatork:macosArm64Test
+
+      - name: Wasm compile check
+        run: ./gradlew :mediatork:compileKotlinWasmJs :mediatork:compileKotlinWasmWasi
+
+      - name: mediatork-test tests
+        run: ./gradlew :mediatork-test:jvmTest
+
+      - name: mediatork-ksp-koin build
+        run: ./gradlew :mediatork-ksp-koin:build
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v5
+        with:
+          files: mediatork/build/reports/kover/report.xml
+          token: ${{ secrets.CODECOV_TOKEN }}
+        continue-on-error: true

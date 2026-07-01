@@ -1,22 +1,15 @@
 package com.fajrbahr.mediatork.sample.android
 
-import com.fajrbahr.mediatork.sample.android.after.domain.CreateCityValidator
-import com.fajrbahr.mediatork.sample.android.after.domain.GetPrayerTimesRequest
+import com.fajrbahr.mediatork.sample.android.after.times.GetPrayerTimesRequest
 import com.fajrbahr.mediatork.validator.ValidationResult
 import kotlin.test.Test
 import kotlin.test.assertIs
 import kotlin.test.assertTrue
 
-/**
- * Unit tests for [CreateCityValidator] — no mediator wiring needed, validate the
- * rules directly.  Follows the MediatorK pattern of testing business logic in isolation.
- */
 class CreateCityValidatorTest {
 
-    private val validator = CreateCityValidator()
-
     private fun valid(city: String, country: String = "") =
-        validator.validate(GetPrayerTimesRequest(city = city, country = country))
+        GetPrayerTimesRequest(city = city, country = country).validate()
 
     private fun errorsOf(city: String, country: String = "") =
         (valid(city, country) as ValidationResult.Invalid).errors

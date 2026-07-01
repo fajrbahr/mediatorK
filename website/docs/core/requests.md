@@ -98,5 +98,4 @@ result.onFailure { error -> /* handle */ }
 
 ## Next
 
-→ [Notifications](notifications.md): broadcast events to zero-or-many handlers  
-→ [Validation](validation.md): REQUEST, DOMAIN, and PERSISTENCE scopes
+→ [Notifications](notifications.md): broadcast events to one-or-many handlers
