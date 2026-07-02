@@ -1,19 +1,19 @@
 package com.fajrbahr.mediatork.sample.university
 
-import com.fajrbahr.mediatork.MediatorFactory
-import com.fajrbahr.mediatork.sample.university.domain.CourseRegistrar
-import com.fajrbahr.mediatork.sample.university.domain.CourseStore
-import com.fajrbahr.mediatork.sample.university.domain.CreateCourseCommand
-import com.fajrbahr.mediatork.sample.university.domain.department.CreateDepartmentCommand
-import com.fajrbahr.mediatork.sample.university.domain.department.DepartmentRegistrar
-import com.fajrbahr.mediatork.sample.university.domain.department.DepartmentStore
-import com.fajrbahr.mediatork.sample.university.domain.department.GetDepartmentQuery
-import com.fajrbahr.mediatork.sample.university.domain.instructor.CreateEditInstructorCommand
-import com.fajrbahr.mediatork.sample.university.domain.instructor.DeleteInstructorCommand
-import com.fajrbahr.mediatork.sample.university.domain.instructor.GetInstructorQuery
-import com.fajrbahr.mediatork.sample.university.domain.instructor.GetInstructorsQuery
-import com.fajrbahr.mediatork.sample.university.domain.instructor.InstructorRegistrar
-import com.fajrbahr.mediatork.sample.university.domain.instructor.InstructorStore
+import com.fajrbahr.mediatork.sample.university.course.domain.CourseRegistrar
+import com.fajrbahr.mediatork.sample.university.course.domain.CourseStore
+import com.fajrbahr.mediatork.sample.university.course.domain.CreateCourseCommand
+import com.fajrbahr.mediatork.sample.university.department.domain.CreateDepartmentCommand
+import com.fajrbahr.mediatork.sample.university.department.domain.DepartmentRegistrar
+import com.fajrbahr.mediatork.sample.university.department.domain.DepartmentStore
+import com.fajrbahr.mediatork.sample.university.department.domain.GetDepartmentQuery
+import com.fajrbahr.mediatork.sample.university.instructor.domain.CreateEditInstructorCommand
+import com.fajrbahr.mediatork.sample.university.instructor.domain.DeleteInstructorCommand
+import com.fajrbahr.mediatork.sample.university.instructor.domain.GetInstructorQuery
+import com.fajrbahr.mediatork.sample.university.instructor.domain.GetInstructorsQuery
+import com.fajrbahr.mediatork.sample.university.instructor.domain.InstructorRegistrar
+import com.fajrbahr.mediatork.sample.university.instructor.domain.InstructorStore
+import com.fajrbahr.mediatork.test.buildHandlerTestHarness
 import com.fajrbahr.mediatork.validator.ValidationException
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
@@ -25,38 +25,35 @@ import kotlin.test.assertTrue
 
 class InstructorIntegrationTest {
 
-    private val instructorStore = InstructorStore()
     private val deptStore = DepartmentStore()
-    private val courseStore = CourseStore()
-    private val mediator = MediatorFactory.create(
+    private val harness = buildHandlerTestHarness(
         registrars = listOf(
-            InstructorRegistrar(instructorStore, deptStore),
+            InstructorRegistrar(InstructorStore(), deptStore),
             DepartmentRegistrar(deptStore),
-            CourseRegistrar(courseStore),
+            CourseRegistrar(CourseStore()),
         ),
-        verifyHandlers = false,
     )
 
     private suspend fun createDept(name: String = "English"): Int =
-        mediator.send(CreateDepartmentCommand(name = name, budget = 100.0, startDate = "2024-01-01"))
+        harness.send(CreateDepartmentCommand(name = name, budget = 100.0, startDate = "2024-01-01"))
 
-    // ── CreateEdit (Contoso: CreateEditTests.Should_create_new_instructor) ───
+    // ── CreateEdit ──────────────────────────────────────────────────────────────
 
     @Test
     fun `create instructor returns new id`() = runTest {
         val deptId = createDept()
         val courseId1 =
-            mediator.send(CreateCourseCommand(number = 101, title = "English 101", credits = 4, departmentId = deptId))
+            harness.send(CreateCourseCommand(number = 101, title = "English 101", credits = 4, departmentId = deptId))
         val courseId2 =
-            mediator.send(CreateCourseCommand(number = 201, title = "English 201", credits = 4, departmentId = deptId))
+            harness.send(CreateCourseCommand(number = 201, title = "English 201", credits = 4, departmentId = deptId))
 
-        val id = mediator.send(
+        val id = harness.send(
             CreateEditInstructorCommand(
                 lastName = "Seinfeld", firstMidName = "Jerry", hireDate = "2024-01-01",
                 officeLocation = "Houston", selectedCourseIds = listOf(courseId1, courseId2),
             )
         )
-        val created = mediator.send(GetInstructorQuery(id))
+        val created = harness.query(GetInstructorQuery(id))
         assertNotNull(created)
         assertEquals("Jerry", created.firstMidName)
         assertEquals("Seinfeld", created.lastName)
@@ -67,88 +64,88 @@ class InstructorIntegrationTest {
     @Test
     fun `create instructor with invalid data throws ValidationException`() = runTest {
         assertFailsWith<ValidationException> {
-            mediator.send(CreateEditInstructorCommand(lastName = "", firstMidName = "", hireDate = ""))
+            harness.send(CreateEditInstructorCommand(lastName = "", firstMidName = "", hireDate = ""))
         }
     }
 
-    // ── Edit (Contoso: CreateEditTests.Should_edit_instructor_details) ───────
+    // ── Edit ────────────────────────────────────────────────────────────────────
 
     @Test
     fun `edit instructor updates fields`() = runTest {
-        val id = mediator.send(
+        val id = harness.send(
             CreateEditInstructorCommand(
                 lastName = "Costanza", firstMidName = "George", hireDate = "2024-01-01",
                 officeLocation = "Austin",
             )
         )
-        mediator.send(
+        harness.send(
             CreateEditInstructorCommand(
                 id = id, lastName = "Seinfeld", firstMidName = "Jerry", hireDate = "2024-01-01",
                 officeLocation = "Houston", selectedCourseIds = emptyList(),
             )
         )
-        val edited = mediator.send(GetInstructorQuery(id))
+        val edited = harness.query(GetInstructorQuery(id))
         assertNotNull(edited)
         assertEquals("Jerry", edited.firstMidName)
         assertEquals("Seinfeld", edited.lastName)
         assertEquals("Houston", edited.officeLocation)
     }
 
-    // ── Merge courses (Contoso: CreateEditTests.Should_merge_course_instructors) ─
+    // ── Merge courses ───────────────────────────────────────────────────────────
 
     @Test
     fun `edit instructor merges course assignments`() = runTest {
         val deptId = createDept()
         val courseId1 =
-            mediator.send(CreateCourseCommand(number = 301, title = "English 101", credits = 4, departmentId = deptId))
+            harness.send(CreateCourseCommand(number = 301, title = "English 101", credits = 4, departmentId = deptId))
         val courseId2 =
-            mediator.send(CreateCourseCommand(number = 302, title = "English 201", credits = 4, departmentId = deptId))
+            harness.send(CreateCourseCommand(number = 302, title = "English 201", credits = 4, departmentId = deptId))
 
-        val id = mediator.send(
+        val id = harness.send(
             CreateEditInstructorCommand(
                 lastName = "Costanza", firstMidName = "George", hireDate = "2024-01-01",
                 officeLocation = "Austin", selectedCourseIds = listOf(courseId1),
             )
         )
-        mediator.send(
+        harness.send(
             CreateEditInstructorCommand(
                 id = id, lastName = "Seinfeld", firstMidName = "Jerry", hireDate = "2024-01-01",
                 officeLocation = "Houston", selectedCourseIds = listOf(courseId2),
             )
         )
-        val edited = mediator.send(GetInstructorQuery(id))
+        val edited = harness.query(GetInstructorQuery(id))
         assertNotNull(edited)
         assertEquals(1, edited.courseIds.size)
         assertEquals(courseId2, edited.courseIds.first())
     }
 
-    // ── Details (Contoso: DetailsTests.Should_get_instructor_details) ────────
+    // ── Details ─────────────────────────────────────────────────────────────────
 
     @Test
     fun `query returns instructor details`() = runTest {
-        val id = mediator.send(
+        val id = harness.send(
             CreateEditInstructorCommand(
                 lastName = "Costanza", firstMidName = "George", hireDate = "2024-01-01",
                 officeLocation = "Austin",
             )
         )
-        val instructor = mediator.send(GetInstructorQuery(id))
+        val instructor = harness.query(GetInstructorQuery(id))
         assertNotNull(instructor)
         assertEquals("George", instructor.firstMidName)
         assertEquals("Austin", instructor.officeLocation)
     }
 
-    // ── Delete (Contoso: DeleteTests) ────────────────────────────────────────
+    // ── Delete ──────────────────────────────────────────────────────────────────
 
     @Test
     fun `query returns instructor data for delete confirmation`() = runTest {
-        val id = mediator.send(
+        val id = harness.send(
             CreateEditInstructorCommand(
                 lastName = "Costanza", firstMidName = "George", hireDate = "2024-01-01",
                 officeLocation = "Austin",
             )
         )
-        val instructor = mediator.send(GetInstructorQuery(id))
+        val instructor = harness.query(GetInstructorQuery(id))
         assertNotNull(instructor)
         assertEquals("George", instructor.firstMidName)
         assertEquals("Austin", instructor.officeLocation)
@@ -156,52 +153,44 @@ class InstructorIntegrationTest {
 
     @Test
     fun `delete instructor removes it from store`() = runTest {
-        val id = mediator.send(
+        val id = harness.send(
             CreateEditInstructorCommand(
                 lastName = "Costanza", firstMidName = "George", hireDate = "2024-01-01",
             )
         )
-        mediator.send(DeleteInstructorCommand(id))
-        assertNull(mediator.send(GetInstructorQuery(id)))
+        harness.send(DeleteInstructorCommand(id))
+        assertNull(harness.query(GetInstructorQuery(id)))
     }
 
     @Test
     fun `delete instructor clears department administrator`() = runTest {
-        val id = mediator.send(
+        val id = harness.send(
             CreateEditInstructorCommand(
                 lastName = "Costanza", firstMidName = "George", hireDate = "2024-01-01",
             )
         )
-        val deptId = mediator.send(
+        val deptId = harness.send(
             CreateDepartmentCommand(name = "English", budget = 100.0, startDate = "2024-01-01", administratorId = id)
         )
-        mediator.send(DeleteInstructorCommand(id))
-        val dept = mediator.send(GetDepartmentQuery(deptId))
+        harness.send(DeleteInstructorCommand(id))
+        val dept = harness.query(GetDepartmentQuery(deptId))
         assertNotNull(dept)
         assertNull(dept.administratorId)
     }
 
-    // ── Index (Contoso: IndexTests.Should_get_list_instructor_with_details) ──
+    // ── Index ───────────────────────────────────────────────────────────────────
 
     @Test
     fun `list returns all instructors`() = runTest {
-        mediator.send(
+        harness.given(
             CreateEditInstructorCommand(
-                lastName = "Costanza",
-                firstMidName = "George",
-                hireDate = "2024-01-01",
-                officeLocation = "Austin"
-            )
-        )
-        mediator.send(
+                lastName = "Costanza", firstMidName = "George", hireDate = "2024-01-01", officeLocation = "Austin"
+            ),
             CreateEditInstructorCommand(
-                lastName = "Seinfeld",
-                firstMidName = "Jerry",
-                hireDate = "2024-01-01",
-                officeLocation = "Houston"
-            )
+                lastName = "Seinfeld", firstMidName = "Jerry", hireDate = "2024-01-01", officeLocation = "Houston"
+            ),
         )
-        val instructors = mediator.send(GetInstructorsQuery)
+        val instructors = harness.query(GetInstructorsQuery)
         assertTrue(instructors.size >= 2)
     }
 }

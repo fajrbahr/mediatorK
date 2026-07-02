@@ -1,16 +1,16 @@
 package com.fajrbahr.mediatork.sample.university
 
-import com.fajrbahr.mediatork.MediatorFactory
-import com.fajrbahr.mediatork.sample.university.domain.department.CreateDepartmentCommand
-import com.fajrbahr.mediatork.sample.university.domain.department.DeleteDepartmentCommand
-import com.fajrbahr.mediatork.sample.university.domain.department.DepartmentRegistrar
-import com.fajrbahr.mediatork.sample.university.domain.department.DepartmentStore
-import com.fajrbahr.mediatork.sample.university.domain.department.EditDepartmentCommand
-import com.fajrbahr.mediatork.sample.university.domain.department.GetDepartmentQuery
-import com.fajrbahr.mediatork.sample.university.domain.department.GetDepartmentsQuery
-import com.fajrbahr.mediatork.sample.university.domain.instructor.CreateEditInstructorCommand
-import com.fajrbahr.mediatork.sample.university.domain.instructor.InstructorRegistrar
-import com.fajrbahr.mediatork.sample.university.domain.instructor.InstructorStore
+import com.fajrbahr.mediatork.sample.university.department.domain.CreateDepartmentCommand
+import com.fajrbahr.mediatork.sample.university.department.domain.DeleteDepartmentCommand
+import com.fajrbahr.mediatork.sample.university.department.domain.DepartmentRegistrar
+import com.fajrbahr.mediatork.sample.university.department.domain.DepartmentStore
+import com.fajrbahr.mediatork.sample.university.department.domain.EditDepartmentCommand
+import com.fajrbahr.mediatork.sample.university.department.domain.GetDepartmentQuery
+import com.fajrbahr.mediatork.sample.university.department.domain.GetDepartmentsQuery
+import com.fajrbahr.mediatork.sample.university.instructor.domain.CreateEditInstructorCommand
+import com.fajrbahr.mediatork.sample.university.instructor.domain.InstructorRegistrar
+import com.fajrbahr.mediatork.sample.university.instructor.domain.InstructorStore
+import com.fajrbahr.mediatork.test.buildHandlerTestHarness
 import com.fajrbahr.mediatork.validator.ValidationException
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
@@ -23,30 +23,25 @@ import kotlin.test.assertTrue
 class DepartmentIntegrationTest {
 
     private val deptStore = DepartmentStore()
-    private val instructorStore = InstructorStore()
-    private val mediator = MediatorFactory.create(
+    private val harness = buildHandlerTestHarness(
         registrars = listOf(
             DepartmentRegistrar(deptStore),
-            InstructorRegistrar(instructorStore, deptStore),
+            InstructorRegistrar(InstructorStore(), deptStore),
         ),
-        verifyHandlers = false,
     )
 
-    private suspend fun createAdmin(): Int = mediator.send(
+    private suspend fun createAdmin(): Int = harness.send(
         CreateEditInstructorCommand(lastName = "Costanza", firstMidName = "George", hireDate = "2024-01-01")
     )
 
-    // ── Create (Contoso: CreateTests.Should_create_new_department) ────────────
+    // ── Create ──────────────────────────────────────────────────────────────────
 
     @Test
     fun `create department returns new id`() = runTest {
         val adminId = createAdmin()
-        val id = mediator.send(
+        val id = harness.send(
             CreateDepartmentCommand(
-                name = "Engineering",
-                budget = 10.0,
-                startDate = "2024-01-01",
-                administratorId = adminId
+                name = "Engineering", budget = 10.0, startDate = "2024-01-01", administratorId = adminId
             )
         )
         assertTrue(id > 0)
@@ -55,15 +50,12 @@ class DepartmentIntegrationTest {
     @Test
     fun `created department is retrievable with all fields`() = runTest {
         val adminId = createAdmin()
-        val id = mediator.send(
+        val id = harness.send(
             CreateDepartmentCommand(
-                name = "Engineering",
-                budget = 10.0,
-                startDate = "2024-01-01",
-                administratorId = adminId
+                name = "Engineering", budget = 10.0, startDate = "2024-01-01", administratorId = adminId
             )
         )
-        val dept = mediator.send(GetDepartmentQuery(id))
+        val dept = harness.query(GetDepartmentQuery(id))
         assertNotNull(dept)
         assertEquals("Engineering", dept.name)
         assertEquals(10.0, dept.budget)
@@ -73,43 +65,37 @@ class DepartmentIntegrationTest {
     @Test
     fun `create department with invalid data throws ValidationException`() = runTest {
         assertFailsWith<ValidationException> {
-            mediator.send(CreateDepartmentCommand(name = "AB", budget = -1.0, startDate = ""))
+            harness.send(CreateDepartmentCommand(name = "AB", budget = -1.0, startDate = ""))
         }
     }
 
-    // ── Details (Contoso: DetailsTests.Should_get_department_details) ─────────
+    // ── Details ─────────────────────────────────────────────────────────────────
 
     @Test
     fun `query returns department details`() = runTest {
         val adminId = createAdmin()
-        val id = mediator.send(
+        val id = harness.send(
             CreateDepartmentCommand(
-                name = "History",
-                budget = 123.0,
-                startDate = "2024-01-01",
-                administratorId = adminId
+                name = "History", budget = 123.0, startDate = "2024-01-01", administratorId = adminId
             )
         )
-        val dept = mediator.send(GetDepartmentQuery(id))
+        val dept = harness.query(GetDepartmentQuery(id))
         assertNotNull(dept)
         assertEquals("History", dept.name)
         assertEquals(adminId, dept.administratorId)
     }
 
-    // ── Edit (Contoso: EditTests) ────────────────────────────────────────────
+    // ── Edit ────────────────────────────────────────────────────────────────────
 
     @Test
     fun `query returns department data for edit form`() = runTest {
         val adminId = createAdmin()
-        val id = mediator.send(
+        val id = harness.send(
             CreateDepartmentCommand(
-                name = "History",
-                budget = 123.0,
-                startDate = "2024-01-01",
-                administratorId = adminId
+                name = "History", budget = 123.0, startDate = "2024-01-01", administratorId = adminId
             )
         )
-        val dept = mediator.send(GetDepartmentQuery(id))
+        val dept = harness.query(GetDepartmentQuery(id))
         assertNotNull(dept)
         assertEquals("History", dept.name)
         assertEquals(adminId, dept.administratorId)
@@ -119,24 +105,17 @@ class DepartmentIntegrationTest {
     fun `edit department updates all fields`() = runTest {
         val admin1Id = createAdmin()
         val admin2Id = createAdmin()
-        val id = mediator.send(
+        val id = harness.send(
             CreateDepartmentCommand(
-                name = "History",
-                budget = 123.0,
-                startDate = "2024-01-01",
-                administratorId = admin1Id
+                name = "History", budget = 123.0, startDate = "2024-01-01", administratorId = admin1Id
             )
         )
-        mediator.send(
+        harness.send(
             EditDepartmentCommand(
-                id = id,
-                name = "English",
-                budget = 456.0,
-                startDate = "2023-06-01",
-                administratorId = admin2Id
+                id = id, name = "English", budget = 456.0, startDate = "2023-06-01", administratorId = admin2Id
             )
         )
-        val dept = mediator.send(GetDepartmentQuery(id))
+        val dept = harness.query(GetDepartmentQuery(id))
         assertNotNull(dept)
         assertEquals("English", dept.name)
         assertEquals(456.0, dept.budget)
@@ -144,45 +123,30 @@ class DepartmentIntegrationTest {
         assertEquals(admin2Id, dept.administratorId)
     }
 
-    // ── Delete (Contoso: DeleteTests.Should_delete_department) ───────────────
+    // ── Delete ──────────────────────────────────────────────────────────────────
 
     @Test
     fun `delete department removes it from store`() = runTest {
         val adminId = createAdmin()
-        val id = mediator.send(
+        val id = harness.send(
             CreateDepartmentCommand(
-                name = "History",
-                budget = 123.0,
-                startDate = "2024-01-01",
-                administratorId = adminId
+                name = "History", budget = 123.0, startDate = "2024-01-01", administratorId = adminId
             )
         )
-        mediator.send(DeleteDepartmentCommand(id))
-        assertNull(mediator.send(GetDepartmentQuery(id)))
+        harness.send(DeleteDepartmentCommand(id))
+        assertNull(harness.query(GetDepartmentQuery(id)))
     }
 
-    // ── Index (Contoso: IndexTests.Should_list_departments) ──────────────────
+    // ── Index ───────────────────────────────────────────────────────────────────
 
     @Test
     fun `list returns all departments`() = runTest {
         val adminId = createAdmin()
-        mediator.send(
-            CreateDepartmentCommand(
-                name = "History",
-                budget = 123.0,
-                startDate = "2024-01-01",
-                administratorId = adminId
-            )
+        harness.given(
+            CreateDepartmentCommand(name = "History", budget = 123.0, startDate = "2024-01-01", administratorId = adminId),
+            CreateDepartmentCommand(name = "English", budget = 456.0, startDate = "2024-01-01", administratorId = adminId),
         )
-        mediator.send(
-            CreateDepartmentCommand(
-                name = "English",
-                budget = 456.0,
-                startDate = "2024-01-01",
-                administratorId = adminId
-            )
-        )
-        val depts = mediator.send(GetDepartmentsQuery)
+        val depts = harness.query(GetDepartmentsQuery)
         assertTrue(depts.size >= 2)
     }
 }

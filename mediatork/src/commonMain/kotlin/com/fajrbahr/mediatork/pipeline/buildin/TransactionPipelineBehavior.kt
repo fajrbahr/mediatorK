@@ -1,3 +1,5 @@
+@file:Suppress("TooGenericExceptionCaught")
+
 package com.fajrbahr.mediatork.pipeline.buildin
 
 import com.fajrbahr.mediatork.api.PipelineBehavior

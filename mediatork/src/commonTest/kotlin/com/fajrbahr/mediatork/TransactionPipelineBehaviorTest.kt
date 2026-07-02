@@ -1,3 +1,5 @@
+@file:Suppress("TooGenericExceptionThrown")
+
 package com.fajrbahr.mediatork
 
 import com.fajrbahr.mediatork.api.Mediator
@@ -65,7 +67,7 @@ class TransactionPipelineBehaviorTest {
                     requestContext: RequestContext,
                     request: PingQuery
                 ): String =
-                    throw IllegalStateException("domain error")
+                    error("domain error")
             })
         }
         val ex = assertFailsWith<IllegalStateException> { m.send(PingQuery("x")) }

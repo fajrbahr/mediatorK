@@ -2,6 +2,7 @@ package com.fajrbahr.mediatork.sample.university
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity
+import androidx.activity.compose.BackHandler
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.Arrangement
@@ -115,6 +116,10 @@ private fun AppRoot() {
     val deptListVm = remember { DepartmentListViewModel(mediator) }
     val instructorListVm = remember { InstructorListViewModel(mediator) }
 
+
+    BackHandler() {
+        screen = Screen.Home
+    }
     when (screen) {
         Screen.Home -> {
             Scaffold(

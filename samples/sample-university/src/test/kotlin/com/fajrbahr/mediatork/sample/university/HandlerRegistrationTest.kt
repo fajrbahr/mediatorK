@@ -1,14 +1,14 @@
 package com.fajrbahr.mediatork.sample.university
 
 import com.fajrbahr.mediatork.MediatorFactory
-import com.fajrbahr.mediatork.sample.university.domain.CourseRegistrar
-import com.fajrbahr.mediatork.sample.university.domain.CourseStore
-import com.fajrbahr.mediatork.sample.university.domain.department.DepartmentRegistrar
-import com.fajrbahr.mediatork.sample.university.domain.department.DepartmentStore
-import com.fajrbahr.mediatork.sample.university.domain.instructor.InstructorRegistrar
-import com.fajrbahr.mediatork.sample.university.domain.instructor.InstructorStore
-import com.fajrbahr.mediatork.sample.university.domain.student.StudentRegistrar
-import com.fajrbahr.mediatork.sample.university.domain.student.StudentStore
+import com.fajrbahr.mediatork.sample.university.course.domain.CourseRegistrar
+import com.fajrbahr.mediatork.sample.university.course.domain.CourseStore
+import com.fajrbahr.mediatork.sample.university.department.domain.DepartmentRegistrar
+import com.fajrbahr.mediatork.sample.university.department.domain.DepartmentStore
+import com.fajrbahr.mediatork.sample.university.instructor.domain.InstructorRegistrar
+import com.fajrbahr.mediatork.sample.university.instructor.domain.InstructorStore
+import com.fajrbahr.mediatork.sample.university.student.domain.StudentRegistrar
+import com.fajrbahr.mediatork.sample.university.student.domain.StudentStore
 import kotlin.test.Test
 
 class HandlerRegistrationTest {

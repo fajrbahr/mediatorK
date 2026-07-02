@@ -71,8 +71,10 @@ kotlin {
             implementation(libs.coroutines.core)
         }
         commonTest.dependencies {
-            implementation(kotlin("test"))
             implementation(libs.coroutines.test)
+        }
+        jvmMain.dependencies {
+            implementation(libs.classgraph)
         }
     }
 }

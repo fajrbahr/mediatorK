@@ -1,10 +1,24 @@
 package com.fajrbahr.mediatork
 
-import com.fajrbahr.mediatork.api.*
+import com.fajrbahr.mediatork.api.Mediator
+import com.fajrbahr.mediatork.api.Notification
+import com.fajrbahr.mediatork.api.RequestContext
+import com.fajrbahr.mediatork.api.RequestHandler
+import com.fajrbahr.mediatork.api.StreamRequest
+import com.fajrbahr.mediatork.api.StreamRequestHandler
 import com.fajrbahr.mediatork.notification.NotificationPublishStrategy
 import com.fajrbahr.mediatork.validator.ValidationResult
 import kotlinx.coroutines.test.runTest
-import kotlin.test.*
+import kotlin.test.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
+import kotlin.test.assertFalse
+import kotlin.test.assertSame
+import kotlin.test.assertTrue
+import com.fajrbahr.mediatork.MissingHandlerException
+import com.fajrbahr.mediatork.api.MediatorRegistrar
+import com.fajrbahr.mediatork.api.Request
+import com.fajrbahr.mediatork.api.RequestValidator
 
 class HandlerRegistryTest {
 

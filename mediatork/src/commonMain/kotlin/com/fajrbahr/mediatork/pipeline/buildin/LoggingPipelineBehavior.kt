@@ -18,8 +18,12 @@ import com.fajrbahr.mediatork.api.RequestHandlerDelegate
  */
 class LoggingPipelineBehavior(
     val logger: (String) -> Unit = ::println,
-    override val order: Int = -100,
+    override val order: Int = DEFAULT_ORDER,
 ) : PipelineBehavior {
+
+    private companion object {
+        const val DEFAULT_ORDER = -100
+    }
 
     override suspend fun <TRequest : Request<TResult>, TResult> process(
         requestContext: RequestContext,

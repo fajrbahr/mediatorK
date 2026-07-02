@@ -1,3 +1,5 @@
+@file:Suppress("TooGenericExceptionThrown")
+
 package com.fajrbahr.mediatork
 
 import com.fajrbahr.mediatork.api.Mediator
@@ -29,7 +31,7 @@ class TrySendTest {
                     requestContext: RequestContext,
                     request: PingQuery
                 ): String =
-                    throw IllegalStateException("boom")
+                    error("boom")
             })
         }
         val result = m.trySend(PingQuery("x"))

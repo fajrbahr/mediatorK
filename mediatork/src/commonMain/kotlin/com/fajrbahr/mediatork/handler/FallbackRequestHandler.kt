@@ -1,3 +1,5 @@
+@file:Suppress("TooGenericExceptionCaught")
+
 package com.fajrbahr.mediatork.handler
 
 import com.fajrbahr.mediatork.api.Mediator
@@ -29,7 +31,7 @@ internal class FallbackRequestHandler<TRequest : Request<TResult>, TResult>(
                 lastException = e
             }
         }
-        throw lastException ?: IllegalStateException("FallbackRequestHandler has no handlers")
+        throw lastException ?: error("FallbackRequestHandler has no handlers")
     }
 
     internal fun withFallback(handler: RequestHandler<TRequest, TResult>): FallbackRequestHandler<TRequest, TResult> =

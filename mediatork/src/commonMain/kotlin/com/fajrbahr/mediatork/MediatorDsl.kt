@@ -1,6 +1,20 @@
+@file:Suppress("TooManyFunctions")
+
 package com.fajrbahr.mediatork
 
-import com.fajrbahr.mediatork.api.*
+import com.fajrbahr.mediatork.api.Mediator
+import com.fajrbahr.mediatork.api.MediatorRegistrar
+import com.fajrbahr.mediatork.api.Notification
+import com.fajrbahr.mediatork.api.NotificationHandler
+import com.fajrbahr.mediatork.api.PipelineBehavior
+import com.fajrbahr.mediatork.api.Request
+import com.fajrbahr.mediatork.api.RequestContext
+import com.fajrbahr.mediatork.api.RequestHandler
+import com.fajrbahr.mediatork.api.RequestValidator
+import com.fajrbahr.mediatork.api.StreamPipelineBehavior
+import com.fajrbahr.mediatork.api.StreamRequest
+import com.fajrbahr.mediatork.api.StreamRequestHandler
+import com.fajrbahr.mediatork.feature.Feature
 import com.fajrbahr.mediatork.handler.ThrowMissingRequestHandler
 import com.fajrbahr.mediatork.notification.NotificationPublishStrategy
 import com.fajrbahr.mediatork.notification.ThrowMissingNotificationHandler
@@ -230,6 +244,15 @@ class MediatorBuilder @PublishedApi internal constructor() {
 
     /** Shorthand for [register]: `+MyValidator()`. */
     inline operator fun <reified TRequest : Request<*>> RequestValidator<TRequest>.unaryPlus() =
+        register(this)
+
+    /** Registers a [Feature]'s handler and optional validator. */
+    inline fun <reified TRequest : Request<TResult>, TResult> register(feature: Feature<TRequest, TResult>) {
+        registry.registerFeature(feature)
+    }
+
+    /** Shorthand for [register]: `+myFeature`. */
+    inline operator fun <reified TRequest : Request<TResult>, TResult> Feature<TRequest, TResult>.unaryPlus() =
         register(this)
 
     /** Lambda request handler — see [HandlerRegistry.handle]. */
