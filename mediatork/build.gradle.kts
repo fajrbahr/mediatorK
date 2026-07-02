@@ -1,11 +1,11 @@
 plugins {
     alias(libs.plugins.kotlin.multiplatform)
-    alias(libs.plugins.android.library)
+    alias(libs.plugins.android.kotlin.multiplatform.library)
     alias(libs.plugins.nmcp)
     alias(libs.plugins.dokka)
     `maven-publish`
     signing
-    id("org.jetbrains.kotlinx.kover") version "0.9.1"
+    id("org.jetbrains.kotlinx.kover") version "0.9.8"
 }
 
 // group and version come from the root gradle.properties — the single source of
@@ -16,19 +16,13 @@ repositories {
     google()
 }
 
-android {
-    namespace = "com.fajrbahr.mediatork"
-    compileSdk = libs.versions.compileSdk.get().toInt()
-    defaultConfig {
-        minSdk = libs.versions.minSdk.get().toInt()
-    }
-}
-
 kotlin {
     jvmToolchain(libs.versions.jvmToolchain.get().toInt())
 
-    androidTarget {
-        publishLibraryVariants("release")
+    android {
+        namespace = "com.fajrbahr.mediatork"
+        compileSdk = libs.versions.compileSdk.get().toInt()
+        minSdk = libs.versions.minSdk.get().toInt()
     }
 
     androidNativeX64()
