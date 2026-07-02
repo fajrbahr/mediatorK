@@ -13,7 +13,7 @@ rootProject.name = "MediatorK"
 
 include("mediatork")
 include("mediatork-test")
-include("mediatork-ksp-koin")
+//include("mediatork-ksp-koin")
 include("publishMaven")
 
 
