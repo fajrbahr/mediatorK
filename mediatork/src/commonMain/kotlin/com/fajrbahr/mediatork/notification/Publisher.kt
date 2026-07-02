@@ -7,7 +7,8 @@ import com.fajrbahr.mediatork.api.Notification
  *
  * Unlike [com.fajrbahr.mediatork.handler.Sender], publishing returns no value. When no handlers are registered for
  * the notification type, the configured missing-notification handler is invoked —
- * by default [ThrowMissingNotificationHandler], which throws [com.fajrbahr.mediatork.MissingNotificationHandlerException].
+ * by default [ThrowMissingNotificationHandler], which throws
+ * [com.fajrbahr.mediatork.MissingNotificationHandlerException].
  * The delivery strategy (parallel, sequential, fire-and-forget, etc.) is determined
  * by the active [NotificationPublishStrategy].
  *

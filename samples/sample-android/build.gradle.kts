@@ -33,7 +33,7 @@ android {
 }
 
 dependencies {
-    implementation("io.github.fajrbahr:mediatork:0.6.4")
+    implementation(project(":mediatork"))
     implementation("io.insert-koin:koin-android:4.0.4")
 
     val composeBom = platform("androidx.compose:compose-bom:2024.09.03")
@@ -52,5 +52,4 @@ dependencies {
     testImplementation(kotlin("test"))
     testImplementation("junit:junit:4.13.2")
     testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.10.2")
-    testImplementation("io.github.fajrbahr:mediatork-test:0.6.4")
 }

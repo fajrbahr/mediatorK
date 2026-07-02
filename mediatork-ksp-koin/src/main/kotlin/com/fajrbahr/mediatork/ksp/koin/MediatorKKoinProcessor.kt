@@ -1,10 +1,16 @@
+@file:Suppress("SpreadOperator", "ReturnCount", "LongMethod")
+
 package com.fajrbahr.mediatork.ksp.koin
 
 import com.fajrbahr.mediatork.ksp.koin.MediatorKKoinProcessor.Companion.EXCLUDE_ANNOTATION
 import com.fajrbahr.mediatork.ksp.koin.MediatorKKoinProcessor.Companion.NOTIFICATION_HANDLER
 import com.fajrbahr.mediatork.ksp.koin.MediatorKKoinProcessor.Companion.REQUEST_HANDLER
 import com.fajrbahr.mediatork.ksp.koin.MediatorKKoinProcessor.Companion.STREAM_REQUEST_HANDLER
-import com.google.devtools.ksp.processing.*
+import com.google.devtools.ksp.processing.CodeGenerator
+import com.google.devtools.ksp.processing.Dependencies
+import com.google.devtools.ksp.processing.KSPLogger
+import com.google.devtools.ksp.processing.Resolver
+import com.google.devtools.ksp.processing.SymbolProcessor
 import com.google.devtools.ksp.symbol.ClassKind
 import com.google.devtools.ksp.symbol.KSAnnotated
 import com.google.devtools.ksp.symbol.KSClassDeclaration

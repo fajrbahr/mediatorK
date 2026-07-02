@@ -1,6 +1,9 @@
+@file:Suppress("TooManyFunctions")
+
 package com.fajrbahr.mediatork
 
 import com.fajrbahr.mediatork.api.*
+import com.fajrbahr.mediatork.feature.Feature
 import kotlin.reflect.KClass
 
 /**
@@ -101,6 +104,23 @@ class HandlerRegistry {
     inline operator fun <reified TRequest : Request<*>> RequestValidator<TRequest>.unaryPlus() =
         registerValidator(this)
 
+    /** Registers a [Feature]'s handler, optional validator, and notification handlers in one step: `+myFeature`. */
+    inline fun <reified TRequest : Request<TResult>, TResult> registerFeature(
+        feature: Feature<TRequest, TResult>,
+    ): HandlerRegistry {
+        register(feature.handler)
+        feature.validator?.let { registerValidator(it) }
+        feature.notifications.forEach { registration ->
+            notificationHandlers.getOrPut(registration.notificationClass) { mutableListOf() }
+                .add(registration.handler)
+        }
+        return this
+    }
+
+    /** Shorthand for [registerFeature]; use inside a [scope] block: `+myFeature`. */
+    inline operator fun <reified TRequest : Request<TResult>, TResult> Feature<TRequest, TResult>.unaryPlus() =
+        registerFeature(this)
+
     // ── Dynamic registration (for DI frameworks) ──────────────────────────────
 
     /**
@@ -151,11 +171,15 @@ class HandlerRegistry {
     // ── Resolution (internal) ─────────────────────────────────────────────────
 
     @Suppress("UNCHECKED_CAST")
-    internal fun <TRequest : Request<TResult>, TResult> resolveHandlerOrNull(request: TRequest): RequestHandler<TRequest, TResult>? =
+    internal fun <TRequest : Request<TResult>, TResult> resolveHandlerOrNull(
+        request: TRequest,
+    ): RequestHandler<TRequest, TResult>? =
         requestHandlers[request::class] as? RequestHandler<TRequest, TResult>
 
     @Suppress("UNCHECKED_CAST")
-    internal fun <TRequest : Request<TResult>, TResult> resolveHandler(request: TRequest): RequestHandler<TRequest, TResult> =
+    internal fun <TRequest : Request<TResult>, TResult> resolveHandler(
+        request: TRequest,
+    ): RequestHandler<TRequest, TResult> =
         requestHandlers[request::class] as? RequestHandler<TRequest, TResult>
             ?: throw MissingHandlerException(
                 requestTypeName = request::class.simpleName ?: "Unknown",
@@ -163,7 +187,9 @@ class HandlerRegistry {
             )
 
     @Suppress("UNCHECKED_CAST")
-    internal fun <TRequest : StreamRequest<T>, T> resolveStreamHandler(request: TRequest): StreamRequestHandler<TRequest, T> =
+    internal fun <TRequest : StreamRequest<T>, T> resolveStreamHandler(
+        request: TRequest,
+    ): StreamRequestHandler<TRequest, T> =
         streamHandlers[request::class] as? StreamRequestHandler<TRequest, T>
             ?: throw MissingStreamHandlerException(
                 requestTypeName = request::class.simpleName ?: "Unknown",

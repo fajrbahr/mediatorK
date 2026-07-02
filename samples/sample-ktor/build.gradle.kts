@@ -12,7 +12,7 @@ application {
 }
 
 dependencies {
-    implementation("io.github.fajrbahr:mediatork:0.6.3")
+    implementation(project(":mediatork"))
     implementation("io.ktor:ktor-server-core:3.1.3")
     implementation("io.ktor:ktor-server-netty:3.1.3")
     implementation("io.ktor:ktor-server-content-negotiation:3.1.3")

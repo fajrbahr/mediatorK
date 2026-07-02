@@ -6,7 +6,7 @@ plugins {
 
 android {
     namespace = "com.fajrbahr.mediatork.sample.university"
-    compileSdk = 35
+    compileSdk = 36
 
     defaultConfig {
         applicationId = "com.fajrbahr.mediatork.sample.university"
@@ -33,7 +33,7 @@ android {
 }
 
 dependencies {
-    implementation("io.github.fajrbahr:mediatork:0.6.3")
+    implementation(project(":mediatork"))
 
     val composeBom = platform("androidx.compose:compose-bom:2024.09.03")
     implementation(composeBom)
@@ -49,6 +49,7 @@ dependencies {
 
     debugImplementation("androidx.compose.ui:ui-tooling")
 
+    testImplementation(project(":mediatork-test"))
     testImplementation(kotlin("test"))
     testImplementation("junit:junit:4.13.2")
     testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.10.2")

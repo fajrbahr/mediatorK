@@ -1,21 +1,14 @@
 package com.fajrbahr.mediatork.sample.university.course.domain
 
-import com.fajrbahr.mediatork.api.Mediator
 import com.fajrbahr.mediatork.api.Request
-import com.fajrbahr.mediatork.api.RequestContext
-import com.fajrbahr.mediatork.api.RequestHandler
+import com.fajrbahr.mediatork.feature.Feature
+import com.fajrbahr.mediatork.feature.feature
 
 data class DeleteCourseCommand(val id: Int) : Request<Unit>
 
-class DeleteCourseHandler(
-    private val store: CourseStore,
-) : RequestHandler<DeleteCourseCommand, Unit> {
-
-    override suspend fun handle(
-        mediator: Mediator,
-        requestContext: RequestContext,
-        request: DeleteCourseCommand,
-    ) {
-        store.delete(request.id)
+fun deleteCourse(store: CourseStore): Feature<DeleteCourseCommand, Unit> =
+    feature {
+        handle { request ->
+            store.delete(request.id)
+        }
     }
-}

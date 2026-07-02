@@ -1,3 +1,5 @@
+@file:Suppress("TooGenericExceptionCaught")
+
 package com.fajrbahr.mediatork.handler
 
 import com.fajrbahr.mediatork.api.Request

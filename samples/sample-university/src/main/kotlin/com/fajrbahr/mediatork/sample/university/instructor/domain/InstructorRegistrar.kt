@@ -10,10 +10,10 @@ class InstructorRegistrar(
 ) : MediatorRegistrar {
     override fun register(registry: HandlerRegistry) {
         registry.scope {
-            +GetInstructorsHandler(store)
-            +GetInstructorHandler(store)
-            +CreateEditInstructorHandler(store, departmentStore)
-            +DeleteInstructorHandler(store, departmentStore)
+            +getInstructors(store)
+            +getInstructor(store)
+            +createEditInstructor(store, departmentStore)
+            +deleteInstructor(store, departmentStore)
         }
     }
 }

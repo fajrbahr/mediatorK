@@ -2,6 +2,7 @@ plugins {
     alias(libs.plugins.kotlin.multiplatform)
     alias(libs.plugins.android.kotlin.multiplatform.library)
     alias(libs.plugins.nmcp)
+    alias(libs.plugins.dokka)
     `maven-publish`
     signing
 }
@@ -31,6 +32,7 @@ kotlin {
 
     js {
         browser()
+        nodejs()
     }
 
     jvm()
@@ -62,19 +64,8 @@ kotlin {
 
     sourceSets {
         commonMain.dependencies {
-            // Core types (Mediator, HandlerRegistry, …) appear in this module's
-            // public API, and the assertion helpers surface kotlin.test at call
-            // sites via inline functions — both must be `api`.
             api(project(":mediatork"))
             api(kotlin("test"))
-            implementation(libs.coroutines.core)
-        }
-        jvmMain.dependencies {
-            // Classpath scanning for MediatorTestUtils.assertAllHandlersRegistered (JVM-only).
-            implementation(libs.classgraph)
-        }
-        commonTest.dependencies {
-            implementation(libs.coroutines.test)
         }
     }
 }
@@ -89,7 +80,7 @@ publishing {
 
         pom {
             name.set("MediatorK Test")
-            description.set("Testing utilities for MediatorK — assertion helpers and test harnesses")
+            description.set("Test utilities for MediatorK – fakes, spies, and harnesses")
             url.set("https://github.com/fajrbahr/MediatorK")
 
             licenses {
@@ -135,4 +126,3 @@ nmcp {
         publishingType = "AUTOMATIC"
     }
 }
-

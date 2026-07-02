@@ -1,3 +1,5 @@
+@file:Suppress("MaxLineLength")
+
 package com.fajrbahr.mediatork.notification
 
 /** Top-level alias so callers can import via `notification.*` without qualifying the interface name. */

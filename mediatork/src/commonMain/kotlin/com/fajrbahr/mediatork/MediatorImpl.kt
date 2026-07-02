@@ -92,7 +92,8 @@ internal class MediatorImpl(
      * Resolves all notification handlers and delivers [notification] via the
      * supplied [publisher], overriding the default for this call only.
      *
-     * @param publisher the strategy to use instead of the default [com.fajrbahr.mediatork.notification.NotificationPublishStrategy].
+     * @param publisher the strategy to use instead of the default
+     *   [com.fajrbahr.mediatork.notification.NotificationPublishStrategy].
      */
     override suspend fun <T : Notification> publish(notification: T, publisher: NotificationPublishStrategy) {
         val handlers = registry.resolveNotificationHandlers(notification).sortedBy { it.order }

@@ -3,7 +3,11 @@ package com.fajrbahr.mediatork
 import com.fajrbahr.mediatork.api.*
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.test.runTest
-import kotlin.test.*
+import kotlin.test.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
+import kotlin.test.assertFalse
+import kotlin.test.assertTrue
 
 class StreamRequestTest {
 
