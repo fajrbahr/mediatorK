@@ -1,3 +1,5 @@
+@file:Suppress("TooGenericExceptionThrown")
+
 package com.fajrbahr.mediatork
 
 import com.fajrbahr.mediatork.api.Mediator
@@ -27,7 +29,11 @@ class FallbackRequestHandlerTest {
     @Test
     fun `uses primary handler when it succeeds`() = runTest {
         val m =
-            mediator { register<PingQuery, String>(SucceedingHandler("primary") otherwise SucceedingHandler("fallback")) }
+            mediator {
+                register<PingQuery, String>(
+                    SucceedingHandler("primary") otherwise SucceedingHandler("fallback"),
+                )
+            }
         assertEquals("primary", m.send(PingQuery("x")))
     }
 

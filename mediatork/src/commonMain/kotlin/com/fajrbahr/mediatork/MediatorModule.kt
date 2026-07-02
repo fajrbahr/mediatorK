@@ -1,7 +1,16 @@
+@file:Suppress("MatchingDeclarationName", "LongParameterList")
+
 package com.fajrbahr.mediatork
 
 import com.fajrbahr.mediatork.MediatorFactory.create
-import com.fajrbahr.mediatork.api.*
+import com.fajrbahr.mediatork.api.Mediator
+import com.fajrbahr.mediatork.api.MediatorRegistrar
+import com.fajrbahr.mediatork.api.Notification
+import com.fajrbahr.mediatork.api.NotificationHandler
+import com.fajrbahr.mediatork.api.PipelineBehavior
+import com.fajrbahr.mediatork.api.Request
+import com.fajrbahr.mediatork.api.RequestHandler
+import com.fajrbahr.mediatork.api.StreamPipelineBehavior
 import com.fajrbahr.mediatork.handler.ThrowMissingRequestHandler
 import com.fajrbahr.mediatork.notification.NotificationPublishStrategy
 import com.fajrbahr.mediatork.notification.ThrowMissingNotificationHandler
@@ -26,7 +35,8 @@ object MediatorFactory {
      * Builds and returns a [com.fajrbahr.mediatork.api.Mediator] wired with the supplied components.
      *
      * Registration order:
-     * 1. Each [com.fajrbahr.mediatork.api.MediatorRegistrar] in [registrars] is called to populate the [HandlerRegistry].
+     * 1. Each [com.fajrbahr.mediatork.api.MediatorRegistrar] in [registrars] is called
+     *    to populate the [HandlerRegistry].
      * 2. If [verifyHandlers] is `true`, the registry is verified; a warning is printed to stdout
      *    for any request type whose handler is absent after registration.
      * 3. A [MediatorImpl] is constructed with the assembled registry and behaviors.
@@ -45,7 +55,8 @@ object MediatorFactory {
         registrars: List<MediatorRegistrar> = emptyList(),
         pipelineBehaviors: List<PipelineBehavior> = emptyList(),
         streamPipelineBehaviors: List<StreamPipelineBehavior> = emptyList(),
-        notificationPublisher: NotificationPublishStrategy = NotificationPublishStrategy.ParallelNotificationPublisher(),
+        notificationPublisher: NotificationPublishStrategy =
+            NotificationPublishStrategy.ParallelNotificationPublisher(),
         verifyHandlers: Boolean = true,
         missingNotificationHandler: NotificationHandler<Notification> = ThrowMissingNotificationHandler(),
         missingRequestHandler: RequestHandler<Request<Any?>, Any?> = ThrowMissingRequestHandler(),
@@ -80,7 +91,8 @@ object MediatorFactory {
         registry: HandlerRegistry,
         pipelineBehaviors: List<PipelineBehavior> = emptyList(),
         streamPipelineBehaviors: List<StreamPipelineBehavior> = emptyList(),
-        notificationPublisher: NotificationPublishStrategy = NotificationPublishStrategy.ParallelNotificationPublisher(),
+        notificationPublisher: NotificationPublishStrategy =
+            NotificationPublishStrategy.ParallelNotificationPublisher(),
         missingNotificationHandler: NotificationHandler<Notification> = ThrowMissingNotificationHandler(),
         missingRequestHandler: RequestHandler<Request<Any?>, Any?> = ThrowMissingRequestHandler(),
     ): Mediator {

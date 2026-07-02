@@ -1,7 +1,9 @@
+@file:Suppress("TooGenericExceptionThrown")
+
 package com.fajrbahr.mediatork
 
 import com.fajrbahr.mediatork.api.NotificationHandler
-import com.fajrbahr.mediatork.notification.*
+import com.fajrbahr.mediatork.notification.NotificationPublishStrategy
 
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
@@ -10,6 +12,12 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 import kotlin.test.assertTrue
+import com.fajrbahr.mediatork.notification.ContinueOnExceptionNotificationPublisher
+import com.fajrbahr.mediatork.notification.FireAndForgetNotificationPublisher
+import com.fajrbahr.mediatork.notification.ParallelNotificationPublisher
+import com.fajrbahr.mediatork.notification.SequentialNotificationPublisher
+import com.fajrbahr.mediatork.notification.SilentMissingNotificationHandler
+import com.fajrbahr.mediatork.notification.ThrowMissingNotificationHandler
 
 class NotificationTest {
 
@@ -134,7 +142,7 @@ class NotificationTest {
     fun `ParallelNotificationPublisher propagates exception`() = runTest {
         val failing = object : NotificationHandler<PingNotification> {
             override suspend fun handle(notification: PingNotification) {
-                throw IllegalStateException("boom")
+                error("boom")
             }
         }
         val pub = ParallelNotificationPublisher()

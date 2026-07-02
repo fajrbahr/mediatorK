@@ -1,3 +1,5 @@
+@file:Suppress("TooGenericExceptionCaught")
+
 package com.fajrbahr.mediatork.notification
 
 import com.fajrbahr.mediatork.api.Notification
@@ -24,7 +26,7 @@ internal class FallbackNotificationHandler<T : Notification>(
                 lastException = e
             }
         }
-        throw lastException ?: IllegalStateException("FallbackNotificationHandler has no handlers")
+        throw lastException ?: error("FallbackNotificationHandler has no handlers")
     }
 
     internal fun withFallback(handler: NotificationHandler<T>): FallbackNotificationHandler<T> =

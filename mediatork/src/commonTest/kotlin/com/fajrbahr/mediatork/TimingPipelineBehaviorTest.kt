@@ -1,3 +1,5 @@
+@file:Suppress("TooGenericExceptionThrown")
+
 package com.fajrbahr.mediatork
 
 import com.fajrbahr.mediatork.api.Mediator
@@ -5,7 +7,11 @@ import com.fajrbahr.mediatork.api.RequestContext
 import com.fajrbahr.mediatork.api.RequestHandler
 import com.fajrbahr.mediatork.pipeline.buildin.TimingPipelineBehavior
 import kotlinx.coroutines.test.runTest
-import kotlin.test.*
+import kotlin.test.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
+import kotlin.test.assertNotNull
+import kotlin.test.assertTrue
 
 class TimingPipelineBehaviorTest {
 
@@ -79,7 +85,7 @@ class TimingPipelineBehaviorTest {
                     requestContext: RequestContext,
                     request: PingQuery
                 ): String =
-                    throw IllegalStateException("domain error")
+                    error("domain error")
             })
         }
         val ex = assertFailsWith<IllegalStateException> { m.send(PingQuery("x")) }
