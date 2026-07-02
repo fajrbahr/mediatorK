@@ -56,6 +56,7 @@ val mediator = MediatorFactory.create(
 ```
 
 Output for every request dispatched:
+
 ```
 → GetUserQuery
 ← GetUserQuery result=User(id=user-1, name=Alice)

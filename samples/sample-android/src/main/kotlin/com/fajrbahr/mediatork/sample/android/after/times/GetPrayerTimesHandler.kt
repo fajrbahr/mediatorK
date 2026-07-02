@@ -4,7 +4,6 @@ import com.fajrbahr.mediatork.api.Mediator
 import com.fajrbahr.mediatork.api.Request
 import com.fajrbahr.mediatork.api.RequestContext
 import com.fajrbahr.mediatork.api.RequestHandler
-import com.fajrbahr.mediatork.pipeline.buildin.AuthenticatedRequest
 import com.fajrbahr.mediatork.sample.android.after.AladhanCacheDataSource
 import com.fajrbahr.mediatork.validator.rules
 import kotlinx.coroutines.Dispatchers
@@ -17,7 +16,7 @@ data class GetPrayerTimesRequest(
     val city: String,
     val country: String = "",
     val method: Int = 3,
-) : Request<TodayPrayerTimes>, AuthenticatedRequest {
+) : Request<TodayPrayerTimes> {
     override fun validate() = rules<String> {
         check(city.isNotBlank()) { "City must not be blank" }
         check(city.length >= 2) { "City must be at least 2 characters" }

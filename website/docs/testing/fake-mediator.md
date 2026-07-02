@@ -93,7 +93,8 @@ val mediator = FakeMediator(
 
 ## fakeHandler
 
-`fakeHandler` builds a `RequestHandler` from a suspend lambda. The type arguments pin the request and result types, with no
+`fakeHandler` builds a `RequestHandler` from a suspend lambda. The type arguments pin the request and result types, with
+no
 anonymous object boilerplate.
 
 ```kotlin
@@ -141,7 +142,7 @@ fun `createOrder failure sets error`() = runTest {
 | Test only checks initial state, never calls `send` | `DummyMediator()`                                                        |
 | Test controls what `send` returns                  | `FakeMediator` + `fakeHandler`                                           |
 | Test asserts *which* requests were sent            | [`MediatorSpy`](spy.md)                                                  |
-| Test captures published notifications              | [`captureNotifications`](notification-testing.md) or `MediatorSpy`      |
+| Test captures published notifications              | [`captureNotifications`](notification-testing.md) or `MediatorSpy`       |
 | Test verifies all handlers are wired up            | [`MediatorTestUtils.assertAllHandlersRegistered`](handler-validation.md) |
 
 ---

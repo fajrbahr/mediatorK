@@ -1,6 +1,9 @@
 plugins {
     alias(libs.plugins.kotlin.multiplatform)
     alias(libs.plugins.android.kotlin.multiplatform.library)
+    alias(libs.plugins.nmcp)
+    `maven-publish`
+    signing
 }
 
 repositories {

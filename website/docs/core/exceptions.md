@@ -46,7 +46,7 @@ Control what happens when a notification is published with no registered handler
 |------------------------------------|----------------------------------------------------------|
 | `ThrowMissingNotificationHandler`  | Throws `MissingNotificationHandlerException` *(default)* |
 | `SilentMissingNotificationHandler` | Drops the notification silently                          |
-| Your own implementation            | Anything: dead-letter queue, logging, alerting, etc.    |
+| Your own implementation            | Anything: dead-letter queue, logging, alerting, etc.     |
 
 ```kotlin
 // default — throws if no handler is registered
@@ -125,7 +125,7 @@ whole pipeline, use a lower order (e.g. `Int.MIN_VALUE`) to place the tracker ou
 | `MissingHandlerException`             | `send()` called for a request type with no registered handler                                          |
 | `MissingStreamHandlerException`       | `stream()` called for a stream request type with no registered handler                                 |
 | `MissingNotificationHandlerException` | Notification published with no registered handlers (only when using `ThrowMissingNotificationHandler`) |
-| `AggregateException`                  | One or more notification handlers failed under `ContinueOnExceptionNotificationPublisher`             |
+| `AggregateException`                  | One or more notification handlers failed under `ContinueOnExceptionNotificationPublisher`              |
 
 ### MissingHandlerException
 
