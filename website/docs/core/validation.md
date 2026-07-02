@@ -160,7 +160,8 @@ class CreateOrderHandler(private val orders: OrderRepository) : RequestHandler<C
 }
 ```
 
-Use `require` for preconditions on input values, `check` for invariants on internal state. Prefer inline `validate()` on the request when you need structured `ValidationResult` objects (e.g. returning multiple errors to a UI).
+Use `require` for preconditions on input values, `check` for invariants on internal state. Prefer inline `validate()` on
+the request when you need structured `ValidationResult` objects (e.g. returning multiple errors to a UI).
 
 ---
 

@@ -104,7 +104,7 @@ class NotificationRegistrar(
 | First throws, second succeeds | Second result returned                                 |
 | All handlers throw            | Last exception re-thrown                               |
 | Single `otherwise` call       | Creates a `FallbackRequestHandler` with two candidates |
-| Chained `otherwise` calls     | All candidates collected into one handler, no nesting |
+| Chained `otherwise` calls     | All candidates collected into one handler, no nesting  |
 
 ---
 

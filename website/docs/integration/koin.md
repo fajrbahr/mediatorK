@@ -28,7 +28,8 @@ dependencies {
 
 ## Define a Koin module
 
-Declare each registrar and behavior as its own binding, then use `getAll<T>()` to collect them automatically, with no manual
+Declare each registrar and behavior as its own binding, then use `getAll<T>()` to collect them automatically, with no
+manual
 list construction needed:
 
 ```kotlin

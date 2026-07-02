@@ -49,7 +49,8 @@ begins only when the caller collects. Each collection creates a fresh `RequestCo
 
 Dispatching with no registered stream handler throws `MissingStreamHandlerException`.
 
-**See also:** [Stream Pipeline Behaviors](stream-behaviors.md) — wrap stream handlers with logging, throttling, and other cross-cutting concerns.
+**See also:** [Stream Pipeline Behaviors](stream-behaviors.md) — wrap stream handlers with logging, throttling, and
+other cross-cutting concerns.
 
 ---
 

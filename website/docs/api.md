@@ -8,14 +8,14 @@ sidebar_label: API Reference
 
 Quick reference for all public types in `com.fajrbahr.mediatork`.
 
-| Subpackage                                | Contents                                                                                                                                                        |
-|--------------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `com.fajrbahr.mediatork`                  | `HandlerRegistry`, `MediatorFactory`, `MediatorException` hierarchy                                                                                             |
+| Subpackage                                | Contents                                                                                                                                                                                                                         |
+|-------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `com.fajrbahr.mediatork`                  | `HandlerRegistry`, `MediatorFactory`, `MediatorException` hierarchy                                                                                                                                                              |
 | `com.fajrbahr.mediatork.api`              | Core interfaces: `Mediator`, `Request`, `StreamRequest`, `RequestHandler`, `StreamRequestHandler`, `Notification`, `NotificationHandler`, `RequestContext`, `PipelineBehavior`, `Stage`, `MediatorRegistrar`, `RequestValidator` |
-| `com.fajrbahr.mediatork.handler`          | `Sender` (`send`, `trySend`), `otherwise` fallback chaining for request handlers, missing-request-handler strategies                                            |
-| `com.fajrbahr.mediatork.notification`     | All publish strategies, `otherwise` fallback chaining for notification handlers, `ThrowMissingNotificationHandler`, `SilentMissingNotificationHandler`          |
-| `com.fajrbahr.mediatork.pipeline.buildin` | Built-in behaviors: logging, caching, timeout, timing, error tracking, request counter, transaction                                                             |
-| `com.fajrbahr.mediatork.validator`        | `ValidationBehavior`, `ValidationResult`, `ValidationException`, `rules`, `rulesFailFast`                                                                       |
+| `com.fajrbahr.mediatork.handler`          | `Sender` (`send`, `trySend`), `otherwise` fallback chaining for request handlers, missing-request-handler strategies                                                                                                             |
+| `com.fajrbahr.mediatork.notification`     | All publish strategies, `otherwise` fallback chaining for notification handlers, `ThrowMissingNotificationHandler`, `SilentMissingNotificationHandler`                                                                           |
+| `com.fajrbahr.mediatork.pipeline.buildin` | Built-in behaviors: logging, caching, timeout, timing, error tracking, request counter, transaction                                                                                                                              |
+| `com.fajrbahr.mediatork.validator`        | `ValidationBehavior`, `ValidationResult`, `ValidationException`, `rules`, `rulesFailFast`                                                                                                                                        |
 
 ---
 
@@ -252,11 +252,11 @@ interface Mediator : Sender, IStreamRequest, Publisher
 
 ## Validator package (`com.fajrbahr.mediatork.validator`)
 
-| Type                  | Description                                                                                                                  |
-|-----------------------|------------------------------------------------------------------------------------------------------------------------------|
-| `RequestValidator<T>` | Validates a request and returns `ValidationResult`. Register via `registry.registerValidator(validator)`.                    |
-| `ValidationResult`    | Sealed class: `Valid` or `Invalid(errors: List<*>)`                                                                          |
-| `ValidationBehavior`  | Pre-built `PipelineBehavior` (order `-50`) that runs registered validators before the handler                                |
+| Type                  | Description                                                                                                                 |
+|-----------------------|-----------------------------------------------------------------------------------------------------------------------------|
+| `RequestValidator<T>` | Validates a request and returns `ValidationResult`. Register via `registry.registerValidator(validator)`.                   |
+| `ValidationResult`    | Sealed class: `Valid` or `Invalid(errors: List<*>)`                                                                         |
+| `ValidationBehavior`  | Pre-built `PipelineBehavior` (order `-50`) that runs registered validators before the handler                               |
 | `ValidationException` | Thrown when validation fails; `errors: List<*>` carries all failure messages (any type: `String`, sealed class, enum, etc.) |
 | `rules { }`           | Collect-all DSL; all `check`/`require` calls run, errors accumulated                                                        |
 | `rulesFailFast { }`   | Stop-on-first DSL; execution stops at the first failing `check`/`require`                                                   |
