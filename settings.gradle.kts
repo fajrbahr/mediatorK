@@ -15,8 +15,8 @@ include("mediatork")
 include("mediatork-test")
 //include("mediatork-ksp-koin")
 include("publishMaven")
-include("full-sample")
-include("dsl-sample")
+include("local-samples:full-sample")
+include("local-samples:dsl-sample")
 
 
 dependencyResolutionManagement {

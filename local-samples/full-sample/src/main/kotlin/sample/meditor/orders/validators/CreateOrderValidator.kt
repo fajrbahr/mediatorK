@@ -8,7 +8,7 @@ import sample.meditor.orders.delete.DeleteOrderCommand
 
 class CreateOrderValidator : RequestValidator<CreateOrderCommand> {
     override fun validate(request: CreateOrderCommand): ValidationResult = rules<String> {
-        check(request.id.isNotBlank()) { "Order ID is required" }
+        require(request.id.isNotBlank()) { "Order ID is required" }
         check(request.amount > 0) { "Amount must be positive" }
         check(request.amount <= 10_000) { "Amount must not exceed 10,000" }
         warn(request.amount > 1_000) { "High-value order — requires manager approval" }
