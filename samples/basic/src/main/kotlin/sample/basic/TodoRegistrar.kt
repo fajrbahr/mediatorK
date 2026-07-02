@@ -1,7 +1,7 @@
 package sample.basic
 
 import com.fajrbahr.mediatork.HandlerRegistry
-import com.fajrbahr.mediatork.MediatorRegistrar
+import com.fajrbahr.mediatork.api.MediatorRegistrar
 
 // ── Domain model ──────────────────────────────────────────────────────────────
 

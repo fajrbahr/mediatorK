@@ -1,9 +1,9 @@
 package sample.meditor.context
 
-import com.fajrbahr.mediatork.RequestContext
+ import com.fajrbahr.mediatork.api.RequestContext
 
 var RequestContext.locale: String
-    get() = getMetaDate("locale") ?: "en"
+    get() = getMetaData("locale") ?: "en"
     set(value) {
         put("locale", value)
     }

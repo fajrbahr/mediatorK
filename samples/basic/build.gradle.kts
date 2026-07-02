@@ -11,8 +11,10 @@ repositories {
 
 dependencies {
     testImplementation(kotlin("test"))
+    implementation("io.github.fajrbahr:mediatork:0.6.4")
+
     testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.10.2")
-    implementation("io.github.fajrbahr:mediatork:0.6.2")
+
 
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.10.2")
 }

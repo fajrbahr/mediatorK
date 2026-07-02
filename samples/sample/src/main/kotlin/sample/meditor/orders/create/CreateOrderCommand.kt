@@ -1,6 +1,6 @@
 package sample.meditor.orders.create
 
-import com.fajrbahr.mediatork.Request
+ import com.fajrbahr.mediatork.api.Request
 
 data class CreateOrderCommand(
     val id: String,
