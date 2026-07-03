@@ -1,6 +1,7 @@
 package com.fajrbahr.mediatork
 
 import com.fajrbahr.mediatork.api.*
+import com.fajrbahr.mediatork.feature.streamBehavior
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
@@ -264,5 +265,74 @@ class StreamRequestTest {
         assertFailsWith<MediatorException> {
             m.stream(NumbersQuery(1))
         }
+    }
+
+    // ── DSL streamBehavior() tests ───────────────────────────────────────────
+
+    @Test
+    fun `dsl streamBehavior wraps the handler`() = runTest {
+        var called = false
+        val b = streamBehavior { _, next, request ->
+            called = true
+            next(request)
+        }
+        val m = streamMediator(streamBehaviors = listOf(b)) {
+            registerStream(object : StreamRequestHandler<NumbersQuery, Int> {
+                override fun handle(mediator: Mediator, requestContext: RequestContext, request: NumbersQuery) =
+                    (1..request.count).asFlow()
+            })
+        }
+        assertEquals(listOf(1, 2, 3), m.stream(NumbersQuery(3)).toList())
+        assertTrue(called)
+    }
+
+    @Test
+    fun `dsl streamBehavior respects order`() = runTest {
+        val executionOrder = mutableListOf<Int>()
+        val first = streamBehavior(order = 10) { _, next, request ->
+            executionOrder += 1; next(request)
+        }
+        val second = streamBehavior(order = 20) { _, next, request ->
+            executionOrder += 2; next(request)
+        }
+        val m = streamMediator(streamBehaviors = listOf(second, first)) {
+            registerStream(object : StreamRequestHandler<NumbersQuery, Int> {
+                override fun handle(mediator: Mediator, requestContext: RequestContext, request: NumbersQuery) =
+                    (1..1).asFlow()
+            })
+        }
+        m.stream(NumbersQuery(1)).toList()
+        assertEquals(listOf(1, 2), executionOrder)
+    }
+
+    @Test
+    fun `dsl streamBehavior appliesTo filters requests`() = runTest {
+        var called = false
+        val b = streamBehavior(appliesTo = { false }) { _, next, request ->
+            called = true; next(request)
+        }
+        val m = streamMediator(streamBehaviors = listOf(b)) {
+            registerStream(object : StreamRequestHandler<NumbersQuery, Int> {
+                override fun handle(mediator: Mediator, requestContext: RequestContext, request: NumbersQuery) =
+                    (1..2).asFlow()
+            })
+        }
+        m.stream(NumbersQuery(2)).toList()
+        assertFalse(called)
+    }
+
+    @Test
+    fun `dsl streamBehavior can transform flow`() = runTest {
+        @Suppress("UNCHECKED_CAST")
+        val doubling = streamBehavior { _, next, request ->
+            (next(request) as Flow<Int>).map { it * 3 } as Flow<Nothing>
+        }
+        val m = streamMediator(streamBehaviors = listOf(doubling)) {
+            registerStream(object : StreamRequestHandler<NumbersQuery, Int> {
+                override fun handle(mediator: Mediator, requestContext: RequestContext, request: NumbersQuery) =
+                    (1..3).asFlow()
+            })
+        }
+        assertEquals(listOf(3, 6, 9), m.stream(NumbersQuery(3)).toList())
     }
 }

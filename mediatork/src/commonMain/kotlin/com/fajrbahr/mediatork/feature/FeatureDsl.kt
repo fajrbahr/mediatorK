@@ -3,6 +3,7 @@ package com.fajrbahr.mediatork.feature
 import com.fajrbahr.mediatork.*
 import com.fajrbahr.mediatork.api.*
 import com.fajrbahr.mediatork.validator.ValidationResult
+import kotlinx.coroutines.flow.Flow
 import kotlin.reflect.KClass
 
 fun interface FeatureMapper<TRaw, TResult> {
@@ -129,3 +130,57 @@ inline fun <reified TRequest : Request<TResult>, TResult> mappedFeature(
         notifications = builder.notificationRegistrations.toList(),
     )
 }
+
+// ── Pipeline behavior DSL ────────────────────────────────────────────────────
+
+@PublishedApi
+internal class LambdaPipelineBehavior(
+    override val stage: Stage,
+    override val order: Int,
+    private val filter: (Request<*>) -> Boolean,
+    private val block: suspend (RequestContext, suspend (Request<*>) -> Any?, Request<*>) -> Any?,
+) : PipelineBehavior {
+    override fun appliesTo(request: Request<*>) = filter(request)
+
+    @Suppress("UNCHECKED_CAST")
+    override suspend fun <TRequest : Request<TResult>, TResult> process(
+        requestContext: RequestContext,
+        next: RequestHandlerDelegate<TRequest, TResult>,
+        request: TRequest,
+    ): TResult {
+        val untypedNext: suspend (Request<*>) -> Any? = { r -> next(r as TRequest) }
+        return block(requestContext, untypedNext, request) as TResult
+    }
+}
+
+fun behavior(
+    stage: Stage = Stage.Default,
+    order: Int = 0,
+    appliesTo: (Request<*>) -> Boolean = { true },
+    block: suspend (requestContext: RequestContext, next: suspend (Request<*>) -> Any?, request: Request<*>) -> Any?,
+): PipelineBehavior = LambdaPipelineBehavior(stage, order, appliesTo, block)
+
+@PublishedApi
+internal class LambdaStreamPipelineBehavior(
+    override val order: Int,
+    private val filter: (StreamRequest<*>) -> Boolean,
+    private val block: (RequestContext, (StreamRequest<*>) -> Flow<*>, StreamRequest<*>) -> Flow<*>,
+) : StreamPipelineBehavior {
+    override fun appliesTo(request: StreamRequest<*>) = filter(request)
+
+    @Suppress("UNCHECKED_CAST")
+    override fun <TRequest : StreamRequest<T>, T> process(
+        requestContext: RequestContext,
+        next: StreamHandlerDelegate<TRequest, T>,
+        request: TRequest,
+    ): Flow<T> {
+        val untypedNext: (StreamRequest<*>) -> Flow<*> = { r -> next(r as TRequest) }
+        return block(requestContext, untypedNext, request) as Flow<T>
+    }
+}
+
+fun streamBehavior(
+    order: Int = 0,
+    appliesTo: (StreamRequest<*>) -> Boolean = { true },
+    block: (requestContext: RequestContext, next: (StreamRequest<*>) -> Flow<*>, request: StreamRequest<*>) -> Flow<*>,
+): StreamPipelineBehavior = LambdaStreamPipelineBehavior(order, appliesTo, block)

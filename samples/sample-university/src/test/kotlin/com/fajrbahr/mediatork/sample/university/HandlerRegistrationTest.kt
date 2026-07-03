@@ -14,7 +14,7 @@ import kotlin.test.Test
 class HandlerRegistrationTest {
 
     @Test
-    fun `all handlers are registered`() {
+    fun `all features are registered`() {
         val deptStore = DepartmentStore()
         MediatorFactory.create(
             registrars = listOf(
