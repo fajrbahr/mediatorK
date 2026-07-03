@@ -11,6 +11,7 @@ dependencies {
     implementation(project(":mediatork"))
     implementation(libs.coroutines.core)
 
+    testImplementation(project(":mediatork-test"))
     testImplementation(kotlin("test"))
     testImplementation(libs.coroutines.test)
 }
