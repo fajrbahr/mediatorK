@@ -1,7 +1,7 @@
 plugins {
     alias(libs.plugins.kotlin.multiplatform)
     alias(libs.plugins.android.kotlin.multiplatform.library)
-    alias(libs.plugins.nmcp)
+    id("com.gradleup.nmcp") version libs.versions.nmcp
     alias(libs.plugins.dokka)
     `maven-publish`
     signing

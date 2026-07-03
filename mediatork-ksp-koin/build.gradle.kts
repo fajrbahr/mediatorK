@@ -1,6 +1,6 @@
 plugins {
     alias(libs.plugins.kotlin.jvm)
-    alias(libs.plugins.nmcp)
+    id("com.gradleup.nmcp") version libs.versions.nmcp
     `maven-publish`
     signing
 }
