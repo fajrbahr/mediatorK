@@ -1,6 +1,5 @@
 plugins {
     alias(libs.plugins.kotlin.jvm)
-    id("com.gradleup.nmcp") version libs.versions.nmcp
     `maven-publish`
     signing
 }
@@ -81,10 +80,3 @@ tasks.withType<AbstractPublishToMaven>().configureEach {
     mustRunAfter(tasks.withType<Sign>())
 }
 
-nmcp {
-    publishAllPublicationsToCentralPortal {
-        username = providers.gradleProperty("mavenCentralUsername").orElse("")
-        password = providers.gradleProperty("mavenCentralPassword").orElse("")
-        publishingType = "AUTOMATIC"
-    }
-}

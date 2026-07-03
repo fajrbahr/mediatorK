@@ -33,7 +33,8 @@ android {
 }
 
 dependencies {
-    implementation(project(":mediatork"))
+    implementation("io.github.fajrbahr:mediatork:0.6.7")
+    implementation("io.github.fajrbahr:mediatork-test:0.6.7")
 
     val composeBom = platform("androidx.compose:compose-bom:2024.09.03")
     implementation(composeBom)
@@ -49,7 +50,6 @@ dependencies {
 
     debugImplementation("androidx.compose.ui:ui-tooling")
 
-    testImplementation(project(":mediatork-test"))
     testImplementation(kotlin("test"))
     testImplementation("junit:junit:4.13.2")
     testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.10.2")
