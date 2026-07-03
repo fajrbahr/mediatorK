@@ -75,9 +75,10 @@ class MediatorSpy(private val delegate: Mediator) : Mediator {
      */
     inline fun <reified T : Request<*>> assertSent(message: String? = null) {
         val prefix = if (message != null) "$message: " else ""
-        assertTrue(sentOf<T>().isNotEmpty()) {
+        assertTrue(
+            sentOf<T>().isNotEmpty(),
             "${prefix}Expected at least one ${T::class.simpleName} to be sent, but none was."
-        }
+        )
     }
 
     /**
@@ -87,9 +88,10 @@ class MediatorSpy(private val delegate: Mediator) : Mediator {
      */
     inline fun <reified T : Request<*>> assertNotSent(message: String? = null) {
         val prefix = if (message != null) "$message: " else ""
-        assertTrue(sentOf<T>().isEmpty()) {
+        assertTrue(
+            sentOf<T>().isEmpty(),
             "${prefix}Expected no ${T::class.simpleName} to be sent, but ${sentOf<T>().size} was."
-        }
+        )
     }
 
     /**
@@ -99,9 +101,10 @@ class MediatorSpy(private val delegate: Mediator) : Mediator {
      */
     inline fun <reified T : Notification> assertPublished(message: String? = null) {
         val prefix = if (message != null) "$message: " else ""
-        assertTrue(publishedOf<T>().isNotEmpty()) {
+        assertTrue(
+            publishedOf<T>().isNotEmpty(),
             "${prefix}Expected at least one ${T::class.simpleName} to be published, but none was."
-        }
+        )
     }
 
     /**
@@ -111,9 +114,10 @@ class MediatorSpy(private val delegate: Mediator) : Mediator {
      */
     inline fun <reified T : Notification> assertNotPublished(message: String? = null) {
         val prefix = if (message != null) "$message: " else ""
-        assertTrue(publishedOf<T>().isEmpty()) {
+        assertTrue(
+            publishedOf<T>().isEmpty(),
             "${prefix}Expected no ${T::class.simpleName} to be published, but ${publishedOf<T>().size} was."
-        }
+        )
     }
 
     /**
@@ -122,9 +126,10 @@ class MediatorSpy(private val delegate: Mediator) : Mediator {
     inline fun <reified T : Request<*>> assertSentCount(count: Int, message: String? = null) {
         val actual = sentOf<T>().size
         val prefix = if (message != null) "$message: " else ""
-        assertTrue(actual == count) {
+        assertTrue(
+            actual == count,
             "${prefix}Expected $count ${T::class.simpleName} to be sent, but was $actual."
-        }
+        )
     }
 
     /**
@@ -133,9 +138,10 @@ class MediatorSpy(private val delegate: Mediator) : Mediator {
     inline fun <reified T : Notification> assertPublishedCount(count: Int, message: String? = null) {
         val actual = publishedOf<T>().size
         val prefix = if (message != null) "$message: " else ""
-        assertTrue(actual == count) {
+        assertTrue(
+            actual == count,
             "${prefix}Expected $count ${T::class.simpleName} to be published, but was $actual."
-        }
+        )
     }
 
     /** Returns all streamed requests of type [T]. */
@@ -144,26 +150,29 @@ class MediatorSpy(private val delegate: Mediator) : Mediator {
     /** Asserts that at least one stream request of type [T] was dispatched. */
     inline fun <reified T : StreamRequest<*>> assertStreamed(message: String? = null) {
         val prefix = if (message != null) "$message: " else ""
-        assertTrue(streamedOf<T>().isNotEmpty()) {
+        assertTrue(
+            streamedOf<T>().isNotEmpty(),
             "${prefix}Expected at least one ${T::class.simpleName} to be streamed, but none was."
-        }
+        )
     }
 
     /** Asserts that no stream request of type [T] was dispatched. */
     inline fun <reified T : StreamRequest<*>> assertNotStreamed(message: String? = null) {
         val prefix = if (message != null) "$message: " else ""
-        assertTrue(streamedOf<T>().isEmpty()) {
+        assertTrue(
+            streamedOf<T>().isEmpty(),
             "${prefix}Expected no ${T::class.simpleName} to be streamed, but ${streamedOf<T>().size} was."
-        }
+        )
     }
 
     /** Asserts that exactly [count] stream requests of type [T] were dispatched. */
     inline fun <reified T : StreamRequest<*>> assertStreamedCount(count: Int, message: String? = null) {
         val actual = streamedOf<T>().size
         val prefix = if (message != null) "$message: " else ""
-        assertTrue(actual == count) {
+        assertTrue(
+            actual == count,
             "${prefix}Expected $count ${T::class.simpleName} to be streamed, but was $actual."
-        }
+        )
     }
 
     /** Clears all recorded sends, publishes, and streams. */
