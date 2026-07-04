@@ -64,7 +64,7 @@ val mediator = MediatorFactory.create(
 // custom — dead-letter queue, logging, alerting
 val mediator = MediatorFactory.create(
     registrars = listOf(AppRegistrar()),
-    missingNotificationHandler = DeadLetterNotificationHandler(queue, logger),
+    missingNotificationHandler = deadLetterHandler,
 )
 ```
 
@@ -74,14 +74,10 @@ unhandled notifications are intentional; misconfiguration will produce no error 
 no trace, making it very hard to debug.
 :::
 
-The parameter type is `NotificationHandler<Notification>`, the same interface you already
-use for regular handlers. Implement it directly for a custom behavior:
+The parameter type is `NotificationHandler<Notification>`. Implement it directly as an anonymous object or class for a custom behavior:
 
 ```kotlin
-class DeadLetterNotificationHandler(
-    private val queue: DeadLetterQueue,
-    private val logger: Logger,
-) : NotificationHandler<Notification> {
+val deadLetterHandler = object : NotificationHandler<Notification> {
     override suspend fun handle(notification: Notification) {
         logger.warn("No handler for ${notification::class.simpleName}")
         queue.enqueue(notification)

@@ -1,10 +1,20 @@
 package dsl.meditor
 
-import dsl.meditor.products.InAppService
-import dsl.meditor.products.PriceRepo
-import dsl.meditor.products.PushService
-import dsl.meditor.products.RawPrice
+import dsl.meditor.price.RawPrice
 
+// ── Dependencies ─────────────────────────────────────────────────────────────
+
+interface PriceRepo {
+    fun findPrice(productId: String): RawPrice
+}
+
+interface PushService {
+    fun send(orderId: String, phone: String)
+}
+
+interface InAppService {
+    fun notify(orderId: String)
+}
 val repo = object : PriceRepo {
     override fun findPrice(productId: String) = RawPrice(productId, cents = 2999)
 }

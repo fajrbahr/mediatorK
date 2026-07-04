@@ -3,13 +3,13 @@ package com.fajrbahr.mediatork.pipeline.buildin
 import com.fajrbahr.mediatork.api.PipelineBehavior
 import com.fajrbahr.mediatork.api.Request
 import com.fajrbahr.mediatork.api.RequestContext
-import com.fajrbahr.mediatork.api.RequestHandlerDelegate
+import com.fajrbahr.mediatork.feature.behavior
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlin.time.TimeSource
 
 /**
- * A [PipelineBehavior] that caches handler results by request key for a configurable TTL.
+ * A behavior provider that caches handler results by request key for a configurable TTL.
  *
  * On a cache hit the handler is skipped entirely and the cached value is returned.
  * On a miss the handler runs and the result is stored. Entries expire after [ttlMs]
@@ -20,13 +20,11 @@ import kotlin.time.TimeSource
  *
  * @param ttlMs time-to-live for each entry in milliseconds. Defaults to 60 000 (1 minute).
  * @param keyFor function that produces a cache key from a request. Defaults to `toString()`.
- * @param order position in the behavior chain. Defaults to `0`.
  */
 class CachingPipelineBehavior(
     val ttlMs: Long = 60_000L,
     val keyFor: (Request<*>) -> String = { it.toString() },
-    override val order: Int = 0,
-) : PipelineBehavior {
+) {
 
     init {
         require(ttlMs > 0) { "ttlMs must be > 0, was $ttlMs" }
@@ -35,22 +33,18 @@ class CachingPipelineBehavior(
     private val mutex = Mutex()
     private val cache = mutableMapOf<String, Entry>()
 
-    @Suppress("UNCHECKED_CAST")
-    override suspend fun <TRequest : Request<TResult>, TResult> process(
-        requestContext: RequestContext,
-        next: RequestHandlerDelegate<TRequest, TResult>,
-        request: TRequest,
-    ): TResult {
+    /** Returns the [PipelineBehavior] instance. */
+    fun behavior(order: Int = 0): PipelineBehavior = behavior(order = order) { _, next, request ->
         val key = keyFor(request)
         mutex.withLock {
             val entry = cache[key]
-            if (entry != null && !entry.isExpired()) return entry.value as TResult
+            if (entry != null && !entry.isExpired()) return@behavior entry.value
         }
         val result = next(request)
         mutex.withLock {
             cache[key] = Entry(result, TimeSource.Monotonic.markNow(), ttlMs)
         }
-        return result
+        result
     }
 
     /** Removes the cached entry for [key]. No-op if the key is not cached. */

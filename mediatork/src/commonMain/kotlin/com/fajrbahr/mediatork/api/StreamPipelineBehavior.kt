@@ -24,37 +24,15 @@ typealias StreamHandlerDelegate<TRequest, T> = (TRequest) -> Flow<T>
  * and [Flow]-returning handlers. Because stream handlers return a cold [Flow] immediately
  * without suspending, behaviors here compose flows — they do not await results inline.
  *
- * Pipeline behaviors are composed using `foldRight`, so behaviors with a **lower**
+ * Create instances via the [streamBehavior] DSL function. Behaviors with a **lower**
  * [order] value are the **outermost** decorators.
  *
  * Typical uses: logging, auth enforcement, rate limiting, and tracing on streams.
  *
- *
- * @see StreamHandlerDelegate
+ * @see com.fajrbahr.mediatork.feature.streamBehavior
  * @see PipelineBehavior
  */
-interface StreamPipelineBehavior {
-
-    /**
-     * Relative position in the stream behavior chain. Lower values are outermost.
-     * Defaults to `0`. Stable sort — registration order breaks ties.
-     */
-    val order: Int get() = 0
-
-    /**
-     * Whether this behavior participates in the pipeline at all.
-     * When `false`, the behavior is skipped entirely. Defaults to `true`.
-     */
-    val isEnabled: Boolean get() = true
-
-    /**
-     * Determines whether this behavior should wrap the given [request].
-     *
-     * Override to restrict a behavior to a specific stream request type or
-     * subset of requests. Defaults to `true` (applies to every stream request).
-     */
-    fun appliesTo(request: StreamRequest<*>): Boolean = true
-
+interface StreamPipelineBehavior : Behavior {
     /**
      * Wraps the downstream stream pipeline step represented by [next].
      *
@@ -78,3 +56,12 @@ interface StreamPipelineBehavior {
         request: TRequest,
     ): Flow<T>
 }
+
+val StreamPipelineBehavior.order: Int
+    get() = (this as? com.fajrbahr.mediatork.feature.LambdaStreamPipelineBehavior)?.order ?: 0
+
+val StreamPipelineBehavior.isEnabled: Boolean
+    get() = (this as? com.fajrbahr.mediatork.feature.LambdaStreamPipelineBehavior)?.isEnabled ?: true
+
+fun StreamPipelineBehavior.appliesTo(request: StreamRequest<*>): Boolean =
+    (this as? com.fajrbahr.mediatork.feature.LambdaStreamPipelineBehavior)?.appliesTo(request) ?: true

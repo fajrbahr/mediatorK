@@ -1,13 +1,13 @@
-package sample.meditor.orders.validators
+package dsl.meditor.orders.validators
 
 import com.fajrbahr.mediatork.api.RequestValidator
-import com.fajrbahr.mediatork.validator.ValidationResult
+import com.fajrbahr.mediatork.feature.requestValidator
 import com.fajrbahr.mediatork.validator.rules
-import sample.meditor.orders.create.CreateOrderCommand
-import sample.meditor.orders.delete.DeleteOrderCommand
+import dsl.meditor.orders.create.CreateOrderCommand
+import dsl.meditor.orders.delete.DeleteOrderCommand
 
-class CreateOrderValidator : RequestValidator<CreateOrderCommand> {
-    override fun validate(request: CreateOrderCommand): ValidationResult = rules<String> {
+val createOrderValidator: RequestValidator<CreateOrderCommand> = requestValidator { request ->
+    rules<String> {
         require(request.id.isNotBlank()) { "Order ID is required" }
         check(request.amount > 0) { "Amount must be positive" }
         check(request.amount <= 10_000) { "Amount must not exceed 10,000" }
@@ -16,8 +16,8 @@ class CreateOrderValidator : RequestValidator<CreateOrderCommand> {
     }
 }
 
-class DeleteOrderValidator : RequestValidator<DeleteOrderCommand> {
-    override fun validate(request: DeleteOrderCommand): ValidationResult = rules<String> {
+val deleteOrderValidator: RequestValidator<DeleteOrderCommand> = requestValidator { request ->
+    rules<String> {
         check(request.orderId.isNotBlank()) { "Order ID is required" }
     }
 }

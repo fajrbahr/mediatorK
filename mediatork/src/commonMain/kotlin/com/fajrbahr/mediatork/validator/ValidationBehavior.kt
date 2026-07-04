@@ -1,6 +1,7 @@
 package com.fajrbahr.mediatork.validator
 
 import com.fajrbahr.mediatork.api.*
+import com.fajrbahr.mediatork.feature.behavior
 import kotlin.reflect.KClass
 
 /**
@@ -28,7 +29,7 @@ class ValidationException(
 }
 
 /**
- * Pre-built [PipelineBehavior] that runs registered [RequestValidator]s before the handler.
+ * Creates a [PipelineBehavior] that runs registered [RequestValidator]s before the handler.
  * Throws [ValidationException] if any validator returns [ValidationResult.Invalid].
  * Warnings from [ValidationResult.ValidWithWarnings] are stored in the [RequestContext]
  * under the key `"validation_warnings"` and do not block the request.
@@ -36,48 +37,36 @@ class ValidationException(
  * @param validators validators keyed by request [KClass]; only the entry matching the incoming request type runs.
  * @param order position in the behavior chain; defaults to `-50` (runs before most behaviors).
  */
-class ValidationBehavior(
-    private val validators: Map<KClass<*>, List<RequestValidator<*>>>,
-    override val order: Int = DEFAULT_ORDER,
-) : PipelineBehavior {
-
-    private companion object {
-        const val DEFAULT_ORDER = -50
-        const val WARNINGS_KEY = "validation_warnings"
-    }
-
+fun validationBehavior(
+    validators: Map<KClass<*>, List<RequestValidator<*>>>,
+    order: Int = -50,
+): PipelineBehavior = behavior(order = order) { requestContext, next, request ->
     @Suppress("UNCHECKED_CAST")
-    override suspend fun <TRequest : Request<TResult>, TResult> process(
-        requestContext: RequestContext,
-        next: RequestHandlerDelegate<TRequest, TResult>,
-        request: TRequest,
-    ): TResult {
-        val allWarnings = mutableListOf<Any?>()
+    val allWarnings = mutableListOf<Any?>()
 
-        val selfResult = request.validate()
-        collectOrThrow(selfResult, allWarnings)
+    val selfResult = request.validate()
+    collectOrThrow(selfResult, allWarnings)
 
-        validators[request::class]?.forEach { validator ->
-            val result = (validator as RequestValidator<TRequest>).validate(request)
-            collectOrThrow(result, allWarnings)
-        }
-
-        if (allWarnings.isNotEmpty()) {
-            requestContext.put(WARNINGS_KEY, allWarnings.toList())
-        }
-
-        return next(request)
+    validators[request::class]?.forEach { validator ->
+        val result = (validator as RequestValidator<Any>).validate(request)
+        collectOrThrow(result, allWarnings)
     }
 
-    private fun collectOrThrow(result: ValidationResult, allWarnings: MutableList<Any?>) {
-        when (result) {
-            is ValidationResult.Invalid -> {
-                allWarnings.addAll(result.warnings)
-                throw ValidationException(result.errors, allWarnings.toList())
-            }
+    if (allWarnings.isNotEmpty()) {
+        requestContext.put("validation_warnings", allWarnings.toList())
+    }
 
-            is ValidationResult.ValidWithWarnings -> allWarnings.addAll(result.warnings)
-            is ValidationResult.Valid -> {}
+    next(request)
+}
+
+private fun collectOrThrow(result: ValidationResult, allWarnings: MutableList<Any?>) {
+    when (result) {
+        is ValidationResult.Invalid -> {
+            allWarnings.addAll(result.warnings)
+            throw ValidationException(result.errors, allWarnings.toList())
         }
+
+        is ValidationResult.ValidWithWarnings -> allWarnings.addAll(result.warnings)
+        is ValidationResult.Valid -> {}
     }
 }

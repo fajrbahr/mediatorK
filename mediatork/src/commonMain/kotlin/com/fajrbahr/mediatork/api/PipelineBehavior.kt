@@ -34,45 +34,20 @@ sealed class Stage {
 /**
  * Cross-cutting concern that wraps request handling in a decorator-style chain.
  *
- * Behaviors are grouped into three stages by [stage], then sorted by [order] **within** each
- * stage. **Stage always wins over order**: every [Stage.Pre] behavior executes before every
- * [Stage.Default] behavior, and every [Stage.Default] before every [Stage.Post] — no matter what
- * [order] values are assigned. [order] only controls sequencing inside a stage.
+ * Create instances via the [behavior] DSL function. Behaviors are grouped into three stages,
+ * then sorted by order **within** each stage. **Stage always wins over order**: every
+ * [Stage.Pre] behavior executes before every [Stage.Default] behavior, and every [Stage.Default]
+ * before every [Stage.Post] — no matter what order values are assigned. Order only controls
+ * sequencing inside a stage.
  *
  * Typical uses:
  * - [Stage.Pre]: auth token injection, locale setup, tracing context
  * - [Stage.Default]: logging, retry, caching, timing, circuit-breaking
  * - [Stage.Post]: metrics emission, audit logging, response observation
  *
- * @see PipelineBehavior.stage
- * @see PipelineBehavior.order
- * @see PipelineBehavior.isEnabled
- * @see PipelineBehavior.appliesTo
+ * @see com.fajrbahr.mediatork.feature.behavior
  */
-interface PipelineBehavior {
-
-    val stage: Stage get() = Stage.Default
-
-    /**
-     * Relative position within the [stage]. Lower values are outermost (run first on entry)
-     * for [Stage.Pre] and [Stage.Default]. **[Stage.Post] is the exception**: lower values are
-     * innermost — closest to the handler on return — so they observe the result first on exit.
-     * Defaults to `0`. Within a stage, behaviors with the same [order] run in registration order.
-     */
-    val order: Int get() = 0
-
-    /**
-     * Whether this behavior participates in the pipeline at all.
-     * When `false`, the behavior is skipped entirely. Defaults to `true`.
-     */
-    val isEnabled: Boolean get() = true
-
-    /**
-     * Determines whether this behavior should wrap the given [request].
-     * Defaults to `true` (applies to every request).
-     */
-    fun appliesTo(request: Request<*>): Boolean = true
-
+interface PipelineBehavior : Behavior {
     /**
      * Wraps the downstream pipeline step represented by [next].
      *
@@ -85,3 +60,15 @@ interface PipelineBehavior {
         request: TRequest,
     ): TResult
 }
+
+val PipelineBehavior.stage: Stage
+    get() = (this as? com.fajrbahr.mediatork.feature.LambdaPipelineBehavior)?.stage ?: Stage.Default
+
+val PipelineBehavior.order: Int
+    get() = (this as? com.fajrbahr.mediatork.feature.LambdaPipelineBehavior)?.order ?: 0
+
+val PipelineBehavior.isEnabled: Boolean
+    get() = (this as? com.fajrbahr.mediatork.feature.LambdaPipelineBehavior)?.isEnabled ?: true
+
+fun PipelineBehavior.appliesTo(request: Request<*>): Boolean =
+    (this as? com.fajrbahr.mediatork.feature.LambdaPipelineBehavior)?.appliesTo(request) ?: true

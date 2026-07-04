@@ -25,31 +25,22 @@ belongs in a pure class is still sitting inside the handler.
 ## Before: logic inside the handler
 
 ```kotlin
-class ValidateCardHandler(
-    private val cardRepository: CardRepository,
-) : RequestHandler<ValidateCardCommand, ValidationResult> {
+fun HandlerRegistry.validateCard(cardRepository: CardRepository) = handle<ValidateCardCommand> { request ->
+    // date parsing and validation logic living inside the handler
+    val onlyDigits = request.expiryDate.filter { it.isDigit() }
+    if (onlyDigits.length != 4) return@handle ValidationResult.Invalid("Bad date format")
 
-    override suspend fun handle(
-        mediator: Mediator,
-        requestContext: RequestContext,
-        request: ValidateCardCommand,
-    ): ValidationResult {
-        // date parsing and validation logic living inside the handler
-        val onlyDigits = request.expiryDate.filter { it.isDigit() }
-        if (onlyDigits.length != 4) return ValidationResult.Invalid("Bad date format")
+    val month = onlyDigits.substring(0, 2).toInt()
+    val year  = onlyDigits.substring(2, 4).toInt()
+    if (month < 1 || month > 12) return@handle ValidationResult.Invalid("Invalid month")
 
-        val month = onlyDigits.substring(0, 2).toInt()
-        val year  = onlyDigits.substring(2, 4).toInt()
-        if (month < 1 || month > 12) return ValidationResult.Invalid("Invalid month")
+    val card = cardRepository.find(request.cardId)
+        ?: return@handle ValidationResult.Invalid("Card not found")
 
-        val card = cardRepository.find(request.cardId)
-            ?: return ValidationResult.Invalid("Card not found")
-
-        return if (card.expiryMonth == month && card.expiryYear == year)
-            ValidationResult.Valid
-        else
-            ValidationResult.Invalid("Expiry mismatch")
-    }
+    if (card.expiryMonth == month && card.expiryYear == year)
+        ValidationResult.Valid
+    else
+        ValidationResult.Invalid("Expiry mismatch")
 }
 ```
 
@@ -85,26 +76,17 @@ The handler becomes glue; it delegates validation to `ExpirationDate` and touche
 already known-good:
 
 ```kotlin
-class ValidateCardHandler(
-    private val cardRepository: CardRepository,
-) : RequestHandler<ValidateCardCommand, ValidationResult> {
+fun HandlerRegistry.validateCard(cardRepository: CardRepository) = handle<ValidateCardCommand> { request ->
+    val expiry = ExpirationDate.create(request.expiryDate)
+    if (!expiry.isValid) return@handle ValidationResult.Invalid("Bad expiry date")
 
-    override suspend fun handle(
-        mediator: Mediator,
-        requestContext: RequestContext,
-        request: ValidateCardCommand,
-    ): ValidationResult {
-        val expiry = ExpirationDate.create(request.expiryDate)
-        if (!expiry.isValid) return ValidationResult.Invalid("Bad expiry date")
+    val card = cardRepository.find(request.cardId)
+        ?: return@handle ValidationResult.Invalid("Card not found")
 
-        val card = cardRepository.find(request.cardId)
-            ?: return ValidationResult.Invalid("Card not found")
-
-        return if (card.expiryMonth == expiry.month && card.expiryYear == expiry.year)
-            ValidationResult.Valid
-        else
-            ValidationResult.Invalid("Expiry mismatch")
-    }
+    if (card.expiryMonth == expiry.month && card.expiryYear == expiry.year)
+        ValidationResult.Valid
+    else
+        ValidationResult.Invalid("Expiry mismatch")
 }
 ```
 
@@ -151,7 +133,7 @@ class ValidateCardHandlerTest {
 
     private val repository = InMemoryCardRepository()
     private val mediator = FakeMediator {
-        +ValidateCardHandler(repository)
+        validateCard(repository)
     }
 
     @Test

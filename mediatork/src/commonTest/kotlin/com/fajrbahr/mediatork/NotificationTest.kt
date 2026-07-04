@@ -19,7 +19,7 @@ class NotificationTest {
     @Test
     fun `publish delivers to single handler`() = runTest {
         val h = RecordingNotificationHandler()
-        val m = mediator { registerNotification(h) }
+        val m = mediator { register(h) }
         m.publish(PingNotification("hi"))
         assertEquals(listOf("hi"), h.received)
     }
@@ -29,8 +29,8 @@ class NotificationTest {
         val h1 = RecordingNotificationHandler()
         val h2 = RecordingNotificationHandler()
         val m = mediator {
-            registerNotification(h1)
-            registerNotification(h2)
+            register(h1)
+            register(h2)
         }
         m.publish(PingNotification("hello"))
         assertEquals(listOf("hello"), h1.received)
@@ -50,8 +50,8 @@ class NotificationTest {
         val pingHandler = RecordingNotificationHandler()
         val alertHandler = AlertNotificationHandler()
         val m = mediator {
-            registerNotification(pingHandler)
-            registerNotification(alertHandler)
+            register(pingHandler)
+            register(alertHandler)
         }
         m.publish(AlertNotification(5))
         assertTrue(pingHandler.received.isEmpty())
@@ -72,8 +72,8 @@ class NotificationTest {
             }
         }
         val m = mediator {
-            registerNotification(h1)
-            registerNotification(h2)
+            register(h1)
+            register(h2)
         }
         m.publish(PingNotification("x"), SequentialNotificationPublisher())
         assertEquals(listOf("h1", "h2"), order)
@@ -257,7 +257,7 @@ class NotificationTest {
         val h = RecordingNotificationHandler()
         val m = mediator(
             missingNotificationHandler = ThrowMissingNotificationHandler()
-        ) { registerNotification(h) }
+        ) { register(h) }
         m.publish(PingNotification("ok"))
         assertEquals(listOf("ok"), h.received)
     }
@@ -277,7 +277,7 @@ class NotificationTest {
         val h = RecordingNotificationHandler()
         val m = mediator(
             missingNotificationHandler = SilentMissingNotificationHandler()
-        ) { registerNotification(h) }
+        ) { register(h) }
         m.publish(PingNotification("ok"))
         assertEquals(listOf("ok"), h.received)
     }

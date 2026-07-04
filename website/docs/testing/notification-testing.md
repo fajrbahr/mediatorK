@@ -15,7 +15,7 @@ sidebar_label: Testing Notifications
 @Test
 fun `order placed event is published`() = runTest {
     val mediator = FakeMediator {
-        +CreateOrderHandler()
+        handle<CreateOrderCommand> { createOrder() }
     }
     val events = mediator.captureNotifications<OrderPlacedEvent>()
 
@@ -28,23 +28,21 @@ fun `order placed event is published`() = runTest {
 
 ---
 
-## fakeNotificationHandler
+## on DSL
 
 When you need full control over what happens inside the handler (side effects, conditional logic, custom assertions),
-use `fakeNotificationHandler` directly:
+use the `on` DSL directly:
 
 ```kotlin
 @Test
 fun `analytics is tracked on order placed`() = runTest {
     val mediator = FakeMediator {
-        +CreateOrderHandler()
+        handle<CreateOrderCommand> { createOrder() }
     }
     val tracked = mutableListOf<String>()
-    mediator.registry.registerNotification(
-        fakeNotificationHandler<OrderPlacedEvent> { event ->
-            tracked += "tracked:${event.orderId}"
-        }
-    )
+    mediator.registry.on<OrderPlacedEvent> { event ->
+        tracked += "tracked:${event.orderId}"
+    }
 
     mediator.send(CreateOrderCommand(id = "ORD-1", amount = 99.0))
 
@@ -56,13 +54,13 @@ fun `analytics is tracked on order placed`() = runTest {
 
 ## Multiple handlers for the same notification
 
-`registerNotification` appends; you can register several handlers for the same type and all of them fire:
+`on` appends; you can register several handlers for the same type and all of them fire:
 
 ```kotlin
 @Test
 fun `all listeners receive the event`() = runTest {
     val mediator = FakeMediator {
-        +CreateOrderHandler()
+        handle<CreateOrderCommand> { createOrder() }
     }
     val emails = mediator.captureNotifications<OrderPlacedEvent>()
     val sms    = mediator.captureNotifications<OrderPlacedEvent>()

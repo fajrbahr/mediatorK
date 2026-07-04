@@ -1,9 +1,12 @@
-package dsl.meditor.products
+package dsl.meditor.price
 
 import com.fajrbahr.mediatork.api.*
 import com.fajrbahr.mediatork.feature.*
+import com.fajrbahr.mediatork.mediatorRegistrar
 import com.fajrbahr.mediatork.validator.rules
-import kotlinx.coroutines.flow.Flow
+import dsl.meditor.InAppService
+import dsl.meditor.PriceRepo
+import dsl.meditor.PushService
 import kotlinx.coroutines.flow.flow
 
 // ── Request & Models ─────────────────────────────────────────────────────────
@@ -22,11 +25,11 @@ val priceMapper = mapper<RawPrice, FormattedPrice> { raw ->
 
 // ── Multiple Validators ──────────────────────────────────────────────────────
 
-val priceValidator = validator<GetPriceQuery> { query ->
+val priceValidator = requestValidator<GetPriceQuery> { query ->
     rules<String> { check(query.productId.isNotBlank()) { "Product ID is required" } }
 }
 
-val priceFormatValidator = validator<GetPriceQuery> { query ->
+val priceFormatValidator = requestValidator<GetPriceQuery> { query ->
     rules<String> { check(query.productId.startsWith("PROD-")) { "Product ID must start with PROD-" } }
 }
 
@@ -39,33 +42,20 @@ data class OrderCreatedNotification(
     val totalAmount: Double,
 ) : Notification
 
-// ── Dependencies ─────────────────────────────────────────────────────────────
-
-interface PriceRepo {
-    fun findPrice(productId: String): RawPrice
-}
-
-interface PushService {
-    fun send(orderId: String, phone: String)
-}
-
-interface InAppService {
-    fun notify(orderId: String)
-}
 
 // ── Notification Handlers ────────────────────────────────────────────────────
 
-fun sendOrderPushHandler(pushService: PushService) = notification<OrderCreatedNotification> {
+fun sendOrderPushHandler(pushService: PushService) = notificationHandler<OrderCreatedNotification> {
     pushService.send(it.orderId, it.customerPhone)
 }
 
-fun sendInAppHandler(inAppService: InAppService) = notification<OrderCreatedNotification> {
+fun sendInAppHandler(inAppService: InAppService) = notificationHandler<OrderCreatedNotification> {
     inAppService.notify(it.orderId)
 }
 
 // ── Handler ──────────────────────────────────────────────────────────────────
 
-fun priceHandler(repo: PriceRepo) = handler<GetPriceQuery, RawPrice> {
+fun priceHandler(repo: PriceRepo) = requestHandler<GetPriceQuery, RawPrice> {
     repo.findPrice(it.productId)
 }
 
@@ -108,4 +98,14 @@ fun watchPriceFeature(repo: PriceRepo) = streamFeature<WatchPriceQuery, PriceUpd
             }
         }
     }
+}
+
+
+fun createProductRegistrar(
+    repo: PriceRepo,
+    pushService: PushService,
+    inAppService: InAppService,
+) = mediatorRegistrar {
+    getPriceFeature(repo, pushService, inAppService)
+    watchPriceFeature(repo)
 }

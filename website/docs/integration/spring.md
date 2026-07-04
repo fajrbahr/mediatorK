@@ -24,31 +24,21 @@ WebFlux** starter.
 ### 1. Handler beans
 
 ```kotlin
-@Service
-class GetUserHandler(private val repo: UserRepository) : RequestHandler<GetUserQuery, User> {
-    override suspend fun handle(mediator: Mediator, ctx: RequestContext, request: GetUserQuery) =
-        repo.findById(request.id) ?: error("Not found")
+@Component
+class UserHandlers(private val repo: UserRepository) : MediatorRegistrar {
+    override fun register(registry: HandlerRegistry) {
+        registry.scope {
+            handle<GetUserQuery> { request ->
+                repo.findById(request.id) ?: error("Not found")
+            }
+        }
+    }
 }
 ```
 
 ### 2. Registrar bean
 
-Group all handlers into a `MediatorRegistrar`:
-
-```kotlin
-@Component
-class UserRegistrar(
-    private val getUser: GetUserHandler,
-    private val createUser: CreateUserHandler,
-) : MediatorRegistrar {
-    override fun register(registry: HandlerRegistry) {
-        registry.scope {
-            +getUser
-            +createUser
-        }
-    }
-}
-```
+Group all handlers into a `MediatorRegistrar` component. We already did this above.
 
 ### 3. Mediator bean
 

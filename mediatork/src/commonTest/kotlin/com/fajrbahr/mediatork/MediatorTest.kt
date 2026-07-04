@@ -8,28 +8,23 @@ import kotlin.test.assertFailsWith
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
-fun mediator(block: HandlerRegistry.() -> Unit): Mediator =
-    MediatorFactory.create(registrars = listOf(object : MediatorRegistrar {
-        override fun register(registry: HandlerRegistry) {
-            registry.block()
-        }
-    }))
-
 // ── Tests ─────────────────────────────────────────────────────────────────────
 
 class MediatorTest {
 
     @Test
     fun `send returns handler result`() = runTest {
-        val m = mediator { register(PingHandler()) }
+        val m = mediatorK {
+            handle<PingQuery, String> { request -> "pong:${request.value}" }
+        }
         assertEquals("pong:hello", m.send(PingQuery("hello")))
     }
 
     @Test
     fun `send routes to correct handler among many`() = runTest {
-        val m = mediator {
-            register(PingHandler())
-            register(AddHandler())
+        val m = mediatorK {
+            handle<PingQuery, String> { request -> "pong:${request.value}" }
+            handle<AddCommand, Int> { request -> request.a + request.b }
         }
         assertEquals(7, m.send(AddCommand(3, 4)))
         assertEquals("pong:x", m.send(PingQuery("x")))
@@ -37,15 +32,17 @@ class MediatorTest {
 
     @Test
     fun `send with Request_Unit returns Unit`() = runTest {
-        val handler = NoResultHandler()
-        val m = mediator { register(handler) }
+        var lastId: String? = null
+        val m = mediatorK {
+            handle<NoResultCommand, Unit> { request -> lastId = request.id }
+        }
         m.send(NoResultCommand("id-1"))
-        assertEquals("id-1", handler.lastId)
+        assertEquals("id-1", lastId)
     }
 
     @Test
     fun `send throws MissingHandlerException when no handler registered`() = runTest {
-        val m = mediator { }
+        val m = mediatorK { }
         assertFailsWith<MissingHandlerException> {
             m.send(PingQuery("x"))
         }
@@ -53,29 +50,27 @@ class MediatorTest {
 
     @Test
     fun `MissingHandlerException message includes request type name`() = runTest {
-        val m = mediator { }
+        val m = mediatorK { }
         val ex = assertFailsWith<MissingHandlerException> { m.send(PingQuery("x")) }
         assertTrue(ex.message!!.contains("PingQuery"))
     }
 
     @Test
     fun `publish delivers notification to all registered handlers`() = runTest {
-        val h1 = RecordingNotificationHandler()
-        val h2 = RecordingNotificationHandler()
-        val m = MediatorFactory.create(registrars = listOf(object : MediatorRegistrar {
-            override fun register(registry: HandlerRegistry) {
-                registry registerNotification h1
-                registry registerNotification h2
-            }
-        }))
+        val received1 = mutableListOf<String>()
+        val received2 = mutableListOf<String>()
+        val m = mediatorK {
+            on<PingNotification> { received1 += it.message }
+            on<PingNotification> { received2 += it.message }
+        }
         m.publish(PingNotification("hello"))
-        assertEquals(listOf("hello"), h1.received)
-        assertEquals(listOf("hello"), h2.received)
+        assertEquals(listOf("hello"), received1)
+        assertEquals(listOf("hello"), received2)
     }
 
     @Test
     fun `publish with no handlers throws MissingNotificationHandlerException`() = runTest {
-        val m = mediator { }
+        val m = mediatorK { }
         assertFailsWith<MissingNotificationHandlerException> {
             m.publish(PingNotification("silent"))
         }
@@ -109,14 +104,10 @@ class MediatorTest {
             }
         }
 
-        val m = MediatorFactory.create(
-            registrars = listOf(object : MediatorRegistrar {
-                override fun register(registry: HandlerRegistry) {
-                    registry.register(PingHandler())
-                }
-            }),
-            pipelineBehaviors = listOf(inner, outer),
-        )
+        val m = mediatorK {
+            handle<PingQuery, String> { request -> "pong:${request.value}" }
+            behaviors(inner, outer)
+        }
 
         m.send(PingQuery("x"))
         assertEquals(listOf("outer-before", "inner-before", "inner-after", "outer-after"), log)
@@ -135,14 +126,10 @@ class MediatorTest {
                 ran = true; return next(request)
             }
         }
-        val m = MediatorFactory.create(
-            registrars = listOf(object : MediatorRegistrar {
-                override fun register(registry: HandlerRegistry) {
-                    registry.register(PingHandler())
-                }
-            }),
-            pipelineBehaviors = listOf(selective),
-        )
+        val m = mediatorK {
+            handle<PingQuery, String> { request -> "pong:${request.value}" }
+            behaviors(selective)
+        }
         m.send(PingQuery("x"))
         assertFalse(ran)
     }
@@ -162,24 +149,12 @@ class MediatorTest {
             }
         }
 
-        val handler = object : RequestHandler<PingQuery, String> {
-            override suspend fun handle(
-                mediator: Mediator,
-                requestContext: RequestContext,
-                request: PingQuery
-            ): String {
-                contextValue = requestContext.getMetaData("key"); return "ok"
+        val m = mediatorK {
+            handle<PingQuery, String> { request ->
+                contextValue = context.getMetaData("key"); "ok"
             }
+            behaviors(pre)
         }
-
-        val m = MediatorFactory.create(
-            registrars = listOf(object : MediatorRegistrar {
-                override fun register(registry: HandlerRegistry) {
-                    registry.register(handler)
-                }
-            }),
-            pipelineBehaviors = listOf(pre),
-        )
         m.send(PingQuery("x"))
         assertEquals("injected", contextValue)
     }
@@ -199,14 +174,10 @@ class MediatorTest {
             }
         }
 
-        val m = MediatorFactory.create(
-            registrars = listOf(object : MediatorRegistrar {
-                override fun register(registry: HandlerRegistry) {
-                    registry.register(PingHandler())
-                }
-            }),
-            pipelineBehaviors = listOf(post),
-        )
+        val m = mediatorK {
+            handle<PingQuery, String> { request -> "pong:${request.value}" }
+            behaviors(post)
+        }
         m.send(PingQuery("world"))
         assertEquals("pong:world", captured)
     }

@@ -6,16 +6,11 @@ sidebar_label: Fallback Chains
 
 # Fallback Chains
 
-The `otherwise` infix operator lets you chain multiple handlers for the same request or notification type. Each
-candidate is tried in order; the first one that succeeds wins, and the rest are skipped. If every handler throws, the
+Fallback chains allow you to try multiple approaches for the same request or notification type. Each
+candidate is tried in order; the first one that succeeds wins, and the rest are skipped. If every approach throws, the
 last exception is re-thrown.
 
-```
-PrimaryHandler()  →  (throws?)  →  SecondaryHandler()  →  (throws?)  →  TertiaryHandler()
-                                                                          ↓ re-throws if this also throws
-```
-
-This is useful any time you want resilient dispatch without wrapping your handlers in try/catch:
+This is useful any time you want resilient dispatch within your handlers:
 
 - Call a live API, fall back to a cache, fall back to a stub.
 - Try a fast in-memory path, fall back to a database.
@@ -26,35 +21,15 @@ This is useful any time you want resilient dispatch without wrapping your handle
 ## Requests
 
 ```kotlin
-class CreateOrderHandler(private val api: OrderApi) : RequestHandler<CreateOrderCommand, Order> {
-    override suspend fun handle(mediator: Mediator, requestContext: RequestContext, request: CreateOrderCommand): Order =
+registry.handle<CreateOrderCommand, Order> { request ->
+    try {
         api.create(request.cartId) // throws if the live API is down
-}
-
-class CreateOrderFallbackHandler(private val cache: OrderCache) : RequestHandler<CreateOrderCommand, Order> {
-    override suspend fun handle(mediator: Mediator, requestContext: RequestContext, request: CreateOrderCommand): Order =
-        cache.createFromCache(request.cartId)
-}
-
-class CreateOrderStubHandler : RequestHandler<CreateOrderCommand, Order> {
-    override suspend fun handle(mediator: Mediator, requestContext: RequestContext, request: CreateOrderCommand): Order =
-        Order.stub()
-}
-```
-
-Register the chain with `otherwise`:
-
-```kotlin
-class OrderRegistrar(
-    private val api: OrderApi,
-    private val cache: OrderCache,
-) : MediatorRegistrar {
-    override fun register(registry: HandlerRegistry) {
-        registry register (
-            CreateOrderHandler(api)
-                otherwise CreateOrderFallbackHandler(cache)
-                otherwise CreateOrderStubHandler()
-        )
+    } catch (e: Exception) {
+        try {
+            cache.createFromCache(request.cartId)
+        } catch (e2: Exception) {
+            Order.stub()
+        }
     }
 }
 ```
@@ -70,26 +45,11 @@ val order: Order = mediator.send(CreateOrderCommand(cartId = "cart-42"))
 ## Notifications
 
 ```kotlin
-class PushNotificationHandler(private val push: PushService) : NotificationHandler<OrderShippedNotification> {
-    override suspend fun handle(notification: OrderShippedNotification) =
+registry.on<OrderShippedNotification> { notification ->
+    try {
         push.send(notification.userId, "Your order shipped!") // throws if push service is down
-}
-
-class EmailNotificationHandler(private val email: EmailService) : NotificationHandler<OrderShippedNotification> {
-    override suspend fun handle(notification: OrderShippedNotification) =
+    } catch (e: Exception) {
         email.send(notification.userId, "Your order shipped!")
-}
-```
-
-```kotlin
-class NotificationRegistrar(
-    private val push: PushService,
-    private val email: EmailService,
-) : MediatorRegistrar {
-    override fun register(registry: HandlerRegistry) {
-        registry registerNotification (
-            PushNotificationHandler(push) otherwise EmailNotificationHandler(email)
-        )
     }
 }
 ```
@@ -100,25 +60,9 @@ class NotificationRegistrar(
 
 | Scenario                      | Result                                                 |
 |-------------------------------|--------------------------------------------------------|
-| First handler succeeds        | Returns immediately, rest are skipped                  |
+| First block succeeds          | Returns immediately, rest are skipped                  |
 | First throws, second succeeds | Second result returned                                 |
-| All handlers throw            | Last exception re-thrown                               |
-| Single `otherwise` call       | Creates a `FallbackRequestHandler` with two candidates |
-| Chained `otherwise` calls     | All candidates collected into one handler, no nesting  |
-
----
-
-## `+` DSL shorthand
-
-`otherwise` returns a `FallbackRequestHandler` / `FallbackNotificationHandler`, both of which implement the standard
-handler interfaces, so the `+` shorthand inside a `scope { }` block works as-is:
-
-```kotlin
-registry.scope {
-    +(CreateOrderHandler(api) otherwise CreateOrderFallbackHandler(cache))
-    +(PushNotificationHandler(push) otherwise EmailNotificationHandler(email))
-}
-```
+| All blocks throw              | Last exception re-thrown                               |
 
 ---
 

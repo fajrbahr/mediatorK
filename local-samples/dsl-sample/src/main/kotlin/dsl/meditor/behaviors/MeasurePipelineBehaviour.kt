@@ -1,25 +1,14 @@
 package dsl.meditor.behaviors
 
-import com.fajrbahr.mediatork.api.PipelineBehavior
-import com.fajrbahr.mediatork.api.Request
-import com.fajrbahr.mediatork.api.RequestContext
-import com.fajrbahr.mediatork.api.RequestHandlerDelegate
+import com.fajrbahr.mediatork.feature.behavior
 import kotlin.time.TimeSource
 
-class MeasurePipelineBehaviour : PipelineBehavior {
-    override val order = 10
-
-    override suspend fun <TRequest : Request<TResult>, TResult> process(
-        requestContext: RequestContext,
-        next: RequestHandlerDelegate<TRequest, TResult>,
-        request: TRequest,
-    ): TResult {
-        val start = TimeSource.Monotonic.markNow()
-        return try {
-            next(request)
-        } finally {
-            val ms = start.elapsedNow().inWholeMilliseconds
-            println("[MEASURE] ${request::class.simpleName} took ${ms}ms")
-        }
+val measurePipelineBehavior = behavior(order = 10) { _, next, request ->
+    val start = TimeSource.Monotonic.markNow()
+    try {
+        next(request)
+    } finally {
+        val ms = start.elapsedNow().inWholeMilliseconds
+        println("[MEASURE] ${request::class.simpleName} took ${ms}ms")
     }
 }

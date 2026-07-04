@@ -21,12 +21,10 @@ All requests, handlers, and registrars go in `commonMain`; the same code runs on
 // commonMain
 data class GetProductQuery(val id: String) : Request<Product>
 
-class GetProductHandler(private val repo: ProductRepository) : RequestHandler<GetProductQuery, Product> {
-    override suspend fun handle(
-        mediator: Mediator,
-        requestContext: RequestContext,
-        request: GetProductQuery,
-    ): Product = repo.findById(request.id) ?: error("Not found")
+fun HandlerRegistry.productHandlers(repo: ProductRepository) = scope {
+    handle<GetProductQuery> { request ->
+        repo.findById(request.id) ?: error("Not found")
+    }
 }
 ```
 
@@ -37,7 +35,7 @@ class GetProductHandler(private val repo: ProductRepository) : RequestHandler<Ge
 ```kotlin
 // commonMain — create once, share as singleton
 val mediator: Mediator = MediatorFactory.create(
-    registrars = listOf(ProductRegistrar(productRepository)),
+    registrars = listOf(MediatorRegistrar { it.productHandlers(productRepository) }),
 )
 ```
 

@@ -20,8 +20,8 @@ how many times, while your actual handler logic still runs and returns real resu
 // Wrap any real mediator — FakeMediator, or your production one
 val spy = MediatorSpy(
     FakeMediator {
-        +CreateOrderHandler()
-        +FetchUserHandler()
+        handle<CreateOrderCommand> { createOrder() }
+        handle<FetchUserQuery> { fetchUser() }
     }
 )
 ```
@@ -35,7 +35,7 @@ Inject `spy` wherever your production code expects a `Mediator`. All `send` and 
 ```kotlin
 @Test
 fun `checkout sends CreateOrderCommand`() = runTest {
-    val spy = MediatorSpy(FakeMediator { +CreateOrderHandler() })
+    val spy = MediatorSpy(FakeMediator { handle<CreateOrderCommand> { createOrder() } })
     val checkout = CheckoutService(spy)
 
     checkout.placeOrder(cartId = "CART-1")
@@ -59,7 +59,7 @@ fun `checkout sends CreateOrderCommand`() = runTest {
 ```kotlin
 @Test
 fun `checkout does not send command when cart is empty`() = runTest {
-    val spy = MediatorSpy(FakeMediator { +CreateOrderHandler() })
+    val spy = MediatorSpy(FakeMediator { handle<CreateOrderCommand> { createOrder() } })
     val checkout = CheckoutService(spy)
 
     checkout.placeOrder(cartId = "") // empty cart → no command
@@ -76,10 +76,8 @@ fun `checkout does not send command when cart is empty`() = runTest {
 @Test
 fun `order placement publishes OrderPlacedEvent`() = runTest {
     val fake = FakeMediator {
-        +CreateOrderHandler()
-        registerNotification(object : NotificationHandler<OrderPlacedEvent> {
-            override suspend fun handle(notification: OrderPlacedEvent) = Unit
-        })
+        handle<CreateOrderCommand> { createOrder() }
+        on<OrderPlacedEvent> {}
     }
     val spy = MediatorSpy(fake)
     val checkout = CheckoutService(spy)
@@ -116,7 +114,7 @@ fun `order placement publishes OrderPlacedEvent`() = runTest {
 ```kotlin
 @Test
 fun `two independent scenarios in one test`() = runTest {
-    val spy = MediatorSpy(FakeMediator { +CreateOrderHandler() })
+    val spy = MediatorSpy(FakeMediator { handle<CreateOrderCommand> { createOrder() } })
 
     spy.send(CreateOrderCommand(id = "ORD-1"))
     spy.assertSentCount<CreateOrderCommand>(1)

@@ -28,8 +28,7 @@ val order = mediator.send(CreateOrderCommand("ORD-1", 150.0))
 
 ## Lambda handlers
 
-`handle<TRequest, TResult>` registers a lambda as the single handler for a request type — the inline
-equivalent of implementing `RequestHandler`:
+`handle<TRequest, TResult>` registers a block as the single handler for a request type:
 
 ```kotlin
 handle<GetTodoQuery, Todo?> { request -> db.find(request.id) }
@@ -65,8 +64,7 @@ on<OrderCreatedEvent>(order = 10) { event -> analytics.track(event) }
 
 ## Lambda validators
 
-`validate<TRequest>` registers a validator that runs before the handler, exactly like a class-based
-`RequestValidator`:
+`validate<TRequest>` registers a validator that runs before the handler:
 
 ```kotlin
 validate<CreateOrderCommand> { request ->
@@ -108,19 +106,16 @@ val mediator = mediatorK {
 
 ---
 
-## Mixing styles
+## Mixing with registrars
 
-Lambdas are perfect for small slices and prototypes; as a slice grows, promote it to a class-based handler.
-Both styles — plus existing registrars, including the KSP-generated one — mix freely in the same block:
+Both standalone DSL registrations and existing registrars (including KSP-generated ones) mix freely in the same block:
 
 ```kotlin
 val mediator = mediatorK {
     registrars(OrderRegistrar(db), GeneratedMediatorRegistrar())
 
-    register(CreateOrderHandler(db))     // class-based
-    +CancelOrderHandler(db)              // `+` shorthand
-
-    handle<PingQuery, String> { "pong" } // lambda
+    handle<CreateOrderCommand, Order> { request -> db.save(Order(request.id, request.amount)) }
+    handle<PingQuery, String> { "pong" }
 }
 ```
 

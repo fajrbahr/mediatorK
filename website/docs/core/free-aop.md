@@ -20,30 +20,20 @@ infrastructure.
 Without AOP, you reach for logging inside every handler:
 
 ```kotlin
-class GetUserHandler(private val db: UserRepository) : RequestHandler<GetUserQuery, User> {
-    override suspend fun handle(
-        mediator: Mediator,
-        requestContext: RequestContext,
-        request: GetUserQuery
-    ): User {
-        println("→ GetUserQuery(id=${request.id})")   // ← you added this
-        val user = db.findById(request.id) ?: error("not found")
-        println("← GetUserQuery result=$user")        // ← and this
-        return user
-    }
+registry.handle<GetUserQuery, User> { request ->
+    println("→ GetUserQuery(id=${request.id})")   // ← you added this
+    val user = db.findById(request.id) ?: error("not found")
+    println("← GetUserQuery result=$user")        // ← and this
+    user
 }
 ```
 
 With AOP, the handler stays pure and logging lives in one place:
 
 ```kotlin
-// Handler — zero logging code
-class GetUserHandler(private val db: UserRepository) : RequestHandler<GetUserQuery, User> {
-    override suspend fun handle(
-        mediator: Mediator,
-        requestContext: RequestContext,
-        request: GetUserQuery
-    ): User = db.findById(request.id) ?: error("not found")
+// Handler block — zero logging code
+registry.handle<GetUserQuery, User> { request ->
+    db.findById(request.id) ?: error("not found")
 }
 
 // Wiring — one line enables logging for every request

@@ -18,11 +18,8 @@ class StreamRequestTest {
         streamBehaviors: List<StreamPipelineBehavior> = emptyList(),
         handlers: HandlerRegistry.() -> Unit,
     ) = MediatorFactory.create(
-        registrars = listOf(object : MediatorRegistrar {
-            override fun register(registry: HandlerRegistry) = registry.handlers()
-        }),
+        registry = HandlerRegistry().apply(handlers),
         streamPipelineBehaviors = streamBehaviors,
-        verifyHandlers = false,
     )
 
     @Test
@@ -57,7 +54,7 @@ class StreamRequestTest {
 
     @Test
     fun `stream throws MissingStreamHandlerException when no handler registered`() {
-        val m = MediatorFactory.create(registrars = emptyList(), verifyHandlers = false)
+        val m = MediatorFactory.create(registry = HandlerRegistry())
         assertFailsWith<MissingStreamHandlerException> {
             m.stream(NumbersQuery(1))
         }
@@ -65,7 +62,7 @@ class StreamRequestTest {
 
     @Test
     fun `MissingStreamHandlerException message contains request type name`() {
-        val m = MediatorFactory.create(registrars = emptyList(), verifyHandlers = false)
+        val m = MediatorFactory.create(registry = HandlerRegistry())
         val ex = assertFailsWith<MissingStreamHandlerException> {
             m.stream(NumbersQuery(1))
         }
@@ -261,7 +258,7 @@ class StreamRequestTest {
 
     @Test
     fun `MissingStreamHandlerException is a MediatorException subtype`() {
-        val m = MediatorFactory.create(registrars = emptyList(), verifyHandlers = false)
+        val m = MediatorFactory.create(registry = HandlerRegistry())
         assertFailsWith<MediatorException> {
             m.stream(NumbersQuery(1))
         }

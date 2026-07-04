@@ -5,7 +5,7 @@ package com.fajrbahr.mediatork
 import com.fajrbahr.mediatork.api.Mediator
 import com.fajrbahr.mediatork.api.RequestContext
 import com.fajrbahr.mediatork.api.RequestHandler
-import com.fajrbahr.mediatork.pipeline.buildin.TransactionPipelineBehavior
+import com.fajrbahr.mediatork.pipeline.buildin.transactionPipelineBehavior
 import com.fajrbahr.mediatork.pipeline.buildin.TransactionProvider
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
@@ -33,7 +33,7 @@ class TransactionPipelineBehaviorTest {
     @Test
     fun `begin and commit called on successful handler`() = runTest {
         val provider = RecordingTransactionProvider()
-        val m = mediator(pipelineBehaviors = listOf(TransactionPipelineBehavior(provider))) {
+        val m = mediator(pipelineBehaviors = listOf(transactionPipelineBehavior(provider))) {
             register(PingHandler())
         }
         m.send(PingQuery("x"))
@@ -43,7 +43,7 @@ class TransactionPipelineBehaviorTest {
     @Test
     fun `begin and rollback called when handler throws`() = runTest {
         val provider = RecordingTransactionProvider()
-        val m = mediator(pipelineBehaviors = listOf(TransactionPipelineBehavior(provider))) {
+        val m = mediator(pipelineBehaviors = listOf(transactionPipelineBehavior(provider))) {
             register(object : RequestHandler<PingQuery, String> {
                 override suspend fun handle(
                     mediator: Mediator,
@@ -60,7 +60,7 @@ class TransactionPipelineBehaviorTest {
     @Test
     fun `exception is rethrown after rollback`() = runTest {
         val provider = RecordingTransactionProvider()
-        val m = mediator(pipelineBehaviors = listOf(TransactionPipelineBehavior(provider))) {
+        val m = mediator(pipelineBehaviors = listOf(transactionPipelineBehavior(provider))) {
             register(object : RequestHandler<PingQuery, String> {
                 override suspend fun handle(
                     mediator: Mediator,
@@ -77,7 +77,7 @@ class TransactionPipelineBehaviorTest {
     @Test
     fun `handler result returned on success`() = runTest {
         val provider = RecordingTransactionProvider()
-        val m = mediator(pipelineBehaviors = listOf(TransactionPipelineBehavior(provider))) {
+        val m = mediator(pipelineBehaviors = listOf(transactionPipelineBehavior(provider))) {
             register(AddHandler())
         }
         assertEquals(7, m.send(AddCommand(3, 4)))
@@ -86,7 +86,7 @@ class TransactionPipelineBehaviorTest {
     @Test
     fun `commit not called when handler throws`() = runTest {
         val provider = RecordingTransactionProvider()
-        val m = mediator(pipelineBehaviors = listOf(TransactionPipelineBehavior(provider))) {
+        val m = mediator(pipelineBehaviors = listOf(transactionPipelineBehavior(provider))) {
             register(object : RequestHandler<PingQuery, String> {
                 override suspend fun handle(
                     mediator: Mediator,
@@ -103,7 +103,7 @@ class TransactionPipelineBehaviorTest {
     @Test
     fun `transaction wraps each request independently`() = runTest {
         val provider = RecordingTransactionProvider()
-        val m = mediator(pipelineBehaviors = listOf(TransactionPipelineBehavior(provider))) {
+        val m = mediator(pipelineBehaviors = listOf(transactionPipelineBehavior(provider))) {
             register(PingHandler())
         }
         m.send(PingQuery("a"))
@@ -114,7 +114,7 @@ class TransactionPipelineBehaviorTest {
     @Test
     fun `rollback is not called on success`() = runTest {
         val provider = RecordingTransactionProvider()
-        val m = mediator(pipelineBehaviors = listOf(TransactionPipelineBehavior(provider))) {
+        val m = mediator(pipelineBehaviors = listOf(transactionPipelineBehavior(provider))) {
             register(PingHandler())
         }
         m.send(PingQuery("x"))
@@ -137,7 +137,7 @@ class TransactionPipelineBehaviorTest {
                 combined += "rollback"
             }
         }
-        val m = mediator(pipelineBehaviors = listOf(TransactionPipelineBehavior(provider))) {
+        val m = mediator(pipelineBehaviors = listOf(transactionPipelineBehavior(provider))) {
             register(object : RequestHandler<PingQuery, String> {
                 override suspend fun handle(
                     mediator: Mediator,
@@ -156,7 +156,7 @@ class TransactionPipelineBehaviorTest {
     @Test
     fun `Unit handler commits transaction correctly`() = runTest {
         val provider = RecordingTransactionProvider()
-        val m = mediator(pipelineBehaviors = listOf(TransactionPipelineBehavior(provider))) {
+        val m = mediator(pipelineBehaviors = listOf(transactionPipelineBehavior(provider))) {
             register(NoResultHandler())
         }
         m.send(NoResultCommand("test-id"))

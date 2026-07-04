@@ -1,10 +1,12 @@
 package com.fajrbahr.mediatork.test
 
 import com.fajrbahr.mediatork.HandlerRegistry
+import com.fajrbahr.mediatork.MediatorBuilder
 import com.fajrbahr.mediatork.MediatorFactory
 import com.fajrbahr.mediatork.api.*
 import com.fajrbahr.mediatork.feature.Feature
 import com.fajrbahr.mediatork.feature.StreamFeature
+import com.fajrbahr.mediatork.mediatorK
 import com.fajrbahr.mediatork.notification.NotificationPublishStrategy
 import com.fajrbahr.mediatork.notification.ParallelNotificationPublisher
 import kotlinx.coroutines.flow.Flow
@@ -12,15 +14,13 @@ import kotlinx.coroutines.flow.Flow
 /**
  * A test-only [com.fajrbahr.mediatork.api.Mediator] backed by a real [HandlerRegistry] and [MediatorFactory].
  *
- * Handlers can be registered at construction time via the [init] block or the
- * [registrars] list, and also added at any time after construction by calling
- * [register]. Because the underlying [MediatorFactory.create] overload that
- * accepts an existing registry is used, late-registered handlers are picked up
- * immediately on the next [send] call.
+ * Handlers can be registered at construction time via the [init] block,
+ * and also added at any time after construction by calling
+ * [register].
  *
  * ```kotlin
  * val mediator = FakeMediator {
- *     +CreateOrderHandler()
+ *     handle<CreateOrderCommand, OrderResult> { ... }
  * }
  *
  * // or register later:
@@ -28,24 +28,23 @@ import kotlinx.coroutines.flow.Flow
  * ```
  */
 class FakeMediator(
-    registrars: List<MediatorRegistrar> = emptyList(),
     pipelineBehaviors: List<PipelineBehavior> = emptyList(),
     streamPipelineBehaviors: List<StreamPipelineBehavior> = emptyList(),
     notificationPublisher: NotificationPublishStrategy = ParallelNotificationPublisher(),
-    init: HandlerRegistry.() -> Unit = {},
+    init: MediatorBuilder.() -> Unit = {},
 ) : Mediator {
 
-    val registry = HandlerRegistry().apply {
-        registrars.forEach { it.register(this) }
+    val builder = MediatorBuilder().apply {
+        this.behaviors(*pipelineBehaviors.toTypedArray())
+        this.streamBehaviors(*streamPipelineBehaviors.toTypedArray())
+        this.notificationPublisher = notificationPublisher
+        this.verifyHandlers = false
         init()
     }
 
-    private val mediator = MediatorFactory.create(
-        registry = registry,
-        pipelineBehaviors = pipelineBehaviors,
-        streamPipelineBehaviors = streamPipelineBehaviors,
-        notificationPublisher = notificationPublisher,
-    )
+    val registry: HandlerRegistry get() = builder.registry
+
+    private val mediator = builder.build()
 
     inline fun <reified TRequest : Request<TResult>, TResult> register(
         handler: RequestHandler<TRequest, TResult>,
@@ -127,4 +126,3 @@ inline fun <reified T : Notification> FakeMediator.captureNotifications(): List<
     registry.registerNotification(fakeNotificationHandler<T> { captured += it })
     return captured
 }
-

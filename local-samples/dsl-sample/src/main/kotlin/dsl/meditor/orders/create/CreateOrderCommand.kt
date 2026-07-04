@@ -1,4 +1,4 @@
-package sample.meditor.orders.create
+package dsl.meditor.orders.create
 
 import com.fajrbahr.mediatork.api.Request
 

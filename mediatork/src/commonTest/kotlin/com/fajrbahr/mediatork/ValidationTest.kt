@@ -130,7 +130,7 @@ class ValidationBehaviorTest {
         }
 
     private fun behaviorWith(vararg validators: RequestValidator<PingQuery>) =
-        ValidationBehavior(mapOf(PingQuery::class to validators.toList()))
+        validationBehavior(mapOf(PingQuery::class to validators.toList()))
 
     @Test
     fun `valid request passes through to handler`() = runTest {
@@ -164,7 +164,7 @@ class ValidationBehaviorTest {
             override fun validate(request: AddCommand): ValidationResult = ValidationResult.Invalid("add bad")
         }
         val m =
-            mediator(pipelineBehaviors = listOf(ValidationBehavior(mapOf(AddCommand::class to listOf(addValidator))))) {
+            mediator(pipelineBehaviors = listOf(validationBehavior(mapOf(AddCommand::class to listOf(addValidator))))) {
                 register(PingHandler())
             }
         assertEquals("pong:x", m.send(PingQuery("x")))
@@ -224,7 +224,7 @@ class ValidationBehaviorTest {
         }
         val m = mediator(
             pipelineBehaviors = listOf(
-                ValidationBehavior(
+                validationBehavior(
                     mapOf(
                         PingQuery::class to listOf(validatorFor(valid = true)),
                         AddCommand::class to listOf(addValidator),

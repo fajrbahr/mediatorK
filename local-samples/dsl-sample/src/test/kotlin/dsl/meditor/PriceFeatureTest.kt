@@ -2,7 +2,7 @@ package dsl.meditor
 
 import com.fajrbahr.mediatork.test.*
 import com.fajrbahr.mediatork.validator.ValidationException
-import dsl.meditor.products.*
+import dsl.meditor.price.*
 import kotlinx.coroutines.test.runTest
 import kotlin.test.*
 

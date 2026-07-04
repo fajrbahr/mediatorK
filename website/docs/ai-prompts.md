@@ -19,9 +19,9 @@ Using MediatorK for Kotlin/Android, create a request and handler for the followi
 
 Requirements:
 - The request should be a data class implementing Request<T> (or Request.Unit if no return value)
-- The handler should implement RequestHandler<TRequest, TResponse>
-- Use constructor injection for dependencies
-- Use suspend functions
+- The handler should use the registry.handle<TRequest, TResponse> DSL block
+- Inject dependencies into the registrar/module where the DSL block is defined
+- Use suspend blocks within the DSL
 ```
 
 ---
@@ -35,8 +35,8 @@ Using MediatorK, create a command and its handler for:
 
 Requirements:
 - Request implements Request.Unit
-- Handler implements RequestHandler<TRequest, Unit>
-- Inject dependencies via constructor
+- Handler uses the registry.handle<TRequest, Unit> DSL block
+- Inject dependencies into the registrar/module where the DSL block is defined
 ```
 
 ---
@@ -50,7 +50,7 @@ Using MediatorK, create a notification and one or more handlers for:
 
 Requirements:
 - Notification implements Notification
-- Each handler implements NotificationHandler<TNotification>
+- Each handler uses the registry.on<TNotification> DSL block
 - Handlers are independent — each handles a single concern
 ```
 
@@ -98,5 +98,5 @@ Requirements:
 - Override validate() directly on the data class using rules { } or rulesFailFast { }
 - MediatorK's built-in ValidationBehavior runs validate() automatically before the handler
 - No separate validator class or registration needed
-- If the validator needs injected dependencies, use a separate RequestValidator<T> class instead
+- If the validator needs injected dependencies, use the registry.validate<T> DSL instead
 ```

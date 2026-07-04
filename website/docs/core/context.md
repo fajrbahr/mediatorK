@@ -49,16 +49,10 @@ class TraceIdBehavior : PipelineBehavior {
 Handlers and `Stage.Post` behaviors read values by key:
 
 ```kotlin
-class CreateOrderHandler : RequestHandler<CreateOrderCommand, Order> {
-    override suspend fun handle(
-        mediator: Mediator,
-        requestContext: RequestContext,
-        request: CreateOrderCommand,
-    ): Order {
-        val userId = requestContext.getMetadata<String>("userId")
-            ?: error("userId not set in context")
-        return orderService.create(userId, request.cartId)
-    }
+registry.handle<CreateOrderCommand, Order> { request ->
+    val userId = requestContext.getMetadata<String>("userId")
+        ?: error("userId not set in context")
+    orderService.create(userId, request.cartId)
 }
 ```
 

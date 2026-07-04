@@ -24,36 +24,22 @@ data class BookingPurchasedNotification(
 
 ---
 
-## Implementing handlers
+## Implementing & Registering handlers
 
-Multiple handlers can react to the same notification. Each is independent.
-
-```kotlin
-class TrackOrderAnalyticsHandler : NotificationHandler<BookingPurchasedNotification> {
-    override suspend fun handle(notification: BookingPurchasedNotification) {
-        analytics.track("purchase", notification.bookingId)
-    }
-}
-
-class UpdateInventoryHandler(private val inventory: InventoryService) : NotificationHandler<BookingPurchasedNotification> {
-    override suspend fun handle(notification: BookingPurchasedNotification) {
-        inventory.decrementStock(notification.bookingId, notification.amount)
-    }
-}
-```
-
----
-
-## Registering handlers
-
-Use `+handler` as shorthand or call `registerNotification()` directly; both are equivalent:
+Multiple blocks can react to the same notification. Each is independent.
 
 ```kotlin
-class NotificationRegistrar : MediatorRegistrar {
+class NotificationRegistrar(
+    private val inventory: InventoryService,
+    private val analytics: AnalyticsService
+) : MediatorRegistrar {
     override fun register(registry: HandlerRegistry) {
-        registry.scope {
-            +TrackOrderAnalyticsHandler()
-            registerNotification(UpdateInventoryHandler(inventoryService))
+        registry.on<BookingPurchasedNotification> { notification ->
+            analytics.track("purchase", notification.bookingId)
+        }
+        
+        registry.on<BookingPurchasedNotification> { notification ->
+            inventory.decrementStock(notification.bookingId, notification.amount)
         }
     }
 }

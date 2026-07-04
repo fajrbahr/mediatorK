@@ -34,13 +34,13 @@ interface Request<out TResponse>
 
 ---
 
-### `RequestHandler<TRequest, TResult>` · `com.fajrbahr.mediatork.api`
+### `handle<TRequest, TResult>` DSL · `com.fajrbahr.mediatork.api`
 
-Handles a specific `Request` type.
+Handles a specific `Request` type via the registry DSL.
 
 ```kotlin
-interface RequestHandler<in TRequest : Request<TResult>, TResult> {
-    suspend fun handle(mediator: Mediator, requestContext: RequestContext, request: TRequest): TResult
+registry.handle<TRequest, TResult> { request ->
+    // return TResult
 }
 ```
 
@@ -59,28 +59,19 @@ anything better consumed incrementally than batched into a list.
 
 ---
 
-### `StreamRequestHandler<TRequest, T>` · `com.fajrbahr.mediatork.api`
+### `handleStream<TRequest, T>` DSL · `com.fajrbahr.mediatork.api`
 
-Handles a `StreamRequest` and returns a cold `Flow<T>`. The interface is **not** `suspend`; it returns the flow
-immediately; work begins when the caller collects it.
-
-```kotlin
-interface StreamRequestHandler<in TRequest : StreamRequest<T>, T> {
-    fun handle(mediator: Mediator, requestContext: RequestContext, request: TRequest): Flow<T>
-}
-```
+Handles a `StreamRequest` and returns a cold `Flow<T>`. The block is **not** `suspend`; it returns the flow immediately; work begins when the caller collects it.
 
 ```kotlin
 // Define
 data class StreamInvoicesQuery(val status: InvoiceStatus? = null) : StreamRequest<Invoice>
 
-// Handle
-class StreamInvoicesHandler(private val repo: InvoiceRepository)
-    : StreamRequestHandler<StreamInvoicesQuery, Invoice> {
-    override fun handle(mediator: Mediator, requestContext: RequestContext, request: StreamInvoicesQuery): Flow<Invoice> =
-        repo.all().asFlow().let { flow ->
-            if (request.status != null) flow.filter { it.status == request.status } else flow
-        }
+// Handle via DSL
+registry.handleStream<StreamInvoicesQuery, Invoice> { request ->
+    repo.all().asFlow().let { flow ->
+        if (request.status != null) flow.filter { it.status == request.status } else flow
+    }
 }
 
 // Dispatch
@@ -114,13 +105,13 @@ interface Notification
 
 ---
 
-### `NotificationHandler<T>` · `com.fajrbahr.mediatork.api`
+### `on<TNotification>` DSL · `com.fajrbahr.mediatork.api`
 
-Reacts to a `Notification`. Multiple handlers per notification type are allowed.
+Reacts to a `Notification`. Multiple blocks per notification type are allowed.
 
 ```kotlin
-interface NotificationHandler<in T : Notification> {
-    suspend fun handle(notification: T)
+registry.on<TNotification> { notification ->
+    // handle event
 }
 ```
 
@@ -160,13 +151,11 @@ Stores all registered handlers. Populated by `MediatorRegistrar` implementations
 
 | Method                            | Description                                                               |
 |-----------------------------------|---------------------------------------------------------------------------|
-| `register(handler)`               | Register a request handler (infix, reified)                               |
-| `registerStream(handler)`         | Register a stream request handler (infix, reified)                        |
-| `registerNotification(handler)`   | Register a notification handler (infix, reified)                          |
-| `registerValidator(validator)`    | Register a request validator (reified)                                    |
+| `handle { }` / `handleStream { }` | Register a request handler or stream handler DSL (reified)                |
+| `on { }`                          | Register a notification handler DSL (reified)                             |
+| `validate { }`                    | Register a request validator DSL (reified)                                |
 | `registerDynamic(klass, handler)` | Register a request handler without reified type (for DI frameworks)       |
 | `scope { }`                       | Group registrations for readability                                       |
-| `+handler`                        | Operator shorthand for `register` / `registerNotification` inside `scope` |
 | `hasHandler(requestType)`         | Returns `true` if a handler is registered for the given request type      |
 | `registeredRequestTypes()`        | Returns the set of all request types that have a registered handler       |
 
@@ -254,7 +243,7 @@ interface Mediator : Sender, IStreamRequest, Publisher
 
 | Type                  | Description                                                                                                                 |
 |-----------------------|-----------------------------------------------------------------------------------------------------------------------------|
-| `RequestValidator<T>` | Validates a request and returns `ValidationResult`. Register via `registry.registerValidator(validator)`.                   |
+| `validate { }` DSL    | Validates a request and returns `ValidationResult`. Register via `registry.validate<T> { ... }`.                            |
 | `ValidationResult`    | Sealed class: `Valid` or `Invalid(errors: List<*>)`                                                                         |
 | `ValidationBehavior`  | Pre-built `PipelineBehavior` (order `-50`) that runs registered validators before the handler                               |
 | `ValidationException` | Thrown when validation fails; `errors: List<*>` carries all failure messages (any type: `String`, sealed class, enum, etc.) |

@@ -50,7 +50,7 @@ class HandlerRegistry {
 
     /**
      * Registers [handler] for request type [TRequest], replacing any previously registered handler.
-     * Use the `+handler` DSL operator inside a [scope] block as a shorter alternative.
+     * Use the `+handler` DSL operator as a shorter alternative.
      */
     inline infix fun <reified TRequest : Request<TResult>, TResult> register(
         handler: RequestHandler<TRequest, TResult>,
@@ -61,7 +61,7 @@ class HandlerRegistry {
 
     /**
      * Registers [handler] for stream request type [TRequest], replacing any previously registered handler.
-     * Use the `+handler` DSL operator inside a [scope] block as a shorter alternative.
+     * Use the `+handler` DSL operator as a shorter alternative.
      */
     inline infix fun <reified TRequest : StreamRequest<T>, T> registerStream(
         handler: StreamRequestHandler<TRequest, T>,
@@ -95,19 +95,19 @@ class HandlerRegistry {
 
     // ── DSL operators ─────────────────────────────────────────────────────────
 
-    /** Shorthand for [register]; use inside a [scope] block: `+MyHandler()`. */
+    /** Shorthand for [register]; use `+MyHandler()` directly in a builder block. */
     inline operator fun <reified TRequest : Request<TResult>, TResult> RequestHandler<TRequest, TResult>.unaryPlus() =
         register(this)
 
-    /** Shorthand for [registerStream]; use inside a [scope] block: `+MyStreamHandler()`. */
+    /** Shorthand for [registerStream]; use `+MyStreamHandler()` directly in a builder block. */
     inline operator fun <reified TRequest : StreamRequest<T>, T> StreamRequestHandler<TRequest, T>.unaryPlus() =
         registerStream(this)
 
-    /** Shorthand for [registerNotification]; use inside a [scope] block: `+MyNotificationHandler()`. */
+    /** Shorthand for [registerNotification]; use `+MyNotificationHandler()` directly in a builder block. */
     inline operator fun <reified T : Notification> NotificationHandler<T>.unaryPlus() =
         registerNotification(this)
 
-    /** Shorthand for [registerValidator]; use inside a [scope] block: `+MyValidator()`. */
+    /** Shorthand for [registerValidator]; use `+MyValidator()` directly in a builder block. */
     inline operator fun <reified TRequest : Request<*>> RequestValidator<TRequest>.unaryPlus() =
         registerValidator(this)
 
@@ -152,7 +152,7 @@ class HandlerRegistry {
      * Registers [handler] for [requestClass] without a reified type parameter.
      * Intended for DI frameworks (Koin, Hilt) that resolve handlers at runtime via reflection.
      */
-    fun registerDynamic(requestClass: KClass<*>, handler: RequestHandler<*, *>): HandlerRegistry {
+    internal fun registerDynamic(requestClass: KClass<*>, handler: RequestHandler<*, *>): HandlerRegistry {
         requestHandlers[requestClass] = handler
         return this
     }
@@ -161,7 +161,7 @@ class HandlerRegistry {
      * Registers [handler] for [requestClass] without a reified type parameter.
      * Intended for DI frameworks that resolve stream handlers at runtime via reflection.
      */
-    fun registerStreamDynamic(requestClass: KClass<*>, handler: StreamRequestHandler<*, *>): HandlerRegistry {
+    internal fun registerStreamDynamic(requestClass: KClass<*>, handler: StreamRequestHandler<*, *>): HandlerRegistry {
         streamHandlers[requestClass] = handler
         return this
     }
@@ -170,7 +170,7 @@ class HandlerRegistry {
      * Appends [handler] to the notification handler list for [notificationClass] without a reified type parameter.
      * Intended for DI frameworks that resolve notification handlers at runtime via reflection.
      */
-    fun registerNotificationDynamic(notificationClass: KClass<*>, handler: NotificationHandler<*>): HandlerRegistry {
+    internal fun registerNotificationDynamic(notificationClass: KClass<*>, handler: NotificationHandler<*>): HandlerRegistry {
         notificationHandlers.getOrPut(notificationClass) { mutableListOf() }.add(handler)
         return this
     }

@@ -13,16 +13,16 @@ fun interface FeatureMapper<TRaw, TResult> {
 fun <TRaw, TResult> mapper(block: (TRaw) -> TResult): FeatureMapper<TRaw, TResult> =
     FeatureMapper(block)
 
-fun <TRequest : Any> validator(block: (TRequest) -> ValidationResult): RequestValidator<TRequest> =
+fun <TRequest : Any> requestValidator(block: (TRequest) -> ValidationResult): RequestValidator<TRequest> =
     LambdaRequestValidator(block)
 
-fun <TNotification : Notification> notification(
+fun <TNotification : Notification> notificationHandler(
     order: Int,
     block: (TNotification) -> Unit
 ): NotificationHandler<TNotification> =
     LambdaNotificationHandler(order, block)
 
-fun <TNotification : Notification> notification(block: (TNotification) -> Unit): NotificationHandler<TNotification> =
+fun <TNotification : Notification> notificationHandler(block: (TNotification) -> Unit): NotificationHandler<TNotification> =
     LambdaNotificationHandler(0, block)
 
 @PublishedApi
@@ -35,7 +35,7 @@ class FeatureHandler<TRequest, TRaw>(
     @PublishedApi internal val block: suspend HandlerScope.(TRequest) -> TRaw,
 )
 
-fun <TRequest, TRaw> handler(
+fun <TRequest, TRaw> requestHandler(
     block: suspend HandlerScope.(TRequest) -> TRaw,
 ): FeatureHandler<TRequest, TRaw> = FeatureHandler(block)
 
@@ -64,7 +64,7 @@ class FeatureBuilder<TRequest : Request<TResult>, TResult>
         validators.add(validator)
     }
 
-    fun validate(block: (TRequest) -> ValidationResult) {
+    fun requestValidator(block: (TRequest) -> ValidationResult) {
         validators.add(LambdaRequestValidator(block))
     }
 
@@ -79,22 +79,11 @@ class FeatureBuilder<TRequest : Request<TResult>, TResult>
     fun behavior(
         stage: Stage = Stage.Default,
         order: Int = 0,
+        isEnabled: Boolean = true,
         appliesTo: (Request<*>) -> Boolean = { true },
         block: suspend (requestContext: RequestContext, next: suspend (Request<*>) -> Any?, request: Request<*>) -> Any?,
     ) {
-        pipelineBehaviors.add(LambdaPipelineBehavior(stage, order, appliesTo, block))
-    }
-
-    fun streamBehavior(behavior: StreamPipelineBehavior) {
-        streamPipelineBehaviors.add(behavior)
-    }
-
-    fun streamBehavior(
-        order: Int = 0,
-        appliesTo: (StreamRequest<*>) -> Boolean = { true },
-        block: (requestContext: RequestContext, next: (StreamRequest<*>) -> Flow<*>, request: StreamRequest<*>) -> Flow<*>,
-    ) {
-        streamPipelineBehaviors.add(LambdaStreamPipelineBehavior(order, appliesTo, block))
+        pipelineBehaviors.add(LambdaPipelineBehavior(stage, order, isEnabled, appliesTo, block))
     }
 
     fun <TRaw> handler(featureHandler: FeatureHandler<TRequest, TRaw>) {
@@ -102,7 +91,7 @@ class FeatureBuilder<TRequest : Request<TResult>, TResult>
         this.handler = LambdaRequestHandler(featureHandler.block) as RequestHandler<TRequest, TResult>
     }
 
-    fun <TRaw> handle(block: suspend HandlerScope.(TRequest) -> TRaw) {
+    fun <TRaw> requestHandler(block: suspend HandlerScope.(TRequest) -> TRaw) {
         @Suppress("UNCHECKED_CAST")
         this.handler = LambdaRequestHandler(block) as RequestHandler<TRequest, TResult>
     }
@@ -130,10 +119,6 @@ class Feature<TRequest : Request<TResult>, TResult> @PublishedApi internal const
     @PublishedApi internal val streamBehaviors: List<StreamPipelineBehavior> = emptyList(),
 )
 
-fun registrar(block: HandlerRegistry.() -> Unit): MediatorRegistrar =
-    object : MediatorRegistrar {
-        override fun register(registry: HandlerRegistry) = registry.block()
-    }
 
 inline fun <reified TRequest : Request<TResult>, TResult> feature(
     block: FeatureBuilder<TRequest, TResult>.() -> Unit,
@@ -214,12 +199,13 @@ inline fun <reified TRequest : StreamRequest<T>, T> streamFeature(
 
 @PublishedApi
 internal class LambdaPipelineBehavior(
-    override val stage: Stage,
-    override val order: Int,
+    val stage: Stage,
+    val order: Int,
+    val isEnabled: Boolean,
     private val filter: (Request<*>) -> Boolean,
     private val block: suspend (RequestContext, suspend (Request<*>) -> Any?, Request<*>) -> Any?,
 ) : PipelineBehavior {
-    override fun appliesTo(request: Request<*>) = filter(request)
+    fun appliesTo(request: Request<*>) = filter(request)
 
     @Suppress("UNCHECKED_CAST")
     override suspend fun <TRequest : Request<TResult>, TResult> process(
@@ -235,17 +221,19 @@ internal class LambdaPipelineBehavior(
 fun behavior(
     stage: Stage = Stage.Default,
     order: Int = 0,
+    isEnabled: Boolean = true,
     appliesTo: (Request<*>) -> Boolean = { true },
     block: suspend (requestContext: RequestContext, next: suspend (Request<*>) -> Any?, request: Request<*>) -> Any?,
-): PipelineBehavior = LambdaPipelineBehavior(stage, order, appliesTo, block)
+): PipelineBehavior = LambdaPipelineBehavior(stage, order, isEnabled, appliesTo, block)
 
 @PublishedApi
 internal class LambdaStreamPipelineBehavior(
-    override val order: Int,
+    val order: Int,
+    val isEnabled: Boolean,
     private val filter: (StreamRequest<*>) -> Boolean,
     private val block: (RequestContext, (StreamRequest<*>) -> Flow<*>, StreamRequest<*>) -> Flow<*>,
 ) : StreamPipelineBehavior {
-    override fun appliesTo(request: StreamRequest<*>) = filter(request)
+    fun appliesTo(request: StreamRequest<*>) = filter(request)
 
     @Suppress("UNCHECKED_CAST")
     override fun <TRequest : StreamRequest<T>, T> process(
@@ -260,6 +248,7 @@ internal class LambdaStreamPipelineBehavior(
 
 fun streamBehavior(
     order: Int = 0,
+    isEnabled: Boolean = true,
     appliesTo: (StreamRequest<*>) -> Boolean = { true },
     block: (requestContext: RequestContext, next: (StreamRequest<*>) -> Flow<*>, request: StreamRequest<*>) -> Flow<*>,
-): StreamPipelineBehavior = LambdaStreamPipelineBehavior(order, appliesTo, block)
+): StreamPipelineBehavior = LambdaStreamPipelineBehavior(order, isEnabled, appliesTo, block)

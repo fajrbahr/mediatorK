@@ -1,21 +1,15 @@
 package dsl.meditor.behaviors
 
 import com.fajrbahr.mediatork.api.*
+import com.fajrbahr.mediatork.feature.behavior
 import dsl.meditor.context.locale
 import java.util.*
 
-class LocaleBehavior : PipelineBehavior {
-    override val order = -10
-
-    override val stage: Stage = Stage.Pre
-
-    override suspend fun <TRequest : Request<TResult>, TResult> process(
-        requestContext: RequestContext,
-        next: RequestHandlerDelegate<TRequest, TResult>,
-        request: TRequest,
-    ): TResult {
-        val systemLocale = Locale.getDefault().language
-        requestContext.locale = systemLocale
-        return next(request)
-    }
+val localeBehavior = behavior(
+    stage = Stage.Pre,
+    order = -10
+) { requestContext, next, request ->
+    val systemLocale = Locale.getDefault().language
+    requestContext.locale = systemLocale
+    next(request)
 }

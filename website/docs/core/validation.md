@@ -70,29 +70,36 @@ data class CreateInvoiceCommand(
 
 ## RequestValidator (External)
 
-When a validator needs injected dependencies (a repository, a service), use a separate
-`RequestValidator<TRequest>` class and register it with the `HandlerRegistry`:
+When a validator needs injected dependencies (a repository, a service), use the `validate` DSL and register it with the `HandlerRegistry`:
 
 ```kotlin
-class UniqueEmailValidator(
-    private val userRepo: UserRepository,
-) : RequestValidator<CreateUserCommand> {
-    override fun validate(request: CreateUserCommand) = rules<String> {
+registry.validate<CreateUserCommand> { request ->
+    rules<String> {
         check(!userRepo.existsByEmail(request.email)) { "Email already taken" }
     }
 }
 ```
 
-Register it alongside the handler:
+Register it alongside the handler in your registrar:
 
 ```kotlin
-registry.scope {
-    +CreateUserHandler(userRepo)
-    +UniqueEmailValidator(userRepo)
+class ValidationRegistrar(private val userRepo: UserRepository) : MediatorRegistrar {
+    override fun register(registry: HandlerRegistry) {
+        registry.validate<CreateUserCommand> { request ->
+            rules<String> {
+                check(!userRepo.existsByEmail(request.email)) { "Email already taken" }
+            }
+        }
+        
+        registry.handle<CreateUserCommand, User> { request ->
+            // implementation
+            TODO()
+        }
+    }
 }
 ```
 
-Both inline `validate()` and registered `RequestValidator`s can coexist on the same request type.
+Both inline `validate()` and registered validators can coexist on the same request type.
 Inline validation runs first, then any registered validators.
 
 ---
@@ -145,18 +152,12 @@ You can use Kotlin's built-in `require` and `check` directly inside a handler in
 MediatorK's exception handling.
 
 ```kotlin
-class CreateOrderHandler(private val orders: OrderRepository) : RequestHandler<CreateOrderCommand, OrderId> {
-    override suspend fun handle(
-        mediator: Mediator,
-        requestContext: RequestContext,
-        request: CreateOrderCommand,
-    ): OrderId {
-        require(request.items.isNotEmpty()) { "Order must contain at least one item" }
-        require(request.totalAmount > 0) { "Order total must be positive" }
-        val id = orders.save(request.toOrder())
-        mediator.publish(OrderCreatedNotification(id))
-        return id
-    }
+registry.handle<CreateOrderCommand, OrderId> { request ->
+    require(request.items.isNotEmpty()) { "Order must contain at least one item" }
+    require(request.totalAmount > 0) { "Order total must be positive" }
+    val id = orders.save(request.toOrder())
+    mediator.publish(OrderCreatedNotification(id))
+    id
 }
 ```
 

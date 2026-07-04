@@ -23,7 +23,7 @@ class CachingPipelineBehaviorTest {
     @Test
     fun `returns cached result on second call`() = runTest {
         val cache = CachingPipelineBehavior(ttlMs = 60_000)
-        val m = mediator(pipelineBehaviors = listOf(cache)) { register(countingHandler()) }
+        val m = mediator(pipelineBehaviors = listOf(cache.behavior())) { register(countingHandler()) }
         m.send(PingQuery("x"))
         m.send(PingQuery("x"))
         assertEquals(1, handlerCallCount)
@@ -32,7 +32,7 @@ class CachingPipelineBehaviorTest {
     @Test
     fun `different keys do not share cache entries`() = runTest {
         val cache = CachingPipelineBehavior(ttlMs = 60_000)
-        val m = mediator(pipelineBehaviors = listOf(cache)) { register(countingHandler()) }
+        val m = mediator(pipelineBehaviors = listOf(cache.behavior())) { register(countingHandler()) }
         m.send(PingQuery("a"))
         m.send(PingQuery("b"))
         assertEquals(2, handlerCallCount)
@@ -41,7 +41,7 @@ class CachingPipelineBehaviorTest {
     @Test
     fun `invalidate forces re-execution`() = runTest {
         val cache = CachingPipelineBehavior(ttlMs = 60_000)
-        val m = mediator(pipelineBehaviors = listOf(cache)) { register(countingHandler()) }
+        val m = mediator(pipelineBehaviors = listOf(cache.behavior())) { register(countingHandler()) }
         val req = PingQuery("x")
         m.send(req)
         cache.invalidate(req.toString())
@@ -52,7 +52,7 @@ class CachingPipelineBehaviorTest {
     @Test
     fun `clear forces re-execution for all keys`() = runTest {
         val cache = CachingPipelineBehavior(ttlMs = 60_000)
-        val m = mediator(pipelineBehaviors = listOf(cache)) { register(countingHandler()) }
+        val m = mediator(pipelineBehaviors = listOf(cache.behavior())) { register(countingHandler()) }
         m.send(PingQuery("a"))
         m.send(PingQuery("b"))
         cache.clear()
@@ -64,7 +64,7 @@ class CachingPipelineBehaviorTest {
     @Test
     fun `size reflects number of cached entries`() = runTest {
         val cache = CachingPipelineBehavior(ttlMs = 60_000)
-        val m = mediator(pipelineBehaviors = listOf(cache)) { register(countingHandler()) }
+        val m = mediator(pipelineBehaviors = listOf(cache.behavior())) { register(countingHandler()) }
         m.send(PingQuery("a"))
         m.send(PingQuery("b"))
         assertEquals(2, cache.size())
@@ -83,7 +83,7 @@ class CachingPipelineBehaviorTest {
     @Test
     fun `custom keyFor groups different requests under the same cache key`() = runTest {
         val cache = CachingPipelineBehavior(ttlMs = 60_000, keyFor = { "fixed-key" })
-        val m = mediator(pipelineBehaviors = listOf(cache)) { register(countingHandler()) }
+        val m = mediator(pipelineBehaviors = listOf(cache.behavior())) { register(countingHandler()) }
         m.send(PingQuery("a"))
         m.send(PingQuery("b"))
         assertEquals(1, handlerCallCount)
@@ -98,7 +98,7 @@ class CachingPipelineBehaviorTest {
     @Test
     fun `size decrements after invalidate`() = runTest {
         val cache = CachingPipelineBehavior(ttlMs = 60_000)
-        val m = mediator(pipelineBehaviors = listOf(cache)) { register(countingHandler()) }
+        val m = mediator(pipelineBehaviors = listOf(cache.behavior())) { register(countingHandler()) }
         val req = PingQuery("x")
         m.send(req)
         assertEquals(1, cache.size())
@@ -109,7 +109,7 @@ class CachingPipelineBehaviorTest {
     @Test
     fun `cached result equals original handler result`() = runTest {
         val cache = CachingPipelineBehavior(ttlMs = 60_000)
-        val m = mediator(pipelineBehaviors = listOf(cache)) { register(countingHandler()) }
+        val m = mediator(pipelineBehaviors = listOf(cache.behavior())) { register(countingHandler()) }
         val first = m.send(PingQuery("z"))
         val second = m.send(PingQuery("z"))
         assertEquals(first, second)
@@ -133,7 +133,7 @@ class CachingPipelineBehaviorTest {
     @Test
     fun `result is returned correctly after cache hit`() = runTest {
         val cache = CachingPipelineBehavior(ttlMs = 60_000)
-        val m = mediator(pipelineBehaviors = listOf(cache)) { register(countingHandler()) }
+        val m = mediator(pipelineBehaviors = listOf(cache.behavior())) { register(countingHandler()) }
         assertEquals("pong:hi", m.send(PingQuery("hi")))
         assertEquals("pong:hi", m.send(PingQuery("hi")))
     }

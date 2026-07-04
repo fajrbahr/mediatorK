@@ -1,12 +1,10 @@
 package com.fajrbahr.mediatork.pipeline.buildin
 
 import com.fajrbahr.mediatork.api.PipelineBehavior
-import com.fajrbahr.mediatork.api.Request
-import com.fajrbahr.mediatork.api.RequestContext
-import com.fajrbahr.mediatork.api.RequestHandlerDelegate
+import com.fajrbahr.mediatork.feature.behavior
 
 /**
- * A [PipelineBehavior] that logs each request as it enters and exits the pipeline,
+ * A behavior provider that logs each request as it enters and exits the pipeline,
  * including the result on exit.
  *
  * Accepts any `(String) -> Unit` logger so the same behavior works on every platform:
@@ -16,24 +14,13 @@ import com.fajrbahr.mediatork.api.RequestHandlerDelegate
  * @param logger function that receives each log line.
  * @param order position in the behavior chain. Defaults to `-100` so logging is outermost by default.
  */
-class LoggingPipelineBehavior(
-    val logger: (String) -> Unit = ::println,
-    override val order: Int = DEFAULT_ORDER,
-) : PipelineBehavior {
-
-    private companion object {
-        const val DEFAULT_ORDER = -100
-    }
-
-    override suspend fun <TRequest : Request<TResult>, TResult> process(
-        requestContext: RequestContext,
-        next: RequestHandlerDelegate<TRequest, TResult>,
-        request: TRequest,
-    ): TResult {
-        val name = request::class.simpleName ?: "UnknownRequest"
-        logger("→ $name")
-        val result = next(request)
-        logger("← $name result=$result")
-        return result
-    }
+fun loggingPipelineBehavior(
+    logger: (String) -> Unit = ::println,
+    order: Int = -100,
+): PipelineBehavior = behavior(order = order) { _, next, request ->
+    val name = request::class.simpleName ?: "UnknownRequest"
+    logger("→ $name")
+    val result = next(request)
+    logger("← $name result=$result")
+    result
 }

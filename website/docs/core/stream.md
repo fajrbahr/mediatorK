@@ -13,25 +13,13 @@ or anything better consumed incrementally rather than loaded into a `List` all a
 // 1. Define — implements StreamRequest instead of Request
 data class StreamInvoicesQuery(val status: InvoiceStatus? = null) : StreamRequest<Invoice>
 
-// 2. Handle — returns a cold Flow<T>, not suspend
-class StreamInvoicesHandler(private val repo: InvoiceRepository)
-    : StreamRequestHandler<StreamInvoicesQuery, Invoice> {
-
-    override fun handle(
-        mediator: Mediator,
-        requestContext: RequestContext,
-        request: StreamInvoicesQuery,
-    ): Flow<Invoice> = repo.all().asFlow().let { flow ->
-        if (request.status != null) flow.filter { it.status == request.status } else flow
-    }
-}
-
-// 3. Register — use registerStream(), not the regular register()
+// 2. Handle & Register — use handleStream() DSL
 class InvoiceRegistrar(private val repo: InvoiceRepository) : MediatorRegistrar {
     override fun register(registry: HandlerRegistry) {
-        registry.scope {
-            +CreateInvoiceHandler(repo)
-            registerStream(StreamInvoicesHandler(repo))  // <-- registerStream for stream handlers
+        registry.handleStream<StreamInvoicesQuery, Invoice> { request ->
+            repo.all().asFlow().let { flow ->
+                if (request.status != null) flow.filter { it.status == request.status } else flow
+            }
         }
     }
 }

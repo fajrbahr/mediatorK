@@ -58,11 +58,9 @@ class HandlerRegistryTest {
         }
         registry.register(first)
         registry.register(second)
-        val m = MediatorFactory.create(registrars = listOf(object : MediatorRegistrar {
-            override fun register(r: HandlerRegistry) {
-                r.register(second)
-            }
-        }))
+        val m = MediatorFactory.create(registry = HandlerRegistry().apply {
+            register(second)
+        })
         assertEquals("second", m.send(PingQuery("x")))
     }
 
@@ -105,36 +103,30 @@ class HandlerRegistryTest {
 
     @Test
     fun `unaryPlus registers request handler`() = runTest {
-        val m = MediatorFactory.create(registrars = listOf(object : MediatorRegistrar {
-            override fun register(registry: HandlerRegistry) {
-                with(registry) { +PingHandler() }
-            }
-        }))
+        val m = MediatorFactory.create(registry = HandlerRegistry().apply {
+            with(this) { +PingHandler() }
+        })
         assertEquals("pong:y", m.send(PingQuery("y")))
     }
 
     @Test
     fun `unaryPlus registers notification handler`() = runTest {
         val h = RecordingNotificationHandler()
-        val m = MediatorFactory.create(registrars = listOf(object : MediatorRegistrar {
-            override fun register(registry: HandlerRegistry) {
-                with(registry) { +h }
-            }
-        }))
+        val m = MediatorFactory.create(registry = HandlerRegistry().apply {
+            with(this) { +h }
+        })
         m.publish(PingNotification("hello"))
         assertEquals(listOf("hello"), h.received)
     }
 
     @Test
     fun `scope block groups registrations`() = runTest {
-        val m = MediatorFactory.create(registrars = listOf(object : MediatorRegistrar {
-            override fun register(registry: HandlerRegistry) {
-                registry.scope {
-                    register(PingHandler())
-                    register(AddHandler())
-                }
+        val m = MediatorFactory.create(registry = HandlerRegistry().apply {
+            scope {
+                register(PingHandler())
+                register(AddHandler())
             }
-        }))
+        })
         assertEquals("pong:z", m.send(PingQuery("z")))
         assertEquals(5, m.send(AddCommand(2, 3)))
     }

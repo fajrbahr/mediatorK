@@ -17,7 +17,7 @@ nmcpAggregation {
 // Guards the public API of the published modules: any signature change fails CI
 // until it is made explicit by re-running `./gradlew apiDump`.
 apiValidation {
-    ignoredProjects += listOf("publishMaven", "full-sample", "dsl-sample")
+    ignoredProjects += listOf("publishMaven", "dsl-sample")
 }
 
 detekt {

@@ -57,75 +57,26 @@ val mediator = mediatorK {
 val order = mediator.send(CreateOrderCommand("ORD-1", 150.0))
 ```
 
-As slices grow, promote lambdas to classes — both styles mix freely in the same block.
-
-## Structured style
-
-### 1 — Define a Request
+As your project grows, you can structure your DSL registrations using `mediatorRegistrar` blocks to group handlers by feature or domain:
 
 ```kotlin
-data class CreateOrderCommand(val id: String, val amount: Double) : Request<Order>
-```
-
-### 2 — Implement a Handler
-
-```kotlin
-class CreateOrderHandler(private val db: OrderRepository) : RequestHandler<CreateOrderCommand, Order> {
-    override suspend fun handle(
-        mediator: Mediator,
-        requestContext: RequestContext,
-        request: CreateOrderCommand,
-    ): Order {
+val orderRegistrar = mediatorRegistrar {
+    handle<CreateOrderCommand, Order> { request ->
         val order = Order(request.id, request.amount)
         db.save(order)
-        mediator.publish(OrderCreatedEvent(order.id))
-        return order
+        publish(OrderCreatedEvent(order.id))
+        order
+    }
+
+    on<OrderCreatedEvent> { event ->
+        emailService.send(event.orderId)
     }
 }
-```
 
-### 3 — Define a Notification
-
-```kotlin
-data class OrderCreatedEvent(val orderId: String) : Notification
-```
-
-### 4 — Implement Notification Handlers
-
-```kotlin
-class SendConfirmationEmailHandler : NotificationHandler<OrderCreatedEvent> {
-    override suspend fun handle(notification: OrderCreatedEvent) {
-        emailService.send(notification.orderId)
-    }
+val mediator = mediatorK { 
+    registrar(orderRegistrar) 
 }
-```
 
-### 5 — Register Handlers
-
-```kotlin
-class OrderRegistrar(private val db: OrderRepository) : MediatorRegistrar {
-    override fun register(registry: HandlerRegistry) {
-        registry.scope {
-            +CreateOrderHandler(db)
-            +SendConfirmationEmailHandler()
-        }
-    }
-}
-```
-
-### 6 — Create the Mediator
-
-```kotlin
-val mediator = MediatorFactory.create(
-    registrars = listOf(OrderRegistrar(db)),
-)
-// — or plug registrars into the DSL alongside lambda handlers:
-val mediator = mediatorK { registrars(OrderRegistrar(db)) }
-```
-
-### 7 — Use It
-
-```kotlin
 val order = mediator.send(CreateOrderCommand("ORD-1", 150.0))
 ```
 

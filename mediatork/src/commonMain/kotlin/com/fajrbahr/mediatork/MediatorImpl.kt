@@ -24,7 +24,7 @@ import kotlinx.coroutines.flow.Flow
  * within one isolated request lifecycle.
  */
 internal class MediatorImpl(
-    private val registry: HandlerRegistry,
+    override val registry: HandlerRegistry,
     private val pipelineBehaviors: List<PipelineBehavior>,
     private val streamPipelineBehaviors: List<StreamPipelineBehavior>,
     private val notificationPublisher: NotificationPublishStrategy,

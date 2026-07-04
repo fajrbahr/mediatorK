@@ -6,7 +6,7 @@ import com.fajrbahr.mediatork.api.Mediator
 import com.fajrbahr.mediatork.api.Request
 import com.fajrbahr.mediatork.api.RequestContext
 import com.fajrbahr.mediatork.api.RequestHandler
-import com.fajrbahr.mediatork.pipeline.buildin.ErrorTrackingPipelineBehavior
+import com.fajrbahr.mediatork.pipeline.buildin.errorTrackingPipelineBehavior
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -19,7 +19,7 @@ class ErrorTrackingPipelineBehaviorTest {
     @Test
     fun `callback not called on success`() = runTest {
         var captured: Throwable? = null
-        val tracker = ErrorTrackingPipelineBehavior { req, e -> captured = e }
+        val tracker = errorTrackingPipelineBehavior { req, e -> captured = e }
         val m = mediator(pipelineBehaviors = listOf(tracker)) { register(PingHandler()) }
         m.send(PingQuery("x"))
         assertNull(captured)
@@ -29,7 +29,7 @@ class ErrorTrackingPipelineBehaviorTest {
     fun `callback called with correct request and exception`() = runTest {
         var capturedRequest: Request<*>? = null
         var capturedError: Throwable? = null
-        val tracker = ErrorTrackingPipelineBehavior { req, e -> capturedRequest = req; capturedError = e }
+        val tracker = errorTrackingPipelineBehavior { req, e -> capturedRequest = req; capturedError = e }
         val handler = object : RequestHandler<PingQuery, String> {
             override suspend fun handle(
                 mediator: Mediator,
@@ -46,7 +46,7 @@ class ErrorTrackingPipelineBehaviorTest {
 
     @Test
     fun `exception is rethrown after callback`() = runTest {
-        val tracker = ErrorTrackingPipelineBehavior { _, _ -> /* no-op */ }
+        val tracker = errorTrackingPipelineBehavior { _, _ -> /* no-op */ }
         val handler = object : RequestHandler<PingQuery, String> {
             override suspend fun handle(
                 mediator: Mediator,
@@ -61,12 +61,12 @@ class ErrorTrackingPipelineBehaviorTest {
 
     @Test
     fun `default order is Int_MAX_VALUE`() {
-        assertEquals(Int.MAX_VALUE, ErrorTrackingPipelineBehavior { _, _ -> }.order)
+        assertEquals(Int.MAX_VALUE, errorTrackingPipelineBehavior { _, _ -> }.order)
     }
 
     @Test
     fun `result is returned unchanged on success`() = runTest {
-        val tracker = ErrorTrackingPipelineBehavior { _, _ -> }
+        val tracker = errorTrackingPipelineBehavior { _, _ -> }
         val m = mediator(pipelineBehaviors = listOf(tracker)) { register(PingHandler()) }
         assertEquals("pong:hello", m.send(PingQuery("hello")))
     }
@@ -74,7 +74,7 @@ class ErrorTrackingPipelineBehaviorTest {
     @Test
     fun `callback not called for multiple successful requests`() = runTest {
         var callCount = 0
-        val tracker = ErrorTrackingPipelineBehavior { _, _ -> callCount++ }
+        val tracker = errorTrackingPipelineBehavior { _, _ -> callCount++ }
         val m = mediator(pipelineBehaviors = listOf(tracker)) { register(PingHandler()) }
         repeat(3) { m.send(PingQuery("x")) }
         assertEquals(0, callCount)
@@ -83,7 +83,7 @@ class ErrorTrackingPipelineBehaviorTest {
     @Test
     fun `callback receives the correct exception type`() = runTest {
         var captured: Throwable? = null
-        val tracker = ErrorTrackingPipelineBehavior { _, e -> captured = e }
+        val tracker = errorTrackingPipelineBehavior { _, e -> captured = e }
         val m = mediator(pipelineBehaviors = listOf(tracker)) {
             register(object : RequestHandler<PingQuery, String> {
                 override suspend fun handle(
@@ -102,7 +102,7 @@ class ErrorTrackingPipelineBehaviorTest {
     @Test
     fun `only failing requests trigger callback when mixed with successful ones`() = runTest {
         val capturedRequests: MutableList<Request<*>> = mutableListOf()
-        val tracker = ErrorTrackingPipelineBehavior { req, _ -> capturedRequests += req }
+        val tracker = errorTrackingPipelineBehavior { req, _ -> capturedRequests += req }
         val failOnB = object : RequestHandler<PingQuery, String> {
             override suspend fun handle(
                 mediator: Mediator,
@@ -121,7 +121,7 @@ class ErrorTrackingPipelineBehaviorTest {
     @Test
     fun `callback receives AddCommand when AddHandler throws`() = runTest {
         var capturedRequest: Request<*>? = null
-        val tracker = ErrorTrackingPipelineBehavior { req, _ -> capturedRequest = req }
+        val tracker = errorTrackingPipelineBehavior { req, _ -> capturedRequest = req }
         val m = mediator(pipelineBehaviors = listOf(tracker)) {
             register(object : RequestHandler<AddCommand, Int> {
                 override suspend fun handle(

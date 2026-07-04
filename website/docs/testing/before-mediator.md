@@ -30,8 +30,7 @@ val vm = InitialViewModel(DummyMediator())   // never calls send
 val vm = InitialViewModel(FakeMediator())    // register handlers as needed
 ```
 
-The use-cases, metrics reporters, toggle observers, and performance trackers all move into individual
-`RequestHandler` implementations. Each handler is tested in isolation. The ViewModel test only verifies how the
+The use-cases, metrics reporters, toggle observers, and performance trackers all move into individual DSL handlers in a `MediatorRegistrar`. Each handler is tested in isolation. The ViewModel test only verifies how the
 ViewModel reacts to success or failure; it never needs to know which use-cases exist.
 
 ---

@@ -88,7 +88,7 @@ class HandlerTestHarness(private val mediator: Mediator) {
  *
  * ```kotlin
  * val harness = buildHandlerTestHarness(
- *     pipelineBehaviors = listOf(ValidationBehavior(listOf(CreateOrderValidator()))),
+ *     pipelineBehaviors = listOf(validationBehavior(mapOf(CreateOrderCommand::class to listOf(CreateOrderValidator())))),
  * ) {
  *     +CreateOrderHandler(orderRepo)
  *     +GetOrderHandler(orderRepo)
@@ -99,28 +99,8 @@ class HandlerTestHarness(private val mediator: Mediator) {
  *   Use [com.fajrbahr.mediatork.api.Stage.Pre] / [com.fajrbahr.mediatork.api.Stage.Post] to control phase ordering.
  * @param streamPipelineBehaviors cross-cutting behaviors wrapping stream handlers.
  * @param notificationPublisher strategy for delivering notifications; defaults to parallel.
- * @param registrars additional [com.fajrbahr.mediatork.api.MediatorRegistrar]s that contribute handlers.
  * @param init DSL block for registering handlers directly on the [HandlerRegistry].
  */
-fun buildHandlerTestHarness(
-    pipelineBehaviors: List<PipelineBehavior> = emptyList(),
-    streamPipelineBehaviors: List<StreamPipelineBehavior> = emptyList(),
-    notificationPublisher: NotificationPublishStrategy = ParallelNotificationPublisher(),
-    registrars: List<MediatorRegistrar> = emptyList(),
-    init: HandlerRegistry.() -> Unit = {},
-): HandlerTestHarness {
-    val allRegistrars = registrars + object : MediatorRegistrar {
-        override fun register(registry: HandlerRegistry) = registry.init()
-    }
-    val mediator = MediatorFactory.create(
-        registrars = allRegistrars,
-        pipelineBehaviors = pipelineBehaviors,
-        streamPipelineBehaviors = streamPipelineBehaviors,
-        notificationPublisher = notificationPublisher,
-    )
-    return HandlerTestHarness(mediator)
-}
-
 /**
  * Builds a [HandlerTestHarness] using the full [mediatorK] builder DSL.
  *
@@ -130,7 +110,6 @@ fun buildHandlerTestHarness(
  *
  * ```kotlin
  * val harness = buildHandlerTestHarness {
- *     registrars(ProductRegistrar(testRepo, testPush, testInApp))
  *     behaviors(LoggingPipelineBehavior(), MeasurePipelineBehaviour())
  *     +watchPriceFeature(testRepo)
  * }

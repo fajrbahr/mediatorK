@@ -31,41 +31,32 @@ cleaner declaration.
 
 ---
 
-## Implementing a handler
+## Implementing & Registering a handler
 
-```kotlin
-class GetUserHandler(private val db: UserRepository) : RequestHandler<GetUserQuery, User> {
-    override suspend fun handle(
-        mediator: Mediator,
-        requestContext: RequestContext,
-        request: GetUserQuery,
-    ): User = db.findById(request.id) ?: error("User ${request.id} not found")
-}
-```
-
-The `mediator` parameter lets a handler dispatch secondary requests or publish notifications without creating direct
-dependencies on other handlers.
-
----
-
-## Registering a handler
-
-Use `HandlerRegistry` inside a `MediatorRegistrar`:
+Use the `handle` DSL inside a `MediatorRegistrar` to map a request to its implementation:
 
 ```kotlin
 class AppRegistrar(
     private val db: UserRepository,
 ) : MediatorRegistrar {
     override fun register(registry: HandlerRegistry) {
-        registry register GetUserHandler(db)
-        registry register CreateOrderHandler(db)
-        registry register DeleteAccountHandler(db)
+        registry.handle<GetUserQuery, User> { request ->
+            db.findById(request.id) ?: error("User ${request.id} not found")
+        }
+        
+        registry.handle<CreateOrderCommand, Order> { request ->
+            // implementation
+            TODO()
+        }
+        
+        registry.handle<DeleteAccountCommand, Unit> { request ->
+            // implementation
+        }
     }
 }
 ```
 
-The `registry register handler` infix call is the standard way to register a handler. The `+handler` operator inside a
-`scope { }` block is a shorthand alias for the same thing.
+The DSL block provides access to the request, and you can access `mediator` and `requestContext` if needed via the block's receiver.
 
 ---
 
