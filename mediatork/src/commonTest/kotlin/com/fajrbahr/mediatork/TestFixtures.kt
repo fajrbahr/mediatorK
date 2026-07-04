@@ -14,7 +14,7 @@ data class EchoQuery(val text: String) : Request<String>
 data class PingNotification(val message: String) : Notification
 data class AlertNotification(val level: Int) : Notification
 
-// ── Handlers ────────────────────────────────────────────────────────────
+// ── Handlers (Class-based, for backward compatibility) ──────────────────────
 
 class PingHandler : RequestHandler<PingQuery, String> {
     override suspend fun handle(mediator: Mediator, requestContext: RequestContext, request: PingQuery): String =
@@ -46,6 +46,14 @@ class AlertNotificationHandler : NotificationHandler<AlertNotification> {
         levels += notification.level
     }
 }
+
+// ── DSL-based handler functions (alternative to class-based handlers) ────────
+
+fun pingHandlerDsl(): RequestHandler<PingQuery, String> =
+    com.fajrbahr.mediatork.handler.handler { request -> "pong:${request.value}" }
+
+fun addHandlerDsl(): RequestHandler<AddCommand, Int> =
+    com.fajrbahr.mediatork.handler.handler { request -> request.a + request.b }
 
 // ── Builder helper ────────────────────────────────────────────────────────────
 

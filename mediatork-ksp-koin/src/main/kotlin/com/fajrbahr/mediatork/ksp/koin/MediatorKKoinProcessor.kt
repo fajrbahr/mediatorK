@@ -179,7 +179,7 @@ class MediatorKKoinProcessor(
                 }
                 appendLine(") : MediatorRegistrar {")
                 appendLine("    override fun register(registry: HandlerRegistry) {")
-                appendLine("        registry.scope {")
+                appendLine("        registry.apply {")
                 allHandlers.forEach { handler ->
                     val prop = handler.simpleName.asString().replaceFirstChar { it.lowercaseChar() }
                     appendLine("            +$prop")

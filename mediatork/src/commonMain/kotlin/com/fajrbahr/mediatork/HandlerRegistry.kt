@@ -45,9 +45,6 @@ class HandlerRegistry {
 
     // ── Registration ──────────────────────────────────────────────────────────
 
-    /** Opens a scoped registration block; equivalent to calling methods directly but allows `+handler` DSL inside. */
-    fun scope(block: HandlerRegistry.() -> Unit) = block()
-
     /**
      * Registers [handler] for request type [TRequest], replacing any previously registered handler.
      * Use the `+handler` DSL operator as a shorter alternative.
@@ -93,25 +90,9 @@ class HandlerRegistry {
         return this
     }
 
-    // ── DSL operators ─────────────────────────────────────────────────────────
+    // ── Feature registration ──────────────────────────────────────────────────
 
-    /** Shorthand for [register]; use `+MyHandler()` directly in a builder block. */
-    inline operator fun <reified TRequest : Request<TResult>, TResult> RequestHandler<TRequest, TResult>.unaryPlus() =
-        register(this)
-
-    /** Shorthand for [registerStream]; use `+MyStreamHandler()` directly in a builder block. */
-    inline operator fun <reified TRequest : StreamRequest<T>, T> StreamRequestHandler<TRequest, T>.unaryPlus() =
-        registerStream(this)
-
-    /** Shorthand for [registerNotification]; use `+MyNotificationHandler()` directly in a builder block. */
-    inline operator fun <reified T : Notification> NotificationHandler<T>.unaryPlus() =
-        registerNotification(this)
-
-    /** Shorthand for [registerValidator]; use `+MyValidator()` directly in a builder block. */
-    inline operator fun <reified TRequest : Request<*>> RequestValidator<TRequest>.unaryPlus() =
-        registerValidator(this)
-
-    /** Registers a [Feature]'s handler, validators, notification handlers, and behaviors in one step: `+myFeature`. */
+    /** Registers a [Feature]'s handler, validators, notification handlers, and behaviors in one step. */
     inline fun <reified TRequest : Request<TResult>, TResult> registerFeature(
         feature: Feature<TRequest, TResult>,
     ): HandlerRegistry {
@@ -126,11 +107,7 @@ class HandlerRegistry {
         return this
     }
 
-    /** Shorthand for [registerFeature]; use inside a [scope] block: `+myFeature`. */
-    inline operator fun <reified TRequest : Request<TResult>, TResult> Feature<TRequest, TResult>.unaryPlus() =
-        registerFeature(this)
-
-    /** Registers a [StreamFeature]'s stream handler and notification handlers in one step: `+myStreamFeature`. */
+    /** Registers a [StreamFeature]'s stream handler and notification handlers in one step. */
     inline fun <reified TRequest : StreamRequest<T>, T> registerStreamFeature(
         feature: StreamFeature<TRequest, T>,
     ): HandlerRegistry {
@@ -141,10 +118,6 @@ class HandlerRegistry {
         }
         return this
     }
-
-    /** Shorthand for [registerStreamFeature]; use inside a [scope] block: `+myStreamFeature`. */
-    inline operator fun <reified TRequest : StreamRequest<T>, T> StreamFeature<TRequest, T>.unaryPlus() =
-        registerStreamFeature(this)
 
     // ── Dynamic registration (for DI frameworks) ──────────────────────────────
 

@@ -5,7 +5,7 @@ import com.fajrbahr.mediatork.api.MediatorRegistrar
 
 class DepartmentRegistrar(private val store: DepartmentStore) : MediatorRegistrar {
     override fun register(registry: HandlerRegistry) {
-        registry.scope {
+        registry.apply {
             +getDepartments(store)
             +getDepartment(store)
             +createDepartment(store)

@@ -1,5 +1,6 @@
 package com.fajrbahr.mediatork.test
 
+import com.fajrbahr.mediatork.HandlerRegistry
 import com.fajrbahr.mediatork.api.Mediator
 import com.fajrbahr.mediatork.api.Notification
 import com.fajrbahr.mediatork.api.Request
@@ -19,6 +20,8 @@ import kotlinx.coroutines.flow.emptyFlow
  * ```
  */
 class DummyMediator : Mediator {
+    override val registry: HandlerRegistry = HandlerRegistry()
+
     @Suppress("UNCHECKED_CAST")
     override suspend fun <TRequest : Request<TResult>, TResult> send(request: TRequest): TResult =
         Unit as TResult

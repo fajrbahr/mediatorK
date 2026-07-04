@@ -20,13 +20,13 @@ class TodoStore {
 
 // ── Registrar ─────────────────────────────────────────────────────────────────
 
-class TodoRegistrar(private val store: TodoStore) : MediatorRegistrar {
+fun todoRegistrar(store: TodoStore): MediatorRegistrar = object : MediatorRegistrar {
     override fun register(registry: HandlerRegistry) {
-        registry.scope {
-            +AddTodoHandler(store)
-            +GetTodoHandler(store)
-            +LogTodoAddedHandler()
-            +SyncTodoAddedHandler()
+        registry.apply {
+            +addTodoHandler(store)
+            +getTodoHandler(store)
+            +logTodoAddedHandler
+            +syncTodoAddedHandler
         }
     }
 }

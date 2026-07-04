@@ -5,7 +5,7 @@ import com.fajrbahr.mediatork.api.MediatorRegistrar
 
 class StudentRegistrar(private val store: StudentStore) : MediatorRegistrar {
     override fun register(registry: HandlerRegistry) {
-        registry.scope {
+        registry.apply {
             +getStudents(store)
             +getStudent(store)
             +getStudentEnrollments(store)

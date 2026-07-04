@@ -9,7 +9,7 @@ class InstructorRegistrar(
     private val departmentStore: DepartmentStore,
 ) : MediatorRegistrar {
     override fun register(registry: HandlerRegistry) {
-        registry.scope {
+        registry.apply {
             +getInstructors(store)
             +getInstructor(store)
             +createEditInstructor(store, departmentStore)

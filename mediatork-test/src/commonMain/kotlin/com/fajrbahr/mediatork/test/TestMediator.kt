@@ -37,27 +37,27 @@ class TestMediator(
     init: HandlerRegistry.() -> Unit = {},
 ) : Mediator {
 
-    val overrideRegistry = HandlerRegistry().apply(init)
+    override val registry: HandlerRegistry = HandlerRegistry().apply(init)
 
-    private val overrideMediator: Mediator = MediatorFactory.create(registry = overrideRegistry)
+    private val overrideMediator: Mediator = MediatorFactory.create(registry = registry)
 
     override suspend fun <TRequest : Request<TResult>, TResult> send(request: TRequest): TResult =
-        if (overrideRegistry.hasHandler(request::class)) overrideMediator.send(request)
+        if (registry.hasHandler(request::class)) overrideMediator.send(request)
         else base.send(request)
 
     override fun <TRequest : StreamRequest<T>, T> stream(request: TRequest): Flow<T> =
-        if (overrideRegistry.hasStreamHandler(request::class)) overrideMediator.stream(request)
+        if (registry.hasStreamHandler(request::class)) overrideMediator.stream(request)
         else base.stream(request)
 
     override suspend fun <T : Notification> publish(notification: T) {
-        if (overrideRegistry.hasNotificationHandler(notification::class))
+        if (registry.hasNotificationHandler(notification::class))
             overrideMediator.publish(notification)
         else
             base.publish(notification)
     }
 
     override suspend fun <T : Notification> publish(notification: T, publisher: NotificationPublishStrategy) {
-        if (overrideRegistry.hasNotificationHandler(notification::class))
+        if (registry.hasNotificationHandler(notification::class))
             overrideMediator.publish(notification, publisher)
         else
             base.publish(notification, publisher)
