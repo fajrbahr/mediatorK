@@ -140,3 +140,23 @@ fun buildHandlerTestHarness(
 fun buildHandlerTestHarness(
     block: MediatorBuilder.() -> Unit,
 ): HandlerTestHarness = HandlerTestHarness(mediatorK(block))
+
+/**
+ * Builds a [HandlerTestHarness] backed by an existing production [Mediator],
+ * overriding only the handlers or notifications specified in [overrides].
+ *
+ * Non-overridden requests flow through the full production pipeline unchanged.
+ *
+ * ```kotlin
+ * val harness = buildHandlerTestHarness(base = productionMediator) {
+ *     handle<GetPriceQuery, FormattedPrice> { FormattedPrice("$0.00") }
+ *     on<OrderCreatedNotification> { captured += it }
+ * }
+ * harness.send(GetPriceQuery("PROD-1"))  // → override
+ * harness.send(GetOrderQuery("ORD-1"))   // → production
+ * ```
+ */
+fun buildHandlerTestHarness(
+    base: Mediator,
+    overrides: HandlerRegistry.() -> Unit = {},
+): HandlerTestHarness = HandlerTestHarness(base.forTesting(overrides))
