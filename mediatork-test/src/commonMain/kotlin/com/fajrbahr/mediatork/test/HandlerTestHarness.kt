@@ -1,8 +1,10 @@
 package com.fajrbahr.mediatork.test
 
 import com.fajrbahr.mediatork.HandlerRegistry
+import com.fajrbahr.mediatork.MediatorBuilder
 import com.fajrbahr.mediatork.MediatorFactory
 import com.fajrbahr.mediatork.api.*
+import com.fajrbahr.mediatork.mediatorK
 import com.fajrbahr.mediatork.notification.NotificationPublishStrategy
 import com.fajrbahr.mediatork.notification.ParallelNotificationPublisher
 import kotlinx.coroutines.flow.Flow
@@ -95,12 +97,14 @@ class HandlerTestHarness(private val mediator: Mediator) {
  *
  * @param pipelineBehaviors cross-cutting behaviors to include in the pipeline.
  *   Use [com.fajrbahr.mediatork.api.Stage.Pre] / [com.fajrbahr.mediatork.api.Stage.Post] to control phase ordering.
+ * @param streamPipelineBehaviors cross-cutting behaviors wrapping stream handlers.
  * @param notificationPublisher strategy for delivering notifications; defaults to parallel.
  * @param registrars additional [com.fajrbahr.mediatork.api.MediatorRegistrar]s that contribute handlers.
  * @param init DSL block for registering handlers directly on the [HandlerRegistry].
  */
 fun buildHandlerTestHarness(
     pipelineBehaviors: List<PipelineBehavior> = emptyList(),
+    streamPipelineBehaviors: List<StreamPipelineBehavior> = emptyList(),
     notificationPublisher: NotificationPublishStrategy = ParallelNotificationPublisher(),
     registrars: List<MediatorRegistrar> = emptyList(),
     init: HandlerRegistry.() -> Unit = {},
@@ -111,7 +115,28 @@ fun buildHandlerTestHarness(
     val mediator = MediatorFactory.create(
         registrars = allRegistrars,
         pipelineBehaviors = pipelineBehaviors,
+        streamPipelineBehaviors = streamPipelineBehaviors,
         notificationPublisher = notificationPublisher,
     )
     return HandlerTestHarness(mediator)
 }
+
+/**
+ * Builds a [HandlerTestHarness] using the full [mediatorK] builder DSL.
+ *
+ * This gives the test the same pipeline as production — registrars, behaviors,
+ * notification publishers, and features with bundled validators/behaviors — just
+ * swap in test dependencies:
+ *
+ * ```kotlin
+ * val harness = buildHandlerTestHarness {
+ *     registrars(ProductRegistrar(testRepo, testPush, testInApp))
+ *     behaviors(LoggingPipelineBehavior(), MeasurePipelineBehaviour())
+ *     +watchPriceFeature(testRepo)
+ * }
+ * harness.send(GetPriceQuery(productId = "PROD-1"))
+ * ```
+ */
+fun buildHandlerTestHarness(
+    block: MediatorBuilder.() -> Unit,
+): HandlerTestHarness = HandlerTestHarness(mediatorK(block))

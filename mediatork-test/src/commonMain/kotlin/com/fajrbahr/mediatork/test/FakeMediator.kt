@@ -30,6 +30,7 @@ import kotlinx.coroutines.flow.Flow
 class FakeMediator(
     registrars: List<MediatorRegistrar> = emptyList(),
     pipelineBehaviors: List<PipelineBehavior> = emptyList(),
+    streamPipelineBehaviors: List<StreamPipelineBehavior> = emptyList(),
     notificationPublisher: NotificationPublishStrategy = ParallelNotificationPublisher(),
     init: HandlerRegistry.() -> Unit = {},
 ) : Mediator {
@@ -42,6 +43,7 @@ class FakeMediator(
     private val mediator = MediatorFactory.create(
         registry = registry,
         pipelineBehaviors = pipelineBehaviors,
+        streamPipelineBehaviors = streamPipelineBehaviors,
         notificationPublisher = notificationPublisher,
     )
 
