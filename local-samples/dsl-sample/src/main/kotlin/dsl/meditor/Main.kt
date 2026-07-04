@@ -7,14 +7,14 @@ import com.fajrbahr.mediatork.pipeline.buildin.LoggingPipelineBehavior
 import dsl.meditor.behaviors.LocaleBehavior
 import dsl.meditor.behaviors.MeasurePipelineBehaviour
 import dsl.meditor.products.GetPriceQuery
-import dsl.meditor.products.getPriceFeature
+import dsl.meditor.products.ProductRegistrar
 import kotlinx.coroutines.runBlocking
 
 
 private val mediator = mediatorK {
 
-    // ── Mapped Feature DSL — handler with result mapping via mapper() ───────
-    +getPriceFeature(repo, pushService, inAppService)
+    // ── Register all product features via registrar ─────────────────────────
+    registrars(ProductRegistrar(repo, pushService, inAppService))
 
     // ── Pipeline behaviors ──────────────────────────────────────────────────
     behaviors(
