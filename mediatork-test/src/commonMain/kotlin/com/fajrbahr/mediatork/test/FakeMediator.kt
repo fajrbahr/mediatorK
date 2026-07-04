@@ -3,6 +3,8 @@ package com.fajrbahr.mediatork.test
 import com.fajrbahr.mediatork.HandlerRegistry
 import com.fajrbahr.mediatork.MediatorFactory
 import com.fajrbahr.mediatork.api.*
+import com.fajrbahr.mediatork.feature.Feature
+import com.fajrbahr.mediatork.feature.StreamFeature
 import com.fajrbahr.mediatork.notification.NotificationPublishStrategy
 import com.fajrbahr.mediatork.notification.ParallelNotificationPublisher
 import kotlinx.coroutines.flow.Flow
@@ -50,6 +52,14 @@ class FakeMediator(
     inline fun <reified TRequest : StreamRequest<T>, T> registerStream(
         handler: StreamRequestHandler<TRequest, T>,
     ) = registry.registerStream(handler)
+
+    inline fun <reified TRequest : Request<TResult>, TResult> register(
+        feature: Feature<TRequest, TResult>,
+    ) = registry.registerFeature(feature)
+
+    inline fun <reified TRequest : StreamRequest<T>, T> register(
+        feature: StreamFeature<TRequest, T>,
+    ) = registry.registerStreamFeature(feature)
 
     override suspend fun <TRequest : Request<TResult>, TResult> send(request: TRequest): TResult =
         mediator.send(request)

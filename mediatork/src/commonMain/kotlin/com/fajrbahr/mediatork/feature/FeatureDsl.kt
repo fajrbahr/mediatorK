@@ -39,6 +39,8 @@ fun <TRequest, TRaw> handler(
     block: suspend HandlerScope.(TRequest) -> TRaw,
 ): FeatureHandler<TRequest, TRaw> = FeatureHandler(block)
 
+// ── Feature Builder ──────────────────────────────────────────────────────────
+
 @MediatorKDsl
 class FeatureBuilder<TRequest : Request<TResult>, TResult>
 @PublishedApi internal constructor() {
@@ -47,21 +49,52 @@ class FeatureBuilder<TRequest : Request<TResult>, TResult>
     internal var handler: RequestHandler<TRequest, TResult>? = null
 
     @PublishedApi
-    internal var validatorInstance: RequestValidator<TRequest>? = null
+    internal val validators: MutableList<RequestValidator<TRequest>> = mutableListOf()
 
     @PublishedApi
     internal val notificationRegistrations: MutableList<NotificationRegistration<*>> = mutableListOf()
 
+    @PublishedApi
+    internal val pipelineBehaviors: MutableList<PipelineBehavior> = mutableListOf()
+
+    @PublishedApi
+    internal val streamPipelineBehaviors: MutableList<StreamPipelineBehavior> = mutableListOf()
+
     fun validate(validator: RequestValidator<TRequest>) {
-        this.validatorInstance = validator
+        validators.add(validator)
     }
 
     fun validate(block: (TRequest) -> ValidationResult) {
-        this.validatorInstance = LambdaRequestValidator(block)
+        validators.add(LambdaRequestValidator(block))
     }
 
     inline fun <reified TNotification : Notification> notification(handler: NotificationHandler<TNotification>) {
         notificationRegistrations.add(NotificationRegistration(TNotification::class, handler))
+    }
+
+    fun behavior(behavior: PipelineBehavior) {
+        pipelineBehaviors.add(behavior)
+    }
+
+    fun behavior(
+        stage: Stage = Stage.Default,
+        order: Int = 0,
+        appliesTo: (Request<*>) -> Boolean = { true },
+        block: suspend (requestContext: RequestContext, next: suspend (Request<*>) -> Any?, request: Request<*>) -> Any?,
+    ) {
+        pipelineBehaviors.add(LambdaPipelineBehavior(stage, order, appliesTo, block))
+    }
+
+    fun streamBehavior(behavior: StreamPipelineBehavior) {
+        streamPipelineBehaviors.add(behavior)
+    }
+
+    fun streamBehavior(
+        order: Int = 0,
+        appliesTo: (StreamRequest<*>) -> Boolean = { true },
+        block: (requestContext: RequestContext, next: (StreamRequest<*>) -> Flow<*>, request: StreamRequest<*>) -> Flow<*>,
+    ) {
+        streamPipelineBehaviors.add(LambdaStreamPipelineBehavior(order, appliesTo, block))
     }
 
     fun <TRaw> handler(featureHandler: FeatureHandler<TRequest, TRaw>) {
@@ -91,8 +124,10 @@ internal class MappingRequestHandler<TRequest : Request<TResult>, TRaw, TResult>
 
 class Feature<TRequest : Request<TResult>, TResult> @PublishedApi internal constructor(
     @PublishedApi internal val handler: RequestHandler<TRequest, TResult>,
-    @PublishedApi internal val validator: RequestValidator<TRequest>?,
+    @PublishedApi internal val validators: List<RequestValidator<TRequest>> = emptyList(),
     @PublishedApi internal val notifications: List<NotificationRegistration<*>> = emptyList(),
+    @PublishedApi internal val behaviors: List<PipelineBehavior> = emptyList(),
+    @PublishedApi internal val streamBehaviors: List<StreamPipelineBehavior> = emptyList(),
 )
 
 fun registrar(block: HandlerRegistry.() -> Unit): MediatorRegistrar =
@@ -106,8 +141,10 @@ inline fun <reified TRequest : Request<TResult>, TResult> feature(
     val builder = FeatureBuilder<TRequest, TResult>().apply(block)
     return Feature(
         handler = builder.handler ?: error("feature {} requires a handle {} block"),
-        validator = builder.validatorInstance,
+        validators = builder.validators.toList(),
         notifications = builder.notificationRegistrations.toList(),
+        behaviors = builder.pipelineBehaviors.toList(),
+        streamBehaviors = builder.streamPipelineBehaviors.toList(),
     )
 }
 
@@ -126,7 +163,49 @@ inline fun <reified TRequest : Request<TResult>, TResult> mappedFeature(
         }
     return Feature(
         handler = MappingRequestHandler(innerHandle, typedMapper::map),
-        validator = builder.validatorInstance,
+        validators = builder.validators.toList(),
+        notifications = builder.notificationRegistrations.toList(),
+        behaviors = builder.pipelineBehaviors.toList(),
+        streamBehaviors = builder.streamPipelineBehaviors.toList(),
+    )
+}
+
+// ── Stream Feature Builder ───────────────────────────────────────────────────
+
+@MediatorKDsl
+class StreamFeatureBuilder<TRequest : StreamRequest<T>, T>
+@PublishedApi internal constructor() {
+
+    @PublishedApi
+    internal var handler: StreamRequestHandler<TRequest, T>? = null
+
+    @PublishedApi
+    internal val notificationRegistrations: MutableList<NotificationRegistration<*>> = mutableListOf()
+
+    inline fun <reified TNotification : Notification> notification(handler: NotificationHandler<TNotification>) {
+        notificationRegistrations.add(NotificationRegistration(TNotification::class, handler))
+    }
+
+    fun handler(streamHandler: StreamRequestHandler<TRequest, T>) {
+        this.handler = streamHandler
+    }
+
+    fun handle(block: HandlerScope.(TRequest) -> Flow<T>) {
+        this.handler = LambdaStreamRequestHandler(block)
+    }
+}
+
+class StreamFeature<TRequest : StreamRequest<T>, T> @PublishedApi internal constructor(
+    @PublishedApi internal val handler: StreamRequestHandler<TRequest, T>,
+    @PublishedApi internal val notifications: List<NotificationRegistration<*>> = emptyList(),
+)
+
+inline fun <reified TRequest : StreamRequest<T>, T> streamFeature(
+    block: StreamFeatureBuilder<TRequest, T>.() -> Unit,
+): StreamFeature<TRequest, T> {
+    val builder = StreamFeatureBuilder<TRequest, T>().apply(block)
+    return StreamFeature(
+        handler = builder.handler ?: error("streamFeature {} requires a handle {} block"),
         notifications = builder.notificationRegistrations.toList(),
     )
 }

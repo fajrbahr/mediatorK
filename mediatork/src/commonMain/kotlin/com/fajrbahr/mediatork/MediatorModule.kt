@@ -97,12 +97,13 @@ object MediatorFactory {
         missingRequestHandler: RequestHandler<Request<Any?>, Any?> = ThrowMissingRequestHandler(),
     ): Mediator {
         val handlerValidators = registry.anyValidators()
-        val allBehaviors = listOf(ValidationBehavior(handlerValidators)) + pipelineBehaviors
+        val allBehaviors = listOf(ValidationBehavior(handlerValidators)) + pipelineBehaviors + registry.pipelineBehaviors
+        val allStreamBehaviors = streamPipelineBehaviors + registry.streamPipelineBehaviors
 
         return MediatorImpl(
             registry = registry,
             pipelineBehaviors = allBehaviors,
-            streamPipelineBehaviors = streamPipelineBehaviors,
+            streamPipelineBehaviors = allStreamBehaviors,
             notificationPublisher = notificationPublisher,
             missingNotificationHandler = missingNotificationHandler,
             missingRequestHandler = missingRequestHandler,

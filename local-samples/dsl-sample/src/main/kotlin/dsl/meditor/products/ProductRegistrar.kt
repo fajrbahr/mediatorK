@@ -11,6 +11,7 @@ class ProductRegistrar(
     override fun register(registry: HandlerRegistry) {
         registry.scope {
             +getPriceFeature(repo, pushService, inAppService)
+            +watchPriceFeature(repo)
         }
     }
 }

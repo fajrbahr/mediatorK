@@ -4,6 +4,7 @@ package com.fajrbahr.mediatork
 
 import com.fajrbahr.mediatork.api.*
 import com.fajrbahr.mediatork.feature.Feature
+import com.fajrbahr.mediatork.feature.StreamFeature
 import com.fajrbahr.mediatork.handler.ThrowMissingRequestHandler
 import com.fajrbahr.mediatork.notification.NotificationPublishStrategy
 import com.fajrbahr.mediatork.notification.ThrowMissingNotificationHandler
@@ -235,13 +236,22 @@ class MediatorBuilder @PublishedApi internal constructor() {
     inline operator fun <reified TRequest : Request<*>> RequestValidator<TRequest>.unaryPlus() =
         register(this)
 
-    /** Registers a [Feature]'s handler and optional validator. */
+    /** Registers a [Feature]'s handler, validators, notifications, and behaviors. */
     inline fun <reified TRequest : Request<TResult>, TResult> register(feature: Feature<TRequest, TResult>) {
         registry.registerFeature(feature)
     }
 
     /** Shorthand for [register]: `+myFeature`. */
     inline operator fun <reified TRequest : Request<TResult>, TResult> Feature<TRequest, TResult>.unaryPlus() =
+        register(this)
+
+    /** Registers a [StreamFeature]'s stream handler and notifications. */
+    inline fun <reified TRequest : StreamRequest<T>, T> register(feature: StreamFeature<TRequest, T>) {
+        registry.registerStreamFeature(feature)
+    }
+
+    /** Shorthand for [register]: `+myStreamFeature`. */
+    inline operator fun <reified TRequest : StreamRequest<T>, T> StreamFeature<TRequest, T>.unaryPlus() =
         register(this)
 
     /** Lambda request handler — see [HandlerRegistry.handle]. */

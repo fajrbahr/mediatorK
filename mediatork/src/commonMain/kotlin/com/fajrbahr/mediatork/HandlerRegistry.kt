@@ -4,6 +4,7 @@ package com.fajrbahr.mediatork
 
 import com.fajrbahr.mediatork.api.*
 import com.fajrbahr.mediatork.feature.Feature
+import com.fajrbahr.mediatork.feature.StreamFeature
 import kotlin.reflect.KClass
 
 /**
@@ -35,6 +36,12 @@ class HandlerRegistry {
 
     @PublishedApi
     internal val validatorsHandlers: MutableMap<KClass<*>, MutableList<RequestValidator<*>>> = mutableMapOf()
+
+    @PublishedApi
+    internal val pipelineBehaviors: MutableList<PipelineBehavior> = mutableListOf()
+
+    @PublishedApi
+    internal val streamPipelineBehaviors: MutableList<StreamPipelineBehavior> = mutableListOf()
 
     // ── Registration ──────────────────────────────────────────────────────────
 
@@ -104,12 +111,30 @@ class HandlerRegistry {
     inline operator fun <reified TRequest : Request<*>> RequestValidator<TRequest>.unaryPlus() =
         registerValidator(this)
 
-    /** Registers a [Feature]'s handler, optional validator, and notification handlers in one step: `+myFeature`. */
+    /** Registers a [Feature]'s handler, validators, notification handlers, and behaviors in one step: `+myFeature`. */
     inline fun <reified TRequest : Request<TResult>, TResult> registerFeature(
         feature: Feature<TRequest, TResult>,
     ): HandlerRegistry {
         register(feature.handler)
-        feature.validator?.let { registerValidator(it) }
+        feature.validators.forEach { registerValidator(it) }
+        feature.notifications.forEach { registration ->
+            notificationHandlers.getOrPut(registration.notificationClass) { mutableListOf() }
+                .add(registration.handler)
+        }
+        pipelineBehaviors += feature.behaviors
+        streamPipelineBehaviors += feature.streamBehaviors
+        return this
+    }
+
+    /** Shorthand for [registerFeature]; use inside a [scope] block: `+myFeature`. */
+    inline operator fun <reified TRequest : Request<TResult>, TResult> Feature<TRequest, TResult>.unaryPlus() =
+        registerFeature(this)
+
+    /** Registers a [StreamFeature]'s stream handler and notification handlers in one step: `+myStreamFeature`. */
+    inline fun <reified TRequest : StreamRequest<T>, T> registerStreamFeature(
+        feature: StreamFeature<TRequest, T>,
+    ): HandlerRegistry {
+        registerStream(feature.handler)
         feature.notifications.forEach { registration ->
             notificationHandlers.getOrPut(registration.notificationClass) { mutableListOf() }
                 .add(registration.handler)
@@ -117,9 +142,9 @@ class HandlerRegistry {
         return this
     }
 
-    /** Shorthand for [registerFeature]; use inside a [scope] block: `+myFeature`. */
-    inline operator fun <reified TRequest : Request<TResult>, TResult> Feature<TRequest, TResult>.unaryPlus() =
-        registerFeature(this)
+    /** Shorthand for [registerStreamFeature]; use inside a [scope] block: `+myStreamFeature`. */
+    inline operator fun <reified TRequest : StreamRequest<T>, T> StreamFeature<TRequest, T>.unaryPlus() =
+        registerStreamFeature(this)
 
     // ── Dynamic registration (for DI frameworks) ──────────────────────────────
 

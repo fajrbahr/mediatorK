@@ -8,6 +8,8 @@ import dsl.meditor.behaviors.LocaleBehavior
 import dsl.meditor.behaviors.MeasurePipelineBehaviour
 import dsl.meditor.products.GetPriceQuery
 import dsl.meditor.products.ProductRegistrar
+import dsl.meditor.products.WatchPriceQuery
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.runBlocking
 
 
@@ -29,8 +31,14 @@ private val mediator = mediatorK {
 }
 
 fun main(): Unit = runBlocking {
-    // ── 11. Mapped Feature DSL ──────────────────────────────────────────────
+    // ── Mapped Feature with multiple validators + bundled behavior ──────────
     println("=== Mapped Feature: GetPrice ===")
     val price = mediator.send(GetPriceQuery(productId = "PROD-1"))
     println("Price: $price")
+
+    // ── Stream Feature ─────────────────────────────────────────────────────
+    println("\n=== Stream Feature: WatchPriceUpdates ===")
+    mediator.stream(WatchPriceQuery(productId = "PROD-1")).collect { update ->
+        println("  ${update.productId}: ${update.oldCents}c -> ${update.newCents}c")
+    }
 }
