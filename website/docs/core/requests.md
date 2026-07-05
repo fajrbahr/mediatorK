@@ -56,7 +56,8 @@ class AppRegistrar(
 }
 ```
 
-The DSL block provides access to the request, and you can access `mediator` and `requestContext` if needed via the block's receiver.
+The DSL block provides access to the request, and you can access `mediator` and `requestContext` if needed via the
+block's receiver.
 
 ---
 

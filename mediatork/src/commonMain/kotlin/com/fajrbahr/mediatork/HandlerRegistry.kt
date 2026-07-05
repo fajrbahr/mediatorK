@@ -143,7 +143,10 @@ class HandlerRegistry {
      * Appends [handler] to the notification handler list for [notificationClass] without a reified type parameter.
      * Intended for DI frameworks that resolve notification handlers at runtime via reflection.
      */
-    internal fun registerNotificationDynamic(notificationClass: KClass<*>, handler: NotificationHandler<*>): HandlerRegistry {
+    internal fun registerNotificationDynamic(
+        notificationClass: KClass<*>,
+        handler: NotificationHandler<*>
+    ): HandlerRegistry {
         notificationHandlers.getOrPut(notificationClass) { mutableListOf() }.add(handler)
         return this
     }

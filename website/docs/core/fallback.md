@@ -58,11 +58,11 @@ registry.on<OrderShippedNotification> { notification ->
 
 ## Behavior at a glance
 
-| Scenario                      | Result                                                 |
-|-------------------------------|--------------------------------------------------------|
-| First block succeeds          | Returns immediately, rest are skipped                  |
-| First throws, second succeeds | Second result returned                                 |
-| All blocks throw              | Last exception re-thrown                               |
+| Scenario                      | Result                                |
+|-------------------------------|---------------------------------------|
+| First block succeeds          | Returns immediately, rest are skipped |
+| First throws, second succeeds | Second result returned                |
+| All blocks throw              | Last exception re-thrown              |
 
 ---
 

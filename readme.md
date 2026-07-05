@@ -57,7 +57,8 @@ val mediator = mediatorK {
 val order = mediator.send(CreateOrderCommand("ORD-1", 150.0))
 ```
 
-As your project grows, you can structure your DSL registrations using `mediatorRegistrar` blocks to group handlers by feature or domain:
+As your project grows, you can structure your DSL registrations using `mediatorRegistrar` blocks to group handlers by
+feature or domain:
 
 ```kotlin
 val orderRegistrar = mediatorRegistrar {

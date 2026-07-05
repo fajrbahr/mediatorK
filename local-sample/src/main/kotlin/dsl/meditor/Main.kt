@@ -18,18 +18,13 @@ import dsl.meditor.orders.delete.DeleteOrderCommand
 import dsl.meditor.orders.delete.deleteOrderRegistrar
 import dsl.meditor.orders.queries.getorder.getOrderRegistrar
 import dsl.meditor.orders.queries.query.GetOrderQuery
-import dsl.meditor.orders.stream.orderUpdatesRegistrar
 import dsl.meditor.orders.stream.OrderUpdatesStream
+import dsl.meditor.orders.stream.orderUpdatesRegistrar
 import dsl.meditor.price.GetPriceQuery
-import dsl.meditor.price.createProductRegistrar
 import dsl.meditor.price.WatchPriceQuery
+import dsl.meditor.price.createProductRegistrar
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
-
-// Import service dependencies
-val repo: PriceRepo = dsl.meditor.repo
-val pushService: PushService = dsl.meditor.pushService
-val inAppService: InAppService = dsl.meditor.inAppService
 
 private val mediator = mediatorK {
 
@@ -59,7 +54,7 @@ private val mediator = mediatorK {
     // notificationPublisher = NotificationPublishStrategy.fireAndForget(scope)
 
     // Verify all request types have registered handlers
-   // verifyHandlers = true
+    // verifyHandlers = true
 
     // Missing request handler strategy - Choose one:
     missingRequestHandler = missingRequestHandlerThrow

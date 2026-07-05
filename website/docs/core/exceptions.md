@@ -74,7 +74,8 @@ unhandled notifications are intentional; misconfiguration will produce no error 
 no trace, making it very hard to debug.
 :::
 
-The parameter type is `NotificationHandler<Notification>`. Implement it directly as an anonymous object or class for a custom behavior:
+The parameter type is `NotificationHandler<Notification>`. Implement it directly as an anonymous object or class for a
+custom behavior:
 
 ```kotlin
 val deadLetterHandler = object : NotificationHandler<Notification> {

@@ -28,6 +28,7 @@ val validatedPriceFeature = feature<ValidatedGetPriceQuery, Double> {
             request.productId.startsWith("TEST-") -> ValidationResult.Valid
             request.productId.startsWith("DEMO-") ->
                 ValidationResult.ValidWithWarnings(warnings = listOf("Demo product - limited availability"))
+
             else -> ValidationResult.Valid
         }
     }

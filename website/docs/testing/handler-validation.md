@@ -13,7 +13,8 @@ registrations at test time instead of as a runtime crash.
 
 ## assertAllHandlersRegistered
 
-`MediatorTestUtils.assertAllHandlersRegistered` scans the classpath for every request type and asserts that each one has a handler wired up via your registrars.
+`MediatorTestUtils.assertAllHandlersRegistered` scans the classpath for every request type and asserts that each one has
+a handler wired up via your registrars.
 
 If a handler exists but was forgotten in a `MediatorRegistrar`, the test fails immediately with a clear message instead
 of crashing at runtime when the request is first dispatched.

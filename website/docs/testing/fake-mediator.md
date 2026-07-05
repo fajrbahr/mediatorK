@@ -8,14 +8,14 @@ sidebar_label: FakeMediator
 
 `mediatork-test` ships a set of test helpers that let you write handler and ViewModel tests without a mocking library.
 
-| Helper                    | What it does                                                                     |
-|---------------------------|----------------------------------------------------------------------------------|
-| `FakeMediator`            | Real mediator backed by a live `HandlerRegistry`. Register handlers at any time. |
-| `DummyMediator`           | Zero-arg no-op. `send` silently returns, `publish` does nothing.                 |
-| `MediatorSpy`             | Wraps any mediator and records every `send` and `publish` call.                  |
-| `handle`                  | Registers a handler from a suspend lambda.                                       |
-| `on`                      | Registers a notification handler from a suspend lambda.                          |
-| `captureNotifications`    | Registers a notification handler and returns the live captured list.             |
+| Helper                 | What it does                                                                     |
+|------------------------|----------------------------------------------------------------------------------|
+| `FakeMediator`         | Real mediator backed by a live `HandlerRegistry`. Register handlers at any time. |
+| `DummyMediator`        | Zero-arg no-op. `send` silently returns, `publish` does nothing.                 |
+| `MediatorSpy`          | Wraps any mediator and records every `send` and `publish` call.                  |
+| `handle`               | Registers a handler from a suspend lambda.                                       |
+| `on`                   | Registers a notification handler from a suspend lambda.                          |
+| `captureNotifications` | Registers a notification handler and returns the live captured list.             |
 
 ---
 
@@ -139,7 +139,7 @@ fun `createOrder failure sets error`() = runTest {
 | Situation                                          | Use                                                                      |
 |----------------------------------------------------|--------------------------------------------------------------------------|
 | Test only checks initial state, never calls `send` | `DummyMediator()`                                                        |
-| Test controls what `send` returns                  | `FakeMediator` + `handle` DSL                                |
+| Test controls what `send` returns                  | `FakeMediator` + `handle` DSL                                            |
 | Test asserts *which* requests were sent            | [`MediatorSpy`](spy.md)                                                  |
 | Test captures published notifications              | [`captureNotifications`](notification-testing.md) or `MediatorSpy`       |
 | Test verifies all handlers are wired up            | [`MediatorTestUtils.assertAllHandlersRegistered`](handler-validation.md) |

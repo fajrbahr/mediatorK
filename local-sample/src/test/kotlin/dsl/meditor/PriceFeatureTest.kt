@@ -14,12 +14,16 @@ class PriceFeatureTest {
 
     private val testPushService = object : PushService {
         val sent = mutableListOf<String>()
-        override fun send(orderId: String, phone: String) { sent += orderId }
+        override fun send(orderId: String, phone: String) {
+            sent += orderId
+        }
     }
 
     private val testInAppService = object : InAppService {
         val notified = mutableListOf<String>()
-        override fun notify(orderId: String) { notified += orderId }
+        override fun notify(orderId: String) {
+            notified += orderId
+        }
     }
 
     @Test

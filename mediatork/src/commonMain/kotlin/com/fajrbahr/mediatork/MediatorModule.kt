@@ -1,5 +1,6 @@
 package com.fajrbahr.mediatork
 
+import com.fajrbahr.mediatork.MediatorFactory.create
 import com.fajrbahr.mediatork.api.Mediator
 import com.fajrbahr.mediatork.api.Notification
 import com.fajrbahr.mediatork.api.NotificationHandler
@@ -42,7 +43,8 @@ object MediatorFactory {
         missingRequestHandler: RequestHandler<Request<Any?>, Any?> = ThrowMissingRequestHandler(),
     ): Mediator {
         val handlerValidators = registry.anyValidators()
-        val allBehaviors = listOf(validationBehavior(handlerValidators)) + pipelineBehaviors + registry.pipelineBehaviors
+        val allBehaviors =
+            listOf(validationBehavior(handlerValidators)) + pipelineBehaviors + registry.pipelineBehaviors
         val allStreamBehaviors = streamPipelineBehaviors + registry.streamPipelineBehaviors
 
         return MediatorImpl(

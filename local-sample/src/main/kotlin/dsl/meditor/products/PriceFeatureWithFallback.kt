@@ -3,7 +3,6 @@ package dsl.meditor.products
 import com.fajrbahr.mediatork.api.Request
 import com.fajrbahr.mediatork.feature.feature
 import com.fajrbahr.mediatork.handler.handler
-import com.fajrbahr.mediatork.handler.otherwise
 
 data class GetPriceWithFallbackQuery(val productId: String) : Request<Double>
 

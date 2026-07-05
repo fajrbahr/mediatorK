@@ -1,6 +1,6 @@
 package dsl.meditor.behaviors
 
-import com.fajrbahr.mediatork.api.*
+import com.fajrbahr.mediatork.api.Stage
 import com.fajrbahr.mediatork.feature.behavior
 import dsl.meditor.context.locale
 import java.util.*

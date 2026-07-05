@@ -61,7 +61,8 @@ anything better consumed incrementally than batched into a list.
 
 ### `handleStream<TRequest, T>` DSL · `com.fajrbahr.mediatork.api`
 
-Handles a `StreamRequest` and returns a cold `Flow<T>`. The block is **not** `suspend`; it returns the flow immediately; work begins when the caller collects it.
+Handles a `StreamRequest` and returns a cold `Flow<T>`. The block is **not** `suspend`; it returns the flow immediately;
+work begins when the caller collects it.
 
 ```kotlin
 // Define
@@ -149,15 +150,15 @@ Stage always beats `order`. See [Pre / Post Behaviors](core/processors.md).
 
 Stores all registered handlers. Populated by `MediatorRegistrar` implementations.
 
-| Method                            | Description                                                               |
-|-----------------------------------|---------------------------------------------------------------------------|
-| `handle { }` / `handleStream { }` | Register a request handler or stream handler DSL (reified)                |
-| `on { }`                          | Register a notification handler DSL (reified)                             |
-| `validate { }`                    | Register a request validator DSL (reified)                                |
-| `registerDynamic(klass, handler)` | Register a request handler without reified type (for DI frameworks)       |
-| `scope { }`                       | Group registrations for readability                                       |
-| `hasHandler(requestType)`         | Returns `true` if a handler is registered for the given request type      |
-| `registeredRequestTypes()`        | Returns the set of all request types that have a registered handler       |
+| Method                            | Description                                                          |
+|-----------------------------------|----------------------------------------------------------------------|
+| `handle { }` / `handleStream { }` | Register a request handler or stream handler DSL (reified)           |
+| `on { }`                          | Register a notification handler DSL (reified)                        |
+| `validate { }`                    | Register a request validator DSL (reified)                           |
+| `registerDynamic(klass, handler)` | Register a request handler without reified type (for DI frameworks)  |
+| `scope { }`                       | Group registrations for readability                                  |
+| `hasHandler(requestType)`         | Returns `true` if a handler is registered for the given request type |
+| `registeredRequestTypes()`        | Returns the set of all request types that have a registered handler  |
 
 ---
 

@@ -8,7 +8,6 @@ import com.fajrbahr.mediatork.api.StreamRequest
 import com.fajrbahr.mediatork.api.StreamRequestHandler
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
-import kotlinx.coroutines.flow.onEmpty
 
 /**
  * Tries each handler in [handlers] in order, returning the first successful result.

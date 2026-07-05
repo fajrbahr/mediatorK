@@ -106,6 +106,6 @@ fun createProductRegistrar(
     pushService: PushService,
     inAppService: InAppService,
 ) = mediatorRegistrar {
-    getPriceFeature(repo, pushService, inAppService)
-    watchPriceFeature(repo)
+    register(getPriceFeature(repo, pushService, inAppService))
+    register(watchPriceFeature(repo))
 }

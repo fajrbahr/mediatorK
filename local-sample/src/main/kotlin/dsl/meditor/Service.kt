@@ -15,6 +15,7 @@ interface PushService {
 interface InAppService {
     fun notify(orderId: String)
 }
+
 val repo = object : PriceRepo {
     override fun findPrice(productId: String) = RawPrice(productId, cents = 2999)
 }

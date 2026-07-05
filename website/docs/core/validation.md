@@ -70,7 +70,8 @@ data class CreateInvoiceCommand(
 
 ## RequestValidator (External)
 
-When a validator needs injected dependencies (a repository, a service), use the `validate` DSL and register it with the `HandlerRegistry`:
+When a validator needs injected dependencies (a repository, a service), use the `validate` DSL and register it with the
+`HandlerRegistry`:
 
 ```kotlin
 registry.validate<CreateUserCommand> { request ->

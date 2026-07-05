@@ -6,7 +6,6 @@ import com.fajrbahr.mediatork.MediatorFactory
 import com.fajrbahr.mediatork.api.*
 import com.fajrbahr.mediatork.feature.Feature
 import com.fajrbahr.mediatork.feature.StreamFeature
-import com.fajrbahr.mediatork.mediatorK
 import com.fajrbahr.mediatork.notification.NotificationPublishStrategy
 import com.fajrbahr.mediatork.notification.ParallelNotificationPublisher
 import kotlinx.coroutines.flow.Flow
