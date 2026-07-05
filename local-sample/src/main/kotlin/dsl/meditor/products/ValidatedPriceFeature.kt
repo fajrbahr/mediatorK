@@ -11,7 +11,7 @@ data class ValidatedGetPriceQuery(val productId: String) : Request<Double>
  * Example: Feature with DSL-based validators using requestValidator().
  * Shows the fluent, inline approach to validation - no separate validator classes needed.
  */
-val validatedPriceFeature = feature<ValidatedGetPriceQuery, Double> {
+val PriceInlineFeature = feature<ValidatedGetPriceQuery, Double> {
 
     // Validator 1: DSL-based inline validation
     requestValidator { request ->
@@ -37,5 +37,19 @@ val validatedPriceFeature = feature<ValidatedGetPriceQuery, Double> {
     requestHandler { request ->
         println("Getting price for validated product: ${request.productId}")
         99.99
+    }
+
+    requestHandler { request ->
+        // Or implement fallback logic inline
+        try {
+            if (request.productId.startsWith("PREMIUM")) {
+                throw Exception("Unavailable")
+            }
+            println("[INLINE] Getting price for ${request.productId}")
+            99.99
+        } catch (e: Exception) {
+            println("[INLINE FALLBACK] Using cached price")
+            49.99
+        }
     }
 }
