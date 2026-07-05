@@ -46,9 +46,6 @@ fun validationBehavior(
     @Suppress("UNCHECKED_CAST")
     val allWarnings = mutableListOf<Any?>()
 
-    val selfResult = request.validate()
-    collectOrThrow(selfResult, allWarnings)
-
     validators[request::class]?.forEach { validator ->
         val result = (validator as RequestValidator<Any>).validate(request)
         collectOrThrow(result, allWarnings)
