@@ -20,6 +20,7 @@ kotlin {
     jvmToolchain(libs.versions.jvmToolchain.get().toInt())
 }
 
+
 tasks.test {
     useJUnitPlatform()
 }
