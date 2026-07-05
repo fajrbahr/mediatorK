@@ -4,10 +4,8 @@ import com.fajrbahr.mediatork.HandlerRegistry
 import com.fajrbahr.mediatork.api.MediatorRegistrar
 import com.fajrbahr.mediatork.sample.android.after.AladhanCacheDataSource
 
-class PrayerTimesRegistrar(
-    private val cache: AladhanCacheDataSource,
-) : MediatorRegistrar {
+fun prayerTimesRegistrar(cache: AladhanCacheDataSource): MediatorRegistrar = object : MediatorRegistrar {
     override fun register(registry: HandlerRegistry) {
-        registry.register(GetPrayerTimesHandler(cache))
+        registry.register(getPrayerTimesHandler(cache))
     }
 }

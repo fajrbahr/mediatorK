@@ -4,16 +4,16 @@ import com.fajrbahr.mediatork.HandlerRegistry
 import com.fajrbahr.mediatork.api.MediatorRegistrar
 import com.fajrbahr.mediatork.sample.university.department.domain.DepartmentStore
 
-class InstructorRegistrar(
-    private val store: InstructorStore,
-    private val departmentStore: DepartmentStore,
-) : MediatorRegistrar {
+fun instructorRegistrar(
+    store: InstructorStore,
+    departmentStore: DepartmentStore,
+): MediatorRegistrar = object : MediatorRegistrar {
     override fun register(registry: HandlerRegistry) {
         registry.apply {
-            +getInstructors(store)
-            +getInstructor(store)
-            +createEditInstructor(store, departmentStore)
-            +deleteInstructor(store, departmentStore)
+            register(getInstructors(store))
+            register(getInstructor(store))
+            register(createEditInstructor(store, departmentStore))
+            register(deleteInstructor(store, departmentStore))
         }
     }
 }

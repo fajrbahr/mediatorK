@@ -3,14 +3,14 @@ package com.fajrbahr.mediatork.sample.university.course.domain
 import com.fajrbahr.mediatork.HandlerRegistry
 import com.fajrbahr.mediatork.api.MediatorRegistrar
 
-class CourseRegistrar(private val store: CourseStore) : MediatorRegistrar {
+fun courseRegistrar(store: CourseStore): MediatorRegistrar = object : MediatorRegistrar {
     override fun register(registry: HandlerRegistry) {
         registry.apply {
-            +getCourses(store)
-            +getCourse(store)
-            +createCourse(store)
-            +editCourse(store)
-            +deleteCourse(store)
+            register(getCourses(store))
+            register(getCourse(store))
+            register(createCourse(store))
+            register(editCourse(store))
+            register(deleteCourse(store))
         }
     }
 }

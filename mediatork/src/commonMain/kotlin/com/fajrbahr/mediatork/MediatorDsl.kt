@@ -345,86 +345,19 @@ fun mediatorRegistrar(block: MediatorBuilder.() -> Unit): MediatorBuilder.() -> 
 // ── Runtime registration on Mediator ──────────────────────────────────────────
 
 /**
- * Adds a request handler at runtime:
+ * Adds handlers at runtime using the same DSL as [mediatorK]:
  *
  * ```kotlin
  * val mediator = mediatorK { ... }
- * mediator.handler(GetTodoHandler())
+ * mediator.registrar {
+ *     register(NewHandler())
+ *     handle<NewQuery, Result> { ... }
+ *     on<NewEvent> { ... }
+ * }
  * ```
  */
-inline fun <reified TRequest : Request<TResult>, TResult> Mediator.handler(
-    handler: RequestHandler<TRequest, TResult>,
-): Mediator {
-    registry.register(handler)
-    return this
-}
-
-/**
- * Adds a stream request handler at runtime:
- *
- * ```kotlin
- * mediator.handler(WatchOrdersHandler())
- * ```
- */
-inline fun <reified TRequest : StreamRequest<T>, T> Mediator.handler(
-    handler: StreamRequestHandler<TRequest, T>,
-): Mediator {
-    registry.registerStream(handler)
-    return this
-}
-
-/**
- * Adds a notification handler at runtime:
- *
- * ```kotlin
- * mediator.handler(OrderCreatedHandler())
- * ```
- */
-inline fun <reified T : Notification> Mediator.handler(handler: NotificationHandler<T>): Mediator {
-    registry.registerNotification(handler)
-    return this
-}
-
-/**
- * Adds a lambda request handler at runtime:
- *
- * ```kotlin
- * mediator.handle<GetTodoQuery, Todo?> { request -> db.find(request.id) }
- * ```
- */
-inline fun <reified TRequest : Request<TResult>, TResult> Mediator.handle(
-    noinline block: suspend HandlerScope.(TRequest) -> TResult,
-): Mediator {
-    registry.handle(block)
-    return this
-}
-
-/**
- * Adds a lambda stream handler at runtime:
- *
- * ```kotlin
- * mediator.handleStream<WatchOrdersQuery, Order> { request -> db.observeOrders() }
- * ```
- */
-inline fun <reified TRequest : StreamRequest<T>, T> Mediator.handleStream(
-    noinline block: HandlerScope.(TRequest) -> Flow<T>,
-): Mediator {
-    registry.handleStream(block)
-    return this
-}
-
-/**
- * Adds a lambda notification handler at runtime:
- *
- * ```kotlin
- * mediator.on<OrderCreatedEvent> { event -> emailService.send(event.orderId) }
- * ```
- */
-inline fun <reified T : Notification> Mediator.on(
-    order: Int = 0,
-    noinline block: suspend (T) -> Unit,
-): Mediator {
-    registry.on(order, block)
+fun Mediator.registrar(block: HandlerRegistry.() -> Unit): Mediator {
+    registry.apply(block)
     return this
 }
 

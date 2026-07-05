@@ -4,9 +4,9 @@ import com.fajrbahr.mediatork.HandlerRegistry
 import com.fajrbahr.mediatork.api.MediatorRegistrar
 import com.fajrbahr.mediatork.sample.ktor.after.data.cache.AladhanCacheDataSource
 
-class AppRegistrar(private val cache: AladhanCacheDataSource) : MediatorRegistrar {
+fun appRegistrar(cache: AladhanCacheDataSource): MediatorRegistrar = object : MediatorRegistrar {
     override fun register(registry: HandlerRegistry) {
-        registry.register(GetPrayerTimesHandler(cache))
-        registry.register(GetIslamicMonthsHandler(cache))
+        registry.register(getPrayerTimesHandler(cache))
+        registry.register(getIslamicMonthsHandler(cache))
     }
 }

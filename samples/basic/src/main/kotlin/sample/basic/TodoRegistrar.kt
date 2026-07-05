@@ -23,10 +23,10 @@ class TodoStore {
 fun todoRegistrar(store: TodoStore): MediatorRegistrar = object : MediatorRegistrar {
     override fun register(registry: HandlerRegistry) {
         registry.apply {
-            +addTodoHandler(store)
-            +getTodoHandler(store)
-            +logTodoAddedHandler
-            +syncTodoAddedHandler
+            register(addTodoHandler(store))
+            register(getTodoHandler(store))
+            registerNotification(logTodoAddedHandler)
+            registerNotification(syncTodoAddedHandler)
         }
     }
 }

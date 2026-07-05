@@ -3,7 +3,7 @@ package com.fajrbahr.mediatork.sample.android
 import com.fajrbahr.mediatork.MediatorFactory
 import com.fajrbahr.mediatork.sample.android.after.AladhanCacheDataSource
 import com.fajrbahr.mediatork.sample.android.after.times.GetPrayerTimesRequest
-import com.fajrbahr.mediatork.sample.android.after.times.PrayerTimesRegistrar
+import com.fajrbahr.mediatork.sample.android.after.times.prayerTimesRegistrar
 import com.fajrbahr.mediatork.sample.android.after.times.PrayerTime
 import com.fajrbahr.mediatork.sample.android.after.times.TodayPrayerTimes
 import kotlinx.coroutines.test.runTest
@@ -30,7 +30,7 @@ class GetPrayerTimesHandlerTest {
         cache.savePrayerTimes("Dubai", expected)
 
         val mediator = MediatorFactory.create(
-            registrars = listOf(PrayerTimesRegistrar(cache)),
+            registrars = listOf(prayerTimesRegistrar(cache)),
             verifyHandlers = false,
         )
         val result = mediator.send(GetPrayerTimesRequest(city = "Dubai"))
@@ -47,7 +47,7 @@ class GetPrayerTimesHandlerTest {
         cache.savePrayerTimes("Dubai", dubaiTimes)
 
         val mediator = MediatorFactory.create(
-            registrars = listOf(PrayerTimesRegistrar(cache)),
+            registrars = listOf(prayerTimesRegistrar(cache)),
             verifyHandlers = false,
         )
         val result = mediator.send(GetPrayerTimesRequest(city = "Dubai"))

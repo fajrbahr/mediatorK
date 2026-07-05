@@ -1,16 +1,16 @@
 package com.fajrbahr.mediatork.sample.university
 
-import com.fajrbahr.mediatork.sample.university.course.domain.CourseRegistrar
+import com.fajrbahr.mediatork.sample.university.course.domain.courseRegistrar
 import com.fajrbahr.mediatork.sample.university.course.domain.CourseStore
 import com.fajrbahr.mediatork.sample.university.course.domain.CreateCourseCommand
 import com.fajrbahr.mediatork.sample.university.department.domain.CreateDepartmentCommand
-import com.fajrbahr.mediatork.sample.university.department.domain.DepartmentRegistrar
+import com.fajrbahr.mediatork.sample.university.department.domain.departmentRegistrar
 import com.fajrbahr.mediatork.sample.university.department.domain.DepartmentStore
 import com.fajrbahr.mediatork.sample.university.instructor.domain.CreateEditInstructorCommand
-import com.fajrbahr.mediatork.sample.university.instructor.domain.InstructorRegistrar
+import com.fajrbahr.mediatork.sample.university.instructor.domain.instructorRegistrar
 import com.fajrbahr.mediatork.sample.university.instructor.domain.InstructorStore
 import com.fajrbahr.mediatork.sample.university.student.domain.CreateStudentCommand
-import com.fajrbahr.mediatork.sample.university.student.domain.StudentRegistrar
+import com.fajrbahr.mediatork.sample.university.student.domain.studentRegistrar
 import com.fajrbahr.mediatork.sample.university.student.domain.StudentStore
 import com.fajrbahr.mediatork.test.HandlerTestHarness
 import com.fajrbahr.mediatork.test.buildHandlerTestHarness
@@ -25,10 +25,10 @@ class SliceFixture {
 
     val harness: HandlerTestHarness = buildHandlerTestHarness(
         registrars = listOf(
-            CourseRegistrar(courseStore),
-            DepartmentRegistrar(deptStore),
-            InstructorRegistrar(instructorStore, deptStore),
-            StudentRegistrar(studentStore),
+            courseRegistrar(courseStore),
+            departmentRegistrar(deptStore),
+            instructorRegistrar(instructorStore, deptStore),
+            studentRegistrar(studentStore),
         ),
     )
 

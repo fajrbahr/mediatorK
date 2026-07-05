@@ -182,7 +182,7 @@ class MediatorKKoinProcessor(
                 appendLine("        registry.apply {")
                 allHandlers.forEach { handler ->
                     val prop = handler.simpleName.asString().replaceFirstChar { it.lowercaseChar() }
-                    appendLine("            +$prop")
+                    appendLine("            register($prop)")
                 }
                 appendLine("        }")
                 appendLine("    }")
