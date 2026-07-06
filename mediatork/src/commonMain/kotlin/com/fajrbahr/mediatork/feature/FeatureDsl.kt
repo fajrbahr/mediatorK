@@ -4,6 +4,7 @@ import com.fajrbahr.mediatork.*
 import com.fajrbahr.mediatork.api.*
 import com.fajrbahr.mediatork.validator.ValidationResult
 import kotlinx.coroutines.flow.Flow
+import kotlin.jvm.JvmName
 
 fun interface FeatureMapper<TRaw, TResult> {
     fun map(raw: TRaw): TResult
