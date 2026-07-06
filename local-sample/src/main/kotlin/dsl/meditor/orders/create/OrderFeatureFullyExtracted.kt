@@ -10,6 +10,7 @@ import com.fajrbahr.mediatork.feature.mapper
 import com.fajrbahr.mediatork.feature.validate
 import com.fajrbahr.mediatork.mediatorModule
 import dsl.meditor.context.locale
+import dsl.meditor.orders.advanced.USER_CONTEXT_KEY
 import kotlin.time.Duration.Companion.seconds
 
 val orderValidatorExtracted: RequestValidator<CreateOrderCommand> = validate<CreateOrderCommand> {

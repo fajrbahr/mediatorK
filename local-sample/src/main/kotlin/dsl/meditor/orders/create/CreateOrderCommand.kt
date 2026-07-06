@@ -1,6 +1,8 @@
 package dsl.meditor.orders.create
 
+import com.fajrbahr.mediatork.api.Notification
 import com.fajrbahr.mediatork.api.Request
+import com.fajrbahr.mediatork.feature.notificationHandler
 
 data class CreateOrderCommand(
     val id: String,
@@ -24,3 +26,15 @@ data class OrderInfo(
     val orderId: String,
     val amount: Double,
 )
+
+data class OrderCreatedNotification(
+    val orderId: String,
+    val customerEmail: String,
+    val customerPhone: String,
+    val totalAmount: Double,
+) : Notification
+
+
+val sendOrderConfirmationEmailHandler = notificationHandler<OrderCreatedNotification> { notification ->
+    println("  [EMAIL] Confirmation sent to ${notification.customerEmail} for order ${notification.orderId}")
+}

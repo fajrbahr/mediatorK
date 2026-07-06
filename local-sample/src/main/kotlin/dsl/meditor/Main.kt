@@ -8,19 +8,11 @@ import com.fajrbahr.mediatork.missingRequestHandlerThrow
 import com.fajrbahr.mediatork.notification.NotificationPublishStrategy
 import com.fajrbahr.mediatork.pipeline.buildin.loggingPipelineBehavior
 import com.fajrbahr.mediatork.validator.ValidationException
+import dsl.meditor.behaviors.allRequestsErrorTracking
 import dsl.meditor.behaviors.localeBehavior
 import dsl.meditor.behaviors.measurePipelineBehavior
 import dsl.meditor.behaviors.streamLoggingBehavior
-import dsl.meditor.orders.advanced.APPROVAL_LEVEL_KEY
-import dsl.meditor.orders.advanced.ApproveOrderCommand
-import dsl.meditor.orders.advanced.USER_CONTEXT_KEY
-import dsl.meditor.orders.advanced.advancedPatternsModule
-import dsl.meditor.showcase.comprehensiveShowcaseModule
-import dsl.meditor.showcase.ProcessPaymentCommand
-import dsl.meditor.showcase.PaymentNotification
-import dsl.meditor.showcase.MonitorPaymentStream
-import dsl.meditor.showcase.MERCHANT_KEY
-import dsl.meditor.showcase.PAYMENT_METHOD_KEY
+
 import dsl.meditor.orders.create.CreateOrderCommand
 import dsl.meditor.orders.create.GetOrderQuery
 import dsl.meditor.orders.create.OrderCreatedNotification
@@ -37,34 +29,18 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
 
 private val mediator = buildMediatorK {
-
-    // ── Product Features ────────────────────────────────────────────────────
-    //  install(productSlice(repo, pushService, inAppService))
-    // Feature overloads:
-    // - feature<TRequest, TResult>: simple request/response (identity)
     add(getOrderFeature)
-    // - feature<TRequest, TRaw, TResult>: with internal result mapping
     add(orderFeatureFullyExtracted)
-    // - feature<StreamRequest<T>, T>: stream request handler
     add(orderUpdatesStreamFeatureSlice)
-    // - raw handler registration (non-feature)
     add(deleteOrderSlice)
     add(orderUpdatesSlice)
 
-    // ── Advanced DSL patterns ──────────────────────────────────────────────
-    // Demonstrates: infix operators, invoke shortcuts, context get/set
-    add(advancedPatternsModule)
-
-    // ── COMPREHENSIVE SHOWCASE ─────────────────────────────────────────────
-    // Demonstrates ALL library features, extensions, and patterns
-    add(comprehensiveShowcaseModule)
-
-    // ── Behaviors (request + stream) ────────────────────────────────────────
     add(
         localeBehavior,
         measurePipelineBehavior,
         loggingPipelineBehavior(),
         streamLoggingBehavior,
+        allRequestsErrorTracking
     )
 
     // ── Configuration ───────────────────────────────────────────────────────
@@ -196,92 +172,6 @@ fun main(): Unit = runBlocking {
     println("  trySend success: ${safeResult.isSuccess}, value: ${safeResult.getOrNull()}")
 
     println()
-
-    // ═══════════════════════════════════════════════════════════════════════════
-    // ADVANCED DSL PATTERNS
-    // ═══════════════════════════════════════════════════════════════════════════
-
-    // ── Advanced patterns: orElse, context operators, invoke() shorthand ─────
-    println("=== Advanced DSL Patterns ===")
-    println("Features demonstrated:")
-    println("  - feature() invoke shorthand: approvalFeature()")
-    println("  - orElse infix operator: handler1 orElse handler2")
-    println("  - contextKey<T>(name) for type-safe context access")
-    println("  - context[KEY] get/set operators in handlers")
-
-    val approvalResult = mediator.send(ApproveOrderCommand(orderId = "ORD-ADV-1", amount = 5000.0))
-    println("Approval result: $approvalResult")
-
-    println()
-
-    // ═══════════════════════════════════════════════════════════════════════════
-    // COMPREHENSIVE LIBRARY SHOWCASE - ALL FEATURES
-    // ═══════════════════════════════════════════════════════════════════════════
-
-    println("=== Comprehensive Showcase: All Library Features ===")
-    println()
-
-    // Feature with ALL extensions: retry(), timeout(), cache(), fallback(), measure(), log()
-    println("--- Feature Extensions: retry, timeout, cache, fallback, measure, log ---")
-    val paymentRequest = ProcessPaymentCommand(orderId = "PAY-001", amount = 100.50)
-    val paymentResult = mediator.send(paymentRequest)
-    println("Payment processed: $paymentResult")
-    println()
-
-    // Type-safe context keys - contextKey<T>(name)
-    println("--- Type-Safe Context Keys (contextKey<T>) ---")
-    println("Features demonstrated:")
-    println("  - MERCHANT_KEY = contextKey<String>(\"merchant\")")
-    println("  - context[MERCHANT_KEY] = \"acme-corp\" (set)")
-    println("  - val merchant = context[MERCHANT_KEY] (get)")
-    println()
-
-    // Stream handler + feature showcase
-    println("--- Stream Handlers & Features ---")
-    mediator.stream(MonitorPaymentStream(orderId = "PAY-002")).collect { status ->
-        println("  [STREAM] Stage: ${status.stage}")
-    }
-    println()
-
-    // Notification handlers with fallback chains
-    println("--- Notification Handlers with Fallback ---")
-    mediator.publish(PaymentNotification(orderId = "PAY-003", amount = 250.0))
-    println()
-
-    // Validation patterns
-    println("--- Validation Patterns (collecting + short-circuit) ---")
-    try {
-        mediator.send(ProcessPaymentCommand(orderId = "PAY-004", amount = -100.0))
-    } catch (e: Exception) {
-        println("Validation error: ${e.message}")
-    }
-    println()
-
-    // Handler fallback chains with orElse
-    println("--- Handler Fallback Chains (orElse) ---")
-    val largePayment = ProcessPaymentCommand(orderId = "PAY-BIG", amount = 100_000.0)
-    val fallbackResult = mediator.trySend(largePayment)
-    println("Fallback result: ${fallbackResult.getOrNull()}")
-    println()
-
-    // All features covered
-    println("✅ COMPREHENSIVE SHOWCASE COMPLETE")
-    println("All library features, extensions, functions, patterns, and utilities demonstrated:")
-    println("  ✓ Feature builders with all extensions (retry, timeout, cache, fallback, measure, log)")
-    println("  ✓ Context keys and get/set operators")
-    println("  ✓ Validators (collecting & short-circuit)")
-    println("  ✓ Handler fallback chains (orElse)")
-    println("  ✓ Stream handlers and stream features")
-    println("  ✓ Notification handlers with fallbacks")
-    println("  ✓ Pipeline behaviors (logging, timing, caching, error tracking, etc.)")
-    println("  ✓ Notification publish strategies")
-    println("  ✓ Result mappers (mapper<TRaw, TResult>)")
-    println("  ✓ Handler logging (HandlerLogger)")
-    println("  ✓ Custom context storage with type-safe keys")
-    println("  ✓ Before/after hooks in features")
-    println("  ✓ Dynamic handler registration (mediator.add {})")
-    println("  ✓ Safe dispatch (trySend)")
-    println("  ✓ Missing handler strategies")
 
     println()
 }
