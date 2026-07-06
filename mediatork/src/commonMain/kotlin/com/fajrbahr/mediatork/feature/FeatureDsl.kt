@@ -210,6 +210,7 @@ internal fun <TRequest : Request<TResult>, TResult> buildFeature(
 }
 
 @JvmName("featureIdentity")
+@Suppress("CONFLICTING_OVERLOADS")
 inline fun <reified TRequest : Request<TResult>, TResult> feature(
     block: FeatureBuilder<TRequest, TResult, TResult>.() -> Unit,
 ): Feature<TRequest, TResult> {
@@ -218,6 +219,7 @@ inline fun <reified TRequest : Request<TResult>, TResult> feature(
 }
 
 @JvmName("featureWithMapper")
+@Suppress("CONFLICTING_OVERLOADS")
 inline fun <reified TRequest : Request<TRaw>, TRaw : Any, TResult : Any> feature(
     block: FeatureBuilder<TRequest, TRaw, TResult>.() -> Unit,
 ): Feature<TRequest, TRaw> {
@@ -244,6 +246,7 @@ inline fun <reified TRequest : Request<TRaw>, TRaw : Any, TResult : Any> feature
 }
 
 @JvmName("featureWithResult")
+@Suppress("CONFLICTING_OVERLOADS")
 inline fun <reified TRequest : Request<TResult>, TRaw : Any, TResult : Any> feature(
     block: FeatureBuilder<TRequest, TRaw, TResult>.() -> Unit,
 ): Feature<TRequest, TResult> {
