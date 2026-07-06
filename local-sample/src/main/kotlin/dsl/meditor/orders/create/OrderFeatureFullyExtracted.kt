@@ -3,7 +3,9 @@ package dsl.meditor.orders.create
 import com.fajrbahr.mediatork.api.Request
 import com.fajrbahr.mediatork.api.RequestContext
 import com.fajrbahr.mediatork.api.RequestValidator
+import com.fajrbahr.mediatork.feature.FeatureBuilder
 import com.fajrbahr.mediatork.feature.feature
+import com.fajrbahr.mediatork.feature.handler
 import com.fajrbahr.mediatork.feature.mapper
 import com.fajrbahr.mediatork.feature.validate
 import dsl.meditor.context.locale
@@ -31,7 +33,16 @@ val orderMapperExtracted = mapper<OrderResult, OrderUi> { raw ->
 }
 
 val orderFeatureFullyExtracted = feature<CreateOrderCommand, OrderResult, OrderUi> {
-    handle { request ->
+    extracted()
+
+
+    validate(orderValidatorExtracted)
+    before(orderBeforeHookExtracted)
+    after(orderAfterHookExtracted)
+    mapper(orderMapperExtracted)
+}
+
+val  hand= handler <CreateOrderCommand, OrderResult, OrderUi> {
         val newOrderId = "ORD-${request.id}"
         println("Creating order $newOrderId with locale ${context.locale}")
 
@@ -46,10 +57,4 @@ val orderFeatureFullyExtracted = feature<CreateOrderCommand, OrderResult, OrderU
 
         OrderResult(orderId = newOrderId, responseTime = 0)
     }
-
-
-    validate(orderValidatorExtracted)
-    before(orderBeforeHookExtracted)
-    after(orderAfterHookExtracted)
-    mapper(orderMapperExtracted)
 }

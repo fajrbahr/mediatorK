@@ -1,6 +1,7 @@
 package dsl.meditor.orders.create
 
 import com.fajrbahr.mediatork.feature.feature
+import com.fajrbahr.mediatork.feature.handler
 import com.fajrbahr.mediatork.mediatorModule
 import dsl.meditor.context.locale
 import kotlin.time.Duration.Companion.seconds
@@ -10,23 +11,23 @@ data class CreateOrderCommandRaw(
     val amount: Double,
 ) : com.fajrbahr.mediatork.api.Request<OrderResult>
 
-val orderFeatureWithoutUI = feature<CreateOrderCommandRaw, OrderResult> {
-    handle { request ->
-        val newOrderId = "ORD-${request.id}"
-        println("Creating order $newOrderId with locale ${context.locale}")
+val orderFeatureWithoutUI = handler<CreateOrderCommandRaw, OrderResult> {
 
-        publish(
-            OrderCreatedNotification(
-                orderId = newOrderId,
-                customerEmail = "customer@example.com",
-                customerPhone = "+1234567890",
-                totalAmount = request.amount,
-            )
+    val newOrderId = "ORD-${it.id}"
+    println("Creating order $newOrderId with locale ${context.locale}")
+
+    publish(
+        OrderCreatedNotification(
+            orderId = newOrderId,
+            customerEmail = "customer@example.com",
+            customerPhone = "+1234567890",
+            totalAmount = it.amount,
         )
+    )
 
-        OrderResult(orderId = newOrderId, responseTime = 0)
-    }
+    OrderResult(orderId = newOrderId, responseTime = 0)
 }
+
 
 val orderSliceWithoutUI = mediatorModule {
     add(orderFeatureWithoutUI)
