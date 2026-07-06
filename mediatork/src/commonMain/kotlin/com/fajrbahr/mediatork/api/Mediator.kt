@@ -12,14 +12,12 @@ import com.fajrbahr.mediatork.notification.Publisher
  * across the application as a singleton; each [send] and [stream] call receives its
  * own isolated [RequestContext].
  *
- * Use [registry] to register additional handlers at runtime.
+ * Register additional handlers at runtime via the [com.fajrbahr.mediatork.add] DSL function.
  *
  * @see Sender
  * @see IStreamRequest
  * @see Publisher
  * @see com.fajrbahr.mediatork.MediatorFactory
+ * @see com.fajrbahr.mediatork.add
  */
-interface Mediator : Sender, IStreamRequest, Publisher {
-    /** Access the handler registry to register/modify handlers at runtime. */
-    val registry: HandlerRegistry
-}
+interface Mediator : Sender, IStreamRequest, Publisher

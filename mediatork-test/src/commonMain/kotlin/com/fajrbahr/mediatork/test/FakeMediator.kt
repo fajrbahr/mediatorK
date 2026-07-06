@@ -101,7 +101,7 @@ inline fun <reified TRequest : Request<TResult>, TResult> fakeHandler(
  * val handler = fakeNotificationHandler<OrderPlacedEvent> { notification ->
  *     capturedEvents += notification
  * }
- * mediator.registry.registerNotification(handler)
+ * // Use captureNotifications() or register via the FakeMediator directly
  * ```
  */
 inline fun <reified T : Notification> fakeNotificationHandler(

@@ -367,7 +367,7 @@ fun mediatorModule(block: MediatorModule): MediatorModule = block
  * ```
  */
 fun Mediator.add(block: HandlerRegistry.() -> Unit): Mediator {
-    registry.apply(block)
+    (this as MediatorImpl).registry.apply(block)
     return this
 }
 
