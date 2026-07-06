@@ -1,7 +1,7 @@
 package dsl.meditor.orders.create
 
 import com.fajrbahr.mediatork.feature.feature
-import com.fajrbahr.mediatork.feature.handler
+import com.fajrbahr.mediatork.handler.handler
 import com.fajrbahr.mediatork.mediatorModule
 import dsl.meditor.context.locale
 import kotlin.time.Duration.Companion.seconds
@@ -29,6 +29,6 @@ val orderFeatureWithoutUI = handler<CreateOrderCommandRaw, OrderResult> {
 }
 
 
-val orderSliceWithoutUI = mediatorModule {
-    add(orderFeatureWithoutUI)
+val orderSliceWithoutUI2 = mediatorModule {
+  add(orderFeatureWithoutUI)
 }

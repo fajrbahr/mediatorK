@@ -8,6 +8,7 @@ import com.fajrbahr.mediatork.feature.feature
 import com.fajrbahr.mediatork.feature.handler
 import com.fajrbahr.mediatork.feature.mapper
 import com.fajrbahr.mediatork.feature.validate
+import com.fajrbahr.mediatork.mediatorModule
 import dsl.meditor.context.locale
 import kotlin.time.Duration.Companion.seconds
 
@@ -32,29 +33,30 @@ val orderMapperExtracted = mapper<OrderResult, OrderUi> { raw ->
     OrderUi(orderId = raw.orderId)
 }
 
+val orderHandlerExtracted = handler<CreateOrderCommand, OrderResult> {
+    val newOrderId = "ORD-${it.id}"
+    println("Creating order $newOrderId with locale ${context.locale}")
+
+    publish(
+        OrderCreatedNotification(
+            orderId = newOrderId,
+            customerEmail = "customer@example.com",
+            customerPhone = "+1234567890",
+            totalAmount = it.amount,
+        )
+    )
+
+    OrderResult(orderId = newOrderId, responseTime = 0)
+}
+
 val orderFeatureFullyExtracted = feature<CreateOrderCommand, OrderResult, OrderUi> {
-    extracted()
-
-
+    handler(orderHandlerExtracted)
     validate(orderValidatorExtracted)
     before(orderBeforeHookExtracted)
     after(orderAfterHookExtracted)
     mapper(orderMapperExtracted)
 }
 
-val  hand= handler <CreateOrderCommand, OrderResult, OrderUi> {
-        val newOrderId = "ORD-${request.id}"
-        println("Creating order $newOrderId with locale ${context.locale}")
-
-        publish(
-            OrderCreatedNotification(
-                orderId = newOrderId,
-                customerEmail = "customer@example.com",
-                customerPhone = "+1234567890",
-                totalAmount = request.amount,
-            )
-        )
-
-        OrderResult(orderId = newOrderId, responseTime = 0)
-    }
+val orderSliceWithoutUI = mediatorModule {
+    add(orderFeatureFullyExtracted)
 }
