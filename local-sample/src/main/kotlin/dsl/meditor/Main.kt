@@ -12,13 +12,17 @@ import dsl.meditor.behaviors.localeBehavior
 import dsl.meditor.behaviors.measurePipelineBehavior
 import dsl.meditor.behaviors.streamLoggingBehavior
 import dsl.meditor.orders.create.CreateOrderCommand
+import dsl.meditor.orders.create.GetOrderQuery
 import dsl.meditor.orders.create.OrderCreatedNotification
 import dsl.meditor.orders.create.OrderUi
+import dsl.meditor.orders.create.getOrderFeature
 import dsl.meditor.orders.create.orderFeatureFullyExtracted
 import dsl.meditor.orders.delete.DeleteOrderCommand
 import dsl.meditor.orders.delete.deleteOrderSlice
 import dsl.meditor.orders.stream.OrderUpdatesStream
+import dsl.meditor.orders.stream.RealtimeOrderPriceStream
 import dsl.meditor.orders.stream.orderUpdatesSlice
+import dsl.meditor.orders.stream.orderUpdatesStreamFeatureSlice
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
 
@@ -26,9 +30,16 @@ private val mediator = buildMediatorK {
 
     // ── Product Features ────────────────────────────────────────────────────
     //  install(productSlice(repo, pushService, inAppService))
+    // Feature overloads:
+    // - feature<TRequest, TResult>: simple request/response (identity)
+    add(getOrderFeature)
+    // - feature<TRequest, TRaw, TResult>: with internal result mapping
+    add(orderFeatureFullyExtracted)
+    // - feature<StreamRequest<T>, T>: stream request handler
+    add(orderUpdatesStreamFeatureSlice)
+    // - raw handler registration (non-feature)
     add(deleteOrderSlice)
     add(orderUpdatesSlice)
-    add(orderFeatureFullyExtracted)
 
     // ── Behaviors (request + stream) ────────────────────────────────────────
     add(
@@ -68,8 +79,19 @@ fun main(): Unit = runBlocking {
     // ORDER MANAGEMENT EXAMPLES
     // ═══════════════════════════════════════════════════════════════════════════
 
-    // ── 1. Command with response ─────────────────────────────────────────────
-    println("=== Command: CreateOrder ===")
+    // ═══════════════════════════════════════════════════════════════════════════
+    // FEATURE OVERLOAD EXAMPLES
+    // ═══════════════════════════════════════════════════════════════════════════
+
+    // ── Feature overload 1: feature<TRequest, TResult> (identity) ──────────────
+    println("=== Feature overload 1: Simple request/response (identity) ===")
+    val orderInfo = mediator.send(GetOrderQuery(orderId = "ORD-999"))
+    println("Order info: $orderInfo")
+
+    println()
+
+    // ── Feature overload 2: feature<TRequest, TRaw, TResult> (with mapping) ────
+    println("=== Feature overload 2: With internal result mapping ===")
     val orderUi: OrderUi = mediator.send(
         CreateOrderCommand(id = "1", amount = 150.0)
     )
@@ -77,6 +99,18 @@ fun main(): Unit = runBlocking {
     println("Order ID: ${orderUi.orderId}")
 
     println()
+
+    // ── Feature overload 3: feature<StreamRequest<T>, T> ──────────────────────
+    println("=== Feature overload 3: Stream feature ===")
+    mediator.stream(RealtimeOrderPriceStream(orderId = "ORD-PRICE-1")).collect { update ->
+        println("  [STREAM] ${update.orderId}: $${"%.2f".format(update.currentPrice)}")
+    }
+
+    println()
+
+    // ═══════════════════════════════════════════════════════════════════════════
+    // ADDITIONAL EXAMPLES
+    // ═══════════════════════════════════════════════════════════════════════════
 
     // ── 2. Void command (Request.Unit) + fallback handler ────────────────────
     println("=== Void Command: DeleteOrder (active — DB handler) ===")
