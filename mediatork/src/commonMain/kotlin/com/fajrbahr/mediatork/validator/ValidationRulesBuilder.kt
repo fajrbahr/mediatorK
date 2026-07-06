@@ -5,20 +5,20 @@ package com.fajrbahr.mediatork.validator
  * if any fail, or [ValidationResult.Valid] if all pass. Warnings are always collected and
  * included in the result regardless of whether errors are present.
  */
-fun <T : Any> rules(block: RulesBuilder<T>.() -> Unit): ValidationResult =
-    RulesBuilder<T>().apply(block).toResult()
+fun <T : Any> collectingValidator(block: CollectingBuilder<T>.() -> Unit): ValidationResult =
+    CollectingBuilder<T>().apply(block).toResult()
 
 /**
  * Runs checks in [block] and returns [ValidationResult.Invalid] with the **first** failing error,
  * or [ValidationResult.Valid] if all pass. Remaining checks are skipped after the first failure.
  * Warnings are always collected — [warn] never triggers fail-fast.
  */
-fun <T : Any> rulesFailFast(block: FailFastRulesBuilder<T>.() -> Unit): ValidationResult {
-    val builder = FailFastRulesBuilder<T>()
+fun <T : Any> shortCircuitValidator(block: ShortCircuitRulesBuilder<T>.() -> Unit): ValidationResult {
+    val builder = ShortCircuitRulesBuilder<T>()
     return try {
         builder.block()
         builder.validResult()
-    } catch (_: FailFastRulesBuilder.FailFastSignal) {
+    } catch (_: ShortCircuitRulesBuilder.FailFastSignal) {
         ValidationResult.Invalid(listOf(builder.firstError!!), builder.warnings.toList())
     }
 }
@@ -33,9 +33,9 @@ fun <T : Any> rulesFailFast(block: FailFastRulesBuilder<T>.() -> Unit): Validati
  * - [ValidationResult.ValidWithWarnings] if only warnings,
  * - [ValidationResult.Invalid] (with any warnings) if errors are present.
  *
- * Instantiated by [rules].
+ * Instantiated by [collectingValidator].
  */
-class RulesBuilder<T : Any> {
+class CollectingBuilder<T : Any> {
     private val errors = mutableListOf<T>()
     private val warnings = mutableListOf<T>()
 
@@ -43,13 +43,6 @@ class RulesBuilder<T : Any> {
      * Adds [message] to the error list when [condition] is `false`. All subsequent checks still run.
      */
     fun check(condition: Boolean, message: () -> T) {
-        if (!condition) errors += message()
-    }
-
-    /**
-     * Alias for [check]. Adds [message] to the error list when [condition] is `false`.
-     */
-    fun require(condition: Boolean, message: () -> T) {
         if (!condition) errors += message()
     }
 
@@ -77,9 +70,9 @@ class RulesBuilder<T : Any> {
  * or [ValidationResult.Invalid] with the single first error otherwise.
  * Warnings are included in either case.
  *
- * Instantiated by [rulesFailFast].
+ * Instantiated by [shortCircuitValidator].
  */
-class FailFastRulesBuilder<T : Any> {
+class ShortCircuitRulesBuilder<T : Any> {
     internal var firstError: T? = null
     internal val warnings = mutableListOf<T>()
 

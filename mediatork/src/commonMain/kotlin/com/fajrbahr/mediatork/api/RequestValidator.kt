@@ -6,5 +6,5 @@ import com.fajrbahr.mediatork.validator.ValidationResult
  * Handles validation for a specific request type.
  */
 fun interface RequestValidator<in TRequest> {
-    fun validate(request: TRequest): ValidationResult
+    suspend fun validate(request: TRequest): ValidationResult
 }

@@ -2,8 +2,6 @@
 
 package com.fajrbahr.mediatork
 
-import com.fajrbahr.mediatork.api.Mediator
-import com.fajrbahr.mediatork.api.RequestContext
 import com.fajrbahr.mediatork.api.RequestHandler
 import com.fajrbahr.mediatork.handler.trySend
 import kotlinx.coroutines.test.runTest
@@ -16,7 +14,7 @@ class TrySendTest {
 
     @Test
     fun `trySend returns success wrapping handler result`() = runTest {
-        val m = mediator { register(PingHandler()) }
+        val m = mediator { handler(PingHandler()) }
         val result = m.trySend(PingQuery("hello"))
         assertTrue(result.isSuccess)
         assertEquals("pong:hello", result.getOrNull())
@@ -25,14 +23,7 @@ class TrySendTest {
     @Test
     fun `trySend returns failure wrapping handler exception`() = runTest {
         val m = mediator {
-            register(object : RequestHandler<PingQuery, String> {
-                override suspend fun handle(
-                    mediator: Mediator,
-                    requestContext: RequestContext,
-                    request: PingQuery
-                ): String =
-                    error("boom")
-            })
+            handler(RequestHandler<PingQuery, String> { mediator, requestContext, request -> error("boom") })
         }
         val result = m.trySend(PingQuery("x"))
         assertTrue(result.isFailure)
@@ -51,14 +42,7 @@ class TrySendTest {
     @Test
     fun `trySend does not throw - exception is captured in result`() = runTest {
         val m = mediator {
-            register(object : RequestHandler<AddCommand, Int> {
-                override suspend fun handle(
-                    mediator: Mediator,
-                    requestContext: RequestContext,
-                    request: AddCommand
-                ): Int =
-                    throw RuntimeException("always fails")
-            })
+            handler(RequestHandler<AddCommand, Int> { mediator, requestContext, request -> throw RuntimeException("always fails") })
         }
         val result = runCatching { m.trySend(AddCommand(1, 2)) }
         assertTrue(result.isSuccess, "trySend itself must not throw")
@@ -68,8 +52,8 @@ class TrySendTest {
     @Test
     fun `trySend routes to correct handler among multiple`() = runTest {
         val m = mediator {
-            register(PingHandler())
-            register(AddHandler())
+            handler(PingHandler())
+            handler(AddHandler())
         }
         val pingResult = m.trySend(PingQuery("x"))
         val addResult = m.trySend(AddCommand(2, 3))
@@ -82,7 +66,7 @@ class TrySendTest {
     @Test
     fun `trySend with Unit handler returns successful Unit result`() = runTest {
         val handler = NoResultHandler()
-        val m = mediator { register(handler) }
+        val m = mediator { handler(handler) }
         val result = m.trySend(NoResultCommand("id-99"))
         assertTrue(result.isSuccess)
         assertEquals("id-99", handler.lastId)
@@ -91,13 +75,10 @@ class TrySendTest {
     @Test
     fun `trySend failure contains original exception message`() = runTest {
         val m = mediator {
-            register(object : RequestHandler<PingQuery, String> {
-                override suspend fun handle(
-                    mediator: Mediator,
-                    requestContext: RequestContext,
-                    request: PingQuery
-                ): String =
-                    throw IllegalArgumentException("bad input")
+            handler(RequestHandler<PingQuery, String> { mediator, requestContext, request ->
+                throw IllegalArgumentException(
+                    "bad input"
+                )
             })
         }
         val result = m.trySend(PingQuery("x"))
@@ -107,7 +88,7 @@ class TrySendTest {
 
     @Test
     fun `trySend on same handler multiple times returns independent results`() = runTest {
-        val m = mediator { register(AddHandler()) }
+        val m = mediator { handler(AddHandler()) }
         val r1 = m.trySend(AddCommand(1, 1))
         val r2 = m.trySend(AddCommand(10, 10))
         assertEquals(2, r1.getOrNull())

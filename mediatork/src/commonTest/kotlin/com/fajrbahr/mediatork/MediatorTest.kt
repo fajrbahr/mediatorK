@@ -14,7 +14,7 @@ class MediatorTest {
 
     @Test
     fun `send returns handler result`() = runTest {
-        val m = mediatorK {
+        val m = buildMediatorK {
             handle<PingQuery, String> { request -> "pong:${request.value}" }
         }
         assertEquals("pong:hello", m.send(PingQuery("hello")))
@@ -22,7 +22,7 @@ class MediatorTest {
 
     @Test
     fun `send routes to correct handler among many`() = runTest {
-        val m = mediatorK {
+        val m = buildMediatorK {
             handle<PingQuery, String> { request -> "pong:${request.value}" }
             handle<AddCommand, Int> { request -> request.a + request.b }
         }
@@ -33,7 +33,7 @@ class MediatorTest {
     @Test
     fun `send with Request_Unit returns Unit`() = runTest {
         var lastId: String? = null
-        val m = mediatorK {
+        val m = buildMediatorK {
             handle<NoResultCommand, Unit> { request -> lastId = request.id }
         }
         m.send(NoResultCommand("id-1"))
@@ -42,7 +42,7 @@ class MediatorTest {
 
     @Test
     fun `send throws MissingHandlerException when no handler registered`() = runTest {
-        val m = mediatorK { }
+        val m = buildMediatorK { }
         assertFailsWith<MissingHandlerException> {
             m.send(PingQuery("x"))
         }
@@ -50,7 +50,7 @@ class MediatorTest {
 
     @Test
     fun `MissingHandlerException message includes request type name`() = runTest {
-        val m = mediatorK { }
+        val m = buildMediatorK { }
         val ex = assertFailsWith<MissingHandlerException> { m.send(PingQuery("x")) }
         assertTrue(ex.message!!.contains("PingQuery"))
     }
@@ -59,7 +59,7 @@ class MediatorTest {
     fun `publish delivers notification to all registered handlers`() = runTest {
         val received1 = mutableListOf<String>()
         val received2 = mutableListOf<String>()
-        val m = mediatorK {
+        val m = buildMediatorK {
             on<PingNotification> { received1 += it.message }
             on<PingNotification> { received2 += it.message }
         }
@@ -70,7 +70,7 @@ class MediatorTest {
 
     @Test
     fun `publish with no handlers throws MissingNotificationHandlerException`() = runTest {
-        val m = mediatorK { }
+        val m = buildMediatorK { }
         assertFailsWith<MissingNotificationHandlerException> {
             m.publish(PingNotification("silent"))
         }
@@ -104,9 +104,9 @@ class MediatorTest {
             }
         }
 
-        val m = mediatorK {
+        val m = buildMediatorK {
             handle<PingQuery, String> { request -> "pong:${request.value}" }
-            behaviors(inner, outer)
+            behavior(inner, outer)
         }
 
         m.send(PingQuery("x"))
@@ -126,9 +126,9 @@ class MediatorTest {
                 ran = true; return next(request)
             }
         }
-        val m = mediatorK {
+        val m = buildMediatorK {
             handle<PingQuery, String> { request -> "pong:${request.value}" }
-            behaviors(selective)
+            behavior(selective)
         }
         m.send(PingQuery("x"))
         assertFalse(ran)
@@ -139,7 +139,6 @@ class MediatorTest {
         var contextValue: String? = null
 
         val pre = object : PipelineBehavior {
-            override val stage = Stage.Pre
             override suspend fun <TRequest : Request<TResult>, TResult> process(
                 requestContext: RequestContext,
                 next: RequestHandlerDelegate<TRequest, TResult>,
@@ -149,11 +148,11 @@ class MediatorTest {
             }
         }
 
-        val m = mediatorK {
+        val m = buildMediatorK {
             handle<PingQuery, String> { request ->
                 contextValue = context.getMetaData("key"); "ok"
             }
-            behaviors(pre)
+            behavior(pre)
         }
         m.send(PingQuery("x"))
         assertEquals("injected", contextValue)
@@ -164,7 +163,6 @@ class MediatorTest {
         var captured: Any? = "not-set"
 
         val post = object : PipelineBehavior {
-            override val stage = Stage.Post
             override suspend fun <TRequest : Request<TResult>, TResult> process(
                 requestContext: RequestContext,
                 next: RequestHandlerDelegate<TRequest, TResult>,
@@ -174,9 +172,9 @@ class MediatorTest {
             }
         }
 
-        val m = mediatorK {
+        val m = buildMediatorK {
             handle<PingQuery, String> { request -> "pong:${request.value}" }
-            behaviors(post)
+            behavior(post)
         }
         m.send(PingQuery("world"))
         assertEquals("pong:world", captured)

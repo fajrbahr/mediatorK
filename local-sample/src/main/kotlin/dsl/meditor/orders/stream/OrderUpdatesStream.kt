@@ -2,7 +2,7 @@ package dsl.meditor.orders.stream
 
 import com.fajrbahr.mediatork.api.StreamRequest
 import com.fajrbahr.mediatork.handler.streamHandler
-import com.fajrbahr.mediatork.mediatorRegistrar
+import com.fajrbahr.mediatork.mediatorModule
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.flow
 
@@ -25,6 +25,6 @@ val orderUpdatesHandler = streamHandler<OrderUpdatesStream, OrderUpdate> { reque
     }
 }
 
-val orderUpdatesRegistrar = mediatorRegistrar {
-    register(orderUpdatesHandler)
+val orderUpdatesSlice = mediatorModule {
+    handler(orderUpdatesHandler)
 }

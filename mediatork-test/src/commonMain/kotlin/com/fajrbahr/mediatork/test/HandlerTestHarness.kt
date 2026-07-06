@@ -1,11 +1,11 @@
 package com.fajrbahr.mediatork.test
 
 import com.fajrbahr.mediatork.HandlerRegistry
-import com.fajrbahr.mediatork.MediatorBuilder
+import com.fajrbahr.mediatork.MediatorModule
 import com.fajrbahr.mediatork.api.Mediator
 import com.fajrbahr.mediatork.api.Request
 import com.fajrbahr.mediatork.api.StreamRequest
-import com.fajrbahr.mediatork.mediatorK
+import com.fajrbahr.mediatork.buildMediatorK
 import kotlinx.coroutines.flow.Flow
 
 /**
@@ -95,13 +95,13 @@ class HandlerTestHarness(private val mediator: Mediator) {
  * ```
  *
  * @param pipelineBehaviors cross-cutting behaviors to include in the pipeline.
- *   Use [com.fajrbahr.mediatork.api.Stage.Pre] / [com.fajrbahr.mediatork.api.Stage.Post] to control phase ordering.
+ *   Use [com.fajrbahr.mediatork.api.PipelineBehavior.order] to control pipeline ordering.
  * @param streamPipelineBehaviors cross-cutting behaviors wrapping stream handlers.
  * @param notificationPublisher strategy for delivering notifications; defaults to parallel.
  * @param init DSL block for registering handlers directly on the [HandlerRegistry].
  */
 /**
- * Builds a [HandlerTestHarness] using the full [mediatorK] builder DSL.
+ * Builds a [HandlerTestHarness] using the full [buildMediatorK] builder DSL.
  *
  * This gives the test the same pipeline as production — registrars, behaviors,
  * notification publishers, and features with bundled validators/behaviors — just
@@ -116,8 +116,8 @@ class HandlerTestHarness(private val mediator: Mediator) {
  * ```
  */
 fun buildHandlerTestHarness(
-    block: MediatorBuilder.() -> Unit,
-): HandlerTestHarness = HandlerTestHarness(mediatorK(block))
+    block: MediatorModule,
+): HandlerTestHarness = HandlerTestHarness(buildMediatorK(block))
 
 /**
  * Builds a [HandlerTestHarness] backed by an existing production [Mediator],

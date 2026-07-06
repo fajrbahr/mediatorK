@@ -2,13 +2,14 @@ package com.fajrbahr.mediatork.pipeline.buildin
 
 import com.fajrbahr.mediatork.api.PipelineBehavior
 import com.fajrbahr.mediatork.api.Request
-import com.fajrbahr.mediatork.feature.behavior
+import com.fajrbahr.mediatork.api.RequestContext
+import com.fajrbahr.mediatork.api.RequestHandlerDelegate
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlin.time.TimeSource
 
 /**
- * A behavior provider that caches handler results by request key for a configurable TTL.
+ * A [PipelineBehavior] that caches handler results by request key for a configurable TTL.
  *
  * On a cache hit the handler is skipped entirely and the cached value is returned.
  * On a miss the handler runs and the result is stored. Entries expire after [ttlMs]
@@ -23,7 +24,7 @@ import kotlin.time.TimeSource
 class CachingPipelineBehavior(
     val ttlMs: Long = 60_000L,
     val keyFor: (Request<*>) -> String = { it.toString() },
-) {
+) : PipelineBehavior {
 
     init {
         require(ttlMs > 0) { "ttlMs must be > 0, was $ttlMs" }
@@ -32,18 +33,22 @@ class CachingPipelineBehavior(
     private val mutex = Mutex()
     private val cache = mutableMapOf<String, Entry>()
 
-    /** Returns the [PipelineBehavior] instance. */
-    fun behavior(order: Int = 0): PipelineBehavior = behavior(order = order) { _, next, request ->
+    @Suppress("UNCHECKED_CAST")
+    override suspend fun <TRequest : Request<TResult>, TResult> process(
+        requestContext: RequestContext,
+        next: RequestHandlerDelegate<TRequest, TResult>,
+        request: TRequest,
+    ): TResult {
         val key = keyFor(request)
         mutex.withLock {
             val entry = cache[key]
-            if (entry != null && !entry.isExpired()) return@behavior entry.value
+            if (entry != null && !entry.isExpired()) return entry.value as TResult
         }
         val result = next(request)
         mutex.withLock {
             cache[key] = Entry(result, TimeSource.Monotonic.markNow(), ttlMs)
         }
-        result
+        return result
     }
 
     /** Removes the cached entry for [key]. No-op if the key is not cached. */

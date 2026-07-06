@@ -40,13 +40,7 @@ class MissingHandlerTest {
     fun `send succeeds after handler is registered`() = runTest {
         val mediator = MediatorFactory.create(
             registry = HandlerRegistry().apply {
-                register(object : RequestHandler<PingRequest, String> {
-                    override suspend fun handle(
-                        mediator: Mediator,
-                        requestContext: RequestContext,
-                        request: PingRequest,
-                    ) = "pong"
-                })
+                register(RequestHandler<PingRequest, String> { mediator, requestContext, request -> "pong" })
             }
         )
         assertEquals("pong", mediator.send(PingRequest))
@@ -56,13 +50,7 @@ class MissingHandlerTest {
     fun `only unregistered request throws - registered one succeeds`() = runTest {
         val mediator = MediatorFactory.create(
             registry = HandlerRegistry().apply {
-                register(object : RequestHandler<PingRequest, String> {
-                    override suspend fun handle(
-                        mediator: Mediator,
-                        requestContext: RequestContext,
-                        request: PingRequest,
-                    ) = "pong"
-                })
+                register(RequestHandler<PingRequest, String> { mediator, requestContext, request -> "pong" })
             }
         )
 
@@ -88,11 +76,7 @@ class MissingHandlerTest {
         val received = mutableListOf<Notification>()
         val mediator = MediatorFactory.create(
             registry = HandlerRegistry().apply {
-                registerNotification(object : NotificationHandler<OrderPlaced> {
-                    override suspend fun handle(notification: OrderPlaced) {
-                        received += notification
-                    }
-                })
+                registerNotification(NotificationHandler<OrderPlaced> { notification -> received += notification })
             }
         )
 
@@ -105,16 +89,8 @@ class MissingHandlerTest {
         val log = mutableListOf<String>()
         val mediator = MediatorFactory.create(
             registry = HandlerRegistry().apply {
-                registerNotification(object : NotificationHandler<OrderPlaced> {
-                    override suspend fun handle(notification: OrderPlaced) {
-                        log += "handler-1"
-                    }
-                })
-                registerNotification(object : NotificationHandler<OrderPlaced> {
-                    override suspend fun handle(notification: OrderPlaced) {
-                        log += "handler-2"
-                    }
-                })
+                registerNotification(NotificationHandler<OrderPlaced> { log += "handler-1" })
+                registerNotification(NotificationHandler<OrderPlaced> { log += "handler-2" })
             }
         )
 
@@ -128,11 +104,7 @@ class MissingHandlerTest {
         val received = mutableListOf<Notification>()
         val mediator = MediatorFactory.create(
             registry = HandlerRegistry().apply {
-                registerNotification(object : NotificationHandler<OrderPlaced> {
-                    override suspend fun handle(notification: OrderPlaced) {
-                        received += notification
-                    }
-                })
+                registerNotification(NotificationHandler<OrderPlaced> { notification -> received += notification })
             }
         )
 
@@ -147,16 +119,8 @@ class MissingHandlerTest {
         val log = mutableListOf<String>()
         val mediator = MediatorFactory.create(
             registry = HandlerRegistry().apply {
-                registerNotification(object : NotificationHandler<OrderPlaced> {
-                    override suspend fun handle(notification: OrderPlaced) {
-                        log += "order"
-                    }
-                })
-                registerNotification(object : NotificationHandler<UserCreated> {
-                    override suspend fun handle(notification: UserCreated) {
-                        log += "user"
-                    }
-                })
+                registerNotification(NotificationHandler<OrderPlaced> { log += "order" })
+                registerNotification(NotificationHandler<UserCreated> { log += "user" })
             },
             notificationPublisher = SequentialNotificationPublisher()
         )
@@ -177,13 +141,7 @@ class MissingHandlerTest {
     fun `MissingStreamHandlerException message includes registered stream type`() = runTest {
         val mediator = MediatorFactory.create(
             registry = HandlerRegistry().apply {
-                registerStream(object : StreamRequestHandler<StreamTypeA, Int> {
-                    override fun handle(
-                        mediator: Mediator,
-                        requestContext: RequestContext,
-                        request: StreamTypeA,
-                    ): kotlinx.coroutines.flow.Flow<Int> = kotlinx.coroutines.flow.emptyFlow()
-                })
+                registerStream(StreamRequestHandler<StreamTypeA, Int> { mediator, requestContext, request -> kotlinx.coroutines.flow.emptyFlow() })
             }
         )
         val ex = assertFailsWith<MissingStreamHandlerException> { mediator.stream(StreamTypeB(1)) }
@@ -207,14 +165,8 @@ class MissingHandlerTest {
         var called = false
         val mediator = MediatorFactory.create(
             registry = HandlerRegistry(),
-            missingRequestHandler = object : RequestHandler<Request<Any?>, Any?> {
-                override suspend fun handle(
-                    mediator: Mediator,
-                    requestContext: RequestContext,
-                    request: Request<Any?>,
-                ): Any? {
-                    called = true; return null
-                }
+            missingRequestHandler = RequestHandler { mediator, requestContext, request ->
+                called = true; null
             },
         )
         mediator.send(PingRequest)
@@ -226,10 +178,7 @@ class MissingHandlerTest {
     @Test
     fun `create with registry overload builds working mediator`() = runTest {
         val registry = HandlerRegistry()
-        registry register object : RequestHandler<PingRequest, String> {
-            override suspend fun handle(mediator: Mediator, requestContext: RequestContext, request: PingRequest) =
-                "pong"
-        }
+        registry register RequestHandler<PingRequest, String> { mediator, requestContext, request -> "pong" }
         val m = MediatorFactory.create(registry = registry)
         assertEquals("pong", m.send(PingRequest))
     }
@@ -238,11 +187,7 @@ class MissingHandlerTest {
     fun `create with registry overload respects registered notification handlers`() = runTest {
         val log = mutableListOf<String>()
         val registry = HandlerRegistry()
-        registry registerNotification object : NotificationHandler<OrderPlaced> {
-            override suspend fun handle(notification: OrderPlaced) {
-                log += "fired"
-            }
-        }
+        registry registerNotification NotificationHandler<OrderPlaced> { log += "fired" }
         val m = MediatorFactory.create(registry = registry)
         m.publish(OrderPlaced)
         assertEquals(listOf("fired"), log)

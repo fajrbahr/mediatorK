@@ -19,7 +19,7 @@ class NotificationTest {
     @Test
     fun `publish delivers to single handler`() = runTest {
         val h = RecordingNotificationHandler()
-        val m = mediator { register(h) }
+        val m = mediator { notification(h) }
         m.publish(PingNotification("hi"))
         assertEquals(listOf("hi"), h.received)
     }
@@ -29,8 +29,8 @@ class NotificationTest {
         val h1 = RecordingNotificationHandler()
         val h2 = RecordingNotificationHandler()
         val m = mediator {
-            register(h1)
-            register(h2)
+            notification(h1)
+            notification(h2)
         }
         m.publish(PingNotification("hello"))
         assertEquals(listOf("hello"), h1.received)
@@ -50,8 +50,8 @@ class NotificationTest {
         val pingHandler = RecordingNotificationHandler()
         val alertHandler = AlertNotificationHandler()
         val m = mediator {
-            register(pingHandler)
-            register(alertHandler)
+            notification(pingHandler)
+            notification(alertHandler)
         }
         m.publish(AlertNotification(5))
         assertTrue(pingHandler.received.isEmpty())
@@ -61,19 +61,11 @@ class NotificationTest {
     @Test
     fun `publish with custom publisher overrides default for that call`() = runTest {
         val order = mutableListOf<String>()
-        val h1 = object : NotificationHandler<PingNotification> {
-            override suspend fun handle(notification: PingNotification) {
-                order += "h1"
-            }
-        }
-        val h2 = object : NotificationHandler<PingNotification> {
-            override suspend fun handle(notification: PingNotification) {
-                order += "h2"
-            }
-        }
+        val h1 = NotificationHandler<PingNotification> { order += "h1" }
+        val h2 = NotificationHandler<PingNotification> { order += "h2" }
         val m = mediator {
-            register(h1)
-            register(h2)
+            notification(h1)
+            notification(h2)
         }
         m.publish(PingNotification("x"), SequentialNotificationPublisher())
         assertEquals(listOf("h1", "h2"), order)
@@ -85,11 +77,7 @@ class NotificationTest {
     fun `SequentialNotificationPublisher invokes handlers in order`() = runTest {
         val order = mutableListOf<Int>()
         val handlers = (1..3).map { i ->
-            object : NotificationHandler<PingNotification> {
-                override suspend fun handle(notification: PingNotification) {
-                    order += i
-                }
-            }
+            NotificationHandler<PingNotification> { order += i }
         }
         val pub = SequentialNotificationPublisher()
         pub.publish(PingNotification("x"), handlers)
@@ -99,21 +87,9 @@ class NotificationTest {
     @Test
     fun `SequentialNotificationPublisher stops on first exception`() = runTest {
         val ran = mutableListOf<Int>()
-        val h1 = object : NotificationHandler<PingNotification> {
-            override suspend fun handle(notification: PingNotification) {
-                ran += 1
-            }
-        }
-        val h2 = object : NotificationHandler<PingNotification> {
-            override suspend fun handle(notification: PingNotification) {
-                throw RuntimeException("fail"); ran += 2
-            }
-        }
-        val h3 = object : NotificationHandler<PingNotification> {
-            override suspend fun handle(notification: PingNotification) {
-                ran += 3
-            }
-        }
+        val h1 = NotificationHandler<PingNotification> { ran += 1 }
+        val h2 = NotificationHandler<PingNotification> { throw RuntimeException("fail"); ran += 2 }
+        val h3 = NotificationHandler<PingNotification> { ran += 3 }
         val pub = SequentialNotificationPublisher()
         assertFailsWith<RuntimeException> { pub.publish(PingNotification("x"), listOf(h1, h2, h3)) }
         assertEquals(listOf(1), ran)
@@ -133,11 +109,7 @@ class NotificationTest {
 
     @Test
     fun `ParallelNotificationPublisher propagates exception`() = runTest {
-        val failing = object : NotificationHandler<PingNotification> {
-            override suspend fun handle(notification: PingNotification) {
-                error("boom")
-            }
-        }
+        val failing = NotificationHandler<PingNotification> { error("boom") }
         val pub = ParallelNotificationPublisher()
         assertFailsWith<IllegalStateException> { pub.publish(PingNotification("x"), listOf(failing)) }
     }
@@ -153,21 +125,9 @@ class NotificationTest {
     @Test
     fun `ContinueOnException runs all handlers even when one throws`() = runTest {
         val ran = mutableListOf<Int>()
-        val h1 = object : NotificationHandler<PingNotification> {
-            override suspend fun handle(notification: PingNotification) {
-                ran += 1
-            }
-        }
-        val h2 = object : NotificationHandler<PingNotification> {
-            override suspend fun handle(notification: PingNotification) {
-                throw RuntimeException("fail"); ran += 2
-            }
-        }
-        val h3 = object : NotificationHandler<PingNotification> {
-            override suspend fun handle(notification: PingNotification) {
-                ran += 3
-            }
-        }
+        val h1 = NotificationHandler<PingNotification> { ran += 1 }
+        val h2 = NotificationHandler<PingNotification> { throw RuntimeException("fail"); ran += 2 }
+        val h3 = NotificationHandler<PingNotification> { ran += 3 }
         val pub = ContinueOnExceptionNotificationPublisher()
         assertFailsWith<AggregateException> { pub.publish(PingNotification("x"), listOf(h1, h2, h3)) }
         assertEquals(listOf(1, 3), ran)
@@ -175,16 +135,8 @@ class NotificationTest {
 
     @Test
     fun `ContinueOnException collects all failures into AggregateException`() = runTest {
-        val h1 = object : NotificationHandler<PingNotification> {
-            override suspend fun handle(notification: PingNotification) {
-                throw RuntimeException("e1")
-            }
-        }
-        val h2 = object : NotificationHandler<PingNotification> {
-            override suspend fun handle(notification: PingNotification) {
-                throw RuntimeException("e2")
-            }
-        }
+        val h1 = NotificationHandler<PingNotification> { throw RuntimeException("e1") }
+        val h2 = NotificationHandler<PingNotification> { throw RuntimeException("e2") }
         val pub = ContinueOnExceptionNotificationPublisher()
         val ex = assertFailsWith<AggregateException> { pub.publish(PingNotification("x"), listOf(h1, h2)) }
         assertTrue(ex.message!!.contains("2"))
@@ -218,11 +170,7 @@ class NotificationTest {
     @Test
     fun `FireAndForget launches handlers on provided scope and returns`() = runTest {
         val ran = mutableListOf<String>()
-        val h = object : NotificationHandler<PingNotification> {
-            override suspend fun handle(notification: PingNotification) {
-                ran += notification.message
-            }
-        }
+        val h = NotificationHandler<PingNotification> { notification -> ran += notification.message }
         val scope = CoroutineScope(UnconfinedTestDispatcher(testScheduler))
         val pub = FireAndForgetNotificationPublisher(scope)
         pub.publish(PingNotification("ff2"), listOf(h))
@@ -257,7 +205,7 @@ class NotificationTest {
         val h = RecordingNotificationHandler()
         val m = mediator(
             missingNotificationHandler = ThrowMissingNotificationHandler()
-        ) { register(h) }
+        ) { notification(h) }
         m.publish(PingNotification("ok"))
         assertEquals(listOf("ok"), h.received)
     }
@@ -277,7 +225,7 @@ class NotificationTest {
         val h = RecordingNotificationHandler()
         val m = mediator(
             missingNotificationHandler = SilentMissingNotificationHandler()
-        ) { register(h) }
+        ) { notification(h) }
         m.publish(PingNotification("ok"))
         assertEquals(listOf("ok"), h.received)
     }
@@ -305,28 +253,16 @@ class NotificationTest {
     @Test
     fun `SEQUENTIAL companion constant delivers in registration order`() = runTest {
         val order = mutableListOf<String>()
-        val h1 = object : NotificationHandler<PingNotification> {
-            override suspend fun handle(notification: PingNotification) {
-                order += "h1"
-            }
-        }
-        val h2 = object : NotificationHandler<PingNotification> {
-            override suspend fun handle(notification: PingNotification) {
-                order += "h2"
-            }
-        }
+        val h1 = NotificationHandler<PingNotification> { order += "h1" }
+        val h2 = NotificationHandler<PingNotification> { order += "h2" }
         NotificationPublishStrategy.SEQUENTIAL.publish(PingNotification("x"), listOf(h1, h2))
         assertEquals(listOf("h1", "h2"), order)
     }
 
     @Test
     fun `CONTINUE_ON_EXCEPTION companion constant collects all failures`() = runTest {
-        val h1 = object : NotificationHandler<PingNotification> {
-            override suspend fun handle(notification: PingNotification) = throw RuntimeException("e1")
-        }
-        val h2 = object : NotificationHandler<PingNotification> {
-            override suspend fun handle(notification: PingNotification) = throw RuntimeException("e2")
-        }
+        val h1 = NotificationHandler<PingNotification> { throw RuntimeException("e1") }
+        val h2 = NotificationHandler<PingNotification> { throw RuntimeException("e2") }
         val ex = assertFailsWith<AggregateException> {
             NotificationPublishStrategy.CONTINUE_ON_EXCEPTION.publish(PingNotification("x"), listOf(h1, h2))
         }

@@ -3,6 +3,7 @@ package com.fajrbahr.mediatork.test
 import com.fajrbahr.mediatork.HandlerRegistry
 import com.fajrbahr.mediatork.MediatorBuilder
 import com.fajrbahr.mediatork.MediatorFactory
+import com.fajrbahr.mediatork.MediatorModule
 import com.fajrbahr.mediatork.api.*
 import com.fajrbahr.mediatork.feature.Feature
 import com.fajrbahr.mediatork.feature.StreamFeature
@@ -30,12 +31,12 @@ class FakeMediator(
     pipelineBehaviors: List<PipelineBehavior> = emptyList(),
     streamPipelineBehaviors: List<StreamPipelineBehavior> = emptyList(),
     notificationPublisher: NotificationPublishStrategy = ParallelNotificationPublisher(),
-    init: MediatorBuilder.() -> Unit = {},
+    init: MediatorModule = {},
 ) : Mediator {
 
     val builder = MediatorBuilder().apply {
-        this.behaviors(*pipelineBehaviors.toTypedArray())
-        this.streamBehaviors(*streamPipelineBehaviors.toTypedArray())
+        this.behavior(*pipelineBehaviors.toTypedArray())
+        this.behavior(*streamPipelineBehaviors.toTypedArray())
         this.notificationPublisher = notificationPublisher
         this.verifyHandlers = false
         init()

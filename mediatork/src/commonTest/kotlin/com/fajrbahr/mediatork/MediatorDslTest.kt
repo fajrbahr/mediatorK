@@ -3,7 +3,7 @@ package com.fajrbahr.mediatork
 import com.fajrbahr.mediatork.api.StreamRequest
 import com.fajrbahr.mediatork.notification.NotificationPublishStrategy
 import com.fajrbahr.mediatork.validator.ValidationException
-import com.fajrbahr.mediatork.validator.rules
+import com.fajrbahr.mediatork.validator.collectingValidator
 import kotlinx.coroutines.flow.asFlow
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.test.runTest
@@ -17,7 +17,7 @@ class MediatorDslTest {
 
     @Test
     fun `mediatorK with lambda handler dispatches send`() = runTest {
-        val m = mediatorK {
+        val m = buildMediatorK {
             handle<PingQuery, String> { request -> "pong:${request.value}" }
         }
         assertEquals("pong:hello", m.send(PingQuery("hello")))
@@ -26,7 +26,7 @@ class MediatorDslTest {
     @Test
     fun `lambda handler can publish through HandlerScope`() = runTest {
         val received = mutableListOf<String>()
-        val m = mediatorK {
+        val m = buildMediatorK {
             handle<PingQuery, String> { request ->
                 publish(PingNotification(request.value))
                 "done"
@@ -40,7 +40,7 @@ class MediatorDslTest {
     @Test
     fun `on registers multiple notification handlers`() = runTest {
         val calls = mutableListOf<Int>()
-        val m = mediatorK {
+        val m = buildMediatorK {
             handle<PingQuery, String> { "ok" }
             notificationPublisher = NotificationPublishStrategy.SequentialNotificationPublisher()
             on<AlertNotification>(order = 2) { calls += it.level * 10 }
@@ -52,10 +52,10 @@ class MediatorDslTest {
 
     @Test
     fun `validate lambda rejects invalid request`() = runTest {
-        val m = mediatorK {
+        val m = buildMediatorK {
             handle<AddCommand, Int> { request -> request.a + request.b }
             validate<AddCommand> { request ->
-                rules<String> {
+                collectingValidator {
                     check(request.a >= 0) { "a must be non-negative" }
                 }
             }
@@ -66,7 +66,7 @@ class MediatorDslTest {
 
     @Test
     fun `handleStream lambda dispatches stream`() = runTest {
-        val m = mediatorK {
+        val m = buildMediatorK {
             verifyHandlers = false
             handleStream<NumbersQuery, Int> { request -> (1..request.count).asFlow() }
         }
@@ -75,8 +75,8 @@ class MediatorDslTest {
 
     @Test
     fun `class-based handlers and registrars mix with lambdas`() = runTest {
-        val m = mediatorK {
-            register(PingHandler())
+        val m = buildMediatorK {
+            handler(PingHandler())
             +AddHandler()
             handle<EchoQuery, String> { request -> request.text }
         }
@@ -87,7 +87,7 @@ class MediatorDslTest {
 
     @Test
     fun `missing handler still throws with builder`() = runTest {
-        val m = mediatorK { }
+        val m = buildMediatorK { }
         assertFailsWith<MissingHandlerException> { m.send(PingQuery("x")) }
     }
 }

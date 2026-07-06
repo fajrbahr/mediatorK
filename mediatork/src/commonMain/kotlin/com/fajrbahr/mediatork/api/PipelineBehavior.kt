@@ -13,37 +13,10 @@ package com.fajrbahr.mediatork.api
 typealias RequestHandlerDelegate<TRequest, TResult> = suspend (TRequest) -> TResult
 
 /**
- * Execution stage that determines where a [PipelineBehavior] sits in the pipeline chain.
- *
- * **Stage takes absolute priority over order.** Every [Stage.Pre] behavior runs before every
- * [Stage.Default] behavior, and every [Stage.Default] before every [Stage.Post] — regardless
- * of [PipelineBehavior.order]. Order only controls sequencing *within* a stage.
- *
- * | Stage           | Position  | Typical use                                   |
- * |-----------------|-----------|-----------------------------------------------|
- * | [Stage.Pre]     | outermost | auth injection, locale, trace-id setup        |
- * | [Stage.Default] | middle    | logging, retry, caching, circuit-breaking     |
- * | [Stage.Post]    | innermost | metrics, audit logging, response observation  |
- */
-sealed class Stage {
-    data object Pre : Stage()
-    data object Default : Stage()
-    data object Post : Stage()
-}
-
-/**
  * Cross-cutting concern that wraps request handling in a decorator-style chain.
  *
- * Create instances via the [behavior] DSL function. Behaviors are grouped into three stages,
- * then sorted by order **within** each stage. **Stage always wins over order**: every
- * [Stage.Pre] behavior executes before every [Stage.Default] behavior, and every [Stage.Default]
- * before every [Stage.Post] — no matter what order values are assigned. Order only controls
- * sequencing inside a stage.
- *
- * Typical uses:
- * - [Stage.Pre]: auth token injection, locale setup, tracing context
- * - [Stage.Default]: logging, retry, caching, timing, circuit-breaking
- * - [Stage.Post]: metrics emission, audit logging, response observation
+ * Behaviors are sorted by [order] — lower values run outermost (first).
+ * Create instances via the [behavior][com.fajrbahr.mediatork.feature.behavior] DSL function.
  *
  * @see com.fajrbahr.mediatork.feature.behavior
  */
@@ -60,9 +33,6 @@ interface PipelineBehavior : Behavior {
         request: TRequest,
     ): TResult
 }
-
-val PipelineBehavior.stage: Stage
-    get() = (this as? com.fajrbahr.mediatork.feature.LambdaPipelineBehavior)?.stage ?: Stage.Default
 
 val PipelineBehavior.order: Int
     get() = (this as? com.fajrbahr.mediatork.feature.LambdaPipelineBehavior)?.order ?: 0

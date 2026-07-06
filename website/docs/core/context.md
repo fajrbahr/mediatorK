@@ -67,12 +67,12 @@ autocomplete:
 
 ```kotlin
 var RequestContext.locale: String
-    get() = getMetadata("locale") ?: "en"
-    set(value) { put("locale", value) }
+get() = getMetadata("locale") ?: "en"
+set(value) { put("locale", value) }
 
 var RequestContext.userId: String?
-    get() = getMetadata("userId")
-    set(value) { if (value != null) put("userId", value) }
+get() = getMetadata("userId")
+set(value) { if (value != null) put("userId", value) }
 ```
 
 Usage is then clean and type-safe:
@@ -84,7 +84,7 @@ requestContext.userId = currentUser.id
 
 // read (in a handler)
 val lang = requestContext.locale      // "ar"
-val uid  = requestContext.userId      // String?
+val uid = requestContext.userId      // String?
 ```
 
 ---
@@ -97,7 +97,7 @@ components:
 ```kotlin
 object ContextKeys {
     const val TRACE_ID = "com.myapp.traceId"
-    const val USER_ID  = "com.myapp.userId"
+    const val USER_ID = "com.myapp.userId"
 }
 
 // write

@@ -5,7 +5,7 @@ package com.fajrbahr.mediatork
 import com.fajrbahr.mediatork.api.Mediator
 import com.fajrbahr.mediatork.api.RequestContext
 import com.fajrbahr.mediatork.api.RequestHandler
-import com.fajrbahr.mediatork.handler.otherwise
+import com.fajrbahr.mediatork.handler.orElse
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -30,8 +30,8 @@ class FallbackRequestHandlerTest {
     fun `uses primary handler when it succeeds`() = runTest {
         val m =
             mediator {
-                register<PingQuery, String>(
-                    SucceedingHandler("primary") otherwise SucceedingHandler("fallback"),
+                handler<PingQuery, String>(
+                    SucceedingHandler("primary") orElse SucceedingHandler("fallback"),
                 )
             }
         assertEquals("primary", m.send(PingQuery("x")))
@@ -39,7 +39,7 @@ class FallbackRequestHandlerTest {
 
     @Test
     fun `falls back to second handler when first throws`() = runTest {
-        val m = mediator { register<PingQuery, String>(FailingHandler("oops") otherwise SucceedingHandler("fallback")) }
+        val m = mediator { handler<PingQuery, String>(FailingHandler("oops") orElse SucceedingHandler("fallback")) }
         assertEquals("fallback", m.send(PingQuery("x")))
     }
 
@@ -47,7 +47,7 @@ class FallbackRequestHandlerTest {
     fun `chains three handlers and uses first successful one`() = runTest {
         val third = SucceedingHandler("third")
         val m = mediator {
-            register<PingQuery, String>(FailingHandler("1") otherwise FailingHandler("2") otherwise third)
+            handler<PingQuery, String>(FailingHandler("1") orElse FailingHandler("2") orElse third)
         }
         assertEquals("third", m.send(PingQuery("x")))
         assertEquals(1, third.callCount)
@@ -56,7 +56,7 @@ class FallbackRequestHandlerTest {
     @Test
     fun `rethrows last exception when all handlers fail`() = runTest {
         val m = mediator {
-            register<PingQuery, String>(FailingHandler("first") otherwise FailingHandler("last"))
+            handler<PingQuery, String>(FailingHandler("first") orElse FailingHandler("last"))
         }
         val ex = assertFailsWith<RuntimeException> { m.send(PingQuery("x")) }
         assertEquals("last", ex.message)
@@ -65,14 +65,14 @@ class FallbackRequestHandlerTest {
     @Test
     fun `does not call subsequent handlers after first success`() = runTest {
         val second = SucceedingHandler("second")
-        val m = mediator { register<PingQuery, String>(SucceedingHandler("primary") otherwise second) }
+        val m = mediator { handler<PingQuery, String>(SucceedingHandler("primary") orElse second) }
         m.send(PingQuery("x"))
         assertEquals(0, second.callCount)
     }
 
     @Test
     fun `plus DSL syntax works with otherwise chain`() = runTest {
-        val m = mediator { +(FailingHandler("oops") otherwise SucceedingHandler("ok")) }
+        val m = mediator { +(FailingHandler("oops") orElse SucceedingHandler("ok")) }
         assertEquals("ok", m.send(PingQuery("x")))
     }
 }

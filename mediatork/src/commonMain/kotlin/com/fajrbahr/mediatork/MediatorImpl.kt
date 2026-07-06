@@ -100,40 +100,20 @@ internal class MediatorImpl(
         publisher.publish(notification, handlers)
     }
 
-    /**
-     * Composes and executes the full behavior chain for a single request dispatch.
-     *
-     * Behaviors are grouped by [Stage] phase ([Stage.Pre] → [Stage.Default] → [Stage.Post])
-     * and sorted by [PipelineBehavior.order] within each phase. For [Stage.Pre] and [Stage.Default],
-     * lower order is outermost. [Stage.Post] reverses this: lower order is innermost, so Post
-     * behaviors with a lower order observe the response first when the handler returns.
-     *
-     * @param request the incoming request.
-     * @param handler the resolved handler for this request type.
-     * @return the result produced by the handler (possibly transformed by behaviors).
-     */
     private suspend fun <TRequest : Request<TResult>, TResult> executePipeline(
         request: TRequest,
         handler: RequestHandler<TRequest, TResult>,
     ): TResult {
         val requestContext = RequestContext()
-        val active = pipelineBehaviors.filter { it.isEnabled && it.appliesTo(request) }
-        val sortedPre = active.filter { it.stage == Stage.Pre }.sortedBy { it.order }
-        val sortedDefault = active.filter { it.stage == Stage.Default }.sortedBy { it.order }
-        // POST sorted descending so that lower order = innermost = exits first after handler
-        val sortedPost = active.filter { it.stage == Stage.Post }.sortedByDescending { it.order }
+        val sorted = pipelineBehaviors
+            .filter { it.isEnabled && it.appliesTo(request) }
+            .sortedBy { it.order }
 
         val finalDelegate: RequestHandlerDelegate<TRequest, TResult> = { req ->
             handler.handle(this@MediatorImpl, requestContext, req)
         }
 
-        val withPost = sortedPost.foldRight(finalDelegate) { behavior, next ->
-            { req -> behavior.process(requestContext, next, req) }
-        }
-        val withDefault = sortedDefault.foldRight(withPost) { behavior, next ->
-            { req -> behavior.process(requestContext, next, req) }
-        }
-        val pipeline = sortedPre.foldRight(withDefault) { behavior, next ->
+        val pipeline = sorted.foldRight(finalDelegate) { behavior, next ->
             { req -> behavior.process(requestContext, next, req) }
         }
         return pipeline(request)

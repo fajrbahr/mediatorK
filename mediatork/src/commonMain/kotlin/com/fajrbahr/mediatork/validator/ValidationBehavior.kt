@@ -1,7 +1,6 @@
 package com.fajrbahr.mediatork.validator
 
 import com.fajrbahr.mediatork.api.PipelineBehavior
-import com.fajrbahr.mediatork.api.RequestContext
 import com.fajrbahr.mediatork.api.RequestValidator
 import com.fajrbahr.mediatork.feature.behavior
 import kotlin.reflect.KClass
@@ -31,16 +30,15 @@ class ValidationException(
 }
 
 /**
- * Creates a [PipelineBehavior] that runs registered [RequestValidator]s before the handler.
+ * Creates a [PipelineBehavior] that runs all validators before the handler.
  * Throws [ValidationException] if any validator returns [ValidationResult.Invalid].
- * Warnings from [ValidationResult.ValidWithWarnings] are stored in the [RequestContext]
- * under the key `"validation_warnings"` and do not block the request.
+ * Warnings are stored in the [com.fajrbahr.mediatork.api.RequestContext] under the key `"validation_warnings"`.
  *
- * @param validators validators keyed by request [KClass]; only the entry matching the incoming request type runs.
+ * @param validators validators keyed by request [KClass]
  * @param order position in the behavior chain; defaults to `-50` (runs before most behaviors).
  */
 fun validationBehavior(
-    validators: Map<KClass<*>, List<RequestValidator<*>>>,
+    validators: Map<KClass<*>, List<RequestValidator<*>>> = emptyMap(),
     order: Int = -50,
 ): PipelineBehavior = behavior(order = order) { requestContext, next, request ->
     @Suppress("UNCHECKED_CAST")

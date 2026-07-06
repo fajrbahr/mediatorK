@@ -1,5 +1,6 @@
 package com.fajrbahr.mediatork.api
 
+
 /**
  * Handles a specific [Notification] type.
  */

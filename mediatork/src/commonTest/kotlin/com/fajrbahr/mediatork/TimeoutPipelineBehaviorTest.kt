@@ -1,7 +1,5 @@
 package com.fajrbahr.mediatork
 
-import com.fajrbahr.mediatork.api.Mediator
-import com.fajrbahr.mediatork.api.RequestContext
 import com.fajrbahr.mediatork.api.RequestHandler
 import com.fajrbahr.mediatork.pipeline.buildin.timeoutPipelineBehavior
 import kotlinx.coroutines.TimeoutCancellationException
@@ -16,25 +14,19 @@ class TimeoutPipelineBehaviorTest {
     @Test
     fun `completes normally when handler finishes within timeout`() = runTest {
         val m = mediator(pipelineBehaviors = listOf(timeoutPipelineBehavior(timeoutMillis = 5_000))) {
-            register(PingHandler())
+            handler(PingHandler())
         }
         assertEquals("pong:hello", m.send(PingQuery("hello")))
     }
 
     @Test
     fun `throws TimeoutCancellationException when handler exceeds timeout`() = runTest {
-        val slowHandler = object : RequestHandler<PingQuery, String> {
-            override suspend fun handle(
-                mediator: Mediator,
-                requestContext: RequestContext,
-                request: PingQuery
-            ): String {
-                delay(10_000)
-                return "too late"
-            }
+        val slowHandler = RequestHandler<PingQuery, String> { mediator, requestContext, request ->
+            delay(10_000.milliseconds)
+            "too late"
         }
         val m = mediator(pipelineBehaviors = listOf(timeoutPipelineBehavior(timeoutMillis = 100))) {
-            register(slowHandler)
+            handler(slowHandler)
         }
         assertFailsWith<TimeoutCancellationException> { m.send(PingQuery("x")) }
     }
@@ -66,7 +58,7 @@ class TimeoutPipelineBehaviorTest {
     @Test
     fun `result is passed through unchanged when handler completes in time`() = runTest {
         val m = mediator(pipelineBehaviors = listOf(timeoutPipelineBehavior(timeoutMillis = 5_000))) {
-            register(AddHandler())
+            handler(AddHandler())
         }
         assertEquals(9, m.send(AddCommand(4, 5)))
     }
@@ -75,7 +67,7 @@ class TimeoutPipelineBehaviorTest {
     @Test
     fun `result passes through for AddCommand within timeout`() = runTest {
         val m = mediator(pipelineBehaviors = listOf(timeoutPipelineBehavior(timeoutMillis = 5_000))) {
-            register(AddHandler())
+            handler(AddHandler())
         }
         assertEquals(15, m.send(AddCommand(7, 8)))
     }
@@ -83,7 +75,7 @@ class TimeoutPipelineBehaviorTest {
     @Test
     fun `multiple requests all complete when within timeout`() = runTest {
         val behavior = timeoutPipelineBehavior(timeoutMillis = 5_000)
-        val m = mediator(pipelineBehaviors = listOf(behavior)) { register(PingHandler()) }
+        val m = mediator(pipelineBehaviors = listOf(behavior)) { handler(PingHandler()) }
         repeat(5) { i ->
             assertEquals("pong:$i", m.send(PingQuery("$i")))
         }

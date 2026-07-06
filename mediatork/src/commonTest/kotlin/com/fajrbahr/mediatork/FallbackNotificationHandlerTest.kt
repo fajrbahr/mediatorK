@@ -3,7 +3,7 @@
 package com.fajrbahr.mediatork
 
 import com.fajrbahr.mediatork.api.NotificationHandler
-import com.fajrbahr.mediatork.notification.otherwise
+import com.fajrbahr.mediatork.notification.orElse
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -26,7 +26,7 @@ class FallbackNotificationHandlerTest {
     fun `uses primary handler when it succeeds`() = runTest {
         val primary = RecordingHandler("primary")
         val fallback = RecordingHandler("fallback")
-        val m = mediator { registerNotification<PingNotification>(primary otherwise fallback) }
+        val m = mediator { registerNotification<PingNotification>(primary orElse fallback) }
         m.publish(PingNotification("x"))
         assertEquals(listOf("primary"), primary.received)
         assertEquals(emptyList(), fallback.received)
@@ -35,7 +35,7 @@ class FallbackNotificationHandlerTest {
     @Test
     fun `falls back to second handler when first throws`() = runTest {
         val fallback = RecordingHandler("fallback")
-        val m = mediator { registerNotification<PingNotification>(FailingHandler("oops") otherwise fallback) }
+        val m = mediator { registerNotification<PingNotification>(FailingHandler("oops") orElse fallback) }
         m.publish(PingNotification("x"))
         assertEquals(listOf("fallback"), fallback.received)
     }
@@ -44,7 +44,7 @@ class FallbackNotificationHandlerTest {
     fun `chains three handlers and uses first successful one`() = runTest {
         val third = RecordingHandler("third")
         val m = mediator {
-            registerNotification<PingNotification>(FailingHandler("1") otherwise FailingHandler("2") otherwise third)
+            registerNotification<PingNotification>(FailingHandler("1") orElse FailingHandler("2") orElse third)
         }
         m.publish(PingNotification("x"))
         assertEquals(listOf("third"), third.received)
@@ -53,7 +53,7 @@ class FallbackNotificationHandlerTest {
     @Test
     fun `rethrows last exception when all handlers fail`() = runTest {
         val m = mediator {
-            registerNotification<PingNotification>(FailingHandler("first") otherwise FailingHandler("last"))
+            registerNotification<PingNotification>(FailingHandler("first") orElse FailingHandler("last"))
         }
         val ex = assertFailsWith<RuntimeException> { m.publish(PingNotification("x")) }
         assertEquals("last", ex.message)
@@ -62,7 +62,7 @@ class FallbackNotificationHandlerTest {
     @Test
     fun `plus DSL syntax works with otherwise chain`() = runTest {
         val fallback = RecordingHandler("fallback")
-        val m = mediator { +(FailingHandler("oops") otherwise fallback) }
+        val m = mediator { +(FailingHandler("oops") orElse fallback) }
         m.publish(PingNotification("x"))
         assertEquals(listOf("fallback"), fallback.received)
     }

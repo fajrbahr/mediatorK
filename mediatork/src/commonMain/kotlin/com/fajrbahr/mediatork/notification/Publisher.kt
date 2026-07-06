@@ -58,4 +58,5 @@ interface Publisher {
         require(notification is Notification) { "publishDynamic: $notification does not implement Notification" }
         publish(notification)
     }
+
 }

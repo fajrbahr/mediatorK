@@ -3,7 +3,7 @@ package com.fajrbahr.mediatork.validator
 /**
  * The result of running a [com.fajrbahr.mediatork.api.RequestValidator].
  *
- * Produce a result with the [rules] or [rulesFailFast] DSL builders, or construct directly
+ * Produce a result with the [collectingValidator] or [shortCircuitValidator] DSL builders, or construct directly
  * for simple single-check validators.
  */
 sealed class ValidationResult {

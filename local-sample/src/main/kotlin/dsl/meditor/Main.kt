@@ -1,7 +1,8 @@
 package dsl.meditor
 
+import com.fajrbahr.mediatork.api.Notification
+import com.fajrbahr.mediatork.buildMediatorK
 import com.fajrbahr.mediatork.handler.trySend
-import com.fajrbahr.mediatork.mediatorK
 import com.fajrbahr.mediatork.missingNotificationHandlerSilent
 import com.fajrbahr.mediatork.missingRequestHandlerThrow
 import com.fajrbahr.mediatork.notification.NotificationPublishStrategy
@@ -12,34 +13,25 @@ import dsl.meditor.behaviors.measurePipelineBehavior
 import dsl.meditor.behaviors.streamLoggingBehavior
 import dsl.meditor.orders.create.CreateOrderCommand
 import dsl.meditor.orders.create.OrderCreatedNotification
-import dsl.meditor.orders.create.orderNotificationRegistrar
-import dsl.meditor.orders.create.orderRegistrar
+import dsl.meditor.orders.create.OrderUi
+import dsl.meditor.orders.create.orderFeatureFullyExtracted
 import dsl.meditor.orders.delete.DeleteOrderCommand
-import dsl.meditor.orders.delete.deleteOrderRegistrar
-import dsl.meditor.orders.queries.getorder.getOrderRegistrar
-import dsl.meditor.orders.queries.query.GetOrderQuery
+import dsl.meditor.orders.delete.deleteOrderSlice
 import dsl.meditor.orders.stream.OrderUpdatesStream
-import dsl.meditor.orders.stream.orderUpdatesRegistrar
-import dsl.meditor.price.GetPriceQuery
-import dsl.meditor.price.WatchPriceQuery
-import dsl.meditor.price.createProductRegistrar
+import dsl.meditor.orders.stream.orderUpdatesSlice
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
 
-private val mediator = mediatorK {
+private val mediator = buildMediatorK {
 
     // ── Product Features ────────────────────────────────────────────────────
-    registrar(createProductRegistrar(repo, pushService, inAppService))
-
-    // ── Order Management Features ───────────────────────────────────────────
-    registrar(orderRegistrar)
-    registrar(orderNotificationRegistrar)
-    registrar(getOrderRegistrar)
-    registrar(deleteOrderRegistrar)
-    registrar(orderUpdatesRegistrar)
+    //  install(productSlice(repo, pushService, inAppService))
+    install(deleteOrderSlice)
+    install(orderUpdatesSlice)
+    feature(orderFeatureFullyExtracted)
 
     // ── Behaviors (request + stream) ────────────────────────────────────────
-    behaviors(
+    behavior(
         localeBehavior,
         measurePipelineBehavior,
         loggingPipelineBehavior(),
@@ -69,20 +61,6 @@ private val mediator = mediatorK {
 }
 
 fun main(): Unit = runBlocking {
-    // ═══════════════════════════════════════════════════════════════════════════
-    // PRODUCT PRICING EXAMPLES
-    // ═══════════════════════════════════════════════════════════════════════════
-
-    // ── Mapped Feature with multiple validators + bundled behavior ──────────
-    println("=== Mapped Feature: GetPrice ===")
-    val price = mediator.send(GetPriceQuery(productId = "PROD-1"))
-    println("Price: $price")
-
-    // ── Stream Feature ─────────────────────────────────────────────────────
-    println("\n=== Stream Feature: WatchPriceUpdates ===")
-    mediator.stream(WatchPriceQuery(productId = "PROD-1")).collect { update ->
-        println("  ${update.productId}: ${update.oldCents}c -> ${update.newCents}c")
-    }
 
     println()
 
@@ -92,10 +70,11 @@ fun main(): Unit = runBlocking {
 
     // ── 1. Command with response ─────────────────────────────────────────────
     println("=== Command: CreateOrder ===")
-    val orderResult = mediator.send(
+    val orderUi: OrderUi = mediator.send(
         CreateOrderCommand(id = "1", amount = 150.0)
     )
-    println("Order result: $orderResult")
+    println("Order UI: $orderUi")
+    println("Order ID: ${orderUi.orderId}")
 
     println()
 
@@ -118,26 +97,6 @@ fun main(): Unit = runBlocking {
 
     println()
 
-    // ── 4. Query with fail-fast validation ───────────────────────────────────
-    println("=== Query: GetOrder (valid) ===")
-    val order = mediator.send(
-        GetOrderQuery(orderId = "ORD-9988", customerId = "USR-42")
-    )
-    println("Order: $order")
-
-    println()
-
-    println("=== Query: GetOrder (invalid — fail-fast validation) ===")
-    runCatching {
-        mediator.send(GetOrderQuery(orderId = "9988", customerId = "USR-42"))
-    }.onFailure { e ->
-        if (e is ValidationException) {
-            println("Validation errors: ${e.errors}")
-            if (e.warnings.isNotEmpty()) println("Validation warnings: ${e.warnings}")
-        }
-    }
-
-    println()
 
     // ── 5. Collect-all validation: errors + warnings together ──────────────
     println("=== Validation: errors + warnings (CreateOrderCommand) ===")
@@ -154,7 +113,7 @@ fun main(): Unit = runBlocking {
 
     // ── 6. Validation: warnings only (valid but with caution) ────────────────
     println("=== Validation: warnings only — high-value order passes with warnings ===")
-    val highValueResult = mediator.send(
+    val highValueResult: OrderUi = mediator.send(
         CreateOrderCommand(id = "2", amount = 7_500.0)
     )
     println("Order result: $highValueResult")
@@ -173,13 +132,14 @@ fun main(): Unit = runBlocking {
 
     // ── 8. Missing handler — silent (no crash) ──────────────────────────────
     println("=== Missing notification handler: silent ===")
-    mediator.publish(dsl.meditor.orders.create.UnhandledNotification())
+    data class UnhandledNotification(val info: String = "test") : Notification
+    mediator.publish(UnhandledNotification())
     println("  No crash — SilentMissingNotificationHandler swallowed it")
 
     println()
 
     // ── 9. trySend — safe dispatch returning Result<T> ───────────────────────
     println("=== trySend: safe dispatch ===")
-    val safeResult = mediator.trySend(CreateOrderCommand(id = "safe-1", amount = 50.0))
+    val safeResult: Result<OrderUi> = mediator.trySend(CreateOrderCommand(id = "safe-1", amount = 50.0))
     println("  trySend success: ${safeResult.isSuccess}, value: ${safeResult.getOrNull()}")
 }

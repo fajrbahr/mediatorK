@@ -1,13 +1,7 @@
 package com.fajrbahr.mediatork
 
 import com.fajrbahr.mediatork.MediatorFactory.create
-import com.fajrbahr.mediatork.api.Mediator
-import com.fajrbahr.mediatork.api.Notification
-import com.fajrbahr.mediatork.api.NotificationHandler
-import com.fajrbahr.mediatork.api.PipelineBehavior
-import com.fajrbahr.mediatork.api.Request
-import com.fajrbahr.mediatork.api.RequestHandler
-import com.fajrbahr.mediatork.api.StreamPipelineBehavior
+import com.fajrbahr.mediatork.api.*
 import com.fajrbahr.mediatork.handler.ThrowMissingRequestHandler
 import com.fajrbahr.mediatork.notification.NotificationPublishStrategy
 import com.fajrbahr.mediatork.notification.ThrowMissingNotificationHandler
@@ -22,7 +16,6 @@ import com.fajrbahr.mediatork.validator.validationBehavior
  * throughout the application.
  *
  * @see PipelineBehavior
- * @see Stage
  * @see com.fajrbahr.mediatork.notification.NotificationPublishStrategy
  */
 object MediatorFactory {
@@ -42,9 +35,8 @@ object MediatorFactory {
         missingNotificationHandler: NotificationHandler<Notification> = ThrowMissingNotificationHandler(),
         missingRequestHandler: RequestHandler<Request<Any?>, Any?> = ThrowMissingRequestHandler(),
     ): Mediator {
-        val handlerValidators = registry.anyValidators()
         val allBehaviors =
-            listOf(validationBehavior(handlerValidators)) + pipelineBehaviors + registry.pipelineBehaviors
+            listOf(validationBehavior(registry.anyValidators())) + pipelineBehaviors + registry.pipelineBehaviors
         val allStreamBehaviors = streamPipelineBehaviors + registry.streamPipelineBehaviors
 
         return MediatorImpl(

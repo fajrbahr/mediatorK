@@ -50,12 +50,13 @@ interface NotificationPublishStrategy {
          */
         val CONTINUE_ON_EXCEPTION: NotificationPublishStrategy = ContinueOnExceptionNotificationPublisher()
 
-        /**
-         * Returns a [FireAndForgetNotificationPublisher] bound to [scope].
-         * Handlers are launched in [scope] and the caller returns immediately.
-         */
         fun fireAndForget(scope: CoroutineScope): NotificationPublishStrategy =
             FireAndForgetNotificationPublisher(scope)
+
+        // Short aliases
+        val Parallel: NotificationPublishStrategy = ParallelNotificationPublisher()
+        val Sequential: NotificationPublishStrategy = SequentialNotificationPublisher()
+        val ContinueOnError: NotificationPublishStrategy = ContinueOnExceptionNotificationPublisher()
     }
 
     /**

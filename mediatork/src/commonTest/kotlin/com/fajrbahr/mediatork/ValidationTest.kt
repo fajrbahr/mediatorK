@@ -17,7 +17,7 @@ class RulesDslTest {
 
     @Test
     fun `rules with all checks passing returns Valid`() {
-        val result = rules {
+        val result = collectingValidator {
             check(true) { "should not appear" }
             require(2 + 2 == 4) { "math broken" }
         }
@@ -26,7 +26,7 @@ class RulesDslTest {
 
     @Test
     fun `rules collects all failing checks`() {
-        val result = rules {
+        val result = collectingValidator {
             check(false) { "error 1" }
             check(false) { "error 2" }
             check(true) { "should not appear" }
@@ -41,7 +41,7 @@ class RulesDslTest {
 
     @Test
     fun `rules works with non-String error type`() {
-        val result = rules {
+        val result = collectingValidator {
             check(false) { TestError.ONE }
             check(false) { TestError.TWO }
         }
@@ -54,7 +54,7 @@ class RulesDslTest {
     @Test
     fun `rules evaluates every rule even after first failure`() {
         val evaluated = mutableListOf<Int>()
-        val result = rules {
+        val result = collectingValidator {
             check(false) { evaluated += 1; "e1" }
             check(false) { evaluated += 2; "e2" }
             check(false) { evaluated += 3; "e3" }
@@ -65,7 +65,7 @@ class RulesDslTest {
 
     @Test
     fun `rules with no failures returns Valid`() {
-        assertIs<ValidationResult.Valid>(rules<String> {})
+        assertIs<ValidationResult.Valid>(collectingValidator<String> {})
     }
 }
 
@@ -75,7 +75,7 @@ class RulesFailFastDslTest {
 
     @Test
     fun `rulesFailFast with all checks passing returns Valid`() {
-        val result = rulesFailFast {
+        val result = shortCircuitValidator {
             check(true) { "no" }
             require(2 + 2 == 4) { "no" }
         }
@@ -84,7 +84,7 @@ class RulesFailFastDslTest {
 
     @Test
     fun `rulesFailFast returns first failing error only`() {
-        val result = rulesFailFast {
+        val result = shortCircuitValidator {
             check(false) { "error 1" }
             check(false) { "error 2" }
         }
@@ -96,7 +96,7 @@ class RulesFailFastDslTest {
     @Test
     fun `rulesFailFast skips remaining checks after first failure`() {
         val evaluated = mutableListOf<Int>()
-        val result = rulesFailFast {
+        val result = shortCircuitValidator {
             check(true) { evaluated += 1; "no" }
             check(false) { evaluated += 2; "fail" }
             check(false) { evaluated += 3; "skipped" }
@@ -107,7 +107,7 @@ class RulesFailFastDslTest {
 
     @Test
     fun `rulesFailFast works with non-String error type`() {
-        val result = rulesFailFast {
+        val result = shortCircuitValidator {
             check(false) { TestError.ONE }
             check(false) { TestError.TWO }
         }
@@ -124,10 +124,7 @@ class RulesFailFastDslTest {
 class ValidationBehaviorTest {
 
     private fun validatorFor(valid: Boolean, message: String = "validation failed"): RequestValidator<PingQuery> =
-        object : RequestValidator<PingQuery> {
-            override fun validate(request: PingQuery): ValidationResult =
-                if (valid) ValidationResult.Valid else ValidationResult.Invalid(message)
-        }
+        RequestValidator { if (valid) ValidationResult.Valid else ValidationResult.Invalid(message) }
 
     private fun behaviorWith(vararg validators: RequestValidator<PingQuery>) =
         validationBehavior(mapOf(PingQuery::class to validators.toList()))
@@ -135,7 +132,7 @@ class ValidationBehaviorTest {
     @Test
     fun `valid request passes through to handler`() = runTest {
         val m = mediator(pipelineBehaviors = listOf(behaviorWith(validatorFor(valid = true)))) {
-            register(PingHandler())
+            handler(PingHandler())
         }
         assertEquals("pong:hello", m.send(PingQuery("hello")))
     }
@@ -143,7 +140,7 @@ class ValidationBehaviorTest {
     @Test
     fun `invalid request throws ValidationException`() = runTest {
         val m = mediator(pipelineBehaviors = listOf(behaviorWith(validatorFor(valid = false)))) {
-            register(PingHandler())
+            handler(PingHandler())
         }
         assertFailsWith<ValidationException> { m.send(PingQuery("x")) }
     }
@@ -151,7 +148,7 @@ class ValidationBehaviorTest {
     @Test
     fun `ValidationException carries the failure message`() = runTest {
         val m = mediator(pipelineBehaviors = listOf(behaviorWith(validatorFor(valid = false, message = "bad input")))) {
-            register(PingHandler())
+            handler(PingHandler())
         }
         val ex = assertFailsWith<ValidationException> { m.send(PingQuery("x")) }
         assertNotNull(ex.message)
@@ -160,12 +157,10 @@ class ValidationBehaviorTest {
 
     @Test
     fun `no validator registered for request type - request passes through`() = runTest {
-        val addValidator = object : RequestValidator<AddCommand> {
-            override fun validate(request: AddCommand): ValidationResult = ValidationResult.Invalid("add bad")
-        }
+        val addValidator = RequestValidator<AddCommand> { ValidationResult.Invalid("add bad") }
         val m =
             mediator(pipelineBehaviors = listOf(validationBehavior(mapOf(AddCommand::class to listOf(addValidator))))) {
-                register(PingHandler())
+                handler(PingHandler())
             }
         assertEquals("pong:x", m.send(PingQuery("x")))
     }
@@ -173,18 +168,12 @@ class ValidationBehaviorTest {
     @Test
     fun `ValidationBehavior runs before handler - handler not called on invalid request`() = runTest {
         var handlerCalled = false
-        val handler = object : RequestHandler<PingQuery, String> {
-            override suspend fun handle(
-                mediator: Mediator,
-                requestContext: RequestContext,
-                request: PingQuery,
-            ): String {
-                handlerCalled = true
-                return "ok"
-            }
+        val handler = RequestHandler<PingQuery, String> { mediator, requestContext, request ->
+            handlerCalled = true
+            "ok"
         }
         val m = mediator(pipelineBehaviors = listOf(behaviorWith(validatorFor(valid = false)))) {
-            register(handler)
+            handler(handler)
         }
         assertFailsWith<ValidationException> { m.send(PingQuery("x")) }
         assertFalse(handlerCalled)
@@ -207,7 +196,7 @@ class ValidationBehaviorTest {
         val m = mediator(
             pipelineBehaviors = listOf(behaviorWith(validatorFor(valid = true)), loggingBehavior),
         ) {
-            register(PingHandler())
+            handler(PingHandler())
         }
         m.send(PingQuery("x"))
         assertEquals(listOf("outer"), log)
@@ -216,11 +205,9 @@ class ValidationBehaviorTest {
     @Test
     fun `multiple validators for different types - only matching one runs`() = runTest {
         var addValidatorCalled = false
-        val addValidator = object : RequestValidator<AddCommand> {
-            override fun validate(request: AddCommand): ValidationResult {
-                addValidatorCalled = true
-                return ValidationResult.Valid
-            }
+        val addValidator = RequestValidator<AddCommand> {
+            addValidatorCalled = true
+            ValidationResult.Valid
         }
         val m = mediator(
             pipelineBehaviors = listOf(
@@ -232,7 +219,7 @@ class ValidationBehaviorTest {
                 )
             ),
         ) {
-            register(PingHandler())
+            handler(PingHandler())
         }
         m.send(PingQuery("x"))
         assertFalse(addValidatorCalled)
@@ -241,17 +228,13 @@ class ValidationBehaviorTest {
     @Test
     fun `two validators for same type - first failure stops execution`() = runTest {
         var secondCalled = false
-        val v1 = object : RequestValidator<PingQuery> {
-            override fun validate(request: PingQuery): ValidationResult = ValidationResult.Invalid("first fails")
-        }
-        val v2 = object : RequestValidator<PingQuery> {
-            override fun validate(request: PingQuery): ValidationResult {
-                secondCalled = true
-                return ValidationResult.Valid
-            }
+        val v1 = RequestValidator<PingQuery> { ValidationResult.Invalid("first fails") }
+        val v2 = RequestValidator<PingQuery> {
+            secondCalled = true
+            ValidationResult.Valid
         }
         val m = mediator(pipelineBehaviors = listOf(behaviorWith(v1, v2))) {
-            register(PingHandler())
+            handler(PingHandler())
         }
         assertFailsWith<ValidationException> { m.send(PingQuery("x")) }
         assertFalse(secondCalled)
@@ -266,18 +249,16 @@ class ValidationBehaviorTest {
                 )
             )
         ) {
-            register(PingHandler())
+            handler(PingHandler())
         }
         assertEquals("pong:hello", m.send(PingQuery("hello")))
     }
 
     @Test
     fun `validator returning Invalid raises ValidationException`() = runTest {
-        val validator = object : RequestValidator<PingQuery> {
-            override fun validate(request: PingQuery): ValidationResult = ValidationResult.Invalid("direct")
-        }
+        val validator = RequestValidator<PingQuery> { ValidationResult.Invalid("direct") }
         val m = mediator(pipelineBehaviors = listOf(behaviorWith(validator))) {
-            register(PingHandler())
+            handler(PingHandler())
         }
         val ex = assertFailsWith<ValidationException> { m.send(PingQuery("x")) }
         assertEquals("direct", ex.message)

@@ -2,9 +2,7 @@
 
 package com.fajrbahr.mediatork
 
-import com.fajrbahr.mediatork.api.Mediator
 import com.fajrbahr.mediatork.api.Request
-import com.fajrbahr.mediatork.api.RequestContext
 import com.fajrbahr.mediatork.api.RequestHandler
 import com.fajrbahr.mediatork.pipeline.buildin.errorTrackingPipelineBehavior
 import kotlinx.coroutines.test.runTest
@@ -20,7 +18,7 @@ class ErrorTrackingPipelineBehaviorTest {
     fun `callback not called on success`() = runTest {
         var captured: Throwable? = null
         val tracker = errorTrackingPipelineBehavior { req, e -> captured = e }
-        val m = mediator(pipelineBehaviors = listOf(tracker)) { register(PingHandler()) }
+        val m = mediator(pipelineBehaviors = listOf(tracker)) { handler(PingHandler()) }
         m.send(PingQuery("x"))
         assertNull(captured)
     }
@@ -30,15 +28,9 @@ class ErrorTrackingPipelineBehaviorTest {
         var capturedRequest: Request<*>? = null
         var capturedError: Throwable? = null
         val tracker = errorTrackingPipelineBehavior { req, e -> capturedRequest = req; capturedError = e }
-        val handler = object : RequestHandler<PingQuery, String> {
-            override suspend fun handle(
-                mediator: Mediator,
-                requestContext: RequestContext,
-                request: PingQuery
-            ): String =
-                throw RuntimeException("bad")
-        }
-        val m = mediator(pipelineBehaviors = listOf(tracker)) { register(handler) }
+        val handler =
+            RequestHandler<PingQuery, String> { mediator, requestContext, request -> throw RuntimeException("bad") }
+        val m = mediator(pipelineBehaviors = listOf(tracker)) { handler(handler) }
         assertFailsWith<RuntimeException> { m.send(PingQuery("x")) }
         assertEquals(PingQuery("x"), capturedRequest)
         assertEquals("bad", capturedError?.message)
@@ -47,15 +39,8 @@ class ErrorTrackingPipelineBehaviorTest {
     @Test
     fun `exception is rethrown after callback`() = runTest {
         val tracker = errorTrackingPipelineBehavior { _, _ -> /* no-op */ }
-        val handler = object : RequestHandler<PingQuery, String> {
-            override suspend fun handle(
-                mediator: Mediator,
-                requestContext: RequestContext,
-                request: PingQuery
-            ): String =
-                error("rethrown")
-        }
-        val m = mediator(pipelineBehaviors = listOf(tracker)) { register(handler) }
+        val handler = RequestHandler<PingQuery, String> { mediator, requestContext, request -> error("rethrown") }
+        val m = mediator(pipelineBehaviors = listOf(tracker)) { handler(handler) }
         assertFailsWith<IllegalStateException> { m.send(PingQuery("x")) }
     }
 
@@ -67,7 +52,7 @@ class ErrorTrackingPipelineBehaviorTest {
     @Test
     fun `result is returned unchanged on success`() = runTest {
         val tracker = errorTrackingPipelineBehavior { _, _ -> }
-        val m = mediator(pipelineBehaviors = listOf(tracker)) { register(PingHandler()) }
+        val m = mediator(pipelineBehaviors = listOf(tracker)) { handler(PingHandler()) }
         assertEquals("pong:hello", m.send(PingQuery("hello")))
     }
 
@@ -75,7 +60,7 @@ class ErrorTrackingPipelineBehaviorTest {
     fun `callback not called for multiple successful requests`() = runTest {
         var callCount = 0
         val tracker = errorTrackingPipelineBehavior { _, _ -> callCount++ }
-        val m = mediator(pipelineBehaviors = listOf(tracker)) { register(PingHandler()) }
+        val m = mediator(pipelineBehaviors = listOf(tracker)) { handler(PingHandler()) }
         repeat(3) { m.send(PingQuery("x")) }
         assertEquals(0, callCount)
     }
@@ -85,13 +70,10 @@ class ErrorTrackingPipelineBehaviorTest {
         var captured: Throwable? = null
         val tracker = errorTrackingPipelineBehavior { _, e -> captured = e }
         val m = mediator(pipelineBehaviors = listOf(tracker)) {
-            register(object : RequestHandler<PingQuery, String> {
-                override suspend fun handle(
-                    mediator: Mediator,
-                    requestContext: RequestContext,
-                    request: PingQuery
-                ): String =
-                    throw IllegalArgumentException("bad arg")
+            handler(RequestHandler<PingQuery, String> { mediator, requestContext, request ->
+                throw IllegalArgumentException(
+                    "bad arg"
+                )
             })
         }
         runCatching { m.send(PingQuery("x")) }
@@ -103,15 +85,10 @@ class ErrorTrackingPipelineBehaviorTest {
     fun `only failing requests trigger callback when mixed with successful ones`() = runTest {
         val capturedRequests: MutableList<Request<*>> = mutableListOf()
         val tracker = errorTrackingPipelineBehavior { req, _ -> capturedRequests += req }
-        val failOnB = object : RequestHandler<PingQuery, String> {
-            override suspend fun handle(
-                mediator: Mediator,
-                requestContext: RequestContext,
-                request: PingQuery
-            ): String =
-                if (request.value == "b") throw RuntimeException("fail on b") else "ok"
+        val failOnB = RequestHandler<PingQuery, String> { mediator, requestContext, request ->
+            if (request.value == "b") throw RuntimeException("fail on b") else "ok"
         }
-        val m = mediator(pipelineBehaviors = listOf(tracker)) { register(failOnB) }
+        val m = mediator(pipelineBehaviors = listOf(tracker)) { handler(failOnB) }
         m.send(PingQuery("a"))
         runCatching { m.send(PingQuery("b")) }
         m.send(PingQuery("c"))
@@ -123,14 +100,7 @@ class ErrorTrackingPipelineBehaviorTest {
         var capturedRequest: Request<*>? = null
         val tracker = errorTrackingPipelineBehavior { req, _ -> capturedRequest = req }
         val m = mediator(pipelineBehaviors = listOf(tracker)) {
-            register(object : RequestHandler<AddCommand, Int> {
-                override suspend fun handle(
-                    mediator: Mediator,
-                    requestContext: RequestContext,
-                    request: AddCommand
-                ): Int =
-                    throw RuntimeException("add failed")
-            })
+            handler(RequestHandler<AddCommand, Int> { mediator, requestContext, request -> throw RuntimeException("add failed") })
         }
         runCatching { m.send(AddCommand(1, 2)) }
         assertEquals(AddCommand(1, 2), capturedRequest)

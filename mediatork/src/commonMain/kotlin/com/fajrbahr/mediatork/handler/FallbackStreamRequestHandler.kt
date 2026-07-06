@@ -14,7 +14,7 @@ import kotlinx.coroutines.flow.catch
  * If a handler throws, the exception is swallowed and the next handler is tried.
  * Re-throws the last handler's exception if every handler fails.
  *
- * Compose with [otherwise] instead of constructing directly.
+ * Compose with [orElse] instead of constructing directly.
  */
 internal class FallbackStreamRequestHandler<TRequest : StreamRequest<T>, T>(
     private val handlers: List<StreamRequestHandler<TRequest, T>>,
@@ -27,20 +27,17 @@ internal class FallbackStreamRequestHandler<TRequest : StreamRequest<T>, T>(
     ): Flow<T> {
         var lastException: Throwable? = null
         return handlers.fold<StreamRequestHandler<TRequest, T>, Flow<T>?>(null) { flow, handler ->
-            if (flow != null) {
-                flow.catch { e ->
-                    lastException = e
-                    val nextFlow = handler.handle(mediator, requestContext, request)
-                    nextFlow
-                }
-            } else {
-                try {
+            flow?.catch { e ->
+                lastException = e
+                val nextFlow = handler.handle(mediator, requestContext, request)
+                nextFlow
+            }
+                ?: try {
                     handler.handle(mediator, requestContext, request)
                 } catch (e: Throwable) {
                     lastException = e
                     null
                 }
-            }
         } ?: throw lastException ?: error("FallbackStreamRequestHandler has no handlers")
     }
 
@@ -54,7 +51,7 @@ internal class FallbackStreamRequestHandler<TRequest : StreamRequest<T>, T>(
  * Chains naturally: `a otherwise b otherwise c` produces a single [FallbackStreamRequestHandler]
  * with three candidates tried in order.
  */
-infix fun <TRequest : StreamRequest<T>, T> StreamRequestHandler<TRequest, T>.otherwise(
+infix fun <TRequest : StreamRequest<T>, T> StreamRequestHandler<TRequest, T>.orElse(
     fallback: StreamRequestHandler<TRequest, T>,
 ): StreamRequestHandler<TRequest, T> = when (this) {
     is FallbackStreamRequestHandler -> withFallback(fallback)

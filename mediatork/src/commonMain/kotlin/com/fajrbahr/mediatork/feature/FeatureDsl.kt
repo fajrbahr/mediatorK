@@ -4,96 +4,156 @@ import com.fajrbahr.mediatork.*
 import com.fajrbahr.mediatork.api.*
 import com.fajrbahr.mediatork.validator.ValidationResult
 import kotlinx.coroutines.flow.Flow
-import kotlin.reflect.KClass
 
 fun interface FeatureMapper<TRaw, TResult> {
     fun map(raw: TRaw): TResult
 }
 
-fun <TRaw, TResult> mapper(block: (TRaw) -> TResult): FeatureMapper<TRaw, TResult> =
+inline fun <reified TRaw, reified TResult> mapper(noinline block: (TRaw) -> TResult): FeatureMapper<TRaw, TResult> =
     FeatureMapper(block)
 
-fun <TRequest : Any> requestValidator(block: (TRequest) -> ValidationResult): RequestValidator<TRequest> =
-    LambdaRequestValidator(block)
+class ValidateBuilder<TRequest>(val request: TRequest) {
+    private val errors = mutableListOf<String>()
+    private val warnings = mutableListOf<String>()
+
+    fun check(condition: Boolean, message: String) {
+        if (!condition) errors.add(message)
+    }
+
+    fun check(condition: (TRequest) -> Boolean, message: (TRequest) -> String) {
+        if (!condition(request)) errors.add(message(request))
+    }
+
+    fun warn(message: String) {
+        warnings.add(message)
+    }
+
+    fun warn(condition: Boolean, message: String) {
+        if (condition) warnings.add(message)
+    }
+
+    fun build(): ValidationResult = when {
+        errors.isNotEmpty() -> ValidationResult.Invalid(errors, warnings)
+        warnings.isNotEmpty() -> ValidationResult.ValidWithWarnings(warnings)
+        else -> ValidationResult.Valid
+    }
+}
+
+fun <TRequest : Any> validate(
+    block: ValidateBuilder<TRequest>.() -> Unit,
+): RequestValidator<TRequest> = RequestValidator { request ->
+    ValidateBuilder(request).apply(block).build()
+}
 
 fun <TNotification : Notification> notificationHandler(
-    order: Int,
-    block: (TNotification) -> Unit
+    block: suspend (TNotification) -> Unit
 ): NotificationHandler<TNotification> =
-    LambdaNotificationHandler(order, block)
-
-fun <TNotification : Notification> notificationHandler(block: (TNotification) -> Unit): NotificationHandler<TNotification> =
     LambdaNotificationHandler(0, block)
-
-@PublishedApi
-internal class NotificationRegistration<T : Notification>(
-    val notificationClass: KClass<T>,
-    val handler: NotificationHandler<T>,
-)
 
 class FeatureHandler<TRequest, TRaw>(
     @PublishedApi internal val block: suspend HandlerScope.(TRequest) -> TRaw,
 )
 
-fun <TRequest, TRaw> requestHandler(
-    block: suspend HandlerScope.(TRequest) -> TRaw,
+inline fun <reified TRequest : Request<*>, TRaw> handler(
+    noinline block: suspend HandlerScope.(TRequest) -> TRaw,
 ): FeatureHandler<TRequest, TRaw> = FeatureHandler(block)
 
 // ── Feature Builder ──────────────────────────────────────────────────────────
 
 @MediatorKDsl
-class FeatureBuilder<TRequest : Request<TResult>, TResult>
+class FeatureBuilder<TRequest : Any, TRaw, TResult>
 @PublishedApi internal constructor() {
 
     @PublishedApi
-    internal var handler: RequestHandler<TRequest, TResult>? = null
+    internal var handler: Any? = null
 
     @PublishedApi
     internal val validators: MutableList<RequestValidator<TRequest>> = mutableListOf()
 
     @PublishedApi
-    internal val notificationRegistrations: MutableList<NotificationRegistration<*>> = mutableListOf()
+    internal var mapperBlock: ((TRaw) -> TResult)? = null
 
     @PublishedApi
-    internal val pipelineBehaviors: MutableList<PipelineBehavior> = mutableListOf()
+    internal var beforeBlock: (suspend (RequestContext, Request<*>) -> Unit)? = null
 
     @PublishedApi
-    internal val streamPipelineBehaviors: MutableList<StreamPipelineBehavior> = mutableListOf()
+    internal var afterBlock: (suspend (RequestContext, Any?, Request<*>) -> Unit)? = null
 
     fun validate(validator: RequestValidator<TRequest>) {
         validators.add(validator)
     }
 
-    fun requestValidator(block: (TRequest) -> ValidationResult) {
-        validators.add(LambdaRequestValidator(block))
+    fun validate(block: ValidateBuilder<TRequest>.() -> Unit) {
+        validators.add(RequestValidator { request ->
+            ValidateBuilder(request).apply(block).build()
+        })
     }
 
-    inline fun <reified TNotification : Notification> notification(handler: NotificationHandler<TNotification>) {
-        notificationRegistrations.add(NotificationRegistration(TNotification::class, handler))
-    }
-
-    fun behavior(behavior: PipelineBehavior) {
-        pipelineBehaviors.add(behavior)
-    }
-
-    fun behavior(
-        stage: Stage = Stage.Default,
-        order: Int = 0,
-        isEnabled: Boolean = true,
-        appliesTo: (Request<*>) -> Boolean = { true },
-        block: suspend (requestContext: RequestContext, next: suspend (Request<*>) -> Any?, request: Request<*>) -> Any?,
-    ) {
-        pipelineBehaviors.add(LambdaPipelineBehavior(stage, order, isEnabled, appliesTo, block))
-    }
-
-    fun <TRaw> handler(featureHandler: FeatureHandler<TRequest, TRaw>) {
+    fun <TRequestExt : TRequest> handler(featureHandler: FeatureHandler<TRequestExt, TRaw>) {
         @Suppress("UNCHECKED_CAST")
-        this.handler = LambdaRequestHandler(featureHandler.block) as RequestHandler<TRequest, TResult>
+        this.handler = LambdaRequestHandler(featureHandler.block)
     }
 
-    fun <TRaw> requestHandler(block: suspend HandlerScope.(TRequest) -> TRaw) {
+    fun handle(block: suspend HandlerScope.(TRequest) -> TRaw) = apply {
+        this.handler = LambdaRequestHandler(block)
+    }
+
+    @Suppress("UNCHECKED_CAST")
+    private fun wrapHandler(wrapper: (RequestHandler<Request<Any?>, Any?>) -> RequestHandler<Request<Any?>, Any?>) {
+        handler = wrapper(handler as RequestHandler<Request<Any?>, Any?>)
+    }
+
+    fun retry(maxAttempts: Int = 3) = apply { wrapHandler { RetryHandler(it, maxAttempts) } }
+
+    fun timeout(duration: kotlin.time.Duration) = apply { wrapHandler { TimeoutHandler(it, duration) } }
+
+    fun measure(
+        onMeasured: suspend (TRequest, Long) -> Unit = { _, ms -> println("[MEASURE] completed in ${ms}ms") },
+    ) = apply {
         @Suppress("UNCHECKED_CAST")
-        this.handler = LambdaRequestHandler(block) as RequestHandler<TRequest, TResult>
+        val typed = handler as RequestHandler<Request<Any?>, Any?>
+        handler = MeasureHandler(typed, onMeasured as suspend (Request<Any?>, Long) -> Unit)
+    }
+
+    fun log(
+        logger: HandlerLogger<TRequest, TRaw> = PrintHandlerLogger(),
+    ) = apply {
+        @Suppress("UNCHECKED_CAST")
+        val typed = handler as RequestHandler<Request<Any?>, Any?>
+        handler = LogHandler(typed, logger as HandlerLogger<Request<Any?>, Any?>)
+    }
+
+    fun cache(
+        keyFrom: (TRequest) -> Any = { it },
+        store: MutableMap<Any, Any?> = mutableMapOf(),
+    ) = apply {
+        @Suppress("UNCHECKED_CAST")
+        val typed = handler as RequestHandler<Request<Any?>, Any?>
+        handler = CacheHandler(typed, keyFrom as (Request<Any?>) -> Any, store)
+    }
+
+    fun fallback(block: suspend HandlerScope.(TRequest) -> TRaw) = apply {
+        @Suppress("UNCHECKED_CAST")
+        val typed = handler as RequestHandler<Request<Any?>, Any?>
+        val fb = LambdaRequestHandler(block) as RequestHandler<Request<Any?>, Any?>
+        handler = FallbackHandler(typed, fb)
+    }
+
+    fun mapper(block: (TRaw) -> TResult) {
+        mapperBlock = block
+    }
+
+    fun <TMapperRaw> mapper(featureMapper: FeatureMapper<TMapperRaw, TResult>) {
+        @Suppress("UNCHECKED_CAST")
+        mapperBlock = featureMapper::map as (TRaw) -> TResult
+    }
+
+    fun before(block: suspend (RequestContext, Request<*>) -> Unit) {
+        beforeBlock = block
+    }
+
+    fun after(block: suspend (RequestContext, Any?, Request<*>) -> Unit) {
+        afterBlock = block
     }
 }
 
@@ -114,44 +174,90 @@ internal class MappingRequestHandler<TRequest : Request<TResult>, TRaw, TResult>
 class Feature<TRequest : Request<TResult>, TResult> @PublishedApi internal constructor(
     @PublishedApi internal val handler: RequestHandler<TRequest, TResult>,
     @PublishedApi internal val validators: List<RequestValidator<TRequest>> = emptyList(),
-    @PublishedApi internal val notifications: List<NotificationRegistration<*>> = emptyList(),
-    @PublishedApi internal val behaviors: List<PipelineBehavior> = emptyList(),
-    @PublishedApi internal val streamBehaviors: List<StreamPipelineBehavior> = emptyList(),
+    @PublishedApi internal val beforeBlock: (suspend (RequestContext, Request<*>) -> Unit)? = null,
+    @PublishedApi internal val afterBlock: (suspend (RequestContext, Any?, Request<*>) -> Unit)? = null,
 )
 
-
-inline fun <reified TRequest : Request<TResult>, TResult> feature(
-    block: FeatureBuilder<TRequest, TResult>.() -> Unit,
+@Suppress("UNCHECKED_CAST")
+@PublishedApi
+internal fun <TRequest : Request<TResult>, TResult> buildFeature(
+    builder: FeatureBuilder<TRequest, *, TResult>,
 ): Feature<TRequest, TResult> {
-    val builder = FeatureBuilder<TRequest, TResult>().apply(block)
+    val baseHandler = builder.handler as? RequestHandler<TRequest, Any?>
+        ?: error("feature {} requires a handle {} block")
+
+    val finalHandler = if (builder.mapperBlock != null) {
+        val mapper = builder.mapperBlock!! as (Any?) -> TResult
+        RequestHandler { mediator, requestContext, request ->
+            mapper(
+                baseHandler.handle(
+                    mediator,
+                    requestContext,
+                    request
+                )
+            )
+        }
+    } else {
+        baseHandler as RequestHandler<TRequest, TResult>
+    }
+
     return Feature(
-        handler = builder.handler ?: error("feature {} requires a handle {} block"),
+        handler = finalHandler,
         validators = builder.validators.toList(),
-        notifications = builder.notificationRegistrations.toList(),
-        behaviors = builder.pipelineBehaviors.toList(),
-        streamBehaviors = builder.streamPipelineBehaviors.toList(),
+        beforeBlock = builder.beforeBlock,
+        afterBlock = builder.afterBlock,
     )
 }
 
-inline fun <reified TRequest : Request<TResult>, TResult> mappedFeature(
-    mapper: FeatureMapper<*, TResult>,
-    block: FeatureBuilder<TRequest, TResult>.() -> Unit,
+inline fun <reified TRequest : Request<TResult>, TResult> feature(
+    block: FeatureBuilder<TRequest, TResult, TResult>.() -> Unit,
 ): Feature<TRequest, TResult> {
-    val builder = FeatureBuilder<TRequest, TResult>().apply(block)
-    val existing = builder.handler ?: error("mappedFeature {} requires a handle {} block")
+    val builder = FeatureBuilder<TRequest, TResult, TResult>().apply(block)
+    return buildFeature(builder)
+}
 
-    @Suppress("UNCHECKED_CAST")
-    val typedMapper = mapper as FeatureMapper<Any?, TResult>
-    val innerHandle: suspend (Mediator, RequestContext, TRequest) -> Any? =
-        { mediator, requestContext, request ->
-            existing.handle(mediator, requestContext, request)
+@Suppress("UNCHECKED_CAST")
+@JvmName("featureMapped")
+inline fun <reified TRequest : Request<TRaw>, TRaw : Any, TResult : Any> feature(
+    block: FeatureBuilder<TRequest, TRaw, TResult>.() -> Unit,
+): Feature<TRequest, TRaw> {
+    val builder = FeatureBuilder<TRequest, TRaw, TResult>().apply(block)
+    val baseHandler = builder.handler as? RequestHandler<TRequest, TRaw>
+        ?: error("feature {} requires a handle {} block")
+
+    val finalHandler = if (builder.mapperBlock != null) {
+        val mapper = builder.mapperBlock!!
+        RequestHandler { mediator, requestContext, request ->
+            val rawResult = baseHandler.handle(mediator, requestContext, request)
+            mapper(rawResult) as TRaw
         }
+    } else {
+        baseHandler
+    }
+
     return Feature(
-        handler = MappingRequestHandler(innerHandle, typedMapper::map),
+        handler = finalHandler,
         validators = builder.validators.toList(),
-        notifications = builder.notificationRegistrations.toList(),
-        behaviors = builder.pipelineBehaviors.toList(),
-        streamBehaviors = builder.streamPipelineBehaviors.toList(),
+        beforeBlock = builder.beforeBlock,
+        afterBlock = builder.afterBlock,
+    )
+}
+
+@Suppress("UNCHECKED_CAST")
+@JvmName("featureMappedFinal")
+inline fun <reified TRequest : Request<TResult>, TRaw : Any, TResult : Any> feature(
+    block: FeatureBuilder<TRequest, TRaw, TResult>.() -> Unit,
+): Feature<TRequest, TResult> {
+    val builder = FeatureBuilder<TRequest, TRaw, TResult>().apply(block)
+    return buildFeature(builder)
+}
+
+inline fun <reified TRequest : StreamRequest<T>, T> feature(
+    block: StreamFeatureBuilder<TRequest, T>.() -> Unit,
+): StreamFeature<TRequest, T> {
+    val builder = StreamFeatureBuilder<TRequest, T>().apply(block)
+    return StreamFeature(
+        handler = builder.handler ?: error("feature {} requires a handle {} block"),
     )
 }
 
@@ -164,13 +270,6 @@ class StreamFeatureBuilder<TRequest : StreamRequest<T>, T>
     @PublishedApi
     internal var handler: StreamRequestHandler<TRequest, T>? = null
 
-    @PublishedApi
-    internal val notificationRegistrations: MutableList<NotificationRegistration<*>> = mutableListOf()
-
-    inline fun <reified TNotification : Notification> notification(handler: NotificationHandler<TNotification>) {
-        notificationRegistrations.add(NotificationRegistration(TNotification::class, handler))
-    }
-
     fun handler(streamHandler: StreamRequestHandler<TRequest, T>) {
         this.handler = streamHandler
     }
@@ -182,24 +281,12 @@ class StreamFeatureBuilder<TRequest : StreamRequest<T>, T>
 
 class StreamFeature<TRequest : StreamRequest<T>, T> @PublishedApi internal constructor(
     @PublishedApi internal val handler: StreamRequestHandler<TRequest, T>,
-    @PublishedApi internal val notifications: List<NotificationRegistration<*>> = emptyList(),
 )
-
-inline fun <reified TRequest : StreamRequest<T>, T> streamFeature(
-    block: StreamFeatureBuilder<TRequest, T>.() -> Unit,
-): StreamFeature<TRequest, T> {
-    val builder = StreamFeatureBuilder<TRequest, T>().apply(block)
-    return StreamFeature(
-        handler = builder.handler ?: error("streamFeature {} requires a handle {} block"),
-        notifications = builder.notificationRegistrations.toList(),
-    )
-}
 
 // ── Pipeline behavior DSL ────────────────────────────────────────────────────
 
 @PublishedApi
 internal class LambdaPipelineBehavior(
-    val stage: Stage,
     val order: Int,
     val isEnabled: Boolean,
     private val filter: (Request<*>) -> Boolean,
@@ -219,12 +306,11 @@ internal class LambdaPipelineBehavior(
 }
 
 fun behavior(
-    stage: Stage = Stage.Default,
     order: Int = 0,
     isEnabled: Boolean = true,
     appliesTo: (Request<*>) -> Boolean = { true },
     block: suspend (requestContext: RequestContext, next: suspend (Request<*>) -> Any?, request: Request<*>) -> Any?,
-): PipelineBehavior = LambdaPipelineBehavior(stage, order, isEnabled, appliesTo, block)
+): PipelineBehavior = LambdaPipelineBehavior(order, isEnabled, appliesTo, block)
 
 @PublishedApi
 internal class LambdaStreamPipelineBehavior(

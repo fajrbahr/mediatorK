@@ -2,8 +2,6 @@
 
 package com.fajrbahr.mediatork
 
-import com.fajrbahr.mediatork.api.Mediator
-import com.fajrbahr.mediatork.api.RequestContext
 import com.fajrbahr.mediatork.api.RequestHandler
 import com.fajrbahr.mediatork.pipeline.buildin.RequestCounter
 import kotlinx.coroutines.test.runTest
@@ -15,7 +13,7 @@ class RequestCounterPipelineBehaviorTest {
     @Test
     fun `counts a single request type`() = runTest {
         val counter = RequestCounter()
-        val m = mediator(pipelineBehaviors = listOf(counter.behavior())) { register(PingHandler()) }
+        val m = mediator(pipelineBehaviors = listOf(counter.behavior())) { handler(PingHandler()) }
         m.send(PingQuery("a"))
         m.send(PingQuery("b"))
         assertEquals(2L, counter.countFor(PingQuery::class))
@@ -25,8 +23,8 @@ class RequestCounterPipelineBehaviorTest {
     fun `counts multiple request types independently`() = runTest {
         val counter = RequestCounter()
         val m = mediator(pipelineBehaviors = listOf(counter.behavior())) {
-            register(PingHandler())
-            register(AddHandler())
+            handler(PingHandler())
+            handler(AddHandler())
         }
         m.send(PingQuery("x"))
         m.send(AddCommand(1, 2))
@@ -39,8 +37,8 @@ class RequestCounterPipelineBehaviorTest {
     fun `snapshot returns all counts`() = runTest {
         val counter = RequestCounter()
         val m = mediator(pipelineBehaviors = listOf(counter.behavior())) {
-            register(PingHandler())
-            register(AddHandler())
+            handler(PingHandler())
+            handler(AddHandler())
         }
         m.send(PingQuery("x"))
         m.send(AddCommand(1, 2))
@@ -52,7 +50,7 @@ class RequestCounterPipelineBehaviorTest {
     @Test
     fun `reset clears all counts`() = runTest {
         val counter = RequestCounter()
-        val m = mediator(pipelineBehaviors = listOf(counter.behavior())) { register(PingHandler()) }
+        val m = mediator(pipelineBehaviors = listOf(counter.behavior())) { handler(PingHandler()) }
         m.send(PingQuery("x"))
         counter.reset()
         assertEquals(0L, counter.countFor(PingQuery::class))
@@ -75,13 +73,7 @@ class RequestCounterPipelineBehaviorTest {
     fun `count increments even when handler throws`() = runTest {
         val counter = RequestCounter()
         val m = mediator(pipelineBehaviors = listOf(counter.behavior())) {
-            register(object : RequestHandler<PingQuery, String> {
-                override suspend fun handle(
-                    mediator: Mediator,
-                    requestContext: RequestContext,
-                    request: PingQuery,
-                ): String = throw RuntimeException("always fails")
-            })
+            handler(RequestHandler<PingQuery, String> { mediator, requestContext, request -> throw RuntimeException("always fails") })
         }
         runCatching { m.send(PingQuery("x")) }
         assertEquals(1L, counter.countFor(PingQuery::class))
@@ -101,8 +93,8 @@ class RequestCounterPipelineBehaviorTest {
     fun `reset leaves snapshot empty`() = runTest {
         val counter = RequestCounter()
         val m = mediator(pipelineBehaviors = listOf(counter.behavior())) {
-            register(PingHandler())
-            register(AddHandler())
+            handler(PingHandler())
+            handler(AddHandler())
         }
         m.send(PingQuery("x"))
         m.send(AddCommand(1, 2))

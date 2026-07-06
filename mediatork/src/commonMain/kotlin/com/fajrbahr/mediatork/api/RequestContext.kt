@@ -16,24 +16,16 @@ package com.fajrbahr.mediatork.api
 class RequestContext {
     private val metadata = mutableMapOf<String, Any?>()
 
-    /**
-     * Retrieves a value from the context, casting it to [T].
-     *
-     * Returns `null` if the key is absent or the stored value cannot be cast to [T].
-     *
-     * @param T the expected type of the stored value.
-     * @param key the key under which the value was stored.
-     * @return the cast value, or `null` if the key is absent or the cast fails.
-     */
+    @Suppress("UNCHECKED_CAST")
+    operator fun <T> get(key: ContextKey<T>): T? = metadata[key.name] as? T
+
+    operator fun <T> set(key: ContextKey<T>, value: T?) {
+        metadata[key.name] = value
+    }
+
     @Suppress("UNCHECKED_CAST")
     fun <T> getMetaData(key: String): T? = metadata[key] as? T
 
-    /**
-     * Stores [value] under [key], replacing any previously stored value.
-     *
-     * @param key the key to associate with [value].
-     * @param value the value to store; may be `null`.
-     */
     fun put(key: String, value: Any?) {
         metadata[key] = value
     }

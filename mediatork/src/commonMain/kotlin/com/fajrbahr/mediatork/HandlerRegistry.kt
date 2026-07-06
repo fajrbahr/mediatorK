@@ -92,30 +92,20 @@ class HandlerRegistry {
 
     // ── Feature registration ──────────────────────────────────────────────────
 
-    /** Registers a [Feature]'s handler, validators, notification handlers, and behaviors in one step. */
+    /** Registers a [Feature]'s handler and validators. */
     inline fun <reified TRequest : Request<TResult>, TResult> registerFeature(
         feature: Feature<TRequest, TResult>,
     ): HandlerRegistry {
         register(feature.handler)
         feature.validators.forEach { registerValidator(it) }
-        feature.notifications.forEach { registration ->
-            notificationHandlers.getOrPut(registration.notificationClass) { mutableListOf() }
-                .add(registration.handler)
-        }
-        pipelineBehaviors += feature.behaviors
-        streamPipelineBehaviors += feature.streamBehaviors
         return this
     }
 
-    /** Registers a [StreamFeature]'s stream handler and notification handlers in one step. */
+    /** Registers a [StreamFeature]'s stream handler. */
     inline fun <reified TRequest : StreamRequest<T>, T> registerStreamFeature(
         feature: StreamFeature<TRequest, T>,
     ): HandlerRegistry {
         registerStream(feature.handler)
-        feature.notifications.forEach { registration ->
-            notificationHandlers.getOrPut(registration.notificationClass) { mutableListOf() }
-                .add(registration.handler)
-        }
         return this
     }
 

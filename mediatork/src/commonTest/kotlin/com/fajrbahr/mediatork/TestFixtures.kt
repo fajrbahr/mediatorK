@@ -47,23 +47,15 @@ class AlertNotificationHandler : NotificationHandler<AlertNotification> {
     }
 }
 
-// ── DSL-based handler functions (alternative to class-based handlers) ────────
-
-fun pingHandlerDsl(): RequestHandler<PingQuery, String> =
-    com.fajrbahr.mediatork.handler.handler { request -> "pong:${request.value}" }
-
-fun addHandlerDsl(): RequestHandler<AddCommand, Int> =
-    com.fajrbahr.mediatork.handler.handler { request -> request.a + request.b }
-
 // ── Builder helper ────────────────────────────────────────────────────────────
 
 fun mediator(
     pipelineBehaviors: List<PipelineBehavior> = emptyList(),
     notificationPublisher: NotificationPublishStrategy = ParallelNotificationPublisher(),
     missingNotificationHandler: NotificationHandler<Notification> = ThrowMissingNotificationHandler(),
-    block: MediatorBuilder.() -> Unit = {},
-): Mediator = mediatorK {
-    behaviors(*pipelineBehaviors.toTypedArray())
+    block: MediatorModule = {},
+): Mediator = buildMediatorK {
+    behavior(*pipelineBehaviors.toTypedArray())
     this.notificationPublisher = notificationPublisher
     this.missingNotificationHandler = missingNotificationHandler
     block()
