@@ -26,8 +26,6 @@ val orderFeatureWithoutUI = feature<CreateOrderCommandRaw, OrderResult> {
 
         OrderResult(orderId = newOrderId, responseTime = 0)
     }
-        .timeout(10.seconds)
-        .retry(2)
 }
 
 val orderSliceWithoutUI = mediatorModule {

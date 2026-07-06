@@ -10,6 +10,7 @@ val getOrderFeature = feature<GetOrderQuery, OrderInfo> {
     }
         .timeout(5.seconds)
         .cache(keyFrom = { it.orderId })
+        .measure()
         .fallback { query ->
             // Fallback if primary handler times out or fails
             println("Using fallback for ${query.orderId}")

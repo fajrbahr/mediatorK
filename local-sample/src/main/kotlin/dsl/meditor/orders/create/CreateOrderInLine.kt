@@ -31,7 +31,7 @@ val orderFeature = feature<CreateOrderCommand, OrderResult, OrderUi> {
         )
 
         OrderResult(orderId = newOrderId, responseTime = 0)
-    }.retry().cache()
+    }
 
     after { ctx, result, request ->
         println("After: $result")

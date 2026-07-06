@@ -46,9 +46,7 @@ val orderFeatureFullyExtracted = feature<CreateOrderCommand, OrderResult, OrderU
 
         OrderResult(orderId = newOrderId, responseTime = 0)
     }
-        .retry(3)
-        .timeout(5.seconds)
-        .measure()
+
 
     validate(orderValidatorExtracted)
     before(orderBeforeHookExtracted)
