@@ -11,6 +11,10 @@ import com.fajrbahr.mediatork.validator.ValidationException
 import dsl.meditor.behaviors.localeBehavior
 import dsl.meditor.behaviors.measurePipelineBehavior
 import dsl.meditor.behaviors.streamLoggingBehavior
+import dsl.meditor.orders.advanced.APPROVAL_LEVEL_KEY
+import dsl.meditor.orders.advanced.ApproveOrderCommand
+import dsl.meditor.orders.advanced.USER_CONTEXT_KEY
+import dsl.meditor.orders.advanced.advancedPatternsModule
 import dsl.meditor.orders.create.CreateOrderCommand
 import dsl.meditor.orders.create.GetOrderQuery
 import dsl.meditor.orders.create.OrderCreatedNotification
@@ -40,6 +44,10 @@ private val mediator = buildMediatorK {
     // - raw handler registration (non-feature)
     add(deleteOrderSlice)
     add(orderUpdatesSlice)
+
+    // ── Advanced DSL patterns ──────────────────────────────────────────────
+    // Demonstrates: infix operators, invoke shortcuts, context get/set
+    add(advancedPatternsModule)
 
     // ── Behaviors (request + stream) ────────────────────────────────────────
     add(
@@ -176,4 +184,23 @@ fun main(): Unit = runBlocking {
     println("=== trySend: safe dispatch ===")
     val safeResult: Result<OrderUi> = mediator.trySend(CreateOrderCommand(id = "safe-1", amount = 50.0))
     println("  trySend success: ${safeResult.isSuccess}, value: ${safeResult.getOrNull()}")
+
+    println()
+
+    // ═══════════════════════════════════════════════════════════════════════════
+    // ADVANCED DSL PATTERNS
+    // ═══════════════════════════════════════════════════════════════════════════
+
+    // ── Advanced patterns: orElse, context operators, invoke() shorthand ─────
+    println("=== Advanced DSL Patterns ===")
+    println("Features demonstrated:")
+    println("  - feature() invoke shorthand: approvalFeature()")
+    println("  - orElse infix operator: handler1 orElse handler2")
+    println("  - contextKey<T>(name) for type-safe context access")
+    println("  - context[KEY] get/set operators in handlers")
+
+    val approvalResult = mediator.send(ApproveOrderCommand(orderId = "ORD-ADV-1", amount = 5000.0))
+    println("Approval result: $approvalResult")
+
+    println()
 }
