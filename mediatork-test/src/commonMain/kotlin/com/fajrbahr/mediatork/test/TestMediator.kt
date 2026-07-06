@@ -40,7 +40,7 @@ class TestMediator(
     init: HandlerRegistry.() -> Unit = {},
 ) : Mediator {
 
-    override val registry: HandlerRegistry = HandlerRegistry().apply(init)
+    val registry: HandlerRegistry = HandlerRegistry().apply(init)
 
     private val overrideMediator: Mediator = MediatorFactory.create(registry = registry)
 

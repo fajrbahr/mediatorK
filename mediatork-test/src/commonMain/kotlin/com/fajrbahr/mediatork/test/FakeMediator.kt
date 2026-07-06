@@ -41,7 +41,7 @@ class FakeMediator(
         init()
     }
 
-    override val registry: HandlerRegistry get() = builder.registry
+    val registry: HandlerRegistry get() = builder.registry
 
     private val mediator = builder.build()
 

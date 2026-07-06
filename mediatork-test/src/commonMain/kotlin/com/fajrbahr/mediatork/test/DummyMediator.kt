@@ -20,7 +20,7 @@ import kotlinx.coroutines.flow.emptyFlow
  * ```
  */
 class DummyMediator : Mediator {
-    override val registry: HandlerRegistry = HandlerRegistry()
+    val registry: HandlerRegistry = HandlerRegistry()
 
     @Suppress("UNCHECKED_CAST")
     override suspend fun <TRequest : Request<TResult>, TResult> send(request: TRequest): TResult =

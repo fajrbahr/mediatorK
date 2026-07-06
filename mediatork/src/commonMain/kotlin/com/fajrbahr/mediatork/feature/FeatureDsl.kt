@@ -209,6 +209,7 @@ internal fun <TRequest : Request<TResult>, TResult> buildFeature(
     )
 }
 
+@JvmName("featureIdentity")
 inline fun <reified TRequest : Request<TResult>, TResult> feature(
     block: FeatureBuilder<TRequest, TResult, TResult>.() -> Unit,
 ): Feature<TRequest, TResult> {
@@ -216,7 +217,7 @@ inline fun <reified TRequest : Request<TResult>, TResult> feature(
     return buildFeature(builder)
 }
 
-@Suppress("UNCHECKED_CAST", "PLATFORM_DECLARATION_CLASH")
+@JvmName("featureWithMapper")
 inline fun <reified TRequest : Request<TRaw>, TRaw : Any, TResult : Any> feature(
     block: FeatureBuilder<TRequest, TRaw, TResult>.() -> Unit,
 ): Feature<TRequest, TRaw> {
@@ -242,7 +243,7 @@ inline fun <reified TRequest : Request<TRaw>, TRaw : Any, TResult : Any> feature
     )
 }
 
-@Suppress("UNCHECKED_CAST", "PLATFORM_DECLARATION_CLASH")
+@JvmName("featureWithResult")
 inline fun <reified TRequest : Request<TResult>, TRaw : Any, TResult : Any> feature(
     block: FeatureBuilder<TRequest, TRaw, TResult>.() -> Unit,
 ): Feature<TRequest, TResult> {
