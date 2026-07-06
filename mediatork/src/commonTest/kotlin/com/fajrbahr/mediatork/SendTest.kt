@@ -11,15 +11,15 @@ class SendTest {
 
     @Test
     fun `send returns handler result`() = runTest {
-        val m = mediator { handler(PingHandler()) }
+        val m = mediator { add(PingHandler()) }
         assertEquals("pong:hello", m.send(PingQuery("hello")))
     }
 
     @Test
     fun `send routes to correct handler when multiple are registered`() = runTest {
         val m = mediator {
-            handler(PingHandler())
-            handler(AddHandler())
+            add(PingHandler())
+            add(AddHandler())
         }
         assertEquals(7, m.send(AddCommand(3, 4)))
         assertEquals("pong:x", m.send(PingQuery("x")))
@@ -28,20 +28,20 @@ class SendTest {
     @Test
     fun `send with Request_Unit returns Unit and executes side effect`() = runTest {
         val handler = NoResultHandler()
-        val m = mediator { handler(handler) }
+        val m = mediator { add(handler) }
         m.send(NoResultCommand("id-1"))
         assertEquals("id-1", handler.lastId)
     }
 
     @Test
     fun `send with zero arguments returns correct sum`() = runTest {
-        val m = mediator { handler(AddHandler()) }
+        val m = mediator { add(AddHandler()) }
         assertEquals(0, m.send(AddCommand(0, 0)))
     }
 
     @Test
     fun `send with negative numbers returns correct result`() = runTest {
-        val m = mediator { handler(AddHandler()) }
+        val m = mediator { add(AddHandler()) }
         assertEquals(-3, m.send(AddCommand(-1, -2)))
     }
 
@@ -62,7 +62,7 @@ class SendTest {
 
     @Test
     fun `MissingHandlerException lists registered types when available`() = runTest {
-        val m = mediator { handler(AddHandler()) }
+        val m = mediator { add(AddHandler()) }
         val ex = assertFailsWith<MissingHandlerException> { m.send(PingQuery("x")) }
         assertTrue(ex.message!!.contains("AddCommand"), "expected registered types in message, got: ${ex.message}")
     }
@@ -78,8 +78,8 @@ class SendTest {
         val first = RequestHandler<PingQuery, String> { mediator, requestContext, request -> "first" }
         val second = RequestHandler<PingQuery, String> { mediator, requestContext, request -> "second" }
         val m = mediator {
-            handler(first)
-            handler(second)
+            add(first)
+            add(second)
         }
         assertEquals("second", m.send(PingQuery("x")))
     }
@@ -93,8 +93,8 @@ class SendTest {
             )
         }
         val m = mediator {
-            handler(inner)
-            handler(outer)
+            add(inner)
+            add(outer)
         }
         assertEquals("nested:hello", m.send(PingQuery("hello")))
     }

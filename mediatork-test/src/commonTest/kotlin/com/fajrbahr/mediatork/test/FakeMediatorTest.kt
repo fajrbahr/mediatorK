@@ -14,7 +14,7 @@ class FakeMediatorTest {
     @Test
     fun `send dispatches to registered handler`() = runTest {
         val mediator = FakeMediator {
-            handler(GetUserHandler())
+            add(GetUserHandler())
         }
         assertEquals("user:42", mediator.send(GetUserQuery("42")))
     }
@@ -22,8 +22,8 @@ class FakeMediatorTest {
     @Test
     fun `send routes to correct handler among multiple`() = runTest {
         val mediator = FakeMediator {
-            handler(GetUserHandler())
-            handler(CreateOrderHandler())
+            add(GetUserHandler())
+            add(CreateOrderHandler())
         }
         assertEquals("user:1", mediator.send(GetUserQuery("1")))
         assertEquals("order:ORD-1", mediator.send(CreateOrderCommand("ORD-1")))
@@ -98,7 +98,7 @@ class FakeMediatorTest {
             }
         }
         val mediator = FakeMediator(pipelineBehaviors = listOf(behavior)) {
-            handler(GetUserHandler())
+            add(GetUserHandler())
         }
         mediator.send(GetUserQuery("1"))
         assertEquals(listOf("before", "after"), log)
@@ -122,7 +122,7 @@ class FakeHandlerTest {
         val handler = fakeHandler<GetUserQuery, String> { _, _, request ->
             "fake:${request.id}"
         }
-        val mediator = FakeMediator { handler(handler) }
+        val mediator = FakeMediator { add(handler) }
         assertEquals("fake:123", mediator.send(GetUserQuery("123")))
     }
 
@@ -132,7 +132,7 @@ class FakeHandlerTest {
             ctx.put("seen", true)
             "ok"
         }
-        val mediator = FakeMediator { handler(handler) }
+        val mediator = FakeMediator { add(handler) }
         assertEquals("ok", mediator.send(GetUserQuery("1")))
     }
 

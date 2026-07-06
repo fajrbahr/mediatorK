@@ -30,7 +30,7 @@ class FallbackRequestHandlerTest {
     fun `uses primary handler when it succeeds`() = runTest {
         val m =
             mediator {
-                handler<PingQuery, String>(
+                add<PingQuery, String>(
                     SucceedingHandler("primary") orElse SucceedingHandler("fallback"),
                 )
             }
@@ -39,7 +39,7 @@ class FallbackRequestHandlerTest {
 
     @Test
     fun `falls back to second handler when first throws`() = runTest {
-        val m = mediator { handler<PingQuery, String>(FailingHandler("oops") orElse SucceedingHandler("fallback")) }
+        val m = mediator { add<PingQuery, String>(FailingHandler("oops") orElse SucceedingHandler("fallback")) }
         assertEquals("fallback", m.send(PingQuery("x")))
     }
 
@@ -47,7 +47,7 @@ class FallbackRequestHandlerTest {
     fun `chains three handlers and uses first successful one`() = runTest {
         val third = SucceedingHandler("third")
         val m = mediator {
-            handler<PingQuery, String>(FailingHandler("1") orElse FailingHandler("2") orElse third)
+            add<PingQuery, String>(FailingHandler("1") orElse FailingHandler("2") orElse third)
         }
         assertEquals("third", m.send(PingQuery("x")))
         assertEquals(1, third.callCount)
@@ -56,7 +56,7 @@ class FallbackRequestHandlerTest {
     @Test
     fun `rethrows last exception when all handlers fail`() = runTest {
         val m = mediator {
-            handler<PingQuery, String>(FailingHandler("first") orElse FailingHandler("last"))
+            add<PingQuery, String>(FailingHandler("first") orElse FailingHandler("last"))
         }
         val ex = assertFailsWith<RuntimeException> { m.send(PingQuery("x")) }
         assertEquals("last", ex.message)
@@ -65,7 +65,7 @@ class FallbackRequestHandlerTest {
     @Test
     fun `does not call subsequent handlers after first success`() = runTest {
         val second = SucceedingHandler("second")
-        val m = mediator { handler<PingQuery, String>(SucceedingHandler("primary") orElse second) }
+        val m = mediator { add<PingQuery, String>(SucceedingHandler("primary") orElse second) }
         m.send(PingQuery("x"))
         assertEquals(0, second.callCount)
     }

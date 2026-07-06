@@ -1,18 +1,8 @@
 package com.fajrbahr.mediatork.sample.university.student.domain
 
-import com.fajrbahr.mediatork.HandlerRegistry
-import com.fajrbahr.mediatork.api.MediatorRegistrar
-
-fun studentRegistrar(store: StudentStore): MediatorRegistrar = object : MediatorRegistrar {
-    override fun register(registry: HandlerRegistry) {
-        registry.apply {
-            register(getStudents(store))
-            register(getStudent(store))
-            register(getStudentEnrollments(store))
-            register(createStudent(store))
-            register(editStudent(store))
-            register(deleteStudent(store))
-            register(enrollStudent(store))
-        }
-    }
-}
+// Note: University sample registrar pattern will be refactored to use new buildMediatorK
+// DSL when gradle version is updated to 0.7.2. For now, keeping original pattern.
+//
+// The domain handler/feature functions have been updated to demonstrate new chaining:
+// - handle { ... }.retry(n).timeout(...).measure()
+// - Query handlers with .cache(keyFrom = { ... }).timeout(...)

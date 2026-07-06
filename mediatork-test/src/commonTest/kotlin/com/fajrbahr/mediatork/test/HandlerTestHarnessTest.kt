@@ -12,7 +12,7 @@ class HandlerTestHarnessTest {
     @Test
     fun `send dispatches request and returns result`() = runTest {
         val harness = buildHandlerTestHarness {
-            handler(GetUserHandler())
+            add(GetUserHandler())
         }
         assertEquals("user:42", harness.send(GetUserQuery("42")))
     }
@@ -20,7 +20,7 @@ class HandlerTestHarnessTest {
     @Test
     fun `query dispatches request and returns result`() = runTest {
         val harness = buildHandlerTestHarness {
-            handler(GetUserHandler())
+            add(GetUserHandler())
         }
         assertEquals("user:99", harness.query(GetUserQuery("99")))
     }
@@ -29,7 +29,7 @@ class HandlerTestHarnessTest {
     fun `given executes setup requests silently`() = runTest {
         val handler = DeleteOrderHandler()
         val harness = buildHandlerTestHarness {
-            handler(handler)
+            add(handler)
         }
         harness.given(DeleteOrderCommand("setup-1"), DeleteOrderCommand("setup-2"))
         assertEquals("setup-2", handler.lastId)
@@ -46,8 +46,8 @@ class HandlerTestHarnessTest {
             store[req.id] ?: "not found"
         }
         val harness = buildHandlerTestHarness {
-            handler(createHandler)
-            handler(getHandler)
+            add(createHandler)
+            add(getHandler)
         }
         harness.given(CreateOrderCommand("ORD-1"))
         val result = harness.query(GetUserQuery("ORD-1"))

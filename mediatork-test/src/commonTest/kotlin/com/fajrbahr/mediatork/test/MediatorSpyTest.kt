@@ -19,11 +19,11 @@ class MediatorSpyTest {
 
     private fun buildSpy(): MediatorSpy {
         val fake = FakeMediator {
-            handler(object : RequestHandler<GetUserQuery, String> {
+            add(object : RequestHandler<GetUserQuery, String> {
                 override suspend fun handle(mediator: Mediator, requestContext: RequestContext, request: GetUserQuery) =
                     "user:${request.id}"
             })
-            handler(object : RequestHandler<CreateOrderCommand, String> {
+            add(object : RequestHandler<CreateOrderCommand, String> {
                 override suspend fun handle(
                     mediator: Mediator,
                     requestContext: RequestContext,
@@ -31,10 +31,10 @@ class MediatorSpyTest {
                 ) =
                     "order:${request.id}"
             })
-            notification(object : NotificationHandler<OrderPlacedEvent> {
+            add(object : NotificationHandler<OrderPlacedEvent> {
                 override suspend fun handle(notification: OrderPlacedEvent) = Unit
             })
-            notification(object : NotificationHandler<UserDeletedEvent> {
+            add(object : NotificationHandler<UserDeletedEvent> {
                 override suspend fun handle(notification: UserDeletedEvent) = Unit
             })
         }

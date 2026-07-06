@@ -55,7 +55,7 @@ fun mediator(
     missingNotificationHandler: NotificationHandler<Notification> = ThrowMissingNotificationHandler(),
     block: MediatorModule = {},
 ): Mediator = buildMediatorK {
-    behavior(*pipelineBehaviors.toTypedArray())
+    add(*pipelineBehaviors.toTypedArray())
     this.notificationPublisher = notificationPublisher
     this.missingNotificationHandler = missingNotificationHandler
     block()

@@ -48,6 +48,6 @@ val deleteOrderNotification = sendOrderPushHandler orElse sendOrderSmsHandler
 
 
 val deleteOrderSlice = mediatorModule {
-    handler(deleteOrderHandler)
-    notification(deleteOrderNotification)
+    add(deleteOrderHandler)
+    add(deleteOrderNotification)
 }

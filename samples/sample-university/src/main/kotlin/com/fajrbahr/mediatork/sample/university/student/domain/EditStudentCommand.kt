@@ -6,6 +6,7 @@ import com.fajrbahr.mediatork.feature.Feature
 import com.fajrbahr.mediatork.feature.feature
 import com.fajrbahr.mediatork.feature.validator
 import com.fajrbahr.mediatork.validator.rules
+import kotlin.time.Duration.Companion.seconds
 
 data class EditStudentCommand(
     val id: Int = 0,
@@ -24,7 +25,6 @@ val editStudentValidator: RequestValidator<EditStudentCommand> = validator { req
 
 fun editStudent(store: StudentStore): Feature<EditStudentCommand, Unit> =
     feature {
-        validate(editStudentValidator)
         handle { request ->
             val existing = store.findById(request.id) ?: return@handle
             store.save(
@@ -35,4 +35,8 @@ fun editStudent(store: StudentStore): Feature<EditStudentCommand, Unit> =
                 )
             )
         }
+            .timeout(3.seconds)
+            .measure()
+
+        validate(editStudentValidator)
     }

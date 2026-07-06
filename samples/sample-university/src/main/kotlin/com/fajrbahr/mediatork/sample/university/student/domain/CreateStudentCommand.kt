@@ -3,11 +3,12 @@ package com.fajrbahr.mediatork.sample.university.student.domain
 import com.fajrbahr.mediatork.api.Request
 import com.fajrbahr.mediatork.api.RequestValidator
 import com.fajrbahr.mediatork.feature.Feature
-import com.fajrbahr.mediatork.feature.mappedFeature
+import com.fajrbahr.mediatork.feature.feature
 import com.fajrbahr.mediatork.feature.mapper
 import com.fajrbahr.mediatork.feature.validator
 import com.fajrbahr.mediatork.sample.university.student.model.Student
 import com.fajrbahr.mediatork.validator.rules
+import kotlin.time.Duration.Companion.seconds
 
 data class CreateStudentCommand(
     val lastName: String = "",
@@ -26,8 +27,7 @@ val createStudentValidator: RequestValidator<CreateStudentCommand> = validator {
 val createStudentMapper = mapper<Student, Int> { student -> student.id }
 
 fun createStudent(store: StudentStore): Feature<CreateStudentCommand, Int> =
-    mappedFeature<CreateStudentCommand, Int>(createStudentMapper) {
-        validate(createStudentValidator)
+    feature<CreateStudentCommand, Student, Int> {
         handle { request ->
             val student = Student(
                 id = store.nextId(),
@@ -38,4 +38,10 @@ fun createStudent(store: StudentStore): Feature<CreateStudentCommand, Int> =
             store.save(student)
             student
         }
+            .retry(2)
+            .timeout(3.seconds)
+            .measure()
+
+        validate(createStudentValidator)
+        mapper(createStudentMapper)
     }

@@ -26,12 +26,12 @@ private val mediator = buildMediatorK {
 
     // ── Product Features ────────────────────────────────────────────────────
     //  install(productSlice(repo, pushService, inAppService))
-    install(deleteOrderSlice)
-    install(orderUpdatesSlice)
-    feature(orderFeatureFullyExtracted)
+    add(deleteOrderSlice)
+    add(orderUpdatesSlice)
+    add(orderFeatureFullyExtracted)
 
     // ── Behaviors (request + stream) ────────────────────────────────────────
-    behavior(
+    add(
         localeBehavior,
         measurePipelineBehavior,
         loggingPipelineBehavior(),

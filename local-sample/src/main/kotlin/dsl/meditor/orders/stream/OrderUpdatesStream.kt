@@ -26,5 +26,5 @@ val orderUpdatesHandler = streamHandler<OrderUpdatesStream, OrderUpdate> { reque
 }
 
 val orderUpdatesSlice = mediatorModule {
-    handler(orderUpdatesHandler)
+    add(orderUpdatesHandler)
 }

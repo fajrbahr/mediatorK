@@ -6,12 +6,15 @@ import com.fajrbahr.mediatork.feature.feature
 import com.fajrbahr.mediatork.feature.validator
 import com.fajrbahr.mediatork.sample.university.course.model.Course
 import com.fajrbahr.mediatork.validator.rules
+import kotlin.time.Duration.Companion.seconds
 
 data class GetCourseQuery(val id: Int) : Request<Course?>
 
 fun getCourse(store: CourseStore): Feature<GetCourseQuery, Course?> =
     feature {
         handle { request -> store.findById(request.id) }
+            .cache(keyFrom = { it.id.toString() })
+            .timeout(2.seconds)
     }
 
 data class EditCourseCommand(
@@ -30,7 +33,6 @@ val editCourseValidator = validator<EditCourseCommand> { request ->
 
 fun editCourse(store: CourseStore): Feature<EditCourseCommand, Unit> =
     feature {
-        validate(editCourseValidator)
         handle { request ->
             val existing = store.findById(request.id) ?: return@handle
             store.save(
@@ -41,4 +43,8 @@ fun editCourse(store: CourseStore): Feature<EditCourseCommand, Unit> =
                 )
             )
         }
+            .timeout(3.seconds)
+            .measure()
+
+        validate(editCourseValidator)
     }

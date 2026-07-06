@@ -76,7 +76,7 @@ class MediatorDslTest {
     @Test
     fun `class-based handlers and registrars mix with lambdas`() = runTest {
         val m = buildMediatorK {
-            handler(PingHandler())
+            add(PingHandler())
             +AddHandler()
             handle<EchoQuery, String> { request -> request.text }
         }

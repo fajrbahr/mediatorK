@@ -27,7 +27,7 @@ class PrePostProcessorTest {
         }
         val handler =
             RequestHandler<PingQuery, String> { mediator, requestContext, request -> order += "handler"; "ok" }
-        val m = mediator(pipelineBehaviors = listOf(pre)) { handler(handler) }
+        val m = mediator(pipelineBehaviors = listOf(pre)) { add(handler) }
         m.send(PingQuery("x"))
         assertEquals(listOf("pre", "handler"), order)
     }
@@ -47,7 +47,7 @@ class PrePostProcessorTest {
         val handler = RequestHandler<PingQuery, String> { mediator, requestContext, request ->
             captured = requestContext.getMetaData("token"); "ok"
         }
-        val m = mediator(pipelineBehaviors = listOf(pre)) { handler(handler) }
+        val m = mediator(pipelineBehaviors = listOf(pre)) { add(handler) }
         m.send(PingQuery("x"))
         assertEquals("abc123", captured)
     }
@@ -73,7 +73,7 @@ class PrePostProcessorTest {
                 order += "second"; return next(request)
             }
         }
-        val m = mediator(pipelineBehaviors = listOf(second, first)) { handler(PingHandler()) }
+        val m = mediator(pipelineBehaviors = listOf(second, first)) { add(PingHandler()) }
         m.send(PingQuery("x"))
         assertEquals(listOf("first", "second"), order)
     }
@@ -89,7 +89,7 @@ class PrePostProcessorTest {
             ): TResult = throw IllegalArgumentException("invalid")
         }
         val handler = RequestHandler<PingQuery, String> { mediator, requestContext, request -> handlerRan = true; "ok" }
-        val m = mediator(pipelineBehaviors = listOf(pre)) { handler(handler) }
+        val m = mediator(pipelineBehaviors = listOf(pre)) { add(handler) }
         assertFailsWith<IllegalArgumentException> { m.send(PingQuery("x")) }
         assertFalse(handlerRan)
     }
@@ -110,7 +110,7 @@ class PrePostProcessorTest {
         }
         val handler =
             RequestHandler<PingQuery, String> { mediator, requestContext, request -> order += "handler"; "ok" }
-        val m = mediator(pipelineBehaviors = listOf(post)) { handler(handler) }
+        val m = mediator(pipelineBehaviors = listOf(post)) { add(handler) }
         m.send(PingQuery("x"))
         assertEquals(listOf("handler", "post"), order)
     }
@@ -127,7 +127,7 @@ class PrePostProcessorTest {
                 val r = next(request); captured = r; return r
             }
         }
-        val m = mediator(pipelineBehaviors = listOf(post)) { handler(PingHandler()) }
+        val m = mediator(pipelineBehaviors = listOf(post)) { add(PingHandler()) }
         m.send(PingQuery("world"))
         assertEquals("pong:world", captured)
     }
@@ -144,7 +144,7 @@ class PrePostProcessorTest {
                 val r = next(request); capturedRequest = request; return r
             }
         }
-        val m = mediator(pipelineBehaviors = listOf(post)) { handler(PingHandler()) }
+        val m = mediator(pipelineBehaviors = listOf(post)) { add(PingHandler()) }
         m.send(PingQuery("hello"))
         assertEquals(PingQuery("hello"), capturedRequest)
     }
@@ -170,7 +170,7 @@ class PrePostProcessorTest {
                 val r = next(request); order += "second"; return r
             }
         }
-        val m = mediator(pipelineBehaviors = listOf(second, first)) { handler(PingHandler()) }
+        val m = mediator(pipelineBehaviors = listOf(second, first)) { add(PingHandler()) }
         m.send(PingQuery("x"))
         assertEquals(listOf("first", "second"), order)
     }
@@ -189,7 +189,7 @@ class PrePostProcessorTest {
         }
         val failingHandler =
             RequestHandler<PingQuery, String> { mediator, requestContext, request -> throw RuntimeException("boom") }
-        val m = mediator(pipelineBehaviors = listOf(post)) { handler(failingHandler) }
+        val m = mediator(pipelineBehaviors = listOf(post)) { add(failingHandler) }
         assertFailsWith<RuntimeException> { m.send(PingQuery("x")) }
         assertFalse(postRan)
     }
@@ -215,7 +215,7 @@ class PrePostProcessorTest {
                 val r = next(request); postSawValue = requestContext.getMetaData("shared"); return r
             }
         }
-        val m = mediator(pipelineBehaviors = listOf(pre, post)) { handler(PingHandler()) }
+        val m = mediator(pipelineBehaviors = listOf(pre, post)) { add(PingHandler()) }
         m.send(PingQuery("x"))
         assertEquals("value", postSawValue)
     }

@@ -6,6 +6,7 @@ import com.fajrbahr.mediatork.feature.feature
 import com.fajrbahr.mediatork.feature.validator
 import com.fajrbahr.mediatork.sample.university.course.model.Course
 import com.fajrbahr.mediatork.validator.rules
+import kotlin.time.Duration.Companion.seconds
 
 data class CreateCourseCommand(
     val number: Int = 0,
@@ -24,7 +25,6 @@ val createCourseValidator = validator<CreateCourseCommand> { request ->
 
 fun createCourse(store: CourseStore): Feature<CreateCourseCommand, Int> =
     feature {
-        validate(createCourseValidator)
         handle { request ->
             val course = Course(
                 id = store.nextId(),
@@ -36,4 +36,9 @@ fun createCourse(store: CourseStore): Feature<CreateCourseCommand, Int> =
             store.save(course)
             course.id
         }
+            .retry(2)
+            .timeout(3.seconds)
+            .measure()
+
+        validate(createCourseValidator)
     }

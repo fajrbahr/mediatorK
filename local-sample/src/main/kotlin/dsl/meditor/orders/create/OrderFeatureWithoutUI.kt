@@ -31,5 +31,5 @@ val orderFeatureWithoutUI = feature<CreateOrderCommandRaw, OrderResult> {
 }
 
 val orderSliceWithoutUI = mediatorModule {
-    feature(orderFeatureWithoutUI)
+    add(orderFeatureWithoutUI)
 }

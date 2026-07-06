@@ -4,6 +4,7 @@ import com.fajrbahr.mediatork.api.Request
 import com.fajrbahr.mediatork.feature.Feature
 import com.fajrbahr.mediatork.feature.feature
 import com.fajrbahr.mediatork.sample.university.department.domain.DepartmentStore
+import kotlin.time.Duration.Companion.seconds
 
 data class DeleteInstructorCommand(val id: Int) : Request<Unit>
 
@@ -20,4 +21,6 @@ fun deleteInstructor(
                 }
             }
         }
+            .timeout(3.seconds)
+            .measure()
     }

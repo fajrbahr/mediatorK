@@ -2,10 +2,11 @@ package com.fajrbahr.mediatork.sample.university.student.domain
 
 import com.fajrbahr.mediatork.api.Request
 import com.fajrbahr.mediatork.feature.Feature
-import com.fajrbahr.mediatork.feature.mappedFeature
+import com.fajrbahr.mediatork.feature.feature
 import com.fajrbahr.mediatork.feature.mapper
 import com.fajrbahr.mediatork.sample.university.model.Enrollment
 import com.fajrbahr.mediatork.sample.university.model.Grade
+import kotlin.time.Duration.Companion.seconds
 
 data class EnrollStudentCommand(
     val studentId: Int,
@@ -16,7 +17,7 @@ data class EnrollStudentCommand(
 val enrollStudentMapper = mapper<Enrollment, Int> { it.id }
 
 fun enrollStudent(store: StudentStore): Feature<EnrollStudentCommand, Int> =
-    mappedFeature<EnrollStudentCommand, Int>(enrollStudentMapper) {
+    feature<EnrollStudentCommand, Enrollment, Int> {
         handle { request ->
             val enrollment = Enrollment(
                 id = store.nextEnrollmentId(),
@@ -27,4 +28,8 @@ fun enrollStudent(store: StudentStore): Feature<EnrollStudentCommand, Int> =
             store.saveEnrollment(enrollment)
             enrollment
         }
+            .timeout(3.seconds)
+            .measure()
+
+        mapper(enrollStudentMapper)
     }

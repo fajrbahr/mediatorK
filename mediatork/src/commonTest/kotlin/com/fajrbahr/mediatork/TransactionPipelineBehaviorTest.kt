@@ -32,7 +32,7 @@ class TransactionPipelineBehaviorTest {
     fun `begin and commit called on successful handler`() = runTest {
         val provider = RecordingTransactionProvider()
         val m = mediator(pipelineBehaviors = listOf(transactionPipelineBehavior(provider))) {
-            handler(PingHandler())
+            add(PingHandler())
         }
         m.send(PingQuery("x"))
         assertEquals(listOf("begin", "commit"), provider.log)
@@ -42,7 +42,7 @@ class TransactionPipelineBehaviorTest {
     fun `begin and rollback called when handler throws`() = runTest {
         val provider = RecordingTransactionProvider()
         val m = mediator(pipelineBehaviors = listOf(transactionPipelineBehavior(provider))) {
-            handler(RequestHandler<PingQuery, String> { mediator, requestContext, request -> throw RuntimeException("handler failed") })
+            add(RequestHandler<PingQuery, String> { mediator, requestContext, request -> throw RuntimeException("handler failed") })
         }
         assertFailsWith<RuntimeException> { m.send(PingQuery("x")) }
         assertEquals(listOf("begin", "rollback"), provider.log)
@@ -52,7 +52,7 @@ class TransactionPipelineBehaviorTest {
     fun `exception is rethrown after rollback`() = runTest {
         val provider = RecordingTransactionProvider()
         val m = mediator(pipelineBehaviors = listOf(transactionPipelineBehavior(provider))) {
-            handler(RequestHandler<PingQuery, String> { mediator, requestContext, request -> error("domain error") })
+            add(RequestHandler<PingQuery, String> { mediator, requestContext, request -> error("domain error") })
         }
         val ex = assertFailsWith<IllegalStateException> { m.send(PingQuery("x")) }
         assertEquals("domain error", ex.message)
@@ -62,7 +62,7 @@ class TransactionPipelineBehaviorTest {
     fun `handler result returned on success`() = runTest {
         val provider = RecordingTransactionProvider()
         val m = mediator(pipelineBehaviors = listOf(transactionPipelineBehavior(provider))) {
-            handler(AddHandler())
+            add(AddHandler())
         }
         assertEquals(7, m.send(AddCommand(3, 4)))
     }
@@ -71,7 +71,7 @@ class TransactionPipelineBehaviorTest {
     fun `commit not called when handler throws`() = runTest {
         val provider = RecordingTransactionProvider()
         val m = mediator(pipelineBehaviors = listOf(transactionPipelineBehavior(provider))) {
-            handler(RequestHandler<PingQuery, String> { mediator, requestContext, request -> throw RuntimeException("boom") })
+            add(RequestHandler<PingQuery, String> { mediator, requestContext, request -> throw RuntimeException("boom") })
         }
         runCatching { m.send(PingQuery("x")) }
         assertFalse("commit" in provider.log)
@@ -81,7 +81,7 @@ class TransactionPipelineBehaviorTest {
     fun `transaction wraps each request independently`() = runTest {
         val provider = RecordingTransactionProvider()
         val m = mediator(pipelineBehaviors = listOf(transactionPipelineBehavior(provider))) {
-            handler(PingHandler())
+            add(PingHandler())
         }
         m.send(PingQuery("a"))
         m.send(PingQuery("b"))
@@ -92,7 +92,7 @@ class TransactionPipelineBehaviorTest {
     fun `rollback is not called on success`() = runTest {
         val provider = RecordingTransactionProvider()
         val m = mediator(pipelineBehaviors = listOf(transactionPipelineBehavior(provider))) {
-            handler(PingHandler())
+            add(PingHandler())
         }
         m.send(PingQuery("x"))
         assertFalse("rollback" in provider.log)
@@ -115,7 +115,7 @@ class TransactionPipelineBehaviorTest {
             }
         }
         val m = mediator(pipelineBehaviors = listOf(transactionPipelineBehavior(provider))) {
-            handler(RequestHandler<PingQuery, String> { mediator, requestContext, request ->
+            add(RequestHandler<PingQuery, String> { mediator, requestContext, request ->
                 combined += "handler"
                 "ok"
             })
@@ -128,7 +128,7 @@ class TransactionPipelineBehaviorTest {
     fun `Unit handler commits transaction correctly`() = runTest {
         val provider = RecordingTransactionProvider()
         val m = mediator(pipelineBehaviors = listOf(transactionPipelineBehavior(provider))) {
-            handler(NoResultHandler())
+            add(NoResultHandler())
         }
         m.send(NoResultCommand("test-id"))
         assertEquals(listOf("begin", "commit"), provider.log)

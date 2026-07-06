@@ -16,7 +16,7 @@ class LoggingPipelineBehaviorTest {
     fun `logs request name on entry and exit with result`() = runTest {
         val log = mutableListOf<String>()
         val m = mediator(pipelineBehaviors = listOf(loggingPipelineBehavior(logger = log::add))) {
-            handler(PingHandler())
+            add(PingHandler())
         }
         m.send(PingQuery("hello"))
         assertEquals(listOf("→ PingQuery", "← PingQuery result=pong:hello"), log)
@@ -31,7 +31,7 @@ class LoggingPipelineBehaviorTest {
     fun `logs only entry line when handler throws`() = runTest {
         val log = mutableListOf<String>()
         val m = mediator(pipelineBehaviors = listOf(loggingPipelineBehavior(logger = log::add))) {
-            handler(RequestHandler<PingQuery, String> { mediator, requestContext, request -> throw RuntimeException("boom") })
+            add(RequestHandler<PingQuery, String> { mediator, requestContext, request -> throw RuntimeException("boom") })
         }
         assertFailsWith<RuntimeException> { m.send(PingQuery("x")) }
         assertEquals(listOf("→ PingQuery"), log)
@@ -41,7 +41,7 @@ class LoggingPipelineBehaviorTest {
     fun `logs correct class name for AddCommand`() = runTest {
         val log = mutableListOf<String>()
         val m = mediator(pipelineBehaviors = listOf(loggingPipelineBehavior(logger = log::add))) {
-            handler(AddHandler())
+            add(AddHandler())
         }
         m.send(AddCommand(2, 3))
         assertEquals(listOf("→ AddCommand", "← AddCommand result=5"), log)
@@ -55,7 +55,7 @@ class LoggingPipelineBehaviorTest {
     @Test
     fun `result is passed through unchanged`() = runTest {
         val m = mediator(pipelineBehaviors = listOf(loggingPipelineBehavior(logger = {}))) {
-            handler(PingHandler())
+            add(PingHandler())
         }
         assertEquals("pong:world", m.send(PingQuery("world")))
     }
@@ -64,7 +64,7 @@ class LoggingPipelineBehaviorTest {
     fun `multiple requests produce separate log pairs`() = runTest {
         val log = mutableListOf<String>()
         val m = mediator(pipelineBehaviors = listOf(loggingPipelineBehavior(logger = log::add))) {
-            handler(PingHandler())
+            add(PingHandler())
         }
         m.send(PingQuery("a"))
         m.send(PingQuery("b"))
@@ -81,7 +81,7 @@ class LoggingPipelineBehaviorTest {
     fun `each log message is a separate logger call`() = runTest {
         var callCount = 0
         val m = mediator(pipelineBehaviors = listOf(loggingPipelineBehavior(logger = { callCount++ }))) {
-            handler(PingHandler())
+            add(PingHandler())
         }
         m.send(PingQuery("x"))
         assertEquals(2, callCount)
@@ -91,7 +91,7 @@ class LoggingPipelineBehaviorTest {
     fun `entry message contains arrow prefix`() = runTest {
         val log = mutableListOf<String>()
         val m = mediator(pipelineBehaviors = listOf(loggingPipelineBehavior(logger = log::add))) {
-            handler(PingHandler())
+            add(PingHandler())
         }
         m.send(PingQuery("x"))
         assertTrue(log.first().startsWith("→"))
@@ -101,7 +101,7 @@ class LoggingPipelineBehaviorTest {
     fun `exit message contains result value`() = runTest {
         val log = mutableListOf<String>()
         val m = mediator(pipelineBehaviors = listOf(loggingPipelineBehavior(logger = log::add))) {
-            handler(AddHandler())
+            add(AddHandler())
         }
         m.send(AddCommand(10, 20))
         assertTrue(log.last().contains("30"))

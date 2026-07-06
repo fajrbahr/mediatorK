@@ -132,7 +132,7 @@ class ValidationBehaviorTest {
     @Test
     fun `valid request passes through to handler`() = runTest {
         val m = mediator(pipelineBehaviors = listOf(behaviorWith(validatorFor(valid = true)))) {
-            handler(PingHandler())
+            add(PingHandler())
         }
         assertEquals("pong:hello", m.send(PingQuery("hello")))
     }
@@ -140,7 +140,7 @@ class ValidationBehaviorTest {
     @Test
     fun `invalid request throws ValidationException`() = runTest {
         val m = mediator(pipelineBehaviors = listOf(behaviorWith(validatorFor(valid = false)))) {
-            handler(PingHandler())
+            add(PingHandler())
         }
         assertFailsWith<ValidationException> { m.send(PingQuery("x")) }
     }
@@ -148,7 +148,7 @@ class ValidationBehaviorTest {
     @Test
     fun `ValidationException carries the failure message`() = runTest {
         val m = mediator(pipelineBehaviors = listOf(behaviorWith(validatorFor(valid = false, message = "bad input")))) {
-            handler(PingHandler())
+            add(PingHandler())
         }
         val ex = assertFailsWith<ValidationException> { m.send(PingQuery("x")) }
         assertNotNull(ex.message)
@@ -160,7 +160,7 @@ class ValidationBehaviorTest {
         val addValidator = RequestValidator<AddCommand> { ValidationResult.Invalid("add bad") }
         val m =
             mediator(pipelineBehaviors = listOf(validationBehavior(mapOf(AddCommand::class to listOf(addValidator))))) {
-                handler(PingHandler())
+                add(PingHandler())
             }
         assertEquals("pong:x", m.send(PingQuery("x")))
     }
@@ -173,7 +173,7 @@ class ValidationBehaviorTest {
             "ok"
         }
         val m = mediator(pipelineBehaviors = listOf(behaviorWith(validatorFor(valid = false)))) {
-            handler(handler)
+            add(handler)
         }
         assertFailsWith<ValidationException> { m.send(PingQuery("x")) }
         assertFalse(handlerCalled)
@@ -196,7 +196,7 @@ class ValidationBehaviorTest {
         val m = mediator(
             pipelineBehaviors = listOf(behaviorWith(validatorFor(valid = true)), loggingBehavior),
         ) {
-            handler(PingHandler())
+            add(PingHandler())
         }
         m.send(PingQuery("x"))
         assertEquals(listOf("outer"), log)
@@ -219,7 +219,7 @@ class ValidationBehaviorTest {
                 )
             ),
         ) {
-            handler(PingHandler())
+            add(PingHandler())
         }
         m.send(PingQuery("x"))
         assertFalse(addValidatorCalled)
@@ -234,7 +234,7 @@ class ValidationBehaviorTest {
             ValidationResult.Valid
         }
         val m = mediator(pipelineBehaviors = listOf(behaviorWith(v1, v2))) {
-            handler(PingHandler())
+            add(PingHandler())
         }
         assertFailsWith<ValidationException> { m.send(PingQuery("x")) }
         assertFalse(secondCalled)
@@ -249,7 +249,7 @@ class ValidationBehaviorTest {
                 )
             )
         ) {
-            handler(PingHandler())
+            add(PingHandler())
         }
         assertEquals("pong:hello", m.send(PingQuery("hello")))
     }
@@ -258,7 +258,7 @@ class ValidationBehaviorTest {
     fun `validator returning Invalid raises ValidationException`() = runTest {
         val validator = RequestValidator<PingQuery> { ValidationResult.Invalid("direct") }
         val m = mediator(pipelineBehaviors = listOf(behaviorWith(validator))) {
-            handler(PingHandler())
+            add(PingHandler())
         }
         val ex = assertFailsWith<ValidationException> { m.send(PingQuery("x")) }
         assertEquals("direct", ex.message)

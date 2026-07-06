@@ -8,7 +8,6 @@ import com.fajrbahr.mediatork.api.*
 import com.fajrbahr.mediatork.feature.Feature
 import com.fajrbahr.mediatork.feature.StreamFeature
 import com.fajrbahr.mediatork.notification.NotificationPublishStrategy
-import com.fajrbahr.mediatork.notification.ParallelNotificationPublisher
 import kotlinx.coroutines.flow.Flow
 
 /**
@@ -30,13 +29,13 @@ import kotlinx.coroutines.flow.Flow
 class FakeMediator(
     pipelineBehaviors: List<PipelineBehavior> = emptyList(),
     streamPipelineBehaviors: List<StreamPipelineBehavior> = emptyList(),
-    notificationPublisher: NotificationPublishStrategy = ParallelNotificationPublisher(),
+    notificationPublisher: NotificationPublishStrategy = NotificationPublishStrategy.ParallelNotificationPublisher(),
     init: MediatorModule = {},
 ) : Mediator {
 
     val builder = MediatorBuilder().apply {
-        this.behavior(*pipelineBehaviors.toTypedArray())
-        this.behavior(*streamPipelineBehaviors.toTypedArray())
+        this.add(*pipelineBehaviors.toTypedArray())
+        this.add(*streamPipelineBehaviors.toTypedArray())
         this.notificationPublisher = notificationPublisher
         this.verifyHandlers = false
         init()

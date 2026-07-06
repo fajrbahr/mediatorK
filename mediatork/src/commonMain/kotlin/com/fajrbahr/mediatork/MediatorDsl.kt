@@ -159,7 +159,7 @@ inline fun <reified TRequest : Request<*>> HandlerRegistry.validate(
  * then assembles a [Mediator] via [MediatorFactory].
  *
  * All of [HandlerRegistry]'s registration surface is available directly in the
- * builder block — class-based handlers via [notification] or the `+handler` operator,
+ * builder block — class-based handlers via [add] or the `+handler` operator,
  * lambda handlers via [handle], [handleStream], and [validate].
  */
 @MediatorKDsl
@@ -206,12 +206,12 @@ class MediatorBuilder {
      * }
      * ```
      */
-    fun install(vararg block: MediatorModule) {
+    fun add(vararg block: MediatorModule) {
         block.forEach { module -> module.invoke(this) }
     }
 
     /** Adds cross-cutting behaviors. Automatically routes request vs. stream behaviors. */
-    fun behavior(vararg behaviors: Behavior) {
+    fun add(vararg behaviors: Behavior) {
         for (behavior in behaviors) {
             when (behavior) {
                 is PipelineBehavior -> pipelineBehaviors += behavior
@@ -221,26 +221,31 @@ class MediatorBuilder {
     }
 
     /** Adds an inline lambda as a request behavior. */
-    fun behavior(block: suspend (RequestContext, suspend (Request<*>) -> Any?, Request<*>) -> Any?) {
+    fun add(block: suspend (RequestContext, suspend (Request<*>) -> Any?, Request<*>) -> Any?) {
         pipelineBehaviors += com.fajrbahr.mediatork.feature.behavior(block = block)
     }
 
     /** Registers a class-based request handler. */
-    inline fun <reified TRequest : Request<TResult>, TResult> handler(
+    inline fun <reified TRequest : Request<TResult>, TResult> add(
         handler: RequestHandler<TRequest, TResult>,
     ) {
         registry register handler
     }
 
     /** Registers a class-based stream request handler. */
-    inline fun <reified TRequest : StreamRequest<T>, T> handler(
+    inline fun <reified TRequest : StreamRequest<T>, T> add(
         handler: StreamRequestHandler<TRequest, T>,
     ) {
         registry registerStream handler
     }
 
     /** Registers a class-based notification handler. */
-    inline fun <reified T : Notification> notification(handler: NotificationHandler<T>) {
+    inline fun <reified T : Notification> add(handler: NotificationHandler<T>) {
+        registry registerNotification handler
+    }
+
+    /** Registers a class-based notification handler (alias for [add]). */
+    inline fun <reified T : Notification> registerNotification(handler: NotificationHandler<T>) {
         registry registerNotification handler
     }
 
@@ -250,25 +255,25 @@ class MediatorBuilder {
     }
 
     /** Registers a [Feature]'s handler, validators, notifications, and behaviors. */
-    inline fun <reified TRequest : Request<TResult>, TResult> feature(feature: Feature<TRequest, TResult>) {
+    inline fun <reified TRequest : Request<TResult>, TResult> add(feature: Feature<TRequest, TResult>) {
         registry.registerFeature(feature)
     }
 
     /** Support direct invocation: `myFeature()` inside builder. */
     inline operator fun <reified TRequest : Request<TResult>, TResult> Feature<TRequest, TResult>.invoke() =
-        feature(this)
+        add(this)
 
     /** Support direct invocation: `orderSlice()` inside builder (shorthand for `install(orderSlice)`). */
-    operator fun MediatorModule.invoke() = install(this)
+    operator fun MediatorModule.invoke() = add(this)
 
     /** Registers a [StreamFeature]'s stream handler and notifications. */
-    inline fun <reified TRequest : StreamRequest<T>, T> feature(feature: StreamFeature<TRequest, T>) {
+    inline fun <reified TRequest : StreamRequest<T>, T> add(feature: StreamFeature<TRequest, T>) {
         registry.registerStreamFeature(feature)
     }
 
     /** Support direct invocation: `myStreamFeature()` inside builder. */
     inline operator fun <reified TRequest : StreamRequest<T>, T> StreamFeature<TRequest, T>.invoke() =
-        feature(this)
+        add(this)
 
     /** Lambda request handler — see [HandlerRegistry.handle]. */
     inline fun <reified TRequest : Request<TResult>, TResult> handle(
@@ -335,7 +340,7 @@ class MediatorBuilder {
  * ```
  *
  * Class-based handlers and existing [MediatorRegistrar]s plug into the same block
- * via [MediatorBuilder.notification] / `+handler` and [MediatorBuilder.registrars],
+ * via [MediatorBuilder.add] / `+handler` and [MediatorBuilder.registrars],
  * so both styles can be mixed freely.
  *
  * Equivalent to configuring [MediatorFactory.create] manually.
@@ -361,7 +366,7 @@ fun mediatorModule(block: MediatorModule): MediatorModule = block
  * }
  * ```
  */
-fun Mediator.install(block: HandlerRegistry.() -> Unit): Mediator {
+fun Mediator.add(block: HandlerRegistry.() -> Unit): Mediator {
     registry.apply(block)
     return this
 }

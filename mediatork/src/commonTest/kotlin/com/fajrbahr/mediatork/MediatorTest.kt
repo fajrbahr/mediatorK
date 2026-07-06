@@ -106,7 +106,7 @@ class MediatorTest {
 
         val m = buildMediatorK {
             handle<PingQuery, String> { request -> "pong:${request.value}" }
-            behavior(inner, outer)
+            add(inner, outer)
         }
 
         m.send(PingQuery("x"))
@@ -128,7 +128,7 @@ class MediatorTest {
         }
         val m = buildMediatorK {
             handle<PingQuery, String> { request -> "pong:${request.value}" }
-            behavior(selective)
+            add(selective)
         }
         m.send(PingQuery("x"))
         assertFalse(ran)
@@ -152,7 +152,7 @@ class MediatorTest {
             handle<PingQuery, String> { request ->
                 contextValue = context.getMetaData("key"); "ok"
             }
-            behavior(pre)
+            add(pre)
         }
         m.send(PingQuery("x"))
         assertEquals("injected", contextValue)
@@ -174,7 +174,7 @@ class MediatorTest {
 
         val m = buildMediatorK {
             handle<PingQuery, String> { request -> "pong:${request.value}" }
-            behavior(post)
+            add(post)
         }
         m.send(PingQuery("world"))
         assertEquals("pong:world", captured)

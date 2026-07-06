@@ -7,6 +7,7 @@ import com.fajrbahr.mediatork.feature.validator
 import com.fajrbahr.mediatork.sample.university.department.domain.DepartmentStore
 import com.fajrbahr.mediatork.sample.university.instructor.model.Instructor
 import com.fajrbahr.mediatork.validator.rules
+import kotlin.time.Duration.Companion.seconds
 
 data class CreateEditInstructorCommand(
     val id: Int? = null,
@@ -30,7 +31,6 @@ fun createEditInstructor(
     departmentStore: DepartmentStore,
 ): Feature<CreateEditInstructorCommand, Int> =
     feature {
-        validate(createEditInstructorValidator)
         handle { request ->
             if (request.id == null) {
                 val instructor = Instructor(
@@ -57,4 +57,9 @@ fun createEditInstructor(
                 request.id
             }
         }
+            .retry(2)
+            .timeout(3.seconds)
+            .measure()
+
+        validate(createEditInstructorValidator)
     }

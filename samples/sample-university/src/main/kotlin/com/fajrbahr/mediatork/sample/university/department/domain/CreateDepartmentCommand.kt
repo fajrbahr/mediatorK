@@ -6,6 +6,7 @@ import com.fajrbahr.mediatork.feature.feature
 import com.fajrbahr.mediatork.feature.validator
 import com.fajrbahr.mediatork.sample.university.department.model.Department
 import com.fajrbahr.mediatork.validator.rules
+import kotlin.time.Duration.Companion.seconds
 
 data class CreateDepartmentCommand(
     val name: String = "",
@@ -24,7 +25,6 @@ val createDepartmentValidator = validator<CreateDepartmentCommand> { request ->
 
 fun createDepartment(store: DepartmentStore): Feature<CreateDepartmentCommand, Int> =
     feature {
-        validate(createDepartmentValidator)
         handle { request ->
             val dept = Department(
                 id = store.nextId(),
@@ -36,4 +36,9 @@ fun createDepartment(store: DepartmentStore): Feature<CreateDepartmentCommand, I
             store.save(dept)
             dept.id
         }
+            .retry(2)
+            .timeout(3.seconds)
+            .measure()
+
+        validate(createDepartmentValidator)
     }

@@ -1,5 +1,6 @@
 package com.fajrbahr.mediatork.test
 
+import com.fajrbahr.mediatork.notification.NotificationPublishStrategy
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
@@ -24,7 +25,7 @@ class DummyMediatorTest {
     @Test
     fun `publish with strategy does nothing and does not throw`() = runTest {
         val dummy = DummyMediator()
-        dummy.publish(OrderPlacedEvent("ORD-1"), com.fajrbahr.mediatork.notification.ParallelNotificationPublisher())
+        dummy.publish(OrderPlacedEvent("ORD-1"), NotificationPublishStrategy.ParallelNotificationPublisher())
     }
 
     @Test
