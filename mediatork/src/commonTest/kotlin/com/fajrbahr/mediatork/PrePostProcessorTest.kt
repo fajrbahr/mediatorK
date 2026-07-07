@@ -176,7 +176,7 @@ class PrePostProcessorTest {
     }
 
     @Test
-    fun `multiple POST behaviors run in ascending order`() = runTest {
+    fun `multiple POST behaviors run in descending order`() = runTest {
         val order = mutableListOf<String>()
         val first = object : PipelineBehavior {
             override val order = 1
@@ -200,7 +200,7 @@ class PrePostProcessorTest {
         }
         val m = mediator(pipelineBehaviors = listOf(second, first)) { register(PingHandler()) }
         m.send(PingQuery("x"))
-        assertEquals(listOf("first", "second"), order)
+        assertEquals(listOf("second", "first"), order)
     }
 
     @Test

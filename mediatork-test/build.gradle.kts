@@ -65,6 +65,7 @@ kotlin {
         }
         commonTest.dependencies {
             implementation(libs.coroutines.test)
+            implementation(kotlin("test"))
         }
         getByName("jvmMain").dependencies {
             implementation(libs.classgraph)

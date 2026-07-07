@@ -105,10 +105,10 @@ class FakeMediatorTest {
     }
 
     @Test
-    fun `unaryPlus DSL registers handlers`() = runTest {
+    fun `DSL registers handlers`() = runTest {
         val mediator = FakeMediator {
-            +GetUserHandler()
-            +CreateOrderHandler()
+            register(GetUserHandler())
+            register(CreateOrderHandler())
         }
         assertEquals("user:a", mediator.send(GetUserQuery("a")))
         assertEquals("order:b", mediator.send(CreateOrderCommand("b")))

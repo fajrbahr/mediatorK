@@ -131,3 +131,27 @@ fun buildHandlerTestHarness(
     HandlerTestHarness(base)
 }
 
+/**
+ * Builds a [HandlerTestHarness] using a DSL builder to register handlers inline.
+ *
+ * ```kotlin
+ * val harness = buildHandlerTestHarness {
+ *     register(GetUserHandler())
+ *     registerStream(StreamItemsHandler())
+ * }
+ * ```
+ */
+fun buildHandlerTestHarness(
+    pipelineBehaviors: List<PipelineBehavior> = emptyList(),
+    notificationPublisher: NotificationPublishStrategy = ParallelNotificationPublisher(),
+    init: HandlerRegistry.() -> Unit,
+): HandlerTestHarness {
+    val registry = HandlerRegistry().apply(init)
+    val mediator = MediatorFactory.create(
+        registry = registry,
+        pipelineBehaviors = pipelineBehaviors,
+        notificationPublisher = notificationPublisher,
+    )
+    return HandlerTestHarness(mediator)
+}
+

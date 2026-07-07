@@ -92,7 +92,7 @@ class HandlerTestHarnessTest {
                 registry.register(GetUserHandler())
             }
         }
-        val harness = buildHandlerTestHarness(registrars = listOf(registrar)) {}
+        val harness = buildHandlerTestHarness(registrars = listOf(registrar))
         assertEquals("user:via-registrar", harness.send(GetUserQuery("via-registrar")))
     }
 
