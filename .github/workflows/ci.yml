@@ -20,4 +20,4 @@ jobs:
       - uses: gradle/actions/setup-gradle@v4
 
       - name: Test
-        run: ./gradlew :mediatork:test
+        run: ./gradlew :mediatork:test :sample:test
