@@ -7,7 +7,6 @@ plugins {
 }
 
 group = "io.github.fajrbahr"
-version = "0.8.1"
 
 repositories {
     mavenCentral()
@@ -78,6 +77,9 @@ kotlin {
         }
         commonTest.dependencies {
             implementation(libs.coroutines.test)
+        }
+        getByName("jvmMain").dependencies {
+            implementation(libs.classgraph)
         }
     }
 }
