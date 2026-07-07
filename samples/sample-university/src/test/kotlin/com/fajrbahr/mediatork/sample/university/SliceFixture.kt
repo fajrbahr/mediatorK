@@ -6,7 +6,6 @@ import com.fajrbahr.mediatork.sample.university.instructor.domain.*
 import com.fajrbahr.mediatork.sample.university.student.domain.*
 import com.fajrbahr.mediatork.test.HandlerTestHarness
 import com.fajrbahr.mediatork.test.buildHandlerTestHarness
-import com.fajrbahr.mediatork.feature.feature
 
 class SliceFixture {
 
@@ -16,36 +15,14 @@ class SliceFixture {
     private val studentStore = StudentStore()
     private var courseNumberSeq = 1000
 
-    val harness: HandlerTestHarness = buildHandlerTestHarness {
-        // Course features
-        feature(getCourses(courseStore))
-        feature(getCourse(courseStore))
-        feature(createCourse(courseStore))
-        feature(editCourse(courseStore))
-        feature(deleteCourse(courseStore))
-
-        // Department features
-        feature(getDepartments(deptStore))
-        feature(getDepartment(deptStore))
-        feature(createDepartment(deptStore))
-        feature(editDepartment(deptStore))
-        feature(deleteDepartment(deptStore))
-
-        // Instructor features
-        feature(getInstructors(instructorStore))
-        feature(getInstructor(instructorStore))
-        feature(createEditInstructor(instructorStore, deptStore))
-        feature(deleteInstructor(instructorStore, deptStore))
-
-        // Student features
-        feature(getStudents(studentStore))
-        feature(getStudent(studentStore))
-        feature(getStudentEnrollments(studentStore))
-        feature(createStudent(studentStore))
-        feature(editStudent(studentStore))
-        feature(deleteStudent(studentStore))
-        feature(enrollStudent(studentStore))
-    }
+    val harness: HandlerTestHarness = buildHandlerTestHarness(
+        registrars = listOf(
+            CourseRegistrar(courseStore),
+            DepartmentRegistrar(deptStore),
+            InstructorRegistrar(instructorStore, deptStore),
+            StudentRegistrar(studentStore),
+        ),
+    )
 
     fun nextCourseNumber(): Int = ++courseNumberSeq
 
