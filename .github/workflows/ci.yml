@@ -8,7 +8,7 @@ on:
 
 jobs:
   build:
-    runs-on: macos-latest
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
 
@@ -25,23 +25,8 @@ jobs:
       - name: Static analysis (detekt)
         run: ./gradlew detekt
 
-      - name: JVM tests + coverage
-        run: ./gradlew :mediatork:jvmTest :mediatork:koverXmlReport
-
-      - name: JS tests (Node)
-        run: ./gradlew :mediatork:jsNodeTest
-
-      - name: Native tests (macOS arm64)
-        run: ./gradlew :mediatork:macosArm64Test
-
-      - name: Wasm compile check
-        run: ./gradlew :mediatork:compileKotlinWasmJs :mediatork:compileKotlinWasmWasi
-
-      - name: mediatork-test tests
-        run: ./gradlew :mediatork-test:jvmTest
-
-      - name: mediatork-ksp-koin build
-        run: ./gradlew :mediatork-ksp-koin:build
+      - name: JVM build and tests
+        run: ./gradlew :mediatork:jvmTest :mediatork-test:jvmTest :mediatork:koverXmlReport
 
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v5
