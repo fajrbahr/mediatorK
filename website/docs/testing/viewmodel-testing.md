@@ -16,7 +16,7 @@ fun `createOrder success updates stateFlow`() = runTest {
     val vm = OrderViewModel(mediator)
 
     mediator.register(fakeHandler<CreateOrderCommand, OrderResult> { _, _, _ ->
-        OrderResult(orderId = "ORD-1", responseIme = 10)
+        OrderResult(orderId = "ORD-1", responseTime = 10)
     })
 
     vm.createOrder("ORD-1", 99.0)
@@ -50,11 +50,6 @@ fun `initial state is empty and not loading`() {
     assertEquals(OrderUiState(), vm.stateFlow.value)
 }
 ```
-
----
-
-Full runnable example: [
-`samples/sample/src/test/kotlin/sample/OrderViewModelTest.kt`](https://github.com/fajrbahr/MediatorK/blob/main/samples/sample/src/test/kotlin/sample/OrderViewModelTest.kt)
 
 ---
 

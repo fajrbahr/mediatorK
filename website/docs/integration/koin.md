@@ -39,8 +39,8 @@ val mediatorModule = module {
     single<MediatorRegistrar> { OrderRegistrar(get()) }
 
     // Pipeline behaviors
-    single<PipelineBehavior> { LoggingBehavior() }
-    single<PipelineBehavior> { ValidationBehavior(getAll()) }
+    single<PipelineBehavior> { LoggingPipelineBehavior() }
+    single<PipelineBehavior> { TimeoutPipelineBehavior(timeoutMillis = 5_000) }
 
     // Mediator singleton — getAll<T>() collects every binding of that type
     single {
@@ -77,4 +77,4 @@ class MyApp : Application() {
 
 ## Next
 
-→ [API Reference](../api.md)
+→ [Samples](../sample.md)

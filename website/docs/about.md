@@ -10,8 +10,6 @@ sidebar_label: About
 
 **Huzaifa Al-Fararjeh**, Software Engineer at [beno.com](https://beno.com).
 
-MediatorK was built during a hard time. Every line was written with Allah's help and guidance; **الحمد لله**.
-
 The library grew out of real production usage at [beno.com](https://beno.com), where the Vertical Slice pattern shaped
 how we structure features across Android, iOS, and backend. What started as an internal tool became something worth
 sharing with the Kotlin community.
@@ -20,9 +18,9 @@ sharing with the Kotlin community.
 
 ## Inspiration
 
-MediatorK is inspired by [MediatR](https://github.com/jbogard/MediatR) by **[Jimmy Bogard](https://www.jimmybogard.com/)
-**, the most widely-used mediator library in the .NET ecosystem. His talks on Vertical Slice Architecture were the
-direct spark for bringing this pattern to Kotlin.
+MediatorK is inspired by [MediatR](https://github.com/LuckyPennySoftware/MediatR) by
+**[Jimmy Bogard](https://www.jimmybogard.com/)**, the most widely used mediator library in the .NET ecosystem. His
+talks on Vertical Slice Architecture were the direct spark for bringing this pattern to Kotlin.
 
 ---
 

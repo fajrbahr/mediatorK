@@ -55,14 +55,14 @@ class CreateOrderHandler : RequestHandler<CreateOrderCommand, Order> {
         requestContext: RequestContext,
         request: CreateOrderCommand,
     ): Order {
-        val userId = requestContext.getMetaDate<String>("userId")
+        val userId = requestContext.getMetadata<String>("userId")
             ?: error("userId not set in context")
         return orderService.create(userId, request.cartId)
     }
 }
 ```
 
-`getMetaDate<T>(key)` returns `null` if the key is absent or the stored value can't be cast to `T`.
+`getMetadata<T>(key)` returns `null` if the key is absent or the stored value can't be cast to `T`.
 
 ---
 
@@ -73,11 +73,11 @@ autocomplete:
 
 ```kotlin
 var RequestContext.locale: String
-    get() = getMetaDate("locale") ?: "en"
+    get() = getMetadata("locale") ?: "en"
     set(value) { put("locale", value) }
 
 var RequestContext.userId: String?
-    get() = getMetaDate("userId")
+    get() = getMetadata("userId")
     set(value) { if (value != null) put("userId", value) }
 ```
 
@@ -110,10 +110,10 @@ object ContextKeys {
 requestContext.put(ContextKeys.TRACE_ID, traceId)
 ```
 
-**Option 2:** read back with a typed call:
+Read the value back with a typed call:
 
 ```kotlin
-val traceId = requestContext.getMetaDate<String>(ContextKeys.TRACE_ID)
+val traceId = requestContext.getMetadata<String>(ContextKeys.TRACE_ID)
 ```
 
 ---

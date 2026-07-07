@@ -76,3 +76,9 @@ Unregistered handlers found:
 |--------------|---------------------------|---------------|-----------------------------------------------------------|
 | `registrars` | `List<MediatorRegistrar>` | required      | The same registrars you pass to `MediatorFactory.create`. |
 | `packages`   | `List<String>`            | `emptyList()` | Packages to scan. Empty list scans the entire classpath.  |
+
+---
+
+## Next
+
+→ [Troubleshooting & FAQ](../troubleshooting.md)

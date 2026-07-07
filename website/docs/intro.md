@@ -19,8 +19,6 @@ No kotlin-reflect. No annotation processing. No framework required.
 
 ---
 
----
-
 ## Quick Example
 
 ```kotlin

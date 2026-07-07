@@ -9,8 +9,6 @@ sidebar_label: Spring Boot
 MediatorK integrates with Spring Boot without any special plugin; just register handlers as beans and create the
 mediator in a `@Configuration` class.
 
-See the [full Spring Boot example](../examples/spring-boot-3.md) for a complete WebFlux CRUD API.
-
 ---
 
 ## Setup
@@ -62,7 +60,7 @@ class MediatorConfig(private val registrars: List<MediatorRegistrar>) {
     @Bean
     fun mediator(): Mediator = MediatorFactory.create(
         registrars = registrars,
-        pipelineBehaviors = listOf(LoggingBehavior()),
+        pipelineBehaviors = listOf(LoggingPipelineBehavior()),
     )
 }
 ```

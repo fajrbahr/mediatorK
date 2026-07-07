@@ -35,14 +35,14 @@ val mediator = MediatorFactory.create(
         OrderNotificationRegistrar(),
     ),
     pipelineBehaviors = listOf(
-        TraceIdBehavior(),                        // Stage.Pre  — outermost
-        LoggingPipelineBehavior(),                // Stage.Default, order=-100
-        RetryPipelineBehavior(maxRetries = 2),    // Stage.Default, order=0
-        CircuitBreakerPipelineBehavior(),         // Stage.Default, order=0
-        TimingPipelineBehavior { name, ms ->      // Stage.Default, order=0
+        TraceIdBehavior(),                                // Stage.Pre  — outermost
+        LoggingPipelineBehavior(),                        // Stage.Default, order=-100
+        TimeoutPipelineBehavior(timeoutMillis = 5_000),   // Stage.Default, order=0
+        CachingPipelineBehavior(ttlMs = 30_000),          // Stage.Default, order=0
+        TimingPipelineBehavior(onTiming = { name, ms ->   // Stage.Default, order=0
             metrics.record(name, ms)
-        },
-        AuditBehavior(auditLog),                  // Stage.Post — innermost
+        }),
+        AuditBehavior(auditLog),                          // Stage.Post — innermost
     ),
     notificationPublisher = ParallelNotificationPublisher(),
     missingNotificationHandler = ThrowMissingNotificationHandler(),
@@ -82,19 +82,14 @@ Stage.Pre behaviors    (unwinding)
 **Stage always beats `order`**: every `Stage.Pre` behavior wraps every `Stage.Default` behavior, regardless of their
 `order` values. `order` only controls sequencing *within* a stage.
 
-`ValidationBehavior` runs at `order = -50` in `Stage.Default` by default, so it executes before logging (`-100`?),
-caching, and retry behaviors at `order = 0`.
+`ValidationBehavior` is added automatically at `order = -50` in `Stage.Default`, so it runs after logging (`-100`)
+but before caching, timeout, and timing behaviors at `order = 0`.
 
 ---
 
 ## Notification publishers
 
-| Publisher                                  | Behaviour                                                    |
-|--------------------------------------------|--------------------------------------------------------------|
-| `ParallelNotificationPublisher`            | All handlers run concurrently *(default)*                    |
-| `SequentialNotificationPublisher`          | Handlers run one-by-one; stops on first error                |
-| `ContinueOnExceptionNotificationPublisher` | All handlers run; errors collected into `AggregateException` |
-| `FireAndForgetNotificationPublisher`       | Returns immediately; handlers run in the background          |
+See [Publish strategies](notifications.md#publish-strategies) for the four built-in publishers and when to use each.
 
 ---
 
@@ -125,4 +120,4 @@ registrations in tests rather than at runtime.
 
 ## Next
 
-→ [Kotlin JVM](../integration/jvm.md)
+→ [A/B Testing](ab-testing.md)
