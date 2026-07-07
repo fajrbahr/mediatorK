@@ -1,9 +1,9 @@
 package local.meditor.behaviors
 
+import com.fajrbahr.mediatork.api.PipelineBehavior
 import com.fajrbahr.mediatork.api.RequestContext
 import com.fajrbahr.mediatork.api.Request
-import com.fajrbahr.mediatork.pipeline.PipelineBehavior
-import com.fajrbahr.mediatork.pipeline.RequestHandlerDelegate
+import com.fajrbahr.mediatork.api.RequestHandlerDelegate
 import kotlin.time.TimeSource
 
 class MeasurePipelineBehavior : PipelineBehavior {
