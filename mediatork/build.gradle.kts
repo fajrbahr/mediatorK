@@ -1,10 +1,8 @@
 plugins {
     alias(libs.plugins.kotlin.multiplatform)
     alias(libs.plugins.android.library)
-    alias(libs.plugins.nmcp)
+    alias(libs.plugins.vanniktech.maven.publish)
     alias(libs.plugins.dokka)
-    `maven-publish`
-    signing
     id("org.jetbrains.kotlinx.kover") version "0.9.1"
 }
 
@@ -30,11 +28,6 @@ kotlin {
         publishLibraryVariants("release")
     }
 
-    androidNativeX64()
-    androidNativeX86()
-    androidNativeArm32()
-    androidNativeArm64()
-
     iosArm64()
     iosSimulatorArm64()
     iosX64()
@@ -46,30 +39,13 @@ kotlin {
 
     jvm()
 
-    linuxArm64()
-    linuxX64()
-
+    macosX64()
     macosArm64()
-
-    mingwX64()
-
-    tvosArm64()
-    tvosSimulatorArm64()
 
     @OptIn(org.jetbrains.kotlin.gradle.ExperimentalWasmDsl::class)
     wasmJs {
         browser()
     }
-
-    @OptIn(org.jetbrains.kotlin.gradle.ExperimentalWasmDsl::class)
-    wasmWasi {
-        nodejs()
-    }
-
-    watchosArm32()
-    watchosArm64()
-    watchosDeviceArm64()
-    watchosSimulatorArm64()
 
     sourceSets {
         commonMain.dependencies {
@@ -118,23 +94,29 @@ publishing {
     }
 }
 
-signing {
-    val signingKey: String? by project
-    val signingPassword: String? by project
-    if (signingKey != null) {
-        useInMemoryPgpKeys(signingKey, signingPassword)
-        sign(publishing.publications)
-    }
-}
 
-tasks.withType<AbstractPublishToMaven>().configureEach {
-    mustRunAfter(tasks.withType<Sign>())
-}
-
-nmcp {
-    publishAllPublicationsToCentralPortal {
-        username = providers.gradleProperty("mavenCentralUsername").orElse("")
-        password = providers.gradleProperty("mavenCentralPassword").orElse("")
-        publishingType = "AUTOMATIC"
+mavenPublishing {
+    pom {
+        name.set("MediatorK")
+        description.set("Elegant command & request handler pattern with Kotlin multiplatform support")
+        url.set("https://github.com/fajrbahr/mediatorK")
+        licenses {
+            license {
+                name.set("CC0-1.0")
+                url.set("https://creativecommons.org/publicdomain/zero/1.0/")
+            }
+        }
+        developers {
+            developer {
+                id.set("fajrbahr")
+                name.set("Huzaifa Alfararjeh")
+                email.set("huthefa.alfararjeh@beno.com")
+            }
+        }
+        scm {
+            connection.set("scm:git:git://github.com/fajrbahr/mediatorK.git")
+            developerConnection.set("scm:git:ssh://github.com/fajrbahr/mediatorK.git")
+            url.set("https://github.com/fajrbahr/mediatorK")
+        }
     }
 }

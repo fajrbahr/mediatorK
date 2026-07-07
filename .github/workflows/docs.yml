@@ -1,12 +1,9 @@
-name: Docs Update
+name: Publish Docs
 
 on:
+  release:
+    types: [ released ]
   workflow_dispatch:
-    inputs:
-      message:
-        description: 'Deployment message'
-        required: false
-        type: string
 
 permissions:
   contents: read
@@ -25,7 +22,8 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Check out code
+        uses: actions/checkout@v6
 
       - name: Setup Node.js
         uses: actions/setup-node@v4

@@ -1,9 +1,7 @@
 plugins {
     alias(libs.plugins.kotlin.multiplatform)
     alias(libs.plugins.android.library)
-    alias(libs.plugins.nmcp)
-    `maven-publish`
-    signing
+    alias(libs.plugins.vanniktech.maven.publish)
 }
 
 group = "io.github.fajrbahr"
@@ -111,23 +109,29 @@ publishing {
     }
 }
 
-signing {
-    val signingKey: String? by project
-    val signingPassword: String? by project
-    if (signingKey != null) {
-        useInMemoryPgpKeys(signingKey, signingPassword)
-        sign(publishing.publications)
-    }
-}
 
-tasks.withType<AbstractPublishToMaven>().configureEach {
-    mustRunAfter(tasks.withType<Sign>())
-}
-
-nmcp {
-    publishAllPublicationsToCentralPortal {
-        username = providers.gradleProperty("mavenCentralUsername").orElse("")
-        password = providers.gradleProperty("mavenCentralPassword").orElse("")
-        publishingType = "AUTOMATIC"
+mavenPublishing {
+    pom {
+        name.set("MediatorK Test")
+        description.set("Test utilities for MediatorK – fakes, spies, and harnesses")
+        url.set("https://github.com/fajrbahr/mediatorK")
+        licenses {
+            license {
+                name.set("CC0-1.0")
+                url.set("https://creativecommons.org/publicdomain/zero/1.0/")
+            }
+        }
+        developers {
+            developer {
+                id.set("fajrbahr")
+                name.set("Huzaifa Alfararjeh")
+                email.set("huthefa.alfararjeh@beno.com")
+            }
+        }
+        scm {
+            connection.set("scm:git:git://github.com/fajrbahr/mediatorK.git")
+            developerConnection.set("scm:git:ssh://github.com/fajrbahr/mediatorK.git")
+            url.set("https://github.com/fajrbahr/mediatorK")
+        }
     }
 }
