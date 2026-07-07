@@ -30,10 +30,10 @@ jobs:
       - uses: gradle/actions/setup-gradle@v4
 
       - name: Build and verify
-        run: ./gradlew :mediatork:compileKotlinJvm -x detekt
+        run: ./gradlew :mediatork:compileKotlinJvm :mediatork-test:compileKotlinJvm -x detekt
 
       - name: Publish to Maven Central
-        run: ./gradlew :mediatork:publishAllPublicationsToCentralPortal
+        run: ./gradlew :mediatork:publishAllPublicationsToCentralPortal :mediatork-test:publishAllPublicationsToCentralPortal
         env:
           ORG_GRADLE_PROJECT_signingKey: ${{ secrets.SIGNING_KEY }}
           ORG_GRADLE_PROJECT_signingPassword: ${{ secrets.SIGNING_PASSWORD }}
