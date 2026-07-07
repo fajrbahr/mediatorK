@@ -21,8 +21,6 @@ class GetOrderHandler : RequestHandler<GetOrderQuery, OrderDetails> {
 
 class GetOrderRegistrar : MediatorRegistrar {
     override fun register(registry: HandlerRegistry) {
-        registry.scope {
-            +GetOrderHandler()
-        }
+        registry register GetOrderHandler()
     }
 }

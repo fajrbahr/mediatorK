@@ -26,9 +26,7 @@ class SendOrderSmsHandler : NotificationHandler<OrderCreatedNotification> {
 
 class OrderNotificationRegistrar : MediatorRegistrar {
     override fun register(registry: HandlerRegistry) {
-        registry.scope {
-            +SendOrderConfirmationEmailHandler()
-            +SendOrderSmsHandler()
-        }
+        registry registerNotification SendOrderConfirmationEmailHandler()
+        registry registerNotification SendOrderSmsHandler()
     }
 }

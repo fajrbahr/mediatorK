@@ -34,8 +34,6 @@ class CreateOrderHandler : RequestHandler<CreateOrderCommand, OrderResult> {
 
 class OrderRegistrar : MediatorRegistrar {
     override fun register(registry: HandlerRegistry) {
-        registry.scope {
-            +CreateOrderHandler()
-        }
+        registry register CreateOrderHandler()
     }
 }
