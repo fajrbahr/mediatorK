@@ -8,7 +8,9 @@ class DepartmentRegistrar(private val store: DepartmentStore) : MediatorRegistra
         registry register GetDepartmentsHandler(store)
         registry register GetDepartmentHandler(store)
         registry register CreateDepartmentHandler(store)
+        registry.registerValidator(CreateDepartmentValidator())
         registry register EditDepartmentHandler(store)
+        registry.registerValidator(EditDepartmentValidator())
         registry register DeleteDepartmentHandler(store)
     }
 }

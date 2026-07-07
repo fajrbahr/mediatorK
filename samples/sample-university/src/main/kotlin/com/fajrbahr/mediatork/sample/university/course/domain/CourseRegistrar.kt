@@ -8,7 +8,9 @@ class CourseRegistrar(private val store: CourseStore) : MediatorRegistrar {
         registry register GetCoursesHandler(store)
         registry register GetCourseHandler(store)
         registry register CreateCourseHandler(store)
+        registry.registerValidator(CreateCourseValidator())
         registry register EditCourseHandler(store)
+        registry.registerValidator(EditCourseValidator())
         registry register DeleteCourseHandler(store)
     }
 }

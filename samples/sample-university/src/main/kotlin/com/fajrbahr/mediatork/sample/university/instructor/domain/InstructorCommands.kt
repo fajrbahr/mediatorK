@@ -4,8 +4,10 @@ import com.fajrbahr.mediatork.api.Mediator
 import com.fajrbahr.mediatork.api.Request
 import com.fajrbahr.mediatork.api.RequestContext
 import com.fajrbahr.mediatork.api.RequestHandler
+import com.fajrbahr.mediatork.api.RequestValidator
 import com.fajrbahr.mediatork.sample.university.department.domain.DepartmentStore
 import com.fajrbahr.mediatork.sample.university.instructor.model.Instructor
+import com.fajrbahr.mediatork.validator.ValidationResult
 import com.fajrbahr.mediatork.validator.rules
 
 // ── Queries ──────────────────────────────────────────────────────────────────
@@ -43,11 +45,13 @@ data class CreateEditInstructorCommand(
     val hireDate: String = "",
     val officeLocation: String? = null,
     val selectedCourseIds: List<Int> = emptyList(),
-) : Request<Int> {
-    override fun validate() = rules<String> {
-        check(lastName.length in 1..50) { "Last name must be between 1 and 50 characters" }
-        check(firstMidName.length in 1..50) { "First name must be between 1 and 50 characters" }
-        check(hireDate.isNotBlank()) { "Hire date is required" }
+) : Request<Int>
+
+class CreateEditInstructorValidator : RequestValidator<CreateEditInstructorCommand> {
+    override fun validate(request: CreateEditInstructorCommand): ValidationResult = rules {
+        check(request.lastName.length in 1..50) { "Last name must be between 1 and 50 characters" }
+        check(request.firstMidName.length in 1..50) { "First name must be between 1 and 50 characters" }
+        check(request.hireDate.isNotBlank()) { "Hire date is required" }
     }
 }
 

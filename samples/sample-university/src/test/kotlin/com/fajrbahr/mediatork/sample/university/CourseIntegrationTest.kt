@@ -1,16 +1,16 @@
 package com.fajrbahr.mediatork.sample.university
 
 import com.fajrbahr.mediatork.MediatorFactory
-import com.fajrbahr.mediatork.sample.university.domain.CourseRegistrar
-import com.fajrbahr.mediatork.sample.university.domain.CourseStore
-import com.fajrbahr.mediatork.sample.university.domain.CreateCourseCommand
-import com.fajrbahr.mediatork.sample.university.domain.DeleteCourseCommand
-import com.fajrbahr.mediatork.sample.university.domain.EditCourseCommand
-import com.fajrbahr.mediatork.sample.university.domain.GetCourseQuery
-import com.fajrbahr.mediatork.sample.university.domain.GetCoursesQuery
-import com.fajrbahr.mediatork.sample.university.domain.department.CreateDepartmentCommand
-import com.fajrbahr.mediatork.sample.university.domain.department.DepartmentRegistrar
-import com.fajrbahr.mediatork.sample.university.domain.department.DepartmentStore
+import com.fajrbahr.mediatork.sample.university.course.domain.CourseRegistrar
+import com.fajrbahr.mediatork.sample.university.course.domain.CourseStore
+import com.fajrbahr.mediatork.sample.university.course.domain.CreateCourseCommand
+import com.fajrbahr.mediatork.sample.university.course.domain.DeleteCourseCommand
+import com.fajrbahr.mediatork.sample.university.course.domain.EditCourseCommand
+import com.fajrbahr.mediatork.sample.university.course.domain.GetCourseQuery
+import com.fajrbahr.mediatork.sample.university.course.domain.GetCoursesQuery
+import com.fajrbahr.mediatork.sample.university.department.domain.CreateDepartmentCommand
+import com.fajrbahr.mediatork.sample.university.department.domain.DepartmentRegistrar
+import com.fajrbahr.mediatork.sample.university.department.domain.DepartmentStore
 import com.fajrbahr.mediatork.validator.ValidationException
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
@@ -34,8 +34,6 @@ class CourseIntegrationTest {
 
     private suspend fun createDept(name: String = "Engineering"): Int =
         mediator.send(CreateDepartmentCommand(name = name, budget = 100.0, startDate = "2024-01-01"))
-
-    // ── Create (Contoso: CreateTests.Should_create_new_course) ────────────────
 
     @Test
     fun `create course returns new id`() = runTest {
@@ -74,8 +72,6 @@ class CourseIntegrationTest {
         assertEquals(deptId, course.departmentId)
     }
 
-    // ── Index (Contoso: IndexTests.Should_return_all_courses) ─────────────────
-
     @Test
     fun `list returns empty when no courses exist`() = runTest {
         val freshCourseStore = CourseStore()
@@ -109,8 +105,6 @@ class CourseIntegrationTest {
         assertTrue(deptIds.contains(mathId))
     }
 
-    // ── Details (Contoso: DetailsTests.Should_query_for_details) ──────────────
-
     @Test
     fun `query returns course data for edit form`() = runTest {
         val deptId = createDept("English")
@@ -124,8 +118,6 @@ class CourseIntegrationTest {
         assertEquals(4, course.credits)
         assertEquals(deptId, course.departmentId)
     }
-
-    // ── Edit (Contoso: EditTests.Should_edit) ────────────────────────────────
 
     @Test
     fun `edit course updates fields`() = runTest {
@@ -169,8 +161,6 @@ class CourseIntegrationTest {
         mediator.send(EditCourseCommand(id = 9999, title = "Ghost", credits = 3))
         assertNull(mediator.send(GetCourseQuery(9999)))
     }
-
-    // ── Delete (Contoso: DeleteTests) ────────────────────────────────────────
 
     @Test
     fun `query returns course data for delete confirmation`() = runTest {

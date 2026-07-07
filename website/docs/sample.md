@@ -18,27 +18,27 @@ Smallest end-to-end demo: a Todo domain with a command, a query, and a notificat
 
 ---
 
-## Android: Prayer Times
+## Android: University Management
 
-[`/samples/sample-android`](https://github.com/fajrbahr/MediatorK/tree/main/samples/sample-android)
+[`/samples/sample-university`](https://github.com/fajrbahr/MediatorK/tree/main/samples/sample-university)
 
-Jetpack Compose app fetching prayer times from the Aladhan API. Shows the before / after / after super progression across three layers.
+Jetpack Compose app modeling a university domain (courses, departments, instructors, students). Shows vertical slice architecture with multiple feature slices, validators, handlers, and domain models.
 
 ---
 
-## Ktor: Prayer Times
+## Ktor: Prayer Times (Vertical Slice)
 
 [`/samples/sample-ktor`](https://github.com/fajrbahr/MediatorK/tree/main/samples/sample-ktor)
 
-Ktor (Netty) HTTP server with the same before / after / after super structure as the Android sample.
+Ktor (Netty) HTTP server fetching prayer times and Islamic month data from the Aladhan API. Pure vertical slice architecture: each feature (prayer times, Islamic months) is a self-contained slice with its own handler, model, and registrar.
 
 ---
 
-## Spring Boot: Prayer Times
+## Spring Boot: Prayer Times (Vertical Slice)
 
 [`/samples/sample-spring`](https://github.com/fajrbahr/MediatorK/tree/main/samples/sample-spring)
 
-Spring Boot WebFlux application with the same three-layer progression, exposing prayer times over REST.
+Spring Boot WebFlux REST API with the same features as sample-ktor. Demonstrates vertical slices with Spring component scanning and dependency injection — each feature owns its request, handler, registrar, and controller.
 
 ---
 
@@ -52,4 +52,4 @@ Plain JVM sample covering commands, queries, notifications, pipeline behaviors, 
 
 ## Next
 
-→ [Life Before MediatorK](testing/before-mediator.md)
+→ [Vertical Slice Architecture](vertical-slice.md)

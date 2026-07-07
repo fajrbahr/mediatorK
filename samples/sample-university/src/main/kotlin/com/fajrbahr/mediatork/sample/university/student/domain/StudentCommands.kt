@@ -4,8 +4,10 @@ import com.fajrbahr.mediatork.api.Mediator
 import com.fajrbahr.mediatork.api.Request
 import com.fajrbahr.mediatork.api.RequestContext
 import com.fajrbahr.mediatork.api.RequestHandler
+import com.fajrbahr.mediatork.api.RequestValidator
 import com.fajrbahr.mediatork.sample.university.model.Enrollment
 import com.fajrbahr.mediatork.sample.university.student.model.Student
+import com.fajrbahr.mediatork.validator.ValidationResult
 import com.fajrbahr.mediatork.validator.rules
 
 // ── Queries ──────────────────────────────────────────────────────────────────
@@ -52,11 +54,13 @@ data class CreateStudentCommand(
     val lastName: String = "",
     val firstMidName: String = "",
     val enrollmentDate: String = "",
-) : Request<Int> {
-    override fun validate() = rules<String> {
-        check(lastName.length in 1..50) { "Last name must be between 1 and 50 characters" }
-        check(firstMidName.length in 1..50) { "First name must be between 1 and 50 characters" }
-        check(enrollmentDate.isNotBlank()) { "Enrollment date is required" }
+) : Request<Int>
+
+class CreateStudentValidator : RequestValidator<CreateStudentCommand> {
+    override fun validate(request: CreateStudentCommand): ValidationResult = rules {
+        check(request.lastName.length in 1..50) { "Last name must be between 1 and 50 characters" }
+        check(request.firstMidName.length in 1..50) { "First name must be between 1 and 50 characters" }
+        check(request.enrollmentDate.isNotBlank()) { "Enrollment date is required" }
     }
 }
 
@@ -86,11 +90,13 @@ data class EditStudentCommand(
     val lastName: String = "",
     val firstMidName: String = "",
     val enrollmentDate: String = "",
-) : Request<Unit> {
-    override fun validate() = rules<String> {
-        check(lastName.length in 1..50) { "Last name must be between 1 and 50 characters" }
-        check(firstMidName.length in 1..50) { "First name must be between 1 and 50 characters" }
-        check(enrollmentDate.isNotBlank()) { "Enrollment date is required" }
+) : Request<Unit>
+
+class EditStudentValidator : RequestValidator<EditStudentCommand> {
+    override fun validate(request: EditStudentCommand): ValidationResult = rules {
+        check(request.lastName.length in 1..50) { "Last name must be between 1 and 50 characters" }
+        check(request.firstMidName.length in 1..50) { "First name must be between 1 and 50 characters" }
+        check(request.enrollmentDate.isNotBlank()) { "Enrollment date is required" }
     }
 }
 

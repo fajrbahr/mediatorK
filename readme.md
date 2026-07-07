@@ -24,7 +24,7 @@ one handler, notifications fan out to many, and a pipeline of behaviors sits in 
 
 ```kotlin
 dependencies {
-    implementation("io.github.fajrbahr:mediatork:0.6.3")
+    implementation("io.github.fajrbahr:mediatork:0.8.1")
 }
 ```
 
@@ -34,42 +34,16 @@ For KMP, Maven, and other project types — see [Installation](https://fajrbahr.
 
 ## Quick Start
 
-Define your messages, then wire everything in one block — no registrar or handler classes required:
+Define your requests, handlers, and notifications in a clean vertical slice:
 
 ```kotlin
+// 1. Define a Request
 data class CreateOrderCommand(val id: String, val amount: Double) : Request<Order>
+
+// 2. Define a Notification
 data class OrderCreatedEvent(val orderId: String) : Notification
 
-val mediator = mediatorK {
-    handle<CreateOrderCommand, Order> { request ->
-        val order = db.save(Order(request.id, request.amount))
-        publish(OrderCreatedEvent(order.id))   // handler scope IS the mediator
-        order
-    }
-
-    on<OrderCreatedEvent> { event -> emailService.send(event.orderId) }
-
-    validate<CreateOrderCommand> { request ->
-        rules<String> { check(request.amount > 0) { "Amount must be positive" } }
-    }
-}
-
-val order = mediator.send(CreateOrderCommand("ORD-1", 150.0))
-```
-
-As slices grow, promote lambdas to classes — both styles mix freely in the same block.
-
-## Structured style
-
-### 1 — Define a Request
-
-```kotlin
-data class CreateOrderCommand(val id: String, val amount: Double) : Request<Order>
-```
-
-### 2 — Implement a Handler
-
-```kotlin
+// 3. Implement a Handler
 class CreateOrderHandler(private val db: OrderRepository) : RequestHandler<CreateOrderCommand, Order> {
     override suspend fun handle(
         mediator: Mediator,
@@ -82,52 +56,42 @@ class CreateOrderHandler(private val db: OrderRepository) : RequestHandler<Creat
         return order
     }
 }
-```
 
-### 3 — Define a Notification
-
-```kotlin
-data class OrderCreatedEvent(val orderId: String) : Notification
-```
-
-### 4 — Implement Notification Handlers
-
-```kotlin
+// 4. Implement Notification Handler
 class SendConfirmationEmailHandler : NotificationHandler<OrderCreatedEvent> {
     override suspend fun handle(notification: OrderCreatedEvent) {
         emailService.send(notification.orderId)
     }
 }
-```
 
-### 5 — Register Handlers
-
-```kotlin
+// 5. Register Handlers
 class OrderRegistrar(private val db: OrderRepository) : MediatorRegistrar {
     override fun register(registry: HandlerRegistry) {
-        registry.scope {
-            +CreateOrderHandler(db)
-            +SendConfirmationEmailHandler()
-        }
+        registry register CreateOrderHandler(db)
+        registry registerNotification SendConfirmationEmailHandler()
     }
 }
-```
 
-### 6 — Create the Mediator
-
-```kotlin
+// 6. Create the Mediator
 val mediator = MediatorFactory.create(
     registrars = listOf(OrderRegistrar(db)),
 )
-// — or plug registrars into the DSL alongside lambda handlers:
-val mediator = mediatorK { registrars(OrderRegistrar(db)) }
-```
 
-### 7 — Use It
-
-```kotlin
+// 7. Use It
 val order = mediator.send(CreateOrderCommand("ORD-1", 150.0))
 ```
+
+Each feature is a complete vertical slice: its own request, handler, model, and registrar. No layers, no abstractions between slices.
+
+---
+
+## Samples
+
+- **[Basic](samples/basic)** — Todo app with commands, queries, and notifications
+- **[Android](samples/sample-university)** — University management app (Jetpack Compose)
+- **[Ktor](samples/sample-ktor)** — Prayer times API (Ktor/Netty, vertical slices)
+- **[Spring Boot](samples/sample-spring)** — Prayer times REST API (Spring Boot WebFlux, vertical slices)
+- **[JVM](samples/sample)** — Invoice app with advanced features (streaming, validation, transactions)
 
 ---
 

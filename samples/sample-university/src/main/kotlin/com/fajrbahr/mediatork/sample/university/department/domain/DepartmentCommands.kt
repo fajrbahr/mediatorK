@@ -4,7 +4,9 @@ import com.fajrbahr.mediatork.api.Mediator
 import com.fajrbahr.mediatork.api.Request
 import com.fajrbahr.mediatork.api.RequestContext
 import com.fajrbahr.mediatork.api.RequestHandler
+import com.fajrbahr.mediatork.api.RequestValidator
 import com.fajrbahr.mediatork.sample.university.department.model.Department
+import com.fajrbahr.mediatork.validator.ValidationResult
 import com.fajrbahr.mediatork.validator.rules
 
 // ── Queries ──────────────────────────────────────────────────────────────────
@@ -40,11 +42,13 @@ data class CreateDepartmentCommand(
     val budget: Double = 0.0,
     val startDate: String = "",
     val administratorId: Int? = null,
-) : Request<Int> {
-    override fun validate() = rules<String> {
-        check(name.length in 3..50) { "Name must be between 3 and 50 characters" }
-        check(budget >= 0) { "Budget must be non-negative" }
-        check(startDate.isNotBlank()) { "Start date is required" }
+) : Request<Int>
+
+class CreateDepartmentValidator : RequestValidator<CreateDepartmentCommand> {
+    override fun validate(request: CreateDepartmentCommand): ValidationResult = rules {
+        check(request.name.length in 3..50) { "Name must be between 3 and 50 characters" }
+        check(request.budget >= 0) { "Budget must be non-negative" }
+        check(request.startDate.isNotBlank()) { "Start date is required" }
     }
 }
 
@@ -76,11 +80,13 @@ data class EditDepartmentCommand(
     val budget: Double = 0.0,
     val startDate: String = "",
     val administratorId: Int? = null,
-) : Request<Unit> {
-    override fun validate() = rules<String> {
-        check(name.length in 3..50) { "Name must be between 3 and 50 characters" }
-        check(budget >= 0) { "Budget must be non-negative" }
-        check(startDate.isNotBlank()) { "Start date is required" }
+) : Request<Unit>
+
+class EditDepartmentValidator : RequestValidator<EditDepartmentCommand> {
+    override fun validate(request: EditDepartmentCommand): ValidationResult = rules {
+        check(request.name.length in 3..50) { "Name must be between 3 and 50 characters" }
+        check(request.budget >= 0) { "Budget must be non-negative" }
+        check(request.startDate.isNotBlank()) { "Start date is required" }
     }
 }
 

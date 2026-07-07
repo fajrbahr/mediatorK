@@ -1,11 +1,21 @@
 package com.fajrbahr.mediatork.sample.university
 
+import com.fajrbahr.mediatork.MediatorFactory
+import com.fajrbahr.mediatork.api.Mediator
+import com.fajrbahr.mediatork.api.Request
 import com.fajrbahr.mediatork.sample.university.course.domain.*
 import com.fajrbahr.mediatork.sample.university.department.domain.*
 import com.fajrbahr.mediatork.sample.university.instructor.domain.*
 import com.fajrbahr.mediatork.sample.university.student.domain.*
-import com.fajrbahr.mediatork.test.HandlerTestHarness
-import com.fajrbahr.mediatork.test.buildHandlerTestHarness
+
+class TestHarness(private val mediator: Mediator) {
+    @Suppress("UNCHECKED_CAST")
+    suspend fun given(vararg requests: Request<*>) {
+        requests.forEach { mediator.send(it as Request<Any?>) }
+    }
+    suspend fun <T> send(request: Request<T>): T = mediator.send(request)
+    suspend fun <T> query(request: Request<T>): T = mediator.send(request)
+}
 
 class SliceFixture {
 
@@ -15,13 +25,15 @@ class SliceFixture {
     private val studentStore = StudentStore()
     private var courseNumberSeq = 1000
 
-    val harness: HandlerTestHarness = buildHandlerTestHarness(
-        registrars = listOf(
-            CourseRegistrar(courseStore),
-            DepartmentRegistrar(deptStore),
-            InstructorRegistrar(instructorStore, deptStore),
-            StudentRegistrar(studentStore),
-        ),
+    val harness = TestHarness(
+        MediatorFactory.create(
+            registrars = listOf(
+                CourseRegistrar(courseStore),
+                DepartmentRegistrar(deptStore),
+                InstructorRegistrar(instructorStore, deptStore),
+                StudentRegistrar(studentStore),
+            ),
+        )
     )
 
     fun nextCourseNumber(): Int = ++courseNumberSeq

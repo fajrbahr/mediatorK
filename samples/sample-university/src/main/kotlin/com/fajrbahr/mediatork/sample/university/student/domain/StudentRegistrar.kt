@@ -9,7 +9,9 @@ class StudentRegistrar(private val store: StudentStore) : MediatorRegistrar {
         registry register GetStudentHandler(store)
         registry register GetStudentEnrollmentsHandler(store)
         registry register CreateStudentHandler(store)
+        registry.registerValidator(CreateStudentValidator())
         registry register EditStudentHandler(store)
+        registry.registerValidator(EditStudentValidator())
         registry register DeleteStudentHandler(store)
         registry register EnrollStudentHandler(store)
     }

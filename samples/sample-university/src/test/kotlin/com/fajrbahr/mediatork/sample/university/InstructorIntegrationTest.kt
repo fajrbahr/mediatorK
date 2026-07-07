@@ -1,19 +1,19 @@
 package com.fajrbahr.mediatork.sample.university
 
 import com.fajrbahr.mediatork.MediatorFactory
-import com.fajrbahr.mediatork.sample.university.domain.CourseRegistrar
-import com.fajrbahr.mediatork.sample.university.domain.CourseStore
-import com.fajrbahr.mediatork.sample.university.domain.CreateCourseCommand
-import com.fajrbahr.mediatork.sample.university.domain.department.CreateDepartmentCommand
-import com.fajrbahr.mediatork.sample.university.domain.department.DepartmentRegistrar
-import com.fajrbahr.mediatork.sample.university.domain.department.DepartmentStore
-import com.fajrbahr.mediatork.sample.university.domain.department.GetDepartmentQuery
-import com.fajrbahr.mediatork.sample.university.domain.instructor.CreateEditInstructorCommand
-import com.fajrbahr.mediatork.sample.university.domain.instructor.DeleteInstructorCommand
-import com.fajrbahr.mediatork.sample.university.domain.instructor.GetInstructorQuery
-import com.fajrbahr.mediatork.sample.university.domain.instructor.GetInstructorsQuery
-import com.fajrbahr.mediatork.sample.university.domain.instructor.InstructorRegistrar
-import com.fajrbahr.mediatork.sample.university.domain.instructor.InstructorStore
+import com.fajrbahr.mediatork.sample.university.course.domain.CourseRegistrar
+import com.fajrbahr.mediatork.sample.university.course.domain.CourseStore
+import com.fajrbahr.mediatork.sample.university.course.domain.CreateCourseCommand
+import com.fajrbahr.mediatork.sample.university.department.domain.CreateDepartmentCommand
+import com.fajrbahr.mediatork.sample.university.department.domain.DepartmentRegistrar
+import com.fajrbahr.mediatork.sample.university.department.domain.DepartmentStore
+import com.fajrbahr.mediatork.sample.university.department.domain.GetDepartmentQuery
+import com.fajrbahr.mediatork.sample.university.instructor.domain.CreateEditInstructorCommand
+import com.fajrbahr.mediatork.sample.university.instructor.domain.DeleteInstructorCommand
+import com.fajrbahr.mediatork.sample.university.instructor.domain.GetInstructorQuery
+import com.fajrbahr.mediatork.sample.university.instructor.domain.GetInstructorsQuery
+import com.fajrbahr.mediatork.sample.university.instructor.domain.InstructorRegistrar
+import com.fajrbahr.mediatork.sample.university.instructor.domain.InstructorStore
 import com.fajrbahr.mediatork.validator.ValidationException
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
@@ -39,8 +39,6 @@ class InstructorIntegrationTest {
 
     private suspend fun createDept(name: String = "English"): Int =
         mediator.send(CreateDepartmentCommand(name = name, budget = 100.0, startDate = "2024-01-01"))
-
-    // ── CreateEdit (Contoso: CreateEditTests.Should_create_new_instructor) ───
 
     @Test
     fun `create instructor returns new id`() = runTest {
@@ -71,8 +69,6 @@ class InstructorIntegrationTest {
         }
     }
 
-    // ── Edit (Contoso: CreateEditTests.Should_edit_instructor_details) ───────
-
     @Test
     fun `edit instructor updates fields`() = runTest {
         val id = mediator.send(
@@ -93,8 +89,6 @@ class InstructorIntegrationTest {
         assertEquals("Seinfeld", edited.lastName)
         assertEquals("Houston", edited.officeLocation)
     }
-
-    // ── Merge courses (Contoso: CreateEditTests.Should_merge_course_instructors) ─
 
     @Test
     fun `edit instructor merges course assignments`() = runTest {
@@ -122,8 +116,6 @@ class InstructorIntegrationTest {
         assertEquals(courseId2, edited.courseIds.first())
     }
 
-    // ── Details (Contoso: DetailsTests.Should_get_instructor_details) ────────
-
     @Test
     fun `query returns instructor details`() = runTest {
         val id = mediator.send(
@@ -137,8 +129,6 @@ class InstructorIntegrationTest {
         assertEquals("George", instructor.firstMidName)
         assertEquals("Austin", instructor.officeLocation)
     }
-
-    // ── Delete (Contoso: DeleteTests) ────────────────────────────────────────
 
     @Test
     fun `query returns instructor data for delete confirmation`() = runTest {
@@ -180,8 +170,6 @@ class InstructorIntegrationTest {
         assertNotNull(dept)
         assertNull(dept.administratorId)
     }
-
-    // ── Index (Contoso: IndexTests.Should_get_list_instructor_with_details) ──
 
     @Test
     fun `list returns all instructors`() = runTest {

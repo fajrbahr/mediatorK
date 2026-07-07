@@ -1,21 +1,21 @@
 package com.fajrbahr.mediatork.sample.university
 
 import com.fajrbahr.mediatork.MediatorFactory
-import com.fajrbahr.mediatork.sample.university.domain.CourseRegistrar
-import com.fajrbahr.mediatork.sample.university.domain.CourseStore
-import com.fajrbahr.mediatork.sample.university.domain.CreateCourseCommand
-import com.fajrbahr.mediatork.sample.university.domain.department.CreateDepartmentCommand
-import com.fajrbahr.mediatork.sample.university.domain.department.DepartmentRegistrar
-import com.fajrbahr.mediatork.sample.university.domain.department.DepartmentStore
-import com.fajrbahr.mediatork.sample.university.domain.student.CreateStudentCommand
-import com.fajrbahr.mediatork.sample.university.domain.student.DeleteStudentCommand
-import com.fajrbahr.mediatork.sample.university.domain.student.EditStudentCommand
-import com.fajrbahr.mediatork.sample.university.domain.student.EnrollStudentCommand
-import com.fajrbahr.mediatork.sample.university.domain.student.GetStudentEnrollmentsQuery
-import com.fajrbahr.mediatork.sample.university.domain.student.GetStudentQuery
-import com.fajrbahr.mediatork.sample.university.domain.student.GetStudentsQuery
-import com.fajrbahr.mediatork.sample.university.domain.student.StudentRegistrar
-import com.fajrbahr.mediatork.sample.university.domain.student.StudentStore
+import com.fajrbahr.mediatork.sample.university.course.domain.CourseRegistrar
+import com.fajrbahr.mediatork.sample.university.course.domain.CourseStore
+import com.fajrbahr.mediatork.sample.university.course.domain.CreateCourseCommand
+import com.fajrbahr.mediatork.sample.university.department.domain.CreateDepartmentCommand
+import com.fajrbahr.mediatork.sample.university.department.domain.DepartmentRegistrar
+import com.fajrbahr.mediatork.sample.university.department.domain.DepartmentStore
+import com.fajrbahr.mediatork.sample.university.student.domain.CreateStudentCommand
+import com.fajrbahr.mediatork.sample.university.student.domain.DeleteStudentCommand
+import com.fajrbahr.mediatork.sample.university.student.domain.EditStudentCommand
+import com.fajrbahr.mediatork.sample.university.student.domain.EnrollStudentCommand
+import com.fajrbahr.mediatork.sample.university.student.domain.GetStudentEnrollmentsQuery
+import com.fajrbahr.mediatork.sample.university.student.domain.GetStudentQuery
+import com.fajrbahr.mediatork.sample.university.student.domain.GetStudentsQuery
+import com.fajrbahr.mediatork.sample.university.student.domain.StudentRegistrar
+import com.fajrbahr.mediatork.sample.university.student.domain.StudentStore
 import com.fajrbahr.mediatork.sample.university.model.Grade
 import com.fajrbahr.mediatork.validator.ValidationException
 import kotlinx.coroutines.test.runTest
@@ -42,8 +42,6 @@ class StudentIntegrationTest {
 
     private suspend fun createDept(): Int =
         mediator.send(CreateDepartmentCommand(name = "English", budget = 100.0, startDate = "2024-01-01"))
-
-    // ── Create (Contoso: CreateTests.Should_create_student) ──────────────────
 
     @Test
     fun `create student returns new id`() = runTest {
@@ -72,8 +70,6 @@ class StudentIntegrationTest {
         }
     }
 
-    // ── Details (Contoso: DetailsTests.Should_get_details) ───────────────────
-
     @Test
     fun `details includes enrollments`() = runTest {
         val deptId = createDept()
@@ -90,8 +86,6 @@ class StudentIntegrationTest {
         val enrollments = mediator.send(GetStudentEnrollmentsQuery(studentId))
         assertEquals(2, enrollments.size)
     }
-
-    // ── Edit (Contoso: EditTests.Should_get_edit_details + Should_edit_student) ─
 
     @Test
     fun `query returns student data for edit form`() = runTest {
@@ -120,8 +114,6 @@ class StudentIntegrationTest {
         assertEquals("2023-01-01", student.enrollmentDate)
     }
 
-    // ── Delete (Contoso: DeleteTests) ────────────────────────────────────────
-
     @Test
     fun `query returns student data for delete confirmation`() = runTest {
         val id = mediator.send(
@@ -141,8 +133,6 @@ class StudentIntegrationTest {
         mediator.send(DeleteStudentCommand(id))
         assertNull(mediator.send(GetStudentQuery(id)))
     }
-
-    // ── Index (Contoso: IndexTests.Should_return_all_items_for_default_search) ─
 
     @Test
     fun `list returns all students`() = runTest {

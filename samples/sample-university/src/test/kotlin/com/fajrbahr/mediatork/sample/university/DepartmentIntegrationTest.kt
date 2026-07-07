@@ -1,16 +1,16 @@
 package com.fajrbahr.mediatork.sample.university
 
 import com.fajrbahr.mediatork.MediatorFactory
-import com.fajrbahr.mediatork.sample.university.domain.department.CreateDepartmentCommand
-import com.fajrbahr.mediatork.sample.university.domain.department.DeleteDepartmentCommand
-import com.fajrbahr.mediatork.sample.university.domain.department.DepartmentRegistrar
-import com.fajrbahr.mediatork.sample.university.domain.department.DepartmentStore
-import com.fajrbahr.mediatork.sample.university.domain.department.EditDepartmentCommand
-import com.fajrbahr.mediatork.sample.university.domain.department.GetDepartmentQuery
-import com.fajrbahr.mediatork.sample.university.domain.department.GetDepartmentsQuery
-import com.fajrbahr.mediatork.sample.university.domain.instructor.CreateEditInstructorCommand
-import com.fajrbahr.mediatork.sample.university.domain.instructor.InstructorRegistrar
-import com.fajrbahr.mediatork.sample.university.domain.instructor.InstructorStore
+import com.fajrbahr.mediatork.sample.university.department.domain.CreateDepartmentCommand
+import com.fajrbahr.mediatork.sample.university.department.domain.DeleteDepartmentCommand
+import com.fajrbahr.mediatork.sample.university.department.domain.DepartmentRegistrar
+import com.fajrbahr.mediatork.sample.university.department.domain.DepartmentStore
+import com.fajrbahr.mediatork.sample.university.department.domain.EditDepartmentCommand
+import com.fajrbahr.mediatork.sample.university.department.domain.GetDepartmentQuery
+import com.fajrbahr.mediatork.sample.university.department.domain.GetDepartmentsQuery
+import com.fajrbahr.mediatork.sample.university.instructor.domain.CreateEditInstructorCommand
+import com.fajrbahr.mediatork.sample.university.instructor.domain.InstructorRegistrar
+import com.fajrbahr.mediatork.sample.university.instructor.domain.InstructorStore
 import com.fajrbahr.mediatork.validator.ValidationException
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
@@ -35,8 +35,6 @@ class DepartmentIntegrationTest {
     private suspend fun createAdmin(): Int = mediator.send(
         CreateEditInstructorCommand(lastName = "Costanza", firstMidName = "George", hireDate = "2024-01-01")
     )
-
-    // ── Create (Contoso: CreateTests.Should_create_new_department) ────────────
 
     @Test
     fun `create department returns new id`() = runTest {
@@ -77,8 +75,6 @@ class DepartmentIntegrationTest {
         }
     }
 
-    // ── Details (Contoso: DetailsTests.Should_get_department_details) ─────────
-
     @Test
     fun `query returns department details`() = runTest {
         val adminId = createAdmin()
@@ -95,8 +91,6 @@ class DepartmentIntegrationTest {
         assertEquals("History", dept.name)
         assertEquals(adminId, dept.administratorId)
     }
-
-    // ── Edit (Contoso: EditTests) ────────────────────────────────────────────
 
     @Test
     fun `query returns department data for edit form`() = runTest {
@@ -144,8 +138,6 @@ class DepartmentIntegrationTest {
         assertEquals(admin2Id, dept.administratorId)
     }
 
-    // ── Delete (Contoso: DeleteTests.Should_delete_department) ───────────────
-
     @Test
     fun `delete department removes it from store`() = runTest {
         val adminId = createAdmin()
@@ -160,8 +152,6 @@ class DepartmentIntegrationTest {
         mediator.send(DeleteDepartmentCommand(id))
         assertNull(mediator.send(GetDepartmentQuery(id)))
     }
-
-    // ── Index (Contoso: IndexTests.Should_list_departments) ──────────────────
 
     @Test
     fun `list returns all departments`() = runTest {

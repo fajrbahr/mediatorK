@@ -12,6 +12,7 @@ class InstructorRegistrar(
         registry register GetInstructorsHandler(store)
         registry register GetInstructorHandler(store)
         registry register CreateEditInstructorHandler(store, departmentStore)
+        registry.registerValidator(CreateEditInstructorValidator())
         registry register DeleteInstructorHandler(store, departmentStore)
     }
 }

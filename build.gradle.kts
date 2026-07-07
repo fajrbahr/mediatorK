@@ -17,7 +17,6 @@ detekt {
         files(
             "mediatork/src",
             "mediatork-test/src",
-            "mediatork-ksp-koin/src",
         ),
     )
     buildUponDefaultConfig = true
