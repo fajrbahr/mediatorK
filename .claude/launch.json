@@ -3,18 +3,25 @@
   "configurations": [
     {
       "name": "docs",
-      "runtimeExecutable": "npm",
+      "runtimeExecutable": "/usr/bin/python3",
+      "runtimeArgs": [
+        "/tmp/mediatork_serve.py"
+      ],
+      "port": 3030
+    },
+    {
+      "name": "docusaurus",
+      "runtimeExecutable": "/usr/local/bin/npm",
       "runtimeArgs": [
         "run",
         "start",
-        "--prefix",
-        "website",
         "--",
         "--port",
-        "3030",
+        "3002",
         "--no-open"
       ],
-      "port": 3030
+      "cwd": "/Users/hf/Desktop/MediatorK/website",
+      "port": 3002
     }
   ]
 }

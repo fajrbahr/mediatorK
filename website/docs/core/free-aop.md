@@ -10,8 +10,11 @@ sidebar_label: Free AOP
 logic without modifying the core code.
 
 MediatorK gives you AOP for free through pipeline behaviors. Every behavior you register applies to **all** handlers
-automatically; your handler code stays completely untouched. The handler is pure business logic; the pipeline is pure
-infrastructure.
+automatically. Your handler code stays completely untouched.
+
+Command handlers get audit logging. Query handlers are unaffected. Zero handler changes either way.
+
+Cross-cutting concerns live in one place and apply to all handlers automatically. None of these touch a single handler. The handler is pure business logic; the pipeline is pure infrastructure.
 
 ---
 
@@ -20,20 +23,30 @@ infrastructure.
 Without AOP, you reach for logging inside every handler:
 
 ```kotlin
-registry.handle<GetUserQuery, User> { request ->
-    println("→ GetUserQuery(id=${request.id})")   // ← you added this
-    val user = db.findById(request.id) ?: error("not found")
-    println("← GetUserQuery result=$user")        // ← and this
-    user
+class GetUserHandler(private val db: UserRepository) : RequestHandler<GetUserQuery, User> {
+    override suspend fun handle(
+        mediator: Mediator,
+        requestContext: RequestContext,
+        request: GetUserQuery
+    ): User {
+        println("→ GetUserQuery(id=${request.id})")   // ← you added this
+        val user = db.findById(request.id) ?: error("not found")
+        println("← GetUserQuery result=$user")        // ← and this
+        return user
+    }
 }
 ```
 
 With AOP, the handler stays pure and logging lives in one place:
 
 ```kotlin
-// Handler block — zero logging code
-registry.handle<GetUserQuery, User> { request ->
-    db.findById(request.id) ?: error("not found")
+// Handler — zero logging code
+class GetUserHandler(private val db: UserRepository) : RequestHandler<GetUserQuery, User> {
+    override suspend fun handle(
+        mediator: Mediator,
+        requestContext: RequestContext,
+        request: GetUserQuery
+    ): User = db.findById(request.id) ?: error("not found")
 }
 
 // Wiring — one line enables logging for every request
@@ -46,10 +59,9 @@ val mediator = MediatorFactory.create(
 ```
 
 Output for every request dispatched:
-
 ```
 → GetUserQuery
-← GetUserQuery result=User(id=user-1, name=Alice)
+← GetUserQuery
 ```
 
 ---
@@ -73,10 +85,10 @@ val mediator = MediatorFactory.create(
 )
 ```
 
-None of these touch a single handler.
+None of these touch a single handler. The handler is pure business logic; the pipeline is pure infrastructure.
 
 ---
 
 ## Next
 
-→ [Built-in Behaviors](built-in-behaviors.mdx)
+→ [Pre / Post Processors](processors.md)

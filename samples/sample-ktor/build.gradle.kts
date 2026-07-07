@@ -1,6 +1,6 @@
 plugins {
     alias(libs.plugins.kotlin.jvm)
-    alias(libs.plugins.kotlin.serialization)
+    id("org.jetbrains.kotlin.plugin.serialization") version "2.3.21"
     application
 }
 
@@ -12,7 +12,7 @@ application {
 }
 
 dependencies {
-    implementation(project(":mediatork"))
+    implementation("io.github.fajrbahr:mediatork:0.6.2")
     implementation("io.ktor:ktor-server-core:3.1.3")
     implementation("io.ktor:ktor-server-netty:3.1.3")
     implementation("io.ktor:ktor-server-content-negotiation:3.1.3")

@@ -20,10 +20,12 @@ import kotlin.time.TimeSource
  *
  * @param ttlMs time-to-live for each entry in milliseconds. Defaults to 60 000 (1 minute).
  * @param keyFor function that produces a cache key from a request. Defaults to `toString()`.
+ * @param order position in the behavior chain. Defaults to `0`.
  */
 class CachingPipelineBehavior(
     val ttlMs: Long = 60_000L,
     val keyFor: (Request<*>) -> String = { it.toString() },
+    override val order: Int = 0,
 ) : PipelineBehavior {
 
     init {

@@ -9,8 +9,8 @@
 [![Linux](https://img.shields.io/badge/Linux-supported-brightgreen.svg?logo=linux)](https://www.linux.org)
 [![Windows](https://img.shields.io/badge/Windows-supported-brightgreen.svg?logo=windows)](https://www.microsoft.com/windows)
 [![Web (JS/WASM)](https://img.shields.io/badge/Web%20(JS%2FWASM)-supported-brightgreen.svg?logo=javascript)](https://kotlinlang.org/docs/js-overview.html)
-[![CI](https://github.com/fajrbahr/mediatorK/actions/workflows/ci.yml/badge.svg)](https://github.com/fajrbahr/mediatorK/actions/workflows/ci.yml)
-[![codecov](https://codecov.io/gh/fajrbahr/mediatorK/branch/main/graph/badge.svg)](https://codecov.io/gh/fajrbahr/mediatorK)
+[![CI](https://github.com/fajrbahr/mediatorK/actions/workflows/release.yml/badge.svg)](https://github.com/fajrbahr/mediatorK/actions/workflows/release.yml)
+[![Coverage](https://img.shields.io/badge/Coverage-92%25-brightgreen)](https://fajrbahr.github.io/mediatorK/the-promise)
 [![License: CC0](https://img.shields.io/badge/License-CC0-brightgreen)](LICENSE)
 
 A coroutine-first Mediator library for Kotlin. Implements the CQRS and Vertical Slice patterns — requests go to exactly
@@ -34,50 +34,69 @@ For KMP, Maven, and other project types — see [Installation](https://fajrbahr.
 
 ## Quick Start
 
-Define your messages, then wire everything in one block — no registrar or handler classes required:
+### 1 — Define a Request
 
 ```kotlin
 data class CreateOrderCommand(val id: String, val amount: Double) : Request<Order>
-data class OrderCreatedEvent(val orderId: String) : Notification
-
-val mediator = mediatorK {
-    handle<CreateOrderCommand, Order> { request ->
-        val order = db.save(Order(request.id, request.amount))
-        publish(OrderCreatedEvent(order.id))   // handler scope IS the mediator
-        order
-    }
-
-    on<OrderCreatedEvent> { event -> emailService.send(event.orderId) }
-
-    validate<CreateOrderCommand> { request ->
-        rules<String> { check(request.amount > 0) { "Amount must be positive" } }
-    }
-}
-
-val order = mediator.send(CreateOrderCommand("ORD-1", 150.0))
 ```
 
-As your project grows, you can structure your DSL registrations using `mediatorRegistrar` blocks to group handlers by
-feature or domain:
+### 2 — Implement a Handler
 
 ```kotlin
-val orderRegistrar = mediatorRegistrar {
-    handle<CreateOrderCommand, Order> { request ->
+class CreateOrderHandler(private val db: OrderRepository) : RequestHandler<CreateOrderCommand, Order> {
+    override suspend fun handle(
+        mediator: Mediator,
+        requestContext: RequestContext,
+        request: CreateOrderCommand,
+    ): Order {
         val order = Order(request.id, request.amount)
         db.save(order)
-        publish(OrderCreatedEvent(order.id))
-        order
-    }
-
-    on<OrderCreatedEvent> { event ->
-        emailService.send(event.orderId)
+        mediator.publish(OrderCreatedEvent(order.id))
+        return order
     }
 }
+```
 
-val mediator = mediatorK { 
-    registrar(orderRegistrar) 
+### 3 — Define a Notification
+
+```kotlin
+data class OrderCreatedEvent(val orderId: String) : Notification
+```
+
+### 4 — Implement Notification Handlers
+
+```kotlin
+class SendConfirmationEmailHandler : NotificationHandler<OrderCreatedEvent> {
+    override suspend fun handle(notification: OrderCreatedEvent) {
+        emailService.send(notification.orderId)
+    }
 }
+```
 
+### 5 — Register Handlers
+
+```kotlin
+class OrderRegistrar(private val db: OrderRepository) : MediatorRegistrar {
+    override fun register(registry: HandlerRegistry) {
+        registry.scope {
+            +CreateOrderHandler(db)
+            +SendConfirmationEmailHandler()
+        }
+    }
+}
+```
+
+### 6 — Create the Mediator
+
+```kotlin
+val mediator = MediatorFactory.create(
+    registrars = listOf(OrderRegistrar(db)),
+)
+```
+
+### 7 — Use It
+
+```kotlin
 val order = mediator.send(CreateOrderCommand("ORD-1", 150.0))
 ```
 

@@ -1,10 +1,6 @@
-@file:Suppress("TooManyFunctions")
-
 package com.fajrbahr.mediatork
 
 import com.fajrbahr.mediatork.api.*
-import com.fajrbahr.mediatork.feature.Feature
-import com.fajrbahr.mediatork.feature.StreamFeature
 import kotlin.reflect.KClass
 
 /**
@@ -37,17 +33,14 @@ class HandlerRegistry {
     @PublishedApi
     internal val validatorsHandlers: MutableMap<KClass<*>, MutableList<RequestValidator<*>>> = mutableMapOf()
 
-    @PublishedApi
-    internal val pipelineBehaviors: MutableList<PipelineBehavior> = mutableListOf()
-
-    @PublishedApi
-    internal val streamPipelineBehaviors: MutableList<StreamPipelineBehavior> = mutableListOf()
-
     // ── Registration ──────────────────────────────────────────────────────────
+
+    /** Opens a scoped registration block; equivalent to calling methods directly but allows `+handler` DSL inside. */
+    fun scope(block: HandlerRegistry.() -> Unit) = block()
 
     /**
      * Registers [handler] for request type [TRequest], replacing any previously registered handler.
-     * Use the `+handler` DSL operator as a shorter alternative.
+     * Use the `+handler` DSL operator inside a [scope] block as a shorter alternative.
      */
     inline infix fun <reified TRequest : Request<TResult>, TResult> register(
         handler: RequestHandler<TRequest, TResult>,
@@ -58,7 +51,7 @@ class HandlerRegistry {
 
     /**
      * Registers [handler] for stream request type [TRequest], replacing any previously registered handler.
-     * Use the `+handler` DSL operator as a shorter alternative.
+     * Use the `+handler` DSL operator inside a [scope] block as a shorter alternative.
      */
     inline infix fun <reified TRequest : StreamRequest<T>, T> registerStream(
         handler: StreamRequestHandler<TRequest, T>,
@@ -90,24 +83,23 @@ class HandlerRegistry {
         return this
     }
 
-    // ── Feature registration ──────────────────────────────────────────────────
+    // ── DSL operators ─────────────────────────────────────────────────────────
 
-    /** Registers a [Feature]'s handler and validators. */
-    inline fun <reified TRequest : Request<TResult>, TResult> registerFeature(
-        feature: Feature<TRequest, TResult>,
-    ): HandlerRegistry {
-        register(feature.handler)
-        feature.validators.forEach { registerValidator(it) }
-        return this
-    }
+    /** Shorthand for [register]; use inside a [scope] block: `+MyHandler()`. */
+    inline operator fun <reified TRequest : Request<TResult>, TResult> RequestHandler<TRequest, TResult>.unaryPlus() =
+        register(this)
 
-    /** Registers a [StreamFeature]'s stream handler. */
-    inline fun <reified TRequest : StreamRequest<T>, T> registerStreamFeature(
-        feature: StreamFeature<TRequest, T>,
-    ): HandlerRegistry {
-        registerStream(feature.handler)
-        return this
-    }
+    /** Shorthand for [registerStream]; use inside a [scope] block: `+MyStreamHandler()`. */
+    inline operator fun <reified TRequest : StreamRequest<T>, T> StreamRequestHandler<TRequest, T>.unaryPlus() =
+        registerStream(this)
+
+    /** Shorthand for [registerNotification]; use inside a [scope] block: `+MyNotificationHandler()`. */
+    inline operator fun <reified T : Notification> NotificationHandler<T>.unaryPlus() =
+        registerNotification(this)
+
+    /** Shorthand for [registerValidator]; use inside a [scope] block: `+MyValidator()`. */
+    inline operator fun <reified TRequest : Request<*>> RequestValidator<TRequest>.unaryPlus() =
+        registerValidator(this)
 
     // ── Dynamic registration (for DI frameworks) ──────────────────────────────
 
@@ -115,7 +107,7 @@ class HandlerRegistry {
      * Registers [handler] for [requestClass] without a reified type parameter.
      * Intended for DI frameworks (Koin, Hilt) that resolve handlers at runtime via reflection.
      */
-    internal fun registerDynamic(requestClass: KClass<*>, handler: RequestHandler<*, *>): HandlerRegistry {
+    fun registerDynamic(requestClass: KClass<*>, handler: RequestHandler<*, *>): HandlerRegistry {
         requestHandlers[requestClass] = handler
         return this
     }
@@ -124,7 +116,7 @@ class HandlerRegistry {
      * Registers [handler] for [requestClass] without a reified type parameter.
      * Intended for DI frameworks that resolve stream handlers at runtime via reflection.
      */
-    internal fun registerStreamDynamic(requestClass: KClass<*>, handler: StreamRequestHandler<*, *>): HandlerRegistry {
+    fun registerStreamDynamic(requestClass: KClass<*>, handler: StreamRequestHandler<*, *>): HandlerRegistry {
         streamHandlers[requestClass] = handler
         return this
     }
@@ -133,10 +125,7 @@ class HandlerRegistry {
      * Appends [handler] to the notification handler list for [notificationClass] without a reified type parameter.
      * Intended for DI frameworks that resolve notification handlers at runtime via reflection.
      */
-    internal fun registerNotificationDynamic(
-        notificationClass: KClass<*>,
-        handler: NotificationHandler<*>
-    ): HandlerRegistry {
+    fun registerNotificationDynamic(notificationClass: KClass<*>, handler: NotificationHandler<*>): HandlerRegistry {
         notificationHandlers.getOrPut(notificationClass) { mutableListOf() }.add(handler)
         return this
     }
@@ -162,15 +151,11 @@ class HandlerRegistry {
     // ── Resolution (internal) ─────────────────────────────────────────────────
 
     @Suppress("UNCHECKED_CAST")
-    internal fun <TRequest : Request<TResult>, TResult> resolveHandlerOrNull(
-        request: TRequest,
-    ): RequestHandler<TRequest, TResult>? =
+    internal fun <TRequest : Request<TResult>, TResult> resolveHandlerOrNull(request: TRequest): RequestHandler<TRequest, TResult>? =
         requestHandlers[request::class] as? RequestHandler<TRequest, TResult>
 
     @Suppress("UNCHECKED_CAST")
-    internal fun <TRequest : Request<TResult>, TResult> resolveHandler(
-        request: TRequest,
-    ): RequestHandler<TRequest, TResult> =
+    internal fun <TRequest : Request<TResult>, TResult> resolveHandler(request: TRequest): RequestHandler<TRequest, TResult> =
         requestHandlers[request::class] as? RequestHandler<TRequest, TResult>
             ?: throw MissingHandlerException(
                 requestTypeName = request::class.simpleName ?: "Unknown",
@@ -178,9 +163,7 @@ class HandlerRegistry {
             )
 
     @Suppress("UNCHECKED_CAST")
-    internal fun <TRequest : StreamRequest<T>, T> resolveStreamHandler(
-        request: TRequest,
-    ): StreamRequestHandler<TRequest, T> =
+    internal fun <TRequest : StreamRequest<T>, T> resolveStreamHandler(request: TRequest): StreamRequestHandler<TRequest, T> =
         streamHandlers[request::class] as? StreamRequestHandler<TRequest, T>
             ?: throw MissingStreamHandlerException(
                 requestTypeName = request::class.simpleName ?: "Unknown",

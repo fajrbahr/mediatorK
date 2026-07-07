@@ -1,69 +1,39 @@
 package com.fajrbahr.mediatork.validator
 
-import com.fajrbahr.mediatork.api.PipelineBehavior
-import com.fajrbahr.mediatork.api.RequestValidator
-import com.fajrbahr.mediatork.feature.behavior
+import com.fajrbahr.mediatork.api.*
 import kotlin.reflect.KClass
 
 /**
  * Thrown when validation fails. [errors] contains one or more messages describing what failed.
- * [warnings] contains informational messages that were collected alongside the errors.
  * Catch this in a pipeline behavior, exception handler, or ViewModel.
  */
-class ValidationException(
-    val errors: List<*>,
-    val warnings: List<*> = emptyList<Any>(),
-    cause: Throwable? = null,
-) : Exception(formatMessage(errors, warnings), cause) {
-
-    constructor(message: String, cause: Throwable? = null) : this(listOf(message), emptyList<Any>(), cause)
-
-    private companion object {
-        fun formatMessage(errors: List<*>, warnings: List<*>): String = buildString {
-            append(errors.joinToString("; ") { it.toString() })
-            if (warnings.isNotEmpty()) {
-                append(" | warnings: ")
-                append(warnings.joinToString("; ") { it.toString() })
-            }
-        }
-    }
+class ValidationException(val errors: List<*>, cause: Throwable? = null) :
+    Exception(errors.joinToString("; ") { it.toString() }, cause) {
+    constructor(message: String, cause: Throwable? = null) : this(listOf(message), cause)
 }
 
 /**
- * Creates a [PipelineBehavior] that runs all validators before the handler.
+ * Pre-built [PipelineBehavior] that runs registered [RequestValidator]s before the handler.
  * Throws [ValidationException] if any validator returns [ValidationResult.Invalid].
- * Warnings are stored in the [com.fajrbahr.mediatork.api.RequestContext] under the key `"validation_warnings"`.
  *
- * @param validators validators keyed by request [KClass]
+ * @param validators validators keyed by request [KClass]; only the entry matching the incoming request type runs.
  * @param order position in the behavior chain; defaults to `-50` (runs before most behaviors).
  */
-fun validationBehavior(
-    validators: Map<KClass<*>, List<RequestValidator<*>>> = emptyMap(),
-    order: Int = -50,
-): PipelineBehavior = behavior(order = order) { requestContext, next, request ->
+class ValidationBehavior(
+    private val validators: Map<KClass<*>, List<RequestValidator<*>>>,
+    override val order: Int = -50,
+) : PipelineBehavior {
+
     @Suppress("UNCHECKED_CAST")
-    val allWarnings = mutableListOf<Any?>()
-
-    validators[request::class]?.forEach { validator ->
-        val result = (validator as RequestValidator<Any>).validate(request)
-        collectOrThrow(result, allWarnings)
-    }
-
-    if (allWarnings.isNotEmpty()) {
-        requestContext.put("validation_warnings", allWarnings.toList())
-    }
-
-    next(request)
-}
-
-private fun collectOrThrow(result: ValidationResult, allWarnings: MutableList<Any?>) {
-    when (result) {
-        is ValidationResult.Invalid -> {
-            allWarnings.addAll(result.warnings)
-            throw ValidationException(result.errors, allWarnings.toList())
+    override suspend fun <TRequest : Request<TResult>, TResult> process(
+        requestContext: RequestContext,
+        next: RequestHandlerDelegate<TRequest, TResult>,
+        request: TRequest,
+    ): TResult {
+        validators[request::class]?.forEach { validator ->
+            val result = (validator as RequestValidator<TRequest>).validate(request)
+            if (result is ValidationResult.Invalid) throw ValidationException(result.errors)
         }
-
-        is ValidationResult.ValidWithWarnings -> allWarnings.addAll(result.warnings)
-        is ValidationResult.Valid -> {}
+        return next(request)
     }
 }

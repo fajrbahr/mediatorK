@@ -61,7 +61,7 @@ val appModule = module {
     single {
         MediatorFactory.create(
             registrars = listOf(get<AppRegistrar>()),
-            pipelineBehaviors = listOf(LoggingPipelineBehavior()),
+            pipelineBehaviors = listOf(LoggingBehavior()),
         )
     }
 }
@@ -106,4 +106,4 @@ curl http://localhost:8080/aftersuper/prayer-times/London
 
 ## Next
 
-→ [Spring Boot](spring.md)
+→ [Kotlin Multiplatform](kmp.md)

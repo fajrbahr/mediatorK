@@ -2,42 +2,36 @@ package com.fajrbahr.mediatork.validator
 
 /**
  * Runs all checks in [block] and returns [ValidationResult.Invalid] with the full error list
- * if any fail, or [ValidationResult.Valid] if all pass. Warnings are always collected and
- * included in the result regardless of whether errors are present.
+ * if any fail, or [ValidationResult.Valid] if all pass.
  */
-fun <T : Any> collectingValidator(block: CollectingBuilder<T>.() -> Unit): ValidationResult =
-    CollectingBuilder<T>().apply(block).toResult()
+fun <T : Any> rules(block: RulesBuilder<T>.() -> Unit): ValidationResult =
+    RulesBuilder<T>().apply(block).toResult()
 
 /**
  * Runs checks in [block] and returns [ValidationResult.Invalid] with the **first** failing error,
  * or [ValidationResult.Valid] if all pass. Remaining checks are skipped after the first failure.
- * Warnings are always collected — [warn] never triggers fail-fast.
  */
-fun <T : Any> shortCircuitValidator(block: ShortCircuitRulesBuilder<T>.() -> Unit): ValidationResult {
-    val builder = ShortCircuitRulesBuilder<T>()
+fun <T : Any> rulesFailFast(block: FailFastRulesBuilder<T>.() -> Unit): ValidationResult {
+    val builder = FailFastRulesBuilder<T>()
     return try {
         builder.block()
-        builder.validResult()
-    } catch (_: ShortCircuitRulesBuilder.FailFastSignal) {
-        ValidationResult.Invalid(listOf(builder.firstError!!), builder.warnings.toList())
+        ValidationResult.Valid
+    } catch (_: FailFastRulesBuilder.FailFastSignal) {
+        ValidationResult.Invalid(listOf(builder.firstError!!))
     }
 }
 
 /**
- * Collects all validation errors and warnings, returning them together.
+ * Collects all validation errors and returns them together.
  *
- * Call [check] or [require] for each error rule, and [warn] for non-blocking warnings —
- * all checks run regardless of earlier failures.
- * After the block completes, [toResult] returns:
- * - [ValidationResult.Valid] if no errors and no warnings,
- * - [ValidationResult.ValidWithWarnings] if only warnings,
- * - [ValidationResult.Invalid] (with any warnings) if errors are present.
+ * Call [check] or [require] for each rule — all checks run regardless of earlier failures.
+ * After the block completes, [toResult] returns [ValidationResult.Valid] if the error list
+ * is empty, or [ValidationResult.Invalid] with every collected error otherwise.
  *
- * Instantiated by [collectingValidator].
+ * Instantiated by [rules].
  */
-class CollectingBuilder<T : Any> {
+class RulesBuilder<T : Any> {
     private val errors = mutableListOf<T>()
-    private val warnings = mutableListOf<T>()
 
     /**
      * Adds [message] to the error list when [condition] is `false`. All subsequent checks still run.
@@ -47,34 +41,27 @@ class CollectingBuilder<T : Any> {
     }
 
     /**
-     * Adds [message] to the warning list when [condition] is `true`.
-     * Warnings are informational and never cause validation to fail.
+     * Alias for [check]. Adds [message] to the error list when [condition] is `false`.
      */
-    fun warn(condition: Boolean, message: () -> T) {
-        if (condition) warnings += message()
+    fun require(condition: Boolean, message: () -> T) {
+        if (!condition) errors += message()
     }
 
-    internal fun toResult(): ValidationResult = when {
-        errors.isNotEmpty() -> ValidationResult.Invalid(errors.toList(), warnings.toList())
-        warnings.isNotEmpty() -> ValidationResult.ValidWithWarnings(warnings.toList())
-        else -> ValidationResult.Valid
-    }
+    internal fun toResult(): ValidationResult =
+        if (errors.isEmpty()) ValidationResult.Valid else ValidationResult.Invalid(errors.toList())
 }
 
 /**
- * Stops at the first failing error check and returns only that error.
+ * Stops at the first failing check and returns only that error.
  *
- * Call [check] or [require] for each error rule — execution stops at the first failure.
- * Call [warn] for non-blocking warnings — warnings never trigger fail-fast and are always collected.
+ * Call [check] or [require] for each rule — execution stops at the first failure.
  * After the block completes, the result is [ValidationResult.Valid] if no check failed,
  * or [ValidationResult.Invalid] with the single first error otherwise.
- * Warnings are included in either case.
  *
- * Instantiated by [shortCircuitValidator].
+ * Instantiated by [rulesFailFast].
  */
-class ShortCircuitRulesBuilder<T : Any> {
+class FailFastRulesBuilder<T : Any> {
     internal var firstError: T? = null
-    internal val warnings = mutableListOf<T>()
 
     /** Internal control-flow signal — not an actual exception type. */
     internal class FailFastSignal : Throwable()
@@ -96,16 +83,4 @@ class ShortCircuitRulesBuilder<T : Any> {
             firstError = message(); throw FailFastSignal()
         }
     }
-
-    /**
-     * Adds [message] to the warning list when [condition] is `true`.
-     * Warnings are informational and never trigger fail-fast.
-     */
-    fun warn(condition: Boolean, message: () -> T) {
-        if (condition) warnings += message()
-    }
-
-    internal fun validResult(): ValidationResult =
-        if (warnings.isEmpty()) ValidationResult.Valid
-        else ValidationResult.ValidWithWarnings(warnings.toList())
 }

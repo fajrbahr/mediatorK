@@ -28,8 +28,7 @@ dependencies {
 
 ## Define a Koin module
 
-Declare each registrar and behavior as its own binding, then use `getAll<T>()` to collect them automatically, with no
-manual
+Declare each registrar and behavior as its own binding, then use `getAll<T>()` to collect them automatically, with no manual
 list construction needed:
 
 ```kotlin
@@ -40,8 +39,8 @@ val mediatorModule = module {
     single<MediatorRegistrar> { OrderRegistrar(get()) }
 
     // Pipeline behaviors
-    single<PipelineBehavior> { LoggingPipelineBehavior() }
-    single<PipelineBehavior> { TimeoutPipelineBehavior(timeoutMillis = 5_000) }
+    single<PipelineBehavior> { LoggingBehavior() }
+    single<PipelineBehavior> { ValidationBehavior(getAll()) }
 
     // Mediator singleton — getAll<T>() collects every binding of that type
     single {
@@ -78,4 +77,4 @@ class MyApp : Application() {
 
 ## Next
 
-→ [Samples](../sample.md)
+→ [API Reference](../api.md)

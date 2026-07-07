@@ -1,53 +1,29 @@
 package com.fajrbahr.mediatork.sample.university
 
-import com.fajrbahr.mediatork.buildMediatorK
-import com.fajrbahr.mediatork.sample.university.course.domain.*
-import com.fajrbahr.mediatork.sample.university.department.domain.*
-import com.fajrbahr.mediatork.sample.university.instructor.domain.*
-import com.fajrbahr.mediatork.sample.university.student.domain.*
-import com.fajrbahr.mediatork.feature.feature
+import com.fajrbahr.mediatork.MediatorFactory
+import com.fajrbahr.mediatork.sample.university.domain.CourseRegistrar
+import com.fajrbahr.mediatork.sample.university.domain.CourseStore
+import com.fajrbahr.mediatork.sample.university.domain.department.DepartmentRegistrar
+import com.fajrbahr.mediatork.sample.university.domain.department.DepartmentStore
+import com.fajrbahr.mediatork.sample.university.domain.instructor.InstructorRegistrar
+import com.fajrbahr.mediatork.sample.university.domain.instructor.InstructorStore
+import com.fajrbahr.mediatork.sample.university.domain.student.StudentRegistrar
+import com.fajrbahr.mediatork.sample.university.domain.student.StudentStore
 import kotlin.test.Test
 
 class HandlerRegistrationTest {
 
     @Test
-    fun `all features are registered`() {
-        val courseStore = CourseStore()
+    fun `all handlers are registered`() {
         val deptStore = DepartmentStore()
-        val instructorStore = InstructorStore()
-        val studentStore = StudentStore()
-
-        buildMediatorK {
-            // Course features
-            feature(getCourses(courseStore))
-            feature(getCourse(courseStore))
-            feature(createCourse(courseStore))
-            feature(editCourse(courseStore))
-            feature(deleteCourse(courseStore))
-
-            // Department features
-            feature(getDepartments(deptStore))
-            feature(getDepartment(deptStore))
-            feature(createDepartment(deptStore))
-            feature(editDepartment(deptStore))
-            feature(deleteDepartment(deptStore))
-
-            // Instructor features
-            feature(getInstructors(instructorStore))
-            feature(getInstructor(instructorStore))
-            feature(createEditInstructor(instructorStore, deptStore))
-            feature(deleteInstructor(instructorStore, deptStore))
-
-            // Student features
-            feature(getStudents(studentStore))
-            feature(getStudent(studentStore))
-            feature(getStudentEnrollments(studentStore))
-            feature(createStudent(studentStore))
-            feature(editStudent(studentStore))
-            feature(deleteStudent(studentStore))
-            feature(enrollStudent(studentStore))
-
-            verifyHandlers = true
-        }
+        MediatorFactory.create(
+            registrars = listOf(
+                CourseRegistrar(CourseStore()),
+                DepartmentRegistrar(deptStore),
+                StudentRegistrar(StudentStore()),
+                InstructorRegistrar(InstructorStore(), deptStore),
+            ),
+            verifyHandlers = true,
+        )
     }
 }

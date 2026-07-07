@@ -24,22 +24,36 @@ data class BookingPurchasedNotification(
 
 ---
 
-## Implementing & Registering handlers
+## Implementing handlers
 
-Multiple blocks can react to the same notification. Each is independent.
+Multiple handlers can react to the same notification. Each is independent.
 
 ```kotlin
-class NotificationRegistrar(
-    private val inventory: InventoryService,
-    private val analytics: AnalyticsService
-) : MediatorRegistrar {
+class TrackOrderAnalyticsHandler : NotificationHandler<BookingPurchasedNotification> {
+    override suspend fun handle(notification: BookingPurchasedNotification) {
+        analytics.track("purchase", notification.bookingId)
+    }
+}
+
+class UpdateInventoryHandler(private val inventory: InventoryService) : NotificationHandler<BookingPurchasedNotification> {
+    override suspend fun handle(notification: BookingPurchasedNotification) {
+        inventory.decrementStock(notification.bookingId, notification.amount)
+    }
+}
+```
+
+---
+
+## Registering handlers
+
+Use `+handler` as shorthand or call `registerNotification()` directly; both are equivalent:
+
+```kotlin
+class NotificationRegistrar : MediatorRegistrar {
     override fun register(registry: HandlerRegistry) {
-        registry.on<BookingPurchasedNotification> { notification ->
-            analytics.track("purchase", notification.bookingId)
-        }
-        
-        registry.on<BookingPurchasedNotification> { notification ->
-            inventory.decrementStock(notification.bookingId, notification.amount)
+        registry.scope {
+            +TrackOrderAnalyticsHandler()
+            registerNotification(UpdateInventoryHandler(inventoryService))
         }
     }
 }
@@ -66,9 +80,9 @@ mediator.publish(
 
 ## Publish strategies
 
-Control how handlers are invoked by passing a `NotificationPublishStrategy` to `MediatorFactory.create`:
+Control how handlers are invoked by passing a `NotificationPublisher` to `MediatorFactory.create`:
 
-| Strategy                                   | Behavior                                                                       |
+| Strategy                                   | Behaviour                                                                      |
 |--------------------------------------------|--------------------------------------------------------------------------------|
 | `ParallelNotificationPublisher`            | All handlers run concurrently *(default)*                                      |
 | `SequentialNotificationPublisher`          | Handlers run one-by-one; stops on first error                                  |
@@ -81,6 +95,7 @@ val mediator = MediatorFactory.create(
     notificationPublisher = ContinueOnExceptionNotificationPublisher(),
 )
 ```
+
 
 ---
 

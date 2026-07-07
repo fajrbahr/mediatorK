@@ -37,8 +37,8 @@ handler was never registered; if the list is empty, no registrar ran at all.
    ```kotlin
    override fun register(registry: HandlerRegistry) {
        registry.scope {
-           handle<GetUserQuery> { getUser() }
-           handle<DeleteUserCommand> { deleteUser() } // <-- was this line forgotten?
+           +GetUserHandler(repo)
+           +DeleteUserHandler(repo)   // <-- was this line forgotten?
        }
    }
    ```
@@ -67,7 +67,7 @@ handlers must be registered with `registerStream(...)` (or `+handler` inside `sc
 
    ```kotlin
    registry.scope {
-       on<OrderCreated> { sendEmail(it) }   // registerNotification under the hood
+       +OrderCreatedEmailHandler(mailer)   // registerNotification under the hood
    }
    ```
 
@@ -80,11 +80,11 @@ handlers must be registered with `registerStream(...)` (or `+handler` inside `sc
    `OrderCreated : OrderEvent`:
 
    ```kotlin
-   registry on<OrderEvent> { ... }                // registered for T = OrderEvent
+   registry registerNotification handler          // registered for T = OrderEvent
    mediator.publish(OrderCreated(id))             // resolves handlers for OrderCreated::class -> none
 
    // Fix: register for the concrete type you actually publish
-   registry.on<OrderCreated> { ... }
+   registry.registerNotification<OrderCreated>(handler)
    ```
 
 3. **Another handler's exception cancelled yours.** The default publisher is `ParallelNotificationPublisher`:
@@ -146,9 +146,11 @@ pipeline execution; they are never shared between two dispatches, and a nested `
 gets its **own, empty** context:
 
 ```kotlin
-registry.handle<OuterCommand> { request ->
-    requestContext.put("userId", "u-1")
-    mediator.send(InnerCommand())   // InnerCommand's pipeline gets a NEW context — "userId" is not there
+class OuterHandler : RequestHandler<OuterCommand, Unit> {
+    override suspend fun handle(mediator: Mediator, requestContext: RequestContext, request: OuterCommand) {
+        requestContext.put("userId", "u-1")
+        mediator.send(InnerCommand())   // InnerCommand's pipeline gets a NEW context — "userId" is not there
+    }
 }
 ```
 
@@ -221,7 +223,9 @@ generated at all), and dispatching throws `MissingHandlerException`.
 
 - lives in a Gradle module where the `ksp` plugin (with the `mediatork-ksp-koin` dependency) is **not applied** —
   KSP is per-module;
-- is a DSL handler. KSP only scans for concrete classes implementing the interfaces;
+- implements the interface **indirectly** through a base class (`class MyHandler : BaseHandler()`) — only direct
+  supertypes are matched;
+- is `abstract`, `sealed`, or an `object` — only regular concrete `class` declarations are picked up;
 - sits in a test source set or a file matching `*Test.kt` / `*Spec.kt` — test files are excluded by design;
 - is a **stream handler or validator** — the processor only scans `RequestHandler` and `NotificationHandler`;
   register `StreamRequestHandler`s and `RequestValidator`s manually.

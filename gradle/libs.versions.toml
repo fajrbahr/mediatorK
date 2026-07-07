@@ -1,17 +1,12 @@
 [versions]
-kotlin = "2.4.0"
-agp = "9.0.1"
-coroutines = "1.11.0"
-ksp = "2.3.6"
-classgraph = "4.8.184"
-nmcp = "1.6.1"
-detekt = "1.23.8"
-binaryCompatibilityValidator = "0.18.1"
-dokka = "2.2.0"
-spring-boot = "3.5.3"
-spring-dependency-management = "1.1.7"
+kotlin = "2.3.21"
+agp = "8.7.3"
+coroutines = "1.10.2"
+ksp = "2.0.21-1.0.28"
+classgraph = "4.8.179"
+nmcp = "1.5.0"
 jvmToolchain = "21"
-compileSdk = "36"
+compileSdk = "35"
 minSdk = "21"
 
 [libraries]
@@ -23,15 +18,5 @@ classgraph = { module = "io.github.classgraph:classgraph", version.ref = "classg
 [plugins]
 kotlin-multiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref = "kotlin" }
 kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
-android-kotlin-multiplatform-library = { id = "com.android.kotlin.multiplatform.library", version.ref = "agp" }
+android-library = { id = "com.android.library", version.ref = "agp" }
 nmcp = { id = "com.gradleup.nmcp", version.ref = "nmcp" }
-detekt = { id = "io.gitlab.arturbosch.detekt", version.ref = "detekt" }
-binary-compatibility-validator = { id = "org.jetbrains.kotlinx.binary-compatibility-validator", version.ref = "binaryCompatibilityValidator" }
-dokka = { id = "org.jetbrains.dokka", version.ref = "dokka" }
-android-application = { id = "com.android.application", version.ref = "agp" }
-kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
-kotlin-compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
-kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
-kotlin-spring = { id = "org.jetbrains.kotlin.plugin.spring", version.ref = "kotlin" }
-spring-boot = { id = "org.springframework.boot", version.ref = "spring-boot" }
-spring-dependency-management = { id = "io.spring.dependency-management", version.ref = "spring-dependency-management" }

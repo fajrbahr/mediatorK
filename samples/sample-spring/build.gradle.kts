@@ -1,15 +1,15 @@
 plugins {
     alias(libs.plugins.kotlin.jvm)
-    alias(libs.plugins.spring.boot)
-    alias(libs.plugins.spring.dependency.management)
-    alias(libs.plugins.kotlin.spring)
+    id("org.springframework.boot") version "3.3.6"
+    id("io.spring.dependency-management") version "1.1.7"
+    id("org.jetbrains.kotlin.plugin.spring") version "2.3.21"
 }
 
 group = "com.fajrbahr.mediatork"
 version = "1.0-SNAPSHOT"
 
 dependencies {
-    implementation(project(":mediatork"))
+    implementation("io.github.fajrbahr:mediatork:0.6.2")
     implementation("org.springframework.boot:spring-boot-starter-webflux")
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-reactor:1.10.2")

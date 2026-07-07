@@ -1,42 +1,23 @@
 package com.fajrbahr.mediatork.test
 
-import com.fajrbahr.mediatork.api.*
+import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
-
-// ── Fixtures ──────────────────────────────────────────────────────────────────
-
-data class GetUserQuery(val id: String) : Request<String>
-data class CreateOrderCommand(val id: String) : Request<String>
-data class OrderPlacedEvent(val orderId: String) : Notification
-data class UserDeletedEvent(val userId: String) : Notification
-
-// ── Tests ─────────────────────────────────────────────────────────────────────
+import kotlin.test.assertTrue
 
 class MediatorSpyTest {
 
     private fun buildSpy(): MediatorSpy {
         val fake = FakeMediator {
-            add(object : RequestHandler<GetUserQuery, String> {
-                override suspend fun handle(mediator: Mediator, requestContext: RequestContext, request: GetUserQuery) =
-                    "user:${request.id}"
-            })
-            add(object : RequestHandler<CreateOrderCommand, String> {
-                override suspend fun handle(
-                    mediator: Mediator,
-                    requestContext: RequestContext,
-                    request: CreateOrderCommand
-                ) =
-                    "order:${request.id}"
-            })
-            add(object : NotificationHandler<OrderPlacedEvent> {
-                override suspend fun handle(notification: OrderPlacedEvent) = Unit
-            })
-            add(object : NotificationHandler<UserDeletedEvent> {
+            register(GetUserHandler())
+            register(CreateOrderHandler())
+            registerNotification(OrderPlacedHandler())
+            registerNotification(object : com.fajrbahr.mediatork.api.NotificationHandler<UserDeletedEvent> {
                 override suspend fun handle(notification: UserDeletedEvent) = Unit
             })
+            registerStream(StreamItemsHandler())
         }
         return MediatorSpy(fake)
     }
@@ -48,11 +29,11 @@ class MediatorSpyTest {
     }
 
     @Test
-    fun `records sent requests`() = runTest {
+    fun `records sent requests in order`() = runTest {
         val spy = buildSpy()
         spy.send(GetUserQuery("1"))
-        spy.send(GetUserQuery("2"))
         spy.send(CreateOrderCommand("ORD-1"))
+        spy.send(GetUserQuery("2"))
         assertEquals(3, spy.sentRequests.size)
     }
 
@@ -160,13 +141,77 @@ class MediatorSpyTest {
     }
 
     @Test
+    fun `assertPublishedCount fails with wrong count`() = runTest {
+        val spy = buildSpy()
+        spy.publish(OrderPlacedEvent("ORD-1"))
+        assertFailsWith<AssertionError> { spy.assertPublishedCount<OrderPlacedEvent>(3) }
+    }
+
+    @Test
+    fun `records streamed requests`() = runTest {
+        val spy = buildSpy()
+        spy.stream(StreamItemsQuery("a")).toList()
+        assertEquals(1, spy.streamedRequests.size)
+    }
+
+    @Test
+    fun `delegates stream to the real mediator`() = runTest {
+        val spy = buildSpy()
+        val items = spy.stream(StreamItemsQuery("item")).toList()
+        assertEquals(listOf("item-1", "item-2", "item-3"), items)
+    }
+
+    @Test
+    fun `streamedOf filters by type`() = runTest {
+        val spy = buildSpy()
+        spy.stream(StreamItemsQuery("a")).toList()
+        assertEquals(1, spy.streamedOf<StreamItemsQuery>().size)
+    }
+
+    @Test
+    fun `assertStreamed passes when stream was dispatched`() = runTest {
+        val spy = buildSpy()
+        spy.stream(StreamItemsQuery("a")).toList()
+        spy.assertStreamed<StreamItemsQuery>()
+    }
+
+    @Test
+    fun `assertStreamed fails when stream was not dispatched`() = runTest {
+        val spy = buildSpy()
+        assertFailsWith<AssertionError> { spy.assertStreamed<StreamItemsQuery>() }
+    }
+
+    @Test
+    fun `assertNotStreamed passes when stream was not dispatched`() = runTest {
+        val spy = buildSpy()
+        spy.assertNotStreamed<StreamItemsQuery>()
+    }
+
+    @Test
+    fun `assertNotStreamed fails when stream was dispatched`() = runTest {
+        val spy = buildSpy()
+        spy.stream(StreamItemsQuery("a")).toList()
+        assertFailsWith<AssertionError> { spy.assertNotStreamed<StreamItemsQuery>() }
+    }
+
+    @Test
+    fun `assertStreamedCount passes with exact count`() = runTest {
+        val spy = buildSpy()
+        spy.stream(StreamItemsQuery("a")).toList()
+        spy.stream(StreamItemsQuery("b")).toList()
+        spy.assertStreamedCount<StreamItemsQuery>(2)
+    }
+
+    @Test
     fun `reset clears all recorded calls`() = runTest {
         val spy = buildSpy()
         spy.send(GetUserQuery("1"))
         spy.publish(OrderPlacedEvent("ORD-1"))
+        spy.stream(StreamItemsQuery("a")).toList()
         spy.reset()
         assertEquals(0, spy.sentRequests.size)
         assertEquals(0, spy.publishedNotifications.size)
+        assertEquals(0, spy.streamedRequests.size)
     }
 
     @Test
@@ -174,5 +219,22 @@ class MediatorSpyTest {
         val spy = buildSpy()
         spy.send(GetUserQuery("user-99"))
         assertEquals("user-99", spy.sentOf<GetUserQuery>().first().id)
+    }
+
+    @Test
+    fun `sentRequests returns defensive copy`() = runTest {
+        val spy = buildSpy()
+        spy.send(GetUserQuery("1"))
+        val snapshot = spy.sentRequests
+        spy.send(GetUserQuery("2"))
+        assertEquals(1, snapshot.size)
+        assertEquals(2, spy.sentRequests.size)
+    }
+
+    @Test
+    fun `custom message appears in assertion error`() = runTest {
+        val spy = buildSpy()
+        val error = assertFailsWith<AssertionError> { spy.assertSent<GetUserQuery>("custom msg") }
+        assertTrue(error.message!!.contains("custom msg"))
     }
 }

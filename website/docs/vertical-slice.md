@@ -35,9 +35,7 @@ UI
 
 ---
 
-## What the layered version costs: Order example
-
-In the layered architecture, a single "place order" feature needs all of these classes:
+## All the components: Order example
 
 - `OrderRemoteDataSource` *(interface)*
 - `OrderRemoteDataSourceImpl`
@@ -48,12 +46,11 @@ In the layered architecture, a single "place order" feature needs all of these c
 - `PlaceOrderUseCase`
 - `OrderViewModel`
 
+In the handler the `HttpClient` and `SqlDriver` are injected directly, with no extra abstraction layers required:
+
 ---
 
-## A single handler replaces all of it
-
-With MediatorK, the same feature is one request plus one handler. The `HttpClient` and `SqlDriver` are injected
-directly, with no extra abstraction layers in between:
+## A single handler combining everything
 
 ```kotlin
 // The request

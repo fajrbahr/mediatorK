@@ -20,8 +20,8 @@ how many times, while your actual handler logic still runs and returns real resu
 // Wrap any real mediator — FakeMediator, or your production one
 val spy = MediatorSpy(
     FakeMediator {
-        handle<CreateOrderCommand> { createOrder() }
-        handle<FetchUserQuery> { fetchUser() }
+        +CreateOrderHandler()
+        +FetchUserHandler()
     }
 )
 ```
@@ -35,7 +35,7 @@ Inject `spy` wherever your production code expects a `Mediator`. All `send` and 
 ```kotlin
 @Test
 fun `checkout sends CreateOrderCommand`() = runTest {
-    val spy = MediatorSpy(FakeMediator { handle<CreateOrderCommand> { createOrder() } })
+    val spy = MediatorSpy(FakeMediator { +CreateOrderHandler() })
     val checkout = CheckoutService(spy)
 
     checkout.placeOrder(cartId = "CART-1")
@@ -59,7 +59,7 @@ fun `checkout sends CreateOrderCommand`() = runTest {
 ```kotlin
 @Test
 fun `checkout does not send command when cart is empty`() = runTest {
-    val spy = MediatorSpy(FakeMediator { handle<CreateOrderCommand> { createOrder() } })
+    val spy = MediatorSpy(FakeMediator { +CreateOrderHandler() })
     val checkout = CheckoutService(spy)
 
     checkout.placeOrder(cartId = "") // empty cart → no command
@@ -76,8 +76,10 @@ fun `checkout does not send command when cart is empty`() = runTest {
 @Test
 fun `order placement publishes OrderPlacedEvent`() = runTest {
     val fake = FakeMediator {
-        handle<CreateOrderCommand> { createOrder() }
-        on<OrderPlacedEvent> {}
+        +CreateOrderHandler()
+        registerNotification(object : NotificationHandler<OrderPlacedEvent> {
+            override suspend fun handle(notification: OrderPlacedEvent) = Unit
+        })
     }
     val spy = MediatorSpy(fake)
     val checkout = CheckoutService(spy)
@@ -114,7 +116,7 @@ fun `order placement publishes OrderPlacedEvent`() = runTest {
 ```kotlin
 @Test
 fun `two independent scenarios in one test`() = runTest {
-    val spy = MediatorSpy(FakeMediator { handle<CreateOrderCommand> { createOrder() } })
+    val spy = MediatorSpy(FakeMediator { +CreateOrderHandler() })
 
     spy.send(CreateOrderCommand(id = "ORD-1"))
     spy.assertSentCount<CreateOrderCommand>(1)
@@ -128,10 +130,18 @@ fun `two independent scenarios in one test`() = runTest {
 
 ---
 
-Not sure whether you need a spy? See [Choosing the right helper](fake-mediator.md#choosing-the-right-helper).
+## Choosing the right helper
+
+| Situation                                          | Use                                             |
+|----------------------------------------------------|-------------------------------------------------|
+| Test only checks initial state, never calls `send` | `DummyMediator`                                 |
+| Test controls what `send` returns                  | `FakeMediator` + `fakeHandler`                  |
+| Test asserts *which* requests were sent            | `MediatorSpy`                                   |
+| Test captures published notifications              | `captureNotifications` or `MediatorSpy`         |
+| Test verifies all handlers are wired up            | `MediatorTestUtils.assertAllHandlersRegistered` |
 
 ---
 
 ## Next
 
-→ [Testing Notifications](notification-testing.md)
+→ [Handler Validation](handler-validation.md)

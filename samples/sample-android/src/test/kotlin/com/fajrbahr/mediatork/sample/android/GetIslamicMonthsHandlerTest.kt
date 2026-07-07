@@ -3,7 +3,7 @@ package com.fajrbahr.mediatork.sample.android
 import com.fajrbahr.mediatork.MediatorFactory
 import com.fajrbahr.mediatork.sample.android.after.AladhanCacheDataSource
 import com.fajrbahr.mediatork.sample.android.after.islamicMonths.GetIslamicMonthsRequest
-import com.fajrbahr.mediatork.sample.android.after.islamicMonths.islamicMonthsRegistrar
+import com.fajrbahr.mediatork.sample.android.after.islamicMonths.IslamicMonthsRegistrar
 import com.fajrbahr.mediatork.sample.android.after.islamicMonths.IslamicMonth
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
@@ -21,7 +21,7 @@ class GetIslamicMonthsHandlerTest {
         cache.saveIslamicMonths(twelveMonths)
 
         val mediator = MediatorFactory.create(
-            registrars = listOf(islamicMonthsRegistrar(cache)),
+            registrars = listOf(IslamicMonthsRegistrar(cache)),
             verifyHandlers = false,
         )
         val result = mediator.send(GetIslamicMonthsRequest())
@@ -41,7 +41,7 @@ class GetIslamicMonthsHandlerTest {
         cache.saveIslamicMonths(months)
 
         val mediator = MediatorFactory.create(
-            registrars = listOf(islamicMonthsRegistrar(cache)),
+            registrars = listOf(IslamicMonthsRegistrar(cache)),
             verifyHandlers = false,
         )
         val result = mediator.send(GetIslamicMonthsRequest())

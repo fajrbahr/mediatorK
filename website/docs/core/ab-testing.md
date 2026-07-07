@@ -76,16 +76,10 @@ class CheckoutViewModel(
 
 ## Why this works well
 
-|                          | Detail                                                              |
-|--------------------------|---------------------------------------------------------------------|
-| No coupling              | Handlers know nothing about flags or each other                     |
-| Easy to clean up         | When the experiment ends, delete one command + one handler          |
-| Testable                 | Test each variant independently by sending its command directly     |
-| Pipeline applies to both | Logging, auth, and other behaviors wrap both variants automatically |
-
----
-
-## Next
-
-→ [Request Context](context.md)
+|                          | Detail                                                                   |
+|--------------------------|--------------------------------------------------------------------------|
+| No coupling              | Handlers know nothing about flags or each other                          |
+| Easy to clean up         | When the experiment ends, delete one command + one handler               |
+| Testable                 | Test each variant independently by sending its command directly          |
+| Pipeline applies to both | `LoggingBehavior`, `AuthBehavior`, etc. wrap both variants automatically |
 

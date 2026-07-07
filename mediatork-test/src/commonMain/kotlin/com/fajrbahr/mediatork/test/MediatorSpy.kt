@@ -1,6 +1,5 @@
 package com.fajrbahr.mediatork.test
 
-import com.fajrbahr.mediatork.HandlerRegistry
 import com.fajrbahr.mediatork.api.Mediator
 import com.fajrbahr.mediatork.api.Notification
 import com.fajrbahr.mediatork.api.Request
@@ -29,6 +28,7 @@ import kotlin.test.assertTrue
  * @param delegate the real [Mediator] that handles requests and notifications.
  */
 class MediatorSpy(private val delegate: Mediator) : Mediator {
+
     private val _sentRequests = mutableListOf<Request<*>>()
     private val _publishedNotifications = mutableListOf<Notification>()
     private val _streamedRequests = mutableListOf<StreamRequest<*>>()

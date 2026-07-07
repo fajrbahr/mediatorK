@@ -6,8 +6,8 @@ sidebar_label: Pipeline Behaviors
 
 # Pipeline Behaviors
 
-A **pipeline behavior** wraps every request in a decorator chain, so cross-cutting concerns like logging, retry,
-caching, auth, and timing run without touching handler code.
+A **pipeline behavior** wraps every request in a decorator chain; cross-cutting concerns like logging, retry, caching,
+auth, and timing without touching handler code.
 
 ```
 send(request)
@@ -96,7 +96,7 @@ class AuthBehavior(
         request: TRequest,
     ): TResult {
         if (auth0Enabled) {
-            requestContext.getMetadata<String>("token")
+            requestContext.getMetaDate<String>("token")
                 ?: throw UnauthorizedException()
         }
         return next(request)
@@ -139,16 +139,22 @@ Behaviors are sorted by `order` at dispatch time; registration order doesn't mat
 
 ---
 
-## Built-in behaviors
+## Built-in behaviors · `com.fajrbahr.mediatork.pipeline`
 
-MediatorK ships seven production-ready behaviors: logging, timeout, caching, timing, error tracking, request counting,
-and transactions. See [Built-in Behaviors](built-in-behaviors.mdx) for usage examples and parameters.
+MediatorK ships 6 production-ready behaviors. Import them with `com.fajrbahr.mediatork.pipeline.*`.
 
-`ValidationBehavior` (from `com.fajrbahr.mediatork.validator`) is added automatically by `MediatorFactory.create`; see
-[Validation](validation.md).
+| Class                            | Default order   | Description                                                                                                               |
+|----------------------------------|-----------------|---------------------------------------------------------------------------------------------------------------------------|
+| `LoggingPipelineBehavior`        | `-100`          | Logs request entry and exit with optional result logging. Accepts any `(String) -> Unit` logger.                          |
+| `ValidationBehavior`             | `-50`           | Runs registered `RequestValidator`s and throws `ValidationException` on failure. From `com.fajrbahr.mediatork.validator`. |
+| `CachingPipelineBehavior`        | `0`             | TTL-based cache with mutex locking. Customizable key function. Public API: `invalidate(key)`, `clear()`, `size()`.        |
+| `TimeoutPipelineBehavior`        | `0`             | Cancels the downstream pipeline if it exceeds `timeoutMillis`.                                                            |
+| `TimingPipelineBehavior`         | `0`             | Measures handler execution time. Calls `onTiming(requestName, durationMs)` after each dispatch.                           |
+| `ErrorTrackingPipelineBehavior`  | `Int.MAX_VALUE` | Calls `onError(request, throwable)` for every unhandled exception, then rethrows it.                                      |
+| `RequestCounterPipelineBehavior` | `0`             | Counts dispatches per request type. Public API: `countFor(klass)`, `snapshot()`.                                          |
 
 ---
 
 ## Next
 
-→ [Free AOP](free-aop.md)
+→ [Pre / Post Processors](processors.md)

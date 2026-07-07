@@ -1,5 +1,3 @@
-@file:Suppress("TooGenericExceptionThrown")
-
 package com.fajrbahr.mediatork
 
 import com.fajrbahr.mediatork.api.*
@@ -11,12 +9,13 @@ import kotlin.test.assertFalse
 
 class PrePostProcessorTest {
 
-    // ── Pre-handler behavior (negative order) ───────────────────────────────────
+    // ── Stage.Pre ───────────────────────────────────────────────────────────────
 
     @Test
     fun `PRE behavior runs before handler`() = runTest {
         val order = mutableListOf<String>()
         val pre = object : PipelineBehavior {
+            override val stage = Stage.Pre
             override suspend fun <TRequest : Request<TResult>, TResult> process(
                 requestContext: RequestContext,
                 next: RequestHandlerDelegate<TRequest, TResult>,
@@ -25,9 +24,16 @@ class PrePostProcessorTest {
                 order += "pre"; return next(request)
             }
         }
-        val handler =
-            RequestHandler<PingQuery, String> { mediator, requestContext, request -> order += "handler"; "ok" }
-        val m = mediator(pipelineBehaviors = listOf(pre)) { add(handler) }
+        val handler = object : RequestHandler<PingQuery, String> {
+            override suspend fun handle(
+                mediator: Mediator,
+                requestContext: RequestContext,
+                request: PingQuery
+            ): String {
+                order += "handler"; return "ok"
+            }
+        }
+        val m = mediator(pipelineBehaviors = listOf(pre)) { register(handler) }
         m.send(PingQuery("x"))
         assertEquals(listOf("pre", "handler"), order)
     }
@@ -36,6 +42,7 @@ class PrePostProcessorTest {
     fun `PRE behavior can populate request context for handler`() = runTest {
         var captured: String? = null
         val pre = object : PipelineBehavior {
+            override val stage = Stage.Pre
             override suspend fun <TRequest : Request<TResult>, TResult> process(
                 requestContext: RequestContext,
                 next: RequestHandlerDelegate<TRequest, TResult>,
@@ -44,18 +51,26 @@ class PrePostProcessorTest {
                 requestContext.put("token", "abc123"); return next(request)
             }
         }
-        val handler = RequestHandler<PingQuery, String> { mediator, requestContext, request ->
-            captured = requestContext.getMetaData("token"); "ok"
+        val handler = object : RequestHandler<PingQuery, String> {
+            override suspend fun handle(
+                mediator: Mediator,
+                requestContext: RequestContext,
+                request: PingQuery
+            ): String {
+                captured = requestContext.getMetaData("token"); return "ok"
+            }
         }
-        val m = mediator(pipelineBehaviors = listOf(pre)) { add(handler) }
+        val m = mediator(pipelineBehaviors = listOf(pre)) { register(handler) }
         m.send(PingQuery("x"))
         assertEquals("abc123", captured)
     }
 
     @Test
-    fun `multiple behaviors run in ascending order`() = runTest {
+    fun `multiple PRE behaviors run in ascending order`() = runTest {
         val order = mutableListOf<String>()
         val first = object : PipelineBehavior {
+            override val stage = Stage.Pre
+            override val order = 1
             override suspend fun <TRequest : Request<TResult>, TResult> process(
                 requestContext: RequestContext,
                 next: RequestHandlerDelegate<TRequest, TResult>,
@@ -65,6 +80,8 @@ class PrePostProcessorTest {
             }
         }
         val second = object : PipelineBehavior {
+            override val stage = Stage.Pre
+            override val order = 2
             override suspend fun <TRequest : Request<TResult>, TResult> process(
                 requestContext: RequestContext,
                 next: RequestHandlerDelegate<TRequest, TResult>,
@@ -73,7 +90,7 @@ class PrePostProcessorTest {
                 order += "second"; return next(request)
             }
         }
-        val m = mediator(pipelineBehaviors = listOf(second, first)) { add(PingHandler()) }
+        val m = mediator(pipelineBehaviors = listOf(second, first)) { register(PingHandler()) }
         m.send(PingQuery("x"))
         assertEquals(listOf("first", "second"), order)
     }
@@ -82,24 +99,34 @@ class PrePostProcessorTest {
     fun `PRE behavior throwing aborts pipeline`() = runTest {
         var handlerRan = false
         val pre = object : PipelineBehavior {
+            override val stage = Stage.Pre
             override suspend fun <TRequest : Request<TResult>, TResult> process(
                 requestContext: RequestContext,
                 next: RequestHandlerDelegate<TRequest, TResult>,
                 request: TRequest,
             ): TResult = throw IllegalArgumentException("invalid")
         }
-        val handler = RequestHandler<PingQuery, String> { mediator, requestContext, request -> handlerRan = true; "ok" }
-        val m = mediator(pipelineBehaviors = listOf(pre)) { add(handler) }
+        val handler = object : RequestHandler<PingQuery, String> {
+            override suspend fun handle(
+                mediator: Mediator,
+                requestContext: RequestContext,
+                request: PingQuery
+            ): String {
+                handlerRan = true; return "ok"
+            }
+        }
+        val m = mediator(pipelineBehaviors = listOf(pre)) { register(handler) }
         assertFailsWith<IllegalArgumentException> { m.send(PingQuery("x")) }
         assertFalse(handlerRan)
     }
 
-    // ── Post-handler behavior (calls next first, then acts) ─────────────────────
+    // ── Stage.Post ──────────────────────────────────────────────────────────────
 
     @Test
     fun `POST behavior runs after handler`() = runTest {
         val order = mutableListOf<String>()
         val post = object : PipelineBehavior {
+            override val stage = Stage.Post
             override suspend fun <TRequest : Request<TResult>, TResult> process(
                 requestContext: RequestContext,
                 next: RequestHandlerDelegate<TRequest, TResult>,
@@ -108,9 +135,16 @@ class PrePostProcessorTest {
                 val r = next(request); order += "post"; return r
             }
         }
-        val handler =
-            RequestHandler<PingQuery, String> { mediator, requestContext, request -> order += "handler"; "ok" }
-        val m = mediator(pipelineBehaviors = listOf(post)) { add(handler) }
+        val handler = object : RequestHandler<PingQuery, String> {
+            override suspend fun handle(
+                mediator: Mediator,
+                requestContext: RequestContext,
+                request: PingQuery
+            ): String {
+                order += "handler"; return "ok"
+            }
+        }
+        val m = mediator(pipelineBehaviors = listOf(post)) { register(handler) }
         m.send(PingQuery("x"))
         assertEquals(listOf("handler", "post"), order)
     }
@@ -119,6 +153,7 @@ class PrePostProcessorTest {
     fun `POST behavior receives handler response`() = runTest {
         var captured: Any? = "not-set"
         val post = object : PipelineBehavior {
+            override val stage = Stage.Post
             override suspend fun <TRequest : Request<TResult>, TResult> process(
                 requestContext: RequestContext,
                 next: RequestHandlerDelegate<TRequest, TResult>,
@@ -127,7 +162,7 @@ class PrePostProcessorTest {
                 val r = next(request); captured = r; return r
             }
         }
-        val m = mediator(pipelineBehaviors = listOf(post)) { add(PingHandler()) }
+        val m = mediator(pipelineBehaviors = listOf(post)) { register(PingHandler()) }
         m.send(PingQuery("world"))
         assertEquals("pong:world", captured)
     }
@@ -136,6 +171,7 @@ class PrePostProcessorTest {
     fun `POST behavior receives original request`() = runTest {
         var capturedRequest: Request<*>? = null
         val post = object : PipelineBehavior {
+            override val stage = Stage.Post
             override suspend fun <TRequest : Request<TResult>, TResult> process(
                 requestContext: RequestContext,
                 next: RequestHandlerDelegate<TRequest, TResult>,
@@ -144,7 +180,7 @@ class PrePostProcessorTest {
                 val r = next(request); capturedRequest = request; return r
             }
         }
-        val m = mediator(pipelineBehaviors = listOf(post)) { add(PingHandler()) }
+        val m = mediator(pipelineBehaviors = listOf(post)) { register(PingHandler()) }
         m.send(PingQuery("hello"))
         assertEquals(PingQuery("hello"), capturedRequest)
     }
@@ -153,6 +189,8 @@ class PrePostProcessorTest {
     fun `multiple POST behaviors run in ascending order`() = runTest {
         val order = mutableListOf<String>()
         val first = object : PipelineBehavior {
+            override val stage = Stage.Post
+            override val order = 1
             override suspend fun <TRequest : Request<TResult>, TResult> process(
                 requestContext: RequestContext,
                 next: RequestHandlerDelegate<TRequest, TResult>,
@@ -162,6 +200,8 @@ class PrePostProcessorTest {
             }
         }
         val second = object : PipelineBehavior {
+            override val stage = Stage.Post
+            override val order = 2
             override suspend fun <TRequest : Request<TResult>, TResult> process(
                 requestContext: RequestContext,
                 next: RequestHandlerDelegate<TRequest, TResult>,
@@ -170,7 +210,7 @@ class PrePostProcessorTest {
                 val r = next(request); order += "second"; return r
             }
         }
-        val m = mediator(pipelineBehaviors = listOf(second, first)) { add(PingHandler()) }
+        val m = mediator(pipelineBehaviors = listOf(second, first)) { register(PingHandler()) }
         m.send(PingQuery("x"))
         assertEquals(listOf("first", "second"), order)
     }
@@ -179,6 +219,7 @@ class PrePostProcessorTest {
     fun `POST behavior does not run when handler throws unhandled exception`() = runTest {
         var postRan = false
         val post = object : PipelineBehavior {
+            override val stage = Stage.Post
             override suspend fun <TRequest : Request<TResult>, TResult> process(
                 requestContext: RequestContext,
                 next: RequestHandlerDelegate<TRequest, TResult>,
@@ -187,9 +228,15 @@ class PrePostProcessorTest {
                 val r = next(request); postRan = true; return r
             }
         }
-        val failingHandler =
-            RequestHandler<PingQuery, String> { mediator, requestContext, request -> throw RuntimeException("boom") }
-        val m = mediator(pipelineBehaviors = listOf(post)) { add(failingHandler) }
+        val failingHandler = object : RequestHandler<PingQuery, String> {
+            override suspend fun handle(
+                mediator: Mediator,
+                requestContext: RequestContext,
+                request: PingQuery
+            ): String =
+                throw RuntimeException("boom")
+        }
+        val m = mediator(pipelineBehaviors = listOf(post)) { register(failingHandler) }
         assertFailsWith<RuntimeException> { m.send(PingQuery("x")) }
         assertFalse(postRan)
     }
@@ -198,6 +245,7 @@ class PrePostProcessorTest {
     fun `POST behavior can read context values written by PRE behavior`() = runTest {
         var postSawValue: String? = null
         val pre = object : PipelineBehavior {
+            override val stage = Stage.Pre
             override suspend fun <TRequest : Request<TResult>, TResult> process(
                 requestContext: RequestContext,
                 next: RequestHandlerDelegate<TRequest, TResult>,
@@ -207,6 +255,7 @@ class PrePostProcessorTest {
             }
         }
         val post = object : PipelineBehavior {
+            override val stage = Stage.Post
             override suspend fun <TRequest : Request<TResult>, TResult> process(
                 requestContext: RequestContext,
                 next: RequestHandlerDelegate<TRequest, TResult>,
@@ -215,7 +264,7 @@ class PrePostProcessorTest {
                 val r = next(request); postSawValue = requestContext.getMetaData("shared"); return r
             }
         }
-        val m = mediator(pipelineBehaviors = listOf(pre, post)) { add(PingHandler()) }
+        val m = mediator(pipelineBehaviors = listOf(pre, post)) { register(PingHandler()) }
         m.send(PingQuery("x"))
         assertEquals("value", postSawValue)
     }

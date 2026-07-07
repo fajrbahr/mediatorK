@@ -11,56 +11,56 @@ processing, no reflection, no external dependencies.
 
 ---
 
-## Inline Validation
+## RequestValidator
 
-The simplest way to validate a request is to override `validate()` directly on the request class.
-No separate class, no registration — the validation lives right next to the data it validates:
+Implement `RequestValidator<TRequest>` and return a `ValidationResult` to signal pass or fail:
 
 ```kotlin
-data class CreateTodoCommand(
-    val title: String,
-    val dueDate: LocalDate,
-) : Request<TodoId> {
-    override fun validate() = rules<String> {
-        check(title.isNotBlank()) { "Title must not be blank" }
-        check(title.length <= 200) { "Title must be 200 characters or fewer" }
-        check(dueDate.isAfter(today())) { "Due date must be in the future" }
-    }
+interface RequestValidator<TRequest : Any> {
+    fun validate(request: TRequest): ValidationResult
 }
 ```
 
-All checks run regardless of earlier failures. `ValidationException.errors` contains the full list.
-
 ### Fail-fast: stop at first error
 
-Use `rulesFailFast { }` to stop at the first failure:
+Use `rulesFailFast { }` to stop at the first error:
 
 ```kotlin
-data class GetOrderQuery(
-    val orderId: String,
-    val customerId: String,
-) : Request<OrderDetails> {
-    override fun validate() = rulesFailFast<String> {
-        check(orderId.isNotBlank()) { "Order ID is required" }
-        check(orderId.startsWith("ORD-")) { "Order ID must start with ORD-" }
-        check(customerId.isNotBlank()) { "Customer ID is required" }
+class CreateTodoValidator : RequestValidator<CreateTodoCommand> {
+    override fun validate(request: CreateTodoCommand): ValidationResult = rulesFailFast {
+        check(request.title.isNotBlank()) { "Title must not be blank" }
+        check(request.title.length <= 200) { "Title must be 200 characters or fewer" }
+        check(request.dueDate.isAfter(today())) { "Due date must be in the future" }
     }
 }
 ```
 
 Execution stops at the first failure. Only the first error is included in the result.
 
+### Collect all errors: `rules { }`
+
+Use `rules { }` when you want every failure reported in one pass (e.g. form validation):
+
+```kotlin
+class CreateInvoiceValidator : RequestValidator<CreateInvoiceCommand> {
+    override fun validate(request: CreateInvoiceCommand): ValidationResult = rules {
+        check(request.id.isNotBlank()) { "Invoice ID is required" }
+        check(request.id.startsWith("INV-")) { "Invoice ID must start with INV-" }
+        check(request.amount > 0) { "Amount must be positive" }
+    }
+}
+```
+
+All checks run regardless of earlier failures. `ValidationException.errors` contains the full list.
+
 ### Return directly
 
 Return `ValidationResult.Invalid` when you have a single computed message:
 
 ```kotlin
-data class CreateInvoiceCommand(
-    val id: String,
-    val amount: Double,
-) : Request<InvoiceId> {
-    override fun validate(): ValidationResult {
-        if (id.isBlank()) return ValidationResult.Invalid("Invoice ID is required")
+class CreateInvoiceValidator : RequestValidator<CreateInvoiceCommand> {
+    override fun validate(request: CreateInvoiceCommand): ValidationResult {
+        if (request.id.isBlank()) return ValidationResult.Invalid("Invoice ID is required")
         return ValidationResult.Valid
     }
 }
@@ -68,51 +68,57 @@ data class CreateInvoiceCommand(
 
 ---
 
-## RequestValidator (External)
+## Registering validators
 
-When a validator needs injected dependencies (a repository, a service), use the `validate` DSL and register it with the
-`HandlerRegistry`:
-
-```kotlin
-registry.validate<CreateUserCommand> { request ->
-    rules<String> {
-        check(!userRepo.existsByEmail(request.email)) { "Email already taken" }
-    }
-}
-```
-
-Register it alongside the handler in your registrar:
+Register validators via `HandlerRegistry.registerValidator<TRequest>(validator)`:
 
 ```kotlin
-class ValidationRegistrar(private val userRepo: UserRepository) : MediatorRegistrar {
+class AppRegistrar(
+    private val repo: InvoiceRepository,
+) : MediatorRegistrar {
     override fun register(registry: HandlerRegistry) {
-        registry.validate<CreateUserCommand> { request ->
-            rules<String> {
-                check(!userRepo.existsByEmail(request.email)) { "Email already taken" }
-            }
-        }
-        
-        registry.handle<CreateUserCommand, User> { request ->
-            // implementation
-            TODO()
-        }
+        registry register CreateInvoiceHandler(repo)
+        registry.registerValidator(CreateInvoiceValidator())
     }
 }
 ```
 
-Both inline `validate()` and registered validators can coexist on the same request type.
-Inline validation runs first, then any registered validators.
+Or using the `+` shorthand inside a `scope { }` block:
+
+```kotlin
+registry.scope {
+    +CreateInvoiceHandler(repo)
+    +CreateInvoiceValidator()
+}
+```
 
 ---
 
 ## ValidationBehavior
 
-MediatorK ships a ready-to-use `ValidationBehavior`, and `MediatorFactory.create` adds it to the pipeline
-automatically at `order = -50`; no manual setup needed.
+MediatorK ships a ready-to-use `ValidationBehavior` that runs automatically when any validators are registered.
+When you call `MediatorFactory.create`, it detects registered validators and injects `ValidationBehavior` at
+`order = -50` automatically, with no manual setup needed.
 
-`ValidationBehavior` runs before the handler for every request. It first calls the request's own
-`validate()` method, then runs any registered `RequestValidator`s for that request type.
-It throws `ValidationException` if any validation returns `ValidationResult.Invalid`.
+If you need to customize the behavior order, you can construct and add it explicitly:
+
+```kotlin
+val mediator = MediatorFactory.create(
+    registrars = listOf(AppRegistrar()),
+    pipelineBehaviors = listOf(
+        // ValidationBehavior is injected automatically from registered validators,
+        // but you can override its order by passing it explicitly:
+        ValidationBehavior(validators = registry.anyValidators(), order = -100),
+    ),
+)
+```
+
+`ValidationBehavior` runs before the handler for every request whose type has registered validators.
+It throws `ValidationException` if any validator returns `ValidationResult.Invalid`.
+
+:::tip
+`ValidationBehavior` runs at `order = -50` by default so it executes before most behaviors.
+:::
 
 ---
 
@@ -148,25 +154,29 @@ result.throwIfInvalid()
 
 ## Using Kotlin's `require` / `check`
 
-You can use Kotlin's built-in `require` and `check` directly inside a handler instead of overriding `validate()`.
-`require` throws `IllegalArgumentException` and `check` throws `IllegalStateException`; both integrate naturally with
-MediatorK's exception handling.
+You can use Kotlin's built-in `require` and `check` directly inside a handler instead of a `RequestValidator`. Both throw `IllegalArgumentException` on failure and integrate naturally with MediatorK's exception handling.
 
 ```kotlin
-registry.handle<CreateOrderCommand, OrderId> { request ->
-    require(request.items.isNotEmpty()) { "Order must contain at least one item" }
-    require(request.totalAmount > 0) { "Order total must be positive" }
-    val id = orders.save(request.toOrder())
-    mediator.publish(OrderCreatedNotification(id))
-    id
+class CreateOrderHandler(private val orders: OrderRepository) : RequestHandler<CreateOrderCommand, OrderId> {
+    override suspend fun handle(
+        mediator: Mediator,
+        requestContext: RequestContext,
+        request: CreateOrderCommand,
+    ): OrderId {
+        require(request.items.isNotEmpty()) { "Order must contain at least one item" }
+        require(request.totalAmount > 0) { "Order total must be positive" }
+        val id = orders.save(request.toOrder())
+        mediator.publish(OrderCreatedNotification(id))
+        return id
+    }
 }
 ```
 
-Use `require` for preconditions on input values, `check` for invariants on internal state. Prefer inline `validate()` on
-the request when you need structured `ValidationResult` objects (e.g. returning multiple errors to a UI).
+Use `require` for preconditions on input values, `check` for invariants on internal state. Once validation passes, use `mediator.publish()` to fan out notifications to any interested handlers, with no direct coupling between the handler and its subscribers. Prefer `RequestValidator` when you need structured `ValidationResult` objects (e.g. returning multiple errors to a UI).
 
 ---
 
 ## Next
 
-→ [MediatorFactory](factory.md)
+→ [Requests & Handlers](requests.md)  
+→ [Kotlin JVM](../integration/jvm.md)

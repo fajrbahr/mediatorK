@@ -6,7 +6,7 @@ sidebar_label: Built-in Behaviors
 
 # Built-in Pipeline Behaviors
 
-MediatorK ships seven ready-to-use pipeline behaviors. Drop them into `MediatorFactory.create`, no boilerplate required.
+MediatorK ships six ready-to-use pipeline behaviors. Drop them into `MediatorFactory.create`, no boilerplate required.
 
 1. `LoggingPipelineBehavior`: logs every request in and out
 2. `TimeoutPipelineBehavior`: cancels requests that exceed a deadline
@@ -14,14 +14,12 @@ MediatorK ships seven ready-to-use pipeline behaviors. Drop them into `MediatorF
 4. `CachingPipelineBehavior`: skips the handler on a cache hit
 5. `TimingPipelineBehavior`: measures handler duration
 6. `ErrorTrackingPipelineBehavior`: forwards exceptions to crash reporters
-7. `TransactionPipelineBehavior`: wraps every request in a begin / commit / rollback transaction
 
 ---
 
 ## LoggingPipelineBehavior
 
-Logs each request as it enters and exits the pipeline, including the result on the exit line. Accepts any
-`(String) -> Unit` logger so it works on every platform.
+Logs each request as it enters and exits the pipeline. Accepts any `(String) -> Unit` logger so it works on every platform.
 
 ### KMP / common (println)
 
@@ -37,7 +35,7 @@ val mediator = MediatorFactory.create(
 Output:
 ```
 → GetUserQuery
-← GetUserQuery result=User(id=user-1, name=Alice)
+← GetUserQuery
 ```
 
 ### JVM: SLF4J
@@ -62,11 +60,19 @@ LoggingPipelineBehavior(logger = { msg -> Log.d("Mediator", msg) })
 LoggingPipelineBehavior(logger = { msg -> console.log(msg) })
 ```
 
+### Log the result too
+
+```kotlin
+LoggingPipelineBehavior(logger = ::println, logResult = true)
+// ← GetUserQuery result=User(id=1, name=Alice)
+```
+
 ### Parameters
 
 | Parameter | Type | Default | Description |
 |-----------|------|---------|-------------|
 | `logger` | `(String) -> Unit` | `::println` | Function that receives each log line |
+| `logResult` | `Boolean` | `false` | Append the result to the exit log line |
 | `order` | `Int` | `-100` | Low number = outermost, logs before any other behavior |
 
 ---
@@ -106,9 +112,9 @@ val mediator = MediatorFactory.create(
     pipelineBehaviors = listOf(counter),
 )
 
-mediator.send(GetUserQuery(id = "user-1"))
-mediator.send(GetUserQuery(id = "user-2"))
-mediator.send(CreateOrderCommand(cartId = "cart-42"))
+mediator.send(GetUserQuery(id = 1))
+mediator.send(GetUserQuery(id = 2))
+mediator.send(CreateOrderCommand(...))
 
 counter.countFor(GetUserQuery::class)       // 2
 counter.countFor(CreateOrderCommand::class) // 1
@@ -211,36 +217,6 @@ ErrorTrackingPipelineBehavior { request, error ->
 
 ---
 
-## TransactionPipelineBehavior
-
-Wraps every request in a transaction: `begin()` before the handler runs, `commit()` on success, and `rollback()` on
-any exception (which is then rethrown). Implement the small `TransactionProvider` interface for whatever resource
-supports begin / commit / rollback — a SQL database, an in-memory store, or your own unit-of-work.
-
-```kotlin
-// Adapt your database to the TransactionProvider contract
-class DatabaseTransactionProvider(private val db: Database) : TransactionProvider {
-    override suspend fun begin() = db.beginTransaction()
-    override suspend fun commit() = db.commitTransaction()
-    override suspend fun rollback() = db.rollbackTransaction()
-}
-
-val mediator = MediatorFactory.create(
-    registrars = listOf(AppRegistrar()),
-    pipelineBehaviors = listOf(
-        TransactionPipelineBehavior(DatabaseTransactionProvider(db)),
-    ),
-)
-```
-
-### Parameters
-
-| Parameter | Type | Default | Description |
-|-----------|------|---------|-------------|
-| `transactionProvider` | `TransactionProvider` | required | Resource that supports `begin()`, `commit()`, and `rollback()` |
-
----
-
 ## Registering multiple built-in behaviors
 
 ```kotlin
@@ -255,9 +231,3 @@ val mediator = MediatorFactory.create(
     ),
 )
 ```
-
----
-
-## Next
-
-→ [Pre / Post Behaviors](processors.md)

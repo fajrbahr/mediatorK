@@ -31,8 +31,7 @@ class MissingHandlerException(
 )
 
 /**
- * Thrown when [com.fajrbahr.mediatork.api.IStreamRequest.stream] is called
- * for a request type that has no registered handler.
+ * Thrown when [com.fajrbahr.mediatork.api.IStreamRequest.stream] is called for a request type that has no registered handler.
  *
  * @param requestTypeName simple name of the stream request type that could not be resolved.
  * @param registered simple names of all currently registered stream request types.
@@ -49,8 +48,7 @@ class MissingStreamHandlerException(
 
 /**
  * Thrown by [com.fajrbahr.mediatork.notification.ThrowMissingNotificationHandler] when
- * [com.fajrbahr.mediatork.notification.Publisher.publish] is called for a
- * notification type that has no registered handlers.
+ * [com.fajrbahr.mediatork.notification.Publisher.publish] is called for a notification type that has no registered handlers.
  *
  * @param notificationTypeName simple name of the notification type that had no handlers.
  */
@@ -59,8 +57,7 @@ class MissingNotificationHandlerException(
 ) : MediatorException("No handler registered for notification '$notificationTypeName'")
 
 /**
- * Thrown by [com.fajrbahr.mediatork.notification.ContinueOnExceptionNotificationPublisher]
- * when one or more notification
+ * Thrown by [com.fajrbahr.mediatork.notification.ContinueOnExceptionNotificationPublisher] when one or more notification
  * handlers fail. All handler exceptions are collected and included in this single
  * aggregate, so callers can inspect every failure rather than only the first.
  *
@@ -68,7 +65,4 @@ class MissingNotificationHandlerException(
  */
 class AggregateException(
     exceptions: List<Throwable>,
-) : MediatorException(
-    "${exceptions.size} handler(s) failed: " +
-            exceptions.joinToString { it.message ?: it::class.simpleName.orEmpty() },
-)
+) : MediatorException("${exceptions.size} handler(s) failed: ${exceptions.joinToString { it.message ?: it::class.simpleName.orEmpty() }}")

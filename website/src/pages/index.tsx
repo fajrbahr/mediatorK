@@ -237,7 +237,7 @@ export default function Home(): ReactNode {
                             <CodeBlock language="kotlin">{QUICK_EXAMPLE}</CodeBlock>
                         </div>
                         <div className={styles.imageRow}>
-                            <img src="img/mediator-day.png" alt="MediatorK routing requests"
+<img src="img/mediator-day.png" alt="MediatorK routing requests"
                                  className={styles.sectionImage}/>
                         </div>
                     </div>

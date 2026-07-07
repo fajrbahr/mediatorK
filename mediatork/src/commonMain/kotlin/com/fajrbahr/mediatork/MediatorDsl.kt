@@ -1,30 +1,14 @@
-@file:Suppress("TooManyFunctions")
-
 package com.fajrbahr.mediatork
 
 import com.fajrbahr.mediatork.api.*
-import com.fajrbahr.mediatork.feature.Feature
-import com.fajrbahr.mediatork.feature.StreamFeature
 import com.fajrbahr.mediatork.handler.ThrowMissingRequestHandler
 import com.fajrbahr.mediatork.notification.NotificationPublishStrategy
-import com.fajrbahr.mediatork.notification.SilentMissingNotificationHandler
 import com.fajrbahr.mediatork.notification.ThrowMissingNotificationHandler
 import com.fajrbahr.mediatork.validator.ValidationResult
 import kotlinx.coroutines.flow.Flow
 
-// ── Missing handler strategies ───────────────────────────────────────────────
-
-/** Strategy: Throw exception on missing request handlers (safe, clear error). */
-val missingRequestHandlerThrow: RequestHandler<Request<Any?>, Any?> = ThrowMissingRequestHandler()
-
-/** Strategy: Silently ignore unhandled notifications (data loss risk). */
-val missingNotificationHandlerSilent: NotificationHandler<Notification> = SilentMissingNotificationHandler()
-
-/** Strategy: Throw exception on unhandled notifications (safe, clear error). */
-val missingNotificationHandlerThrow: NotificationHandler<Notification> = ThrowMissingNotificationHandler()
-
 /**
- * Scope-limiting marker for the [buildMediatorK] builder DSL.
+ * Scope-limiting marker for the [mediatorK] builder DSL.
  *
  * Prevents accidentally calling builder registration functions from inside a
  * lambda handler body (and vice versa) via an implicit outer receiver.
@@ -32,13 +16,6 @@ val missingNotificationHandlerThrow: NotificationHandler<Notification> = ThrowMi
 @DslMarker
 annotation class MediatorKDsl
 
-/** A reusable, named group of [MediatorBuilder] registrations — see [mediatorModule]. */
-typealias MediatorModule = MediatorBuilder.() -> Unit
-
-/**
- * Fluent builder for chaining behaviors with `then`.
- * Automatically detects behavior type and assigns order by insertion sequence.
- */
 /**
  * Receiver for lambda handlers registered via [handle] and [handleStream].
  *
@@ -97,9 +74,9 @@ internal class LambdaNotificationHandler<T : Notification>(
 
 @PublishedApi
 internal class LambdaRequestValidator<TRequest : Any>(
-    private val block: suspend (TRequest) -> ValidationResult,
+    private val block: (TRequest) -> ValidationResult,
 ) : RequestValidator<TRequest> {
-    override suspend fun validate(request: TRequest): ValidationResult = block(request)
+    override fun validate(request: TRequest): ValidationResult = block(request)
 }
 
 // ── Lambda registration on HandlerRegistry ────────────────────────────────────
@@ -134,6 +111,21 @@ inline fun <reified TRequest : StreamRequest<T>, T> HandlerRegistry.handleStream
     noinline block: HandlerScope.(TRequest) -> Flow<T>,
 ): HandlerRegistry = registerStream(LambdaStreamRequestHandler(block))
 
+/**
+ * Registers an inline lambda as a notification handler for [T] —
+ * no [NotificationHandler] class needed:
+ *
+ * ```kotlin
+ * registry.on<OrderCreatedEvent> { event -> emailService.send(event.orderId) }
+ * ```
+ *
+ * Multiple handlers may be registered for the same notification type; [order]
+ * controls their relative execution order (lower runs first, default `0`).
+ */
+inline fun <reified T : Notification> HandlerRegistry.on(
+    order: Int = 0,
+    noinline block: suspend (T) -> Unit,
+): HandlerRegistry = registerNotification(LambdaNotificationHandler(order, block))
 
 /**
  * Registers an inline lambda as a validator for request type [TRequest]:
@@ -149,27 +141,26 @@ inline fun <reified TRequest : StreamRequest<T>, T> HandlerRegistry.handleStream
  * Runs before the handler via [com.fajrbahr.mediatork.validator.ValidationBehavior].
  */
 inline fun <reified TRequest : Request<*>> HandlerRegistry.validate(
-    noinline block: suspend (TRequest) -> ValidationResult,
+    noinline block: (TRequest) -> ValidationResult,
 ): HandlerRegistry = registerValidator(LambdaRequestValidator(block))
 
 // ── Builder ───────────────────────────────────────────────────────────────────
 
 /**
- * Builder behind [buildMediatorK]. Collects handlers, behaviors, and configuration,
+ * Builder behind [mediatorK]. Collects handlers, behaviors, and configuration,
  * then assembles a [Mediator] via [MediatorFactory].
  *
  * All of [HandlerRegistry]'s registration surface is available directly in the
- * builder block — class-based handlers via [add] or the `+handler` operator,
- * lambda handlers via [handle], [handleStream], and [validate].
+ * builder block — class-based handlers via [register] or the `+handler` operator,
+ * lambda handlers via [handle], [handleStream], [on], and [validate].
  */
 @MediatorKDsl
-class MediatorBuilder {
+class MediatorBuilder @PublishedApi internal constructor() {
 
     /** The registry being populated; exposed for advanced/dynamic registration. */
     val registry: HandlerRegistry = HandlerRegistry()
 
-    @PublishedApi
-    internal val registrars = mutableListOf<Any>()
+    private val registrars = mutableListOf<MediatorRegistrar>()
     private val pipelineBehaviors = mutableListOf<PipelineBehavior>()
     private val streamPipelineBehaviors = mutableListOf<StreamPipelineBehavior>()
 
@@ -186,94 +177,60 @@ class MediatorBuilder {
     /** Fallback invoked when a request has no registered handler. Throws by default. */
     var missingRequestHandler: RequestHandler<Request<Any?>, Any?> = ThrowMissingRequestHandler()
 
-    /** Configures a custom fallback for missing request handlers using a lambda. */
-    fun missingRequestHandler(block: suspend HandlerScope.(Request<*>) -> Any?) {
-        missingRequestHandler = LambdaRequestHandler { req -> block(req) }
+    /** Adds [MediatorRegistrar]s — including KSP-generated ones — to populate the registry. */
+    fun registrars(vararg registrars: MediatorRegistrar) {
+        this.registrars += registrars
     }
 
-    /** Configures a custom fallback for missing notification handlers using a lambda. */
-    fun missingNotificationHandler(block: suspend (Notification) -> Unit) {
-        missingNotificationHandler = LambdaNotificationHandler(0, block)
+    /** Adds cross-cutting [PipelineBehavior]s wrapping every `send` call. */
+    fun behaviors(vararg behaviors: PipelineBehavior) {
+        pipelineBehaviors += behaviors
     }
 
-    /**
-     * Applies a reusable registrar block created via [mediatorModule].
-     *
-     * ```kotlin
-     * val productRegistrar = mediatorRegistrar { +GetPriceHandler() }
-     * mediatorK {
-     *     registrar(productRegistrar)
-     * }
-     * ```
-     */
-    fun add(vararg block: MediatorModule) {
-        block.forEach { module -> module.invoke(this) }
-    }
-
-    /** Adds cross-cutting behaviors. Automatically routes request vs. stream behaviors. */
-    fun add(vararg behaviors: Behavior) {
-        for (behavior in behaviors) {
-            when (behavior) {
-                is PipelineBehavior -> pipelineBehaviors += behavior
-                is StreamPipelineBehavior -> streamPipelineBehaviors += behavior
-            }
-        }
-    }
-
-    /** Adds an inline lambda as a request behavior. */
-    fun add(block: suspend (RequestContext, suspend (Request<*>) -> Any?, Request<*>) -> Any?) {
-        pipelineBehaviors += com.fajrbahr.mediatork.feature.behavior(block = block)
+    /** Adds cross-cutting [StreamPipelineBehavior]s wrapping every `stream` call. */
+    fun streamBehaviors(vararg behaviors: StreamPipelineBehavior) {
+        streamPipelineBehaviors += behaviors
     }
 
     /** Registers a class-based request handler. */
-    inline fun <reified TRequest : Request<TResult>, TResult> add(
+    inline fun <reified TRequest : Request<TResult>, TResult> register(
         handler: RequestHandler<TRequest, TResult>,
     ) {
         registry register handler
     }
 
     /** Registers a class-based stream request handler. */
-    inline fun <reified TRequest : StreamRequest<T>, T> add(
+    inline fun <reified TRequest : StreamRequest<T>, T> register(
         handler: StreamRequestHandler<TRequest, T>,
     ) {
         registry registerStream handler
     }
 
     /** Registers a class-based notification handler. */
-    inline fun <reified T : Notification> add(handler: NotificationHandler<T>) {
-        registry registerNotification handler
-    }
-
-    /** Registers a class-based notification handler (alias for [add]). */
-    inline fun <reified T : Notification> registerNotification(handler: NotificationHandler<T>) {
+    inline fun <reified T : Notification> register(handler: NotificationHandler<T>) {
         registry registerNotification handler
     }
 
     /** Registers a class-based validator for [TRequest]. */
-    inline fun <reified TRequest : Request<*>> validator(validator: RequestValidator<TRequest>) {
+    inline fun <reified TRequest : Request<*>> register(validator: RequestValidator<TRequest>) {
         registry.registerValidator(validator)
     }
 
-    /** Registers a [Feature]'s handler, validators, notifications, and behaviors. */
-    inline fun <reified TRequest : Request<TResult>, TResult> add(feature: Feature<TRequest, TResult>) {
-        registry.registerFeature(feature)
-    }
+    /** Shorthand for [register]: `+MyHandler()`. */
+    inline operator fun <reified TRequest : Request<TResult>, TResult> RequestHandler<TRequest, TResult>.unaryPlus() =
+        register(this)
 
-    /** Support direct invocation: `myFeature()` inside builder. */
-    inline operator fun <reified TRequest : Request<TResult>, TResult> Feature<TRequest, TResult>.invoke() =
-        add(this)
+    /** Shorthand for [register]: `+MyStreamHandler()`. */
+    inline operator fun <reified TRequest : StreamRequest<T>, T> StreamRequestHandler<TRequest, T>.unaryPlus() =
+        register(this)
 
-    /** Support direct invocation: `orderSlice()` inside builder (shorthand for `install(orderSlice)`). */
-    operator fun MediatorModule.invoke() = add(this)
+    /** Shorthand for [register]: `+MyNotificationHandler()`. */
+    inline operator fun <reified T : Notification> NotificationHandler<T>.unaryPlus() =
+        register(this)
 
-    /** Registers a [StreamFeature]'s stream handler and notifications. */
-    inline fun <reified TRequest : StreamRequest<T>, T> add(feature: StreamFeature<TRequest, T>) {
-        registry.registerStreamFeature(feature)
-    }
-
-    /** Support direct invocation: `myStreamFeature()` inside builder. */
-    inline operator fun <reified TRequest : StreamRequest<T>, T> StreamFeature<TRequest, T>.invoke() =
-        add(this)
+    /** Shorthand for [register]: `+MyValidator()`. */
+    inline operator fun <reified TRequest : Request<*>> RequestValidator<TRequest>.unaryPlus() =
+        register(this)
 
     /** Lambda request handler — see [HandlerRegistry.handle]. */
     inline fun <reified TRequest : Request<TResult>, TResult> handle(
@@ -289,15 +246,25 @@ class MediatorBuilder {
         registry.handleStream(block)
     }
 
+    /** Lambda notification handler — see [HandlerRegistry.on]. */
+    inline fun <reified T : Notification> on(
+        order: Int = 0,
+        noinline block: suspend (T) -> Unit,
+    ) {
+        registry.on(order, block)
+    }
 
     /** Lambda validator — see [HandlerRegistry.validate]. */
     inline fun <reified TRequest : Request<*>> validate(
-        noinline block: suspend (TRequest) -> ValidationResult,
+        noinline block: (TRequest) -> ValidationResult,
     ) {
         registry.validate(block)
     }
 
-    fun build(): Mediator {
+    @PublishedApi
+    internal fun build(): Mediator {
+        registrars.forEach { it.register(registry) }
+
         if (verifyHandlers) {
             registry.verify { typeName ->
                 println("MEDIATOR WARNING: No handler registered for '$typeName'")
@@ -329,6 +296,8 @@ class MediatorBuilder {
  *         todo
  *     }
  *
+ *     on<TodoAddedNotification> { event -> log.info("added ${event.id}") }
+ *
  *     validate<AddTodoCommand> { request ->
  *         rules<AddTodoCommand> { check(request.title.isNotBlank()) { "Title required" } }
  *     }
@@ -340,39 +309,9 @@ class MediatorBuilder {
  * ```
  *
  * Class-based handlers and existing [MediatorRegistrar]s plug into the same block
- * via [MediatorBuilder.add] / `+handler` and [MediatorBuilder.registrars],
+ * via [MediatorBuilder.register] / `+handler` and [MediatorBuilder.registrars],
  * so both styles can be mixed freely.
  *
  * Equivalent to configuring [MediatorFactory.create] manually.
  */
-fun buildMediatorK(block: MediatorModule): Mediator = MediatorBuilder().apply(block).build()
-
-/**
- * Creates a reusable group of registrations that can be applied to a Mediator builder.
- */
-fun mediatorModule(block: MediatorModule): MediatorModule = block
-
-// ── Runtime registration on Mediator ──────────────────────────────────────────
-
-/**
- * Adds handlers at runtime using the same DSL as [buildMediatorK]:
- *
- * ```kotlin
- * val mediator = mediatorK { ... }
- * mediator.registrar {
- *     register(NewHandler())
- *     handle<NewQuery, Result> { ... }
- *     on<NewEvent> { ... }
- * }
- * ```
- */
-fun Mediator.add(block: HandlerRegistry.() -> Unit): Mediator {
-    (this as MediatorImpl).registry.apply(block)
-    return this
-}
-
-/** Lambda syntax for publishing: `publish { OrderCreatedNotification(...) }` */
-suspend inline fun <reified T : Notification> Mediator.publish(block: () -> T) {
-    publish(block())
-}
-
+fun mediatorK(block: MediatorBuilder.() -> Unit): Mediator = MediatorBuilder().apply(block).build()

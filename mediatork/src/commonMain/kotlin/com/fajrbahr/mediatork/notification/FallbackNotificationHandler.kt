@@ -1,5 +1,3 @@
-@file:Suppress("TooGenericExceptionCaught")
-
 package com.fajrbahr.mediatork.notification
 
 import com.fajrbahr.mediatork.api.Notification
@@ -10,7 +8,7 @@ import com.fajrbahr.mediatork.api.NotificationHandler
  * If a handler throws, the exception is swallowed and the next handler is tried.
  * Re-throws the last handler's exception if every handler fails.
  *
- * Compose with [orElse] instead of constructing directly.
+ * Compose with [otherwise] instead of constructing directly.
  */
 internal class FallbackNotificationHandler<T : Notification>(
     private val handlers: List<NotificationHandler<T>>,
@@ -26,7 +24,7 @@ internal class FallbackNotificationHandler<T : Notification>(
                 lastException = e
             }
         }
-        throw lastException ?: error("FallbackNotificationHandler has no handlers")
+        throw lastException ?: IllegalStateException("FallbackNotificationHandler has no handlers")
     }
 
     internal fun withFallback(handler: NotificationHandler<T>): FallbackNotificationHandler<T> =
@@ -39,7 +37,7 @@ internal class FallbackNotificationHandler<T : Notification>(
  * Chains naturally: `a otherwise b otherwise c` produces a single [FallbackNotificationHandler]
  * with three candidates tried in order.
  */
-infix fun <T : Notification> NotificationHandler<T>.orElse(
+infix fun <T : Notification> NotificationHandler<T>.otherwise(
     fallback: NotificationHandler<T>,
 ): NotificationHandler<T> = when (this) {
     is FallbackNotificationHandler -> withFallback(fallback)

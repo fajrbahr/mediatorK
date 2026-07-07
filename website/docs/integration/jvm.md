@@ -18,7 +18,7 @@ See [Installation](../installation.md) for dependency coordinates.
 fun main() {
     val mediator = MediatorFactory.create(
         registrars = listOf(AppRegistrar()),
-        pipelineBehaviors = listOf(LoggingPipelineBehavior()),
+        pipelineBehaviors = listOf(LoggingBehavior()),
     )
 
     runBlocking {
@@ -32,4 +32,4 @@ fun main() {
 
 ## Next
 
-→ [ViewModel](viewmodel.md)
+→ [Kotlin Multiplatform](kmp.md)

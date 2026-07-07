@@ -24,7 +24,7 @@ import kotlinx.coroutines.flow.Flow
  * within one isolated request lifecycle.
  */
 internal class MediatorImpl(
-    internal val registry: HandlerRegistry,
+    private val registry: HandlerRegistry,
     private val pipelineBehaviors: List<PipelineBehavior>,
     private val streamPipelineBehaviors: List<StreamPipelineBehavior>,
     private val notificationPublisher: NotificationPublishStrategy,
@@ -92,28 +92,47 @@ internal class MediatorImpl(
      * Resolves all notification handlers and delivers [notification] via the
      * supplied [publisher], overriding the default for this call only.
      *
-     * @param publisher the strategy to use instead of the default
-     *   [com.fajrbahr.mediatork.notification.NotificationPublishStrategy].
+     * @param publisher the strategy to use instead of the default [com.fajrbahr.mediatork.notification.NotificationPublishStrategy].
      */
     override suspend fun <T : Notification> publish(notification: T, publisher: NotificationPublishStrategy) {
         val handlers = registry.resolveNotificationHandlers(notification).sortedBy { it.order }
         publisher.publish(notification, handlers)
     }
 
+    /**
+     * Composes and executes the full behavior chain for a single request dispatch.
+     *
+     * Behaviors are grouped by [Stage] phase ([Stage.Pre] → [Stage.Default] → [Stage.Post])
+     * and sorted by [PipelineBehavior.order] within each phase. For [Stage.Pre] and [Stage.Default],
+     * lower order is outermost. [Stage.Post] reverses this: lower order is innermost, so Post
+     * behaviors with a lower order observe the response first when the handler returns.
+     *
+     * @param request the incoming request.
+     * @param handler the resolved handler for this request type.
+     * @return the result produced by the handler (possibly transformed by behaviors).
+     */
     private suspend fun <TRequest : Request<TResult>, TResult> executePipeline(
         request: TRequest,
         handler: RequestHandler<TRequest, TResult>,
     ): TResult {
         val requestContext = RequestContext()
-        val sorted = pipelineBehaviors
-            .filter { it.isEnabled && it.appliesTo(request) }
-            .sortedBy { it.order }
+        val active = pipelineBehaviors.filter { it.isEnabled && it.appliesTo(request) }
+        val sortedPre = active.filter { it.stage == Stage.Pre }.sortedBy { it.order }
+        val sortedDefault = active.filter { it.stage == Stage.Default }.sortedBy { it.order }
+        // POST sorted descending so that lower order = innermost = exits first after handler
+        val sortedPost = active.filter { it.stage == Stage.Post }.sortedByDescending { it.order }
 
         val finalDelegate: RequestHandlerDelegate<TRequest, TResult> = { req ->
             handler.handle(this@MediatorImpl, requestContext, req)
         }
 
-        val pipeline = sorted.foldRight(finalDelegate) { behavior, next ->
+        val withPost = sortedPost.foldRight(finalDelegate) { behavior, next ->
+            { req -> behavior.process(requestContext, next, req) }
+        }
+        val withDefault = sortedDefault.foldRight(withPost) { behavior, next ->
+            { req -> behavior.process(requestContext, next, req) }
+        }
+        val pipeline = sortedPre.foldRight(withDefault) { behavior, next ->
             { req -> behavior.process(requestContext, next, req) }
         }
         return pipeline(request)

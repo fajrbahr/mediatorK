@@ -6,12 +6,12 @@ plugins {
 
 android {
     namespace = "com.fajrbahr.mediatork.sample.android"
-    compileSdk = 36
+    compileSdk = 35
 
     defaultConfig {
         applicationId = "com.fajrbahr.mediatork.sample.android"
-        minSdk = 33
-        targetSdk = 36
+        minSdk = 21
+        targetSdk = 35
         versionCode = 1
         versionName = "1.0"
     }
@@ -33,7 +33,7 @@ android {
 }
 
 dependencies {
-    implementation(project(":mediatork"))
+    implementation("io.github.fajrbahr:mediatork:0.6.3")
     implementation("io.insert-koin:koin-android:4.0.4")
 
     val composeBom = platform("androidx.compose:compose-bom:2024.09.03")

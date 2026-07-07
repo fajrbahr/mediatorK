@@ -1,11 +1,10 @@
 package com.fajrbahr.mediatork.test
 
 import com.fajrbahr.mediatork.HandlerRegistry
-import com.fajrbahr.mediatork.MediatorModule
-import com.fajrbahr.mediatork.api.Mediator
-import com.fajrbahr.mediatork.api.Request
-import com.fajrbahr.mediatork.api.StreamRequest
-import com.fajrbahr.mediatork.buildMediatorK
+import com.fajrbahr.mediatork.MediatorFactory
+import com.fajrbahr.mediatork.api.*
+import com.fajrbahr.mediatork.notification.NotificationPublishStrategy
+import com.fajrbahr.mediatork.notification.ParallelNotificationPublisher
 import kotlinx.coroutines.flow.Flow
 
 /**
@@ -87,7 +86,7 @@ class HandlerTestHarness(private val mediator: Mediator) {
  *
  * ```kotlin
  * val harness = buildHandlerTestHarness(
- *     pipelineBehaviors = listOf(validationBehavior(mapOf(CreateOrderCommand::class to listOf(CreateOrderValidator())))),
+ *     pipelineBehaviors = listOf(ValidationBehavior(listOf(CreateOrderValidator()))),
  * ) {
  *     +CreateOrderHandler(orderRepo)
  *     +GetOrderHandler(orderRepo)
@@ -95,13 +94,30 @@ class HandlerTestHarness(private val mediator: Mediator) {
  * ```
  *
  * @param pipelineBehaviors cross-cutting behaviors to include in the pipeline.
- *   Use [com.fajrbahr.mediatork.api.PipelineBehavior.order] to control pipeline ordering.
- * @param streamPipelineBehaviors cross-cutting behaviors wrapping stream handlers.
+ *   Use [com.fajrbahr.mediatork.api.Stage.Pre] / [com.fajrbahr.mediatork.api.Stage.Post] to control phase ordering.
  * @param notificationPublisher strategy for delivering notifications; defaults to parallel.
+ * @param registrars additional [com.fajrbahr.mediatork.api.MediatorRegistrar]s that contribute handlers.
  * @param init DSL block for registering handlers directly on the [HandlerRegistry].
  */
+fun buildHandlerTestHarness(
+    pipelineBehaviors: List<PipelineBehavior> = emptyList(),
+    notificationPublisher: NotificationPublishStrategy = ParallelNotificationPublisher(),
+    registrars: List<MediatorRegistrar> = emptyList(),
+    init: HandlerRegistry.() -> Unit = {},
+): HandlerTestHarness {
+    val allRegistrars = registrars + object : MediatorRegistrar {
+        override fun register(registry: HandlerRegistry) = registry.init()
+    }
+    val mediator = MediatorFactory.create(
+        registrars = allRegistrars,
+        pipelineBehaviors = pipelineBehaviors,
+        notificationPublisher = notificationPublisher,
+    )
+    return HandlerTestHarness(mediator)
+}
+
 /**
- * Builds a [HandlerTestHarness] using the full [buildMediatorK] builder DSL.
+ * Builds a [HandlerTestHarness] using the full [mediatorK] builder DSL.
  *
  * This gives the test the same pipeline as production — registrars, behaviors,
  * notification publishers, and features with bundled validators/behaviors — just
@@ -109,6 +125,7 @@ class HandlerTestHarness(private val mediator: Mediator) {
  *
  * ```kotlin
  * val harness = buildHandlerTestHarness {
+ *     registrars(ProductRegistrar(testRepo, testPush, testInApp))
  *     behaviors(LoggingPipelineBehavior(), MeasurePipelineBehaviour())
  *     +watchPriceFeature(testRepo)
  * }
@@ -116,8 +133,8 @@ class HandlerTestHarness(private val mediator: Mediator) {
  * ```
  */
 fun buildHandlerTestHarness(
-    block: MediatorModule,
-): HandlerTestHarness = HandlerTestHarness(buildMediatorK(block))
+    block: MediatorBuilder.() -> Unit,
+): HandlerTestHarness = HandlerTestHarness(mediatorK(block))
 
 /**
  * Builds a [HandlerTestHarness] backed by an existing production [Mediator],

@@ -1,23 +1,32 @@
 plugins {
     alias(libs.plugins.kotlin.multiplatform)
-    alias(libs.plugins.android.kotlin.multiplatform.library)
-    alias(libs.plugins.dokka)
+    alias(libs.plugins.android.library)
+    alias(libs.plugins.nmcp)
     `maven-publish`
     signing
 }
+
+group = "io.github.fajrbahr"
+version = "0.6.3"
 
 repositories {
     mavenCentral()
     google()
 }
 
+android {
+    namespace = "com.fajrbahr.mediatork.test"
+    compileSdk = libs.versions.compileSdk.get().toInt()
+    defaultConfig {
+        minSdk = libs.versions.minSdk.get().toInt()
+    }
+}
+
 kotlin {
     jvmToolchain(libs.versions.jvmToolchain.get().toInt())
 
-    android {
-        namespace = "com.fajrbahr.mediatork.test"
-        compileSdk = libs.versions.compileSdk.get().toInt()
-        minSdk = libs.versions.minSdk.get().toInt()
+    androidTarget {
+        publishLibraryVariants("release")
     }
 
     androidNativeX64()
@@ -122,3 +131,10 @@ tasks.withType<AbstractPublishToMaven>().configureEach {
     mustRunAfter(tasks.withType<Sign>())
 }
 
+nmcp {
+    publishAllPublicationsToCentralPortal {
+        username = providers.gradleProperty("mavenCentralUsername").orElse("")
+        password = providers.gradleProperty("mavenCentralPassword").orElse("")
+        publishingType = "AUTOMATIC"
+    }
+}

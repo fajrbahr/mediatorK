@@ -31,33 +31,41 @@ cleaner declaration.
 
 ---
 
-## Implementing & Registering a handler
+## Implementing a handler
 
-Use the `handle` DSL inside a `MediatorRegistrar` to map a request to its implementation:
+```kotlin
+class GetUserHandler(private val db: UserRepository) : RequestHandler<GetUserQuery, User> {
+    override suspend fun handle(
+        mediator: Mediator,
+        requestContext: RequestContext,
+        request: GetUserQuery,
+    ): User = db.findById(request.id) ?: error("User ${request.id} not found")
+}
+```
+
+The `mediator` parameter lets a handler dispatch secondary requests or publish notifications without creating direct
+dependencies on other handlers.
+
+---
+
+## Registering a handler
+
+Use `HandlerRegistry` inside a `MediatorRegistrar`:
 
 ```kotlin
 class AppRegistrar(
     private val db: UserRepository,
 ) : MediatorRegistrar {
     override fun register(registry: HandlerRegistry) {
-        registry.handle<GetUserQuery, User> { request ->
-            db.findById(request.id) ?: error("User ${request.id} not found")
-        }
-        
-        registry.handle<CreateOrderCommand, Order> { request ->
-            // implementation
-            TODO()
-        }
-        
-        registry.handle<DeleteAccountCommand, Unit> { request ->
-            // implementation
-        }
+        registry register GetUserHandler(db)
+        registry register CreateOrderHandler(db)
+        registry register DeleteAccountHandler(db)
     }
 }
 ```
 
-The DSL block provides access to the request, and you can access `mediator` and `requestContext` if needed via the
-block's receiver.
+The `registry register handler` infix call is the standard way to register a handler. The `+handler` operator inside a
+`scope { }` block is a shorthand alias for the same thing.
 
 ---
 
@@ -90,4 +98,5 @@ result.onFailure { error -> /* handle */ }
 
 ## Next
 
-→ [Notifications](notifications.md): broadcast events to one-or-many handlers
+→ [Notifications](notifications.md): broadcast events to zero-or-many handlers  
+→ [Validation](validation.md): REQUEST, DOMAIN, and PERSISTENCE scopes

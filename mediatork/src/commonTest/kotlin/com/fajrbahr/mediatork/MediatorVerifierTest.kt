@@ -1,10 +1,9 @@
 package com.fajrbahr.mediatork
 
-import com.fajrbahr.mediatork.api.StreamRequest
-import com.fajrbahr.mediatork.api.StreamRequestHandler
+import com.fajrbahr.mediatork.api.*
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emptyFlow
-import kotlin.test.Test
-import kotlin.test.assertTrue
+import kotlin.test.*
 
 class MediatorVerifierTest {
 
@@ -29,7 +28,10 @@ class MediatorVerifierTest {
     @Test
     fun `verify with registered stream handler does not invoke callback`() {
         val registry = HandlerRegistry()
-        registry registerStream StreamRequestHandler<NumbersStreamQuery, Int> { mediator, requestContext, request -> emptyFlow() }
+        registry registerStream object : StreamRequestHandler<NumbersStreamQuery, Int> {
+            override fun handle(mediator: Mediator, requestContext: RequestContext, request: NumbersStreamQuery): Flow<Int> =
+                emptyFlow()
+        }
         val missed = mutableListOf<String>()
         registry.verify { missed += it }
         assertTrue(missed.isEmpty())
@@ -48,7 +50,10 @@ class MediatorVerifierTest {
     fun `verify with all handler types registered does not invoke callback`() {
         val registry = HandlerRegistry()
         registry register PingHandler()
-        registry registerStream StreamRequestHandler<NumbersStreamQuery, Int> { mediator, requestContext, request -> emptyFlow() }
+        registry registerStream object : StreamRequestHandler<NumbersStreamQuery, Int> {
+            override fun handle(mediator: Mediator, requestContext: RequestContext, request: NumbersStreamQuery): Flow<Int> =
+                emptyFlow()
+        }
         registry registerNotification RecordingNotificationHandler()
         val missed = mutableListOf<String>()
         registry.verify { missed += it }

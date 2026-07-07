@@ -13,13 +13,25 @@ or anything better consumed incrementally rather than loaded into a `List` all a
 // 1. Define — implements StreamRequest instead of Request
 data class StreamInvoicesQuery(val status: InvoiceStatus? = null) : StreamRequest<Invoice>
 
-// 2. Handle & Register — use handleStream() DSL
+// 2. Handle — returns a cold Flow<T>, not suspend
+class StreamInvoicesHandler(private val repo: InvoiceRepository)
+    : StreamRequestHandler<StreamInvoicesQuery, Invoice> {
+
+    override fun handle(
+        mediator: Mediator,
+        requestContext: RequestContext,
+        request: StreamInvoicesQuery,
+    ): Flow<Invoice> = repo.all().asFlow().let { flow ->
+        if (request.status != null) flow.filter { it.status == request.status } else flow
+    }
+}
+
+// 3. Register — use registerStream(), not the regular register()
 class InvoiceRegistrar(private val repo: InvoiceRepository) : MediatorRegistrar {
     override fun register(registry: HandlerRegistry) {
-        registry.handleStream<StreamInvoicesQuery, Invoice> { request ->
-            repo.all().asFlow().let { flow ->
-                if (request.status != null) flow.filter { it.status == request.status } else flow
-            }
+        registry.scope {
+            +CreateInvoiceHandler(repo)
+            registerStream(StreamInvoicesHandler(repo))  // <-- registerStream for stream handlers
         }
     }
 }
@@ -36,12 +48,3 @@ val all = mediator.stream(StreamInvoicesQuery()).toList()
 begins only when the caller collects. Each collection creates a fresh `RequestContext`.
 
 Dispatching with no registered stream handler throws `MissingStreamHandlerException`.
-
-**See also:** [Stream Pipeline Behaviors](stream-behaviors.md) — wrap stream handlers with logging, throttling, and
-other cross-cutting concerns.
-
----
-
-## Next
-
-→ [Stream Pipeline Behaviors](stream-behaviors.md)

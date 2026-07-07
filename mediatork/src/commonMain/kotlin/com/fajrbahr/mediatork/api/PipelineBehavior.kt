@@ -13,14 +13,66 @@ package com.fajrbahr.mediatork.api
 typealias RequestHandlerDelegate<TRequest, TResult> = suspend (TRequest) -> TResult
 
 /**
+ * Execution stage that determines where a [PipelineBehavior] sits in the pipeline chain.
+ *
+ * **Stage takes absolute priority over order.** Every [Stage.Pre] behavior runs before every
+ * [Stage.Default] behavior, and every [Stage.Default] before every [Stage.Post] — regardless
+ * of [PipelineBehavior.order]. Order only controls sequencing *within* a stage.
+ *
+ * | Stage           | Position  | Typical use                                   |
+ * |-----------------|-----------|-----------------------------------------------|
+ * | [Stage.Pre]     | outermost | auth injection, locale, trace-id setup        |
+ * | [Stage.Default] | middle    | logging, retry, caching, circuit-breaking     |
+ * | [Stage.Post]    | innermost | metrics, audit logging, response observation  |
+ */
+sealed class Stage {
+    data object Pre : Stage()
+    data object Default : Stage()
+    data object Post : Stage()
+}
+
+/**
  * Cross-cutting concern that wraps request handling in a decorator-style chain.
  *
- * Behaviors are sorted by [order] — lower values run outermost (first).
- * Create instances via the [behavior][com.fajrbahr.mediatork.feature.behavior] DSL function.
+ * Behaviors are grouped into three stages by [stage], then sorted by [order] **within** each
+ * stage. **Stage always wins over order**: every [Stage.Pre] behavior executes before every
+ * [Stage.Default] behavior, and every [Stage.Default] before every [Stage.Post] — no matter what
+ * [order] values are assigned. [order] only controls sequencing inside a stage.
  *
- * @see com.fajrbahr.mediatork.feature.behavior
+ * Typical uses:
+ * - [Stage.Pre]: auth token injection, locale setup, tracing context
+ * - [Stage.Default]: logging, retry, caching, timing, circuit-breaking
+ * - [Stage.Post]: metrics emission, audit logging, response observation
+ *
+ * @see PipelineBehavior.stage
+ * @see PipelineBehavior.order
+ * @see PipelineBehavior.isEnabled
+ * @see PipelineBehavior.appliesTo
  */
-interface PipelineBehavior : Behavior {
+interface PipelineBehavior {
+
+    val stage: Stage get() = Stage.Default
+
+    /**
+     * Relative position within the [stage]. Lower values are outermost (run first on entry)
+     * for [Stage.Pre] and [Stage.Default]. **[Stage.Post] is the exception**: lower values are
+     * innermost — closest to the handler on return — so they observe the result first on exit.
+     * Defaults to `0`. Within a stage, behaviors with the same [order] run in registration order.
+     */
+    val order: Int get() = 0
+
+    /**
+     * Whether this behavior participates in the pipeline at all.
+     * When `false`, the behavior is skipped entirely. Defaults to `true`.
+     */
+    val isEnabled: Boolean get() = true
+
+    /**
+     * Determines whether this behavior should wrap the given [request].
+     * Defaults to `true` (applies to every request).
+     */
+    fun appliesTo(request: Request<*>): Boolean = true
+
     /**
      * Wraps the downstream pipeline step represented by [next].
      *
@@ -33,12 +85,3 @@ interface PipelineBehavior : Behavior {
         request: TRequest,
     ): TResult
 }
-
-val PipelineBehavior.order: Int
-    get() = (this as? com.fajrbahr.mediatork.feature.LambdaPipelineBehavior)?.order ?: 0
-
-val PipelineBehavior.isEnabled: Boolean
-    get() = (this as? com.fajrbahr.mediatork.feature.LambdaPipelineBehavior)?.isEnabled ?: true
-
-fun PipelineBehavior.appliesTo(request: Request<*>): Boolean =
-    (this as? com.fajrbahr.mediatork.feature.LambdaPipelineBehavior)?.appliesTo(request) ?: true

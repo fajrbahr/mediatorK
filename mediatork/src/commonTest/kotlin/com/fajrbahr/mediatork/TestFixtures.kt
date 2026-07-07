@@ -14,15 +14,15 @@ data class EchoQuery(val text: String) : Request<String>
 data class PingNotification(val message: String) : Notification
 data class AlertNotification(val level: Int) : Notification
 
-// ── Handlers (Class-based, for backward compatibility) ──────────────────────
+// ── Handlers ──────────────────────────────────────────────────────────────────
 
 class PingHandler : RequestHandler<PingQuery, String> {
-    override suspend fun handle(mediator: Mediator, requestContext: RequestContext, request: PingQuery): String =
+    override suspend fun handle(mediator: Mediator, requestContext: RequestContext, request: PingQuery) =
         "pong:${request.value}"
 }
 
 class AddHandler : RequestHandler<AddCommand, Int> {
-    override suspend fun handle(mediator: Mediator, requestContext: RequestContext, request: AddCommand): Int =
+    override suspend fun handle(mediator: Mediator, requestContext: RequestContext, request: AddCommand) =
         request.a + request.b
 }
 
@@ -31,6 +31,11 @@ class NoResultHandler : RequestHandler<NoResultCommand, Unit> {
     override suspend fun handle(mediator: Mediator, requestContext: RequestContext, request: NoResultCommand) {
         lastId = request.id
     }
+}
+
+class EchoHandler : RequestHandler<EchoQuery, String> {
+    override suspend fun handle(mediator: Mediator, requestContext: RequestContext, request: EchoQuery) =
+        request.text
 }
 
 class RecordingNotificationHandler : NotificationHandler<PingNotification> {
@@ -53,10 +58,14 @@ fun mediator(
     pipelineBehaviors: List<PipelineBehavior> = emptyList(),
     notificationPublisher: NotificationPublishStrategy = ParallelNotificationPublisher(),
     missingNotificationHandler: NotificationHandler<Notification> = ThrowMissingNotificationHandler(),
-    block: MediatorModule = {},
-): Mediator = buildMediatorK {
-    add(*pipelineBehaviors.toTypedArray())
-    this.notificationPublisher = notificationPublisher
-    this.missingNotificationHandler = missingNotificationHandler
-    block()
-}
+    block: HandlerRegistry.() -> Unit,
+): Mediator = MediatorFactory.create(
+    registrars = listOf(object : MediatorRegistrar {
+        override fun register(registry: HandlerRegistry) {
+            registry.block()
+        }
+    }),
+    pipelineBehaviors = pipelineBehaviors,
+    notificationPublisher = notificationPublisher,
+    missingNotificationHandler = missingNotificationHandler,
+)

@@ -1,32 +1,63 @@
 package com.fajrbahr.mediatork.api
 
 /**
- * Mutable key-value bag scoped to a single request pipeline execution.
- *
- * A fresh [RequestContext] is created for every [com.fajrbahr.mediatork.handler.Sender.send] call, so values
- * stored here are never shared between concurrent requests — even when the
- * mediator itself is a singleton. This design mirrors the per-request scoping of
- * `HttpContext` in web frameworks.
- *
- * Pipeline behaviors and pre-processors populate the context; handlers and
- * post-processors consume the values. Keys are plain strings; callers are
- * responsible for avoiding key collisions (e.g. by using fully qualified names
- * or companion-object constants).
+ * Type-safe key for storing and retrieving context values in [RequestContext].
+ * Prevents typos and casting errors compared to string-based API.
  */
+interface ContextKey<T> {
+    val name: String
+}
+
+fun <T> contextKey(name: String): ContextKey<T> = object : ContextKey<T> {
+    override val name = name
+}
+
 class RequestContext {
     private val metadata = mutableMapOf<String, Any?>()
 
+    /**
+     * Retrieves a value from the context using a [ContextKey].
+     *
+     * Returns `null` if the key is absent or the stored value cannot be cast to [T].
+     *
+     * @param T the expected type of the stored value.
+     * @param key the type-safe key under which the value was stored.
+     * @return the cast value, or `null` if the key is absent or the cast fails.
+     */
     @Suppress("UNCHECKED_CAST")
-    operator fun <T> get(key: ContextKey<T>): T? = metadata[key.name] as? T
+    fun <T> getMetaData(key: ContextKey<T>): T? = metadata[key.name] as? T
 
-    operator fun <T> set(key: ContextKey<T>, value: T?) {
-        metadata[key.name] = value
-    }
-
+    /**
+     * Retrieves a value from the context using a string key.
+     *
+     * Returns `null` if the key is absent or the stored value cannot be cast to [T].
+     *
+     * @param T the expected type of the stored value.
+     * @param key the key under which the value was stored.
+     * @return the cast value, or `null` if the key is absent or the cast fails.
+     */
     @Suppress("UNCHECKED_CAST")
     fun <T> getMetaData(key: String): T? = metadata[key] as? T
 
+    /**
+     * Stores [value] under a [ContextKey], replacing any previously stored value.
+     *
+     * @param T the type of the value.
+     * @param key the type-safe key to associate with [value].
+     * @param value the value to store; may be `null`.
+     */
+    fun <T> put(key: ContextKey<T>, value: T?) {
+        metadata[key.name] = value
+    }
+
+    /**
+     * Stores [value] under a string key, replacing any previously stored value.
+     *
+     * @param key the key to associate with [value].
+     * @param value the value to store; may be `null`.
+     */
     fun put(key: String, value: Any?) {
         metadata[key] = value
     }
+
 }

@@ -19,19 +19,28 @@ No kotlin-reflect. No annotation processing. No framework required.
 
 ---
 
+---
+
 ## Quick Example
 
 ```kotlin
 // 1. Define a request
 data class GetUserQuery(val id: String) : Request<User>
 
-// 2. Wire it up with a handler
+// 2. Implement a handler
+class GetUserHandler(private val db: UserRepository) : RequestHandler<GetUserQuery, User> {
+    override suspend fun handle(
+        mediator: Mediator,
+        requestContext: RequestContext,
+        request: GetUserQuery
+    ): User = db.findById(request.id) ?: error("User not found")
+}
+
+// 3. Wire it up
 val mediator = MediatorFactory.create(
     registrars = listOf(object : MediatorRegistrar {
         override fun register(registry: HandlerRegistry) {
-            registry.handle<GetUserQuery, User> { request -> 
-                db.findById(request.id) ?: error("User not found")
-            }
+            registry register GetUserHandler(db)
         }
     })
 )

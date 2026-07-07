@@ -10,7 +10,7 @@ import Admonition from '@theme/Admonition';
 
 <Admonition type="tip" title="ViewModel Weight-Loss Program™">
 
-**Put your oversized ViewModel on a diet — results in one week.**
+**Diet your fat ViewModel, results in one week.**
 Before: 10+ constructor parameters, 40 lines of mock setup, a test suite that dreads every refactor.
 After: 1 dependency, 5-line tests, zero mocking libraries.
 *Not a real program. Typical results achieved in the first PR.*
@@ -91,13 +91,13 @@ fun `place order - notifies user on success`() {
 ```
 
 ```kotlin
-// After — one fake, no mocking library
+// After — one fake, zero mocking library
 @Test
 fun `createOrder success updates state with result`() = runTest {
     val fakeMediator = FakeMediator()
     fakeMediator.register(
         fakeHandler<CreateOrderCommand, OrderResult> { _, _, _ ->
-            OrderResult(orderId = "ORD-1", responseTime = 10)
+            OrderResult(orderId = "ORD-1", responseIme = 10)
         }
     )
     val vm = OrderViewModel(fakeMediator)

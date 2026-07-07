@@ -4,8 +4,10 @@ import com.fajrbahr.mediatork.api.MediatorRegistrar
 import com.fajrbahr.mediatork.HandlerRegistry
 import com.fajrbahr.mediatork.sample.android.after.AladhanCacheDataSource
 
-fun islamicMonthsRegistrar(cache: AladhanCacheDataSource): MediatorRegistrar = object : MediatorRegistrar {
+class IslamicMonthsRegistrar(
+    private val cache: AladhanCacheDataSource,
+) : MediatorRegistrar {
     override fun register(registry: HandlerRegistry) {
-        registry.register(getIslamicMonthsHandler(cache))
+        registry.register(GetIslamicMonthsHandler(cache))
     }
 }

@@ -1,7 +1,6 @@
 package com.fajrbahr.mediatork
 
 import com.fajrbahr.mediatork.api.*
-import com.fajrbahr.mediatork.feature.behavior
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -27,7 +26,7 @@ class PipelineBehaviorTest {
     fun `single behavior wraps the handler`() = runTest {
         val log = mutableListOf<String>()
         val m = mediator(pipelineBehaviors = listOf(loggingBehavior(0, "b", log))) {
-            add(PingHandler())
+            register(PingHandler())
         }
         m.send(PingQuery("x"))
         assertEquals(listOf("b-before", "b-after"), log)
@@ -39,7 +38,7 @@ class PipelineBehaviorTest {
         val outer = loggingBehavior(-10, "outer", log)
         val inner = loggingBehavior(10, "inner", log)
         val m = mediator(pipelineBehaviors = listOf(inner, outer)) {
-            add(PingHandler())
+            register(PingHandler())
         }
         m.send(PingQuery("x"))
         assertEquals(listOf("outer-before", "inner-before", "inner-after", "outer-after"), log)
@@ -51,7 +50,7 @@ class PipelineBehaviorTest {
         val b1 = loggingBehavior(0, "b1", log)
         val b2 = loggingBehavior(0, "b2", log)
         val m = mediator(pipelineBehaviors = listOf(b1, b2)) {
-            add(PingHandler())
+            register(PingHandler())
         }
         m.send(PingQuery("x"))
         assertEquals(listOf("b1-before", "b2-before", "b2-after", "b1-after"), log)
@@ -71,7 +70,7 @@ class PipelineBehaviorTest {
             }
         }
         val m = mediator(pipelineBehaviors = listOf(selective)) {
-            add(PingHandler())
+            register(PingHandler())
         }
         m.send(PingQuery("x"))
         assertFalse(ran)
@@ -90,7 +89,7 @@ class PipelineBehaviorTest {
                 ran = true; return next(request)
             }
         }
-        val m = mediator(pipelineBehaviors = listOf(b)) { add(PingHandler()) }
+        val m = mediator(pipelineBehaviors = listOf(b)) { register(PingHandler()) }
         m.send(PingQuery("x"))
         assertTrue(ran)
     }
@@ -108,7 +107,7 @@ class PipelineBehaviorTest {
                 ran = true; return next(request)
             }
         }
-        val m = mediator(pipelineBehaviors = listOf(disabled)) { add(PingHandler()) }
+        val m = mediator(pipelineBehaviors = listOf(disabled)) { register(PingHandler()) }
         m.send(PingQuery("x"))
         assertFalse(ran)
     }
@@ -126,11 +125,17 @@ class PipelineBehaviorTest {
             }
         }
         var captured: String? = null
-        val handler = RequestHandler<PingQuery, String> { mediator, requestContext, request ->
-            captured = requestContext.getMetaData("from-behavior")
-            "ok"
+        val handler = object : RequestHandler<PingQuery, String> {
+            override suspend fun handle(
+                mediator: Mediator,
+                requestContext: RequestContext,
+                request: PingQuery
+            ): String {
+                captured = requestContext.getMetaData("from-behavior")
+                return "ok"
+            }
         }
-        val m = mediator(pipelineBehaviors = listOf(b)) { add(handler) }
+        val m = mediator(pipelineBehaviors = listOf(b)) { register(handler) }
         m.send(PingQuery("x"))
         assertEquals("injected", captured)
     }
@@ -146,11 +151,17 @@ class PipelineBehaviorTest {
                 request: TRequest,
             ): TResult = "short-circuited" as TResult
         }
-        val handler = RequestHandler<PingQuery, String> { mediator, requestContext, request ->
-            handlerRan = true
-            "handler"
+        val handler = object : RequestHandler<PingQuery, String> {
+            override suspend fun handle(
+                mediator: Mediator,
+                requestContext: RequestContext,
+                request: PingQuery
+            ): String {
+                handlerRan = true
+                return "handler"
+            }
         }
-        val m = mediator(pipelineBehaviors = listOf(shortCircuit)) { add(handler) }
+        val m = mediator(pipelineBehaviors = listOf(shortCircuit)) { register(handler) }
         val result = m.send(PingQuery("x"))
         assertEquals("short-circuited", result)
         assertFalse(handlerRan)
@@ -170,8 +181,8 @@ class PipelineBehaviorTest {
             }
         }
         val m = mediator(pipelineBehaviors = listOf(pingOnly)) {
-            add(PingHandler())
-            add(AddHandler())
+            register(PingHandler())
+            register(AddHandler())
         }
         m.send(AddCommand(1, 2))
         assertFalse(ranForPing)
@@ -182,93 +193,7 @@ class PipelineBehaviorTest {
     @Test
     fun `result flows through behaviors unchanged when unmodified`() = runTest {
         val b = loggingBehavior(0, "b", mutableListOf())
-        val m = mediator(pipelineBehaviors = listOf(b)) { add(PingHandler()) }
+        val m = mediator(pipelineBehaviors = listOf(b)) { register(PingHandler()) }
         assertEquals("pong:hello", m.send(PingQuery("hello")))
-    }
-
-    // ── DSL behavior() tests ─────────────────────────────────────────────────
-
-    @Test
-    fun `dsl behavior wraps the handler`() = runTest {
-        val log = mutableListOf<String>()
-        val b = behavior { _, next, request ->
-            log += "before"
-            next(request).also { log += "after" }
-        }
-        val m = mediator(pipelineBehaviors = listOf(b)) { add(PingHandler()) }
-        val result = m.send(PingQuery("x"))
-        assertEquals("pong:x", result)
-        assertEquals(listOf("before", "after"), log)
-    }
-
-    @Test
-    fun `dsl behavior respects order`() = runTest {
-        val log = mutableListOf<String>()
-        val pre = behavior(order = -100) { _, next, request ->
-            log += "pre"; next(request)
-        }
-        val post = behavior(order = 100) { _, next, request ->
-            log += "post"; next(request)
-        }
-        val m = mediator(pipelineBehaviors = listOf(post, pre)) { add(PingHandler()) }
-        m.send(PingQuery("x"))
-        assertEquals(listOf("pre", "post"), log)
-    }
-
-    @Test
-    fun `dsl behavior order controls nesting`() = runTest {
-        val log = mutableListOf<String>()
-        val outer = behavior(order = -10) { _, next, request ->
-            log += "outer-before"; next(request).also { log += "outer-after" }
-        }
-        val inner = behavior(order = 10) { _, next, request ->
-            log += "inner-before"; next(request).also { log += "inner-after" }
-        }
-        val m = mediator(pipelineBehaviors = listOf(inner, outer)) { add(PingHandler()) }
-        m.send(PingQuery("x"))
-        assertEquals(listOf("outer-before", "inner-before", "inner-after", "outer-after"), log)
-    }
-
-    @Test
-    fun `dsl behavior appliesTo filters requests`() = runTest {
-        var ran = false
-        val pingOnly = behavior(appliesTo = { it is PingQuery }) { _, next, request ->
-            ran = true; next(request)
-        }
-        val m = mediator(pipelineBehaviors = listOf(pingOnly)) {
-            add(PingHandler())
-            add(AddHandler())
-        }
-        m.send(AddCommand(1, 2))
-        assertFalse(ran)
-        m.send(PingQuery("x"))
-        assertTrue(ran)
-    }
-
-    @Test
-    fun `dsl behavior can short-circuit`() = runTest {
-        var handlerRan = false
-        val shortCircuit = behavior { _, _, _ -> "blocked" }
-        val handler =
-            RequestHandler<PingQuery, String> { mediator, requestContext, request -> handlerRan = true; "handler" }
-        val m = mediator(pipelineBehaviors = listOf(shortCircuit)) { add(handler) }
-        assertEquals("blocked", m.send(PingQuery("x")))
-        assertFalse(handlerRan)
-    }
-
-    @Test
-    fun `dsl behavior can access request context`() = runTest {
-        val b = behavior { requestContext, next, request ->
-            requestContext.put("dsl-key", "dsl-value")
-            next(request)
-        }
-        var captured: String? = null
-        val handler = RequestHandler<PingQuery, String> { mediator, requestContext, request ->
-            captured = requestContext.getMetaData("dsl-key")
-            "ok"
-        }
-        val m = mediator(pipelineBehaviors = listOf(b)) { add(handler) }
-        m.send(PingQuery("x"))
-        assertEquals("dsl-value", captured)
     }
 }

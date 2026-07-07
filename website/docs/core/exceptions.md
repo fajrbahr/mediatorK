@@ -6,9 +6,6 @@ sidebar_label: Exception Handling
 
 # Exception Handling
 
-MediatorK gives you three tools for dealing with errors: configurable missing-handler behavior, a pipeline behavior
-for crash reporting, and a `Result`-based dispatch alternative.
-
 ---
 
 ## Handling missing handlers
@@ -42,11 +39,11 @@ requests are intentional; misconfiguration will produce no error and no trace.
 Control what happens when a notification is published with no registered handlers via
 `missingNotificationHandler` in `MediatorFactory.create`.
 
-| Implementation                     | Behavior                                                 |
+| Implementation                     | Behaviour                                                |
 |------------------------------------|----------------------------------------------------------|
 | `ThrowMissingNotificationHandler`  | Throws `MissingNotificationHandlerException` *(default)* |
 | `SilentMissingNotificationHandler` | Drops the notification silently                          |
-| Your own implementation            | Anything: dead-letter queue, logging, alerting, etc.     |
+| Your own implementation            | Anything: dead-letter queue, logging, alerting, etc.    |
 
 ```kotlin
 // default — throws if no handler is registered
@@ -64,7 +61,7 @@ val mediator = MediatorFactory.create(
 // custom — dead-letter queue, logging, alerting
 val mediator = MediatorFactory.create(
     registrars = listOf(AppRegistrar()),
-    missingNotificationHandler = deadLetterHandler,
+    missingNotificationHandler = DeadLetterNotificationHandler(queue, logger),
 )
 ```
 
@@ -74,11 +71,14 @@ unhandled notifications are intentional; misconfiguration will produce no error 
 no trace, making it very hard to debug.
 :::
 
-The parameter type is `NotificationHandler<Notification>`. Implement it directly as an anonymous object or class for a
-custom behavior:
+The parameter type is `NotificationHandler<Notification>`, the same interface you already
+use for regular handlers. Implement it directly for a custom behavior:
 
 ```kotlin
-val deadLetterHandler = object : NotificationHandler<Notification> {
+class DeadLetterNotificationHandler(
+    private val queue: DeadLetterQueue,
+    private val logger: Logger,
+) : NotificationHandler<Notification> {
     override suspend fun handle(notification: Notification) {
         logger.warn("No handler for ${notification::class.simpleName}")
         queue.enqueue(notification)
@@ -109,8 +109,8 @@ val mediator = MediatorFactory.create(
 ```
 
 Use `order = Int.MAX_VALUE` (the default) to place the tracker innermost; it captures every exception directly from the
-handler before it bubbles up through timeout or retry behaviors. If you only want to report failures that escape the
-whole pipeline, use a lower order (e.g. `Int.MIN_VALUE`) to place the tracker outermost.
+handler before it bubbles up through retry or timeout. If you only want to report failures after all retries are
+exhausted, use an order lower than `RetryPipelineBehavior` (e.g. `Int.MIN_VALUE`) to place it outside the retry wrapper.
 
 ---
 
@@ -122,7 +122,7 @@ whole pipeline, use a lower order (e.g. `Int.MIN_VALUE`) to place the tracker ou
 | `MissingHandlerException`             | `send()` called for a request type with no registered handler                                          |
 | `MissingStreamHandlerException`       | `stream()` called for a stream request type with no registered handler                                 |
 | `MissingNotificationHandlerException` | Notification published with no registered handlers (only when using `ThrowMissingNotificationHandler`) |
-| `AggregateException`                  | One or more notification handlers failed under `ContinueOnExceptionNotificationPublisher`              |
+| `AggregateException`                  | `ContinueOnExceptionNotificationPublisher`, one or more notification handlers failed                  |
 
 ### MissingHandlerException
 
@@ -152,9 +152,3 @@ val result: Result<User> = mediator.trySend(GetUserQuery("user-1"))
 result.onSuccess { user -> ... }
 result.onFailure { error -> ... }
 ```
-
----
-
-## Next
-
-→ [Stream Handler](stream.md)

@@ -24,13 +24,13 @@ Lower `order` = outermost wrapper. Behaviors are sorted by `order` at dispatch t
 
 ## How it differs from `PipelineBehavior`
 
-| Aspect          | `PipelineBehavior`                 | `StreamPipelineBehavior`                       |
-|-----------------|------------------------------------|------------------------------------------------|
-| Wraps           | `Request<TResult>` via `send()`    | `StreamRequest<T>` via `stream()`              |
-| `process`       | `suspend`, returns `TResult`       | **not** suspend, returns `Flow<T>` immediately |
-| `next` delegate | `RequestHandlerDelegate` (suspend) | `StreamHandlerDelegate` (plain function)       |
-| Stages          | `Stage.Pre` / `Default` / `Post`   | No stages — `order` alone controls position    |
-| Work happens    | Inline, when the behavior runs     | Lazily, when the caller **collects** the flow  |
+| Aspect          | `PipelineBehavior`                            | `StreamPipelineBehavior`                          |
+|-----------------|-----------------------------------------------|---------------------------------------------------|
+| Wraps           | `Request<TResult>` via `send()`               | `StreamRequest<T>` via `stream()`                 |
+| `process`       | `suspend`, returns `TResult`                  | **not** suspend, returns `Flow<T>` immediately    |
+| `next` delegate | `RequestHandlerDelegate` (suspend)            | `StreamHandlerDelegate` (plain function)          |
+| Stages          | `Stage.Pre` / `Default` / `Post`              | No stages — `order` alone controls position       |
+| Work happens    | Inline, when the behavior runs                | Lazily, when the caller **collects** the flow     |
 
 The interface:
 
@@ -131,11 +131,11 @@ override fun <TRequest : StreamRequest<T>, T> process(
 ): Flow<T> = next(request).conflate().onEach { delay(minInterval) }
 ```
 
-| Operator chain            | Semantics                                                               |
-|---------------------------|-------------------------------------------------------------------------|
-| `onEach { delay(t) }`     | Every item delivered; producer suspends — true backpressure             |
-| `conflate().onEach { … }` | At most one item per interval; always the most recent value             |
-| `sample(t)`               | Emits the latest value every `t`; requires `@OptIn(FlowPreview::class)` |
+| Operator chain              | Semantics                                                       |
+|-----------------------------|------------------------------------------------------------------|
+| `onEach { delay(t) }`       | Every item delivered; producer suspends — true backpressure     |
+| `conflate().onEach { … }`   | At most one item per interval; always the most recent value     |
+| `sample(t)`                 | Emits the latest value every `t`; requires `@OptIn(FlowPreview::class)` |
 
 ---
 

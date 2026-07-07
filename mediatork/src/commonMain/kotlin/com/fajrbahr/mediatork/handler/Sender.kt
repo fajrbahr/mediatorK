@@ -1,5 +1,3 @@
-@file:Suppress("TooGenericExceptionCaught")
-
 package com.fajrbahr.mediatork.handler
 
 import com.fajrbahr.mediatork.api.Request
@@ -20,8 +18,10 @@ interface Sender {
      * Sends [request] through the full processing pipeline and returns the result.
      *
      * Execution order (outermost to innermost):
-     * 1. [com.fajrbahr.mediatork.api.PipelineBehavior]s sorted by order (lowest = outermost)
-     * 2. The matched [com.fajrbahr.mediatork.api.RequestHandler]
+     * 1. [com.fajrbahr.mediatork.api.Stage.Pre] behaviors (sorted by order)
+     * 2. [com.fajrbahr.mediatork.api.Stage.Default] behaviors (sorted by order)
+     * 3. [com.fajrbahr.mediatork.api.Stage.Post] behaviors (sorted by order)
+     * 4. The matched [com.fajrbahr.mediatork.api.RequestHandler]
      *
      * @param TRequest the concrete request type.
      * @param TResult the response type produced by the handler.

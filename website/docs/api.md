@@ -8,14 +8,13 @@ sidebar_label: API Reference
 
 Quick reference for all public types in `com.fajrbahr.mediatork`.
 
-| Subpackage                                | Contents                                                                                                                                                                                                                         |
-|-------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `com.fajrbahr.mediatork`                  | `HandlerRegistry`, `MediatorFactory`, `MediatorException` hierarchy                                                                                                                                                              |
-| `com.fajrbahr.mediatork.api`              | Core interfaces: `Mediator`, `Request`, `StreamRequest`, `RequestHandler`, `StreamRequestHandler`, `Notification`, `NotificationHandler`, `RequestContext`, `PipelineBehavior`, `Stage`, `MediatorRegistrar`, `RequestValidator` |
-| `com.fajrbahr.mediatork.handler`          | `Sender` (`send`, `trySend`), `otherwise` fallback chaining for request handlers, missing-request-handler strategies                                                                                                             |
-| `com.fajrbahr.mediatork.notification`     | All publish strategies, `otherwise` fallback chaining for notification handlers, `ThrowMissingNotificationHandler`, `SilentMissingNotificationHandler`                                                                           |
-| `com.fajrbahr.mediatork.pipeline.buildin` | Built-in behaviors: logging, caching, timeout, timing, error tracking, request counter, transaction                                                                                                                              |
-| `com.fajrbahr.mediatork.validator`        | `ValidationBehavior`, `ValidationResult`, `ValidationException`, `rules`, `rulesFailFast`                                                                                                                                        |
+| Subpackage                            | Contents                                                                                                                                                                                 |
+|---------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `com.fajrbahr.mediatork`              | Core: `Mediator`, `Request`, `StreamRequest`, `HandlerRegistry`, `MediatorFactory`, `MediatorException` hierarchy                                                                        |
+| `com.fajrbahr.mediatork.handler`      | `RequestHandler`, `StreamRequestHandler`, `FallbackRequestHandler` (`otherwise`), `Sender`, `trySend`                                                                                    |
+| `com.fajrbahr.mediatork.notification` | `Notification`, `NotificationHandler`, `FallbackNotificationHandler` (`otherwise`), all publisher implementations, `ThrowMissingNotificationHandler`, `SilentMissingNotificationHandler` |
+| `com.fajrbahr.mediatork.pipeline`     | `PipelineBehavior`, `Stage`, `StreamPipelineBehavior` and all built-in behaviors (logging, caching, timeout, timing, error tracking, request counter)                                    |
+| `com.fajrbahr.mediatork.validator`    | `RequestValidator`, `ValidationBehavior`, `ValidationResult`, `ValidationException`, `rules`, `rulesFailFast`                                                                            |
 
 ---
 
@@ -34,13 +33,13 @@ interface Request<out TResponse>
 
 ---
 
-### `handle<TRequest, TResult>` DSL · `com.fajrbahr.mediatork.api`
+### `RequestHandler<TRequest, TResult>` · `com.fajrbahr.mediatork.handler`
 
-Handles a specific `Request` type via the registry DSL.
+Handles a specific `Request` type.
 
 ```kotlin
-registry.handle<TRequest, TResult> { request ->
-    // return TResult
+interface RequestHandler<in TRequest : Request<TResult>, TResult> {
+    suspend fun handle(mediator: Mediator, requestContext: RequestContext, request: TRequest): TResult
 }
 ```
 
@@ -59,20 +58,28 @@ anything better consumed incrementally than batched into a list.
 
 ---
 
-### `handleStream<TRequest, T>` DSL · `com.fajrbahr.mediatork.api`
+### `StreamRequestHandler<TRequest, T>` · `com.fajrbahr.mediatork.handler`
 
-Handles a `StreamRequest` and returns a cold `Flow<T>`. The block is **not** `suspend`; it returns the flow immediately;
-work begins when the caller collects it.
+Handles a `StreamRequest` and returns a cold `Flow<T>`. The interface is **not** `suspend`; it returns the flow
+immediately; work begins when the caller collects it.
+
+```kotlin
+interface StreamRequestHandler<in TRequest : StreamRequest<T>, T> {
+    fun handle(mediator: Mediator, requestContext: RequestContext, request: TRequest): Flow<T>
+}
+```
 
 ```kotlin
 // Define
 data class StreamInvoicesQuery(val status: InvoiceStatus? = null) : StreamRequest<Invoice>
 
-// Handle via DSL
-registry.handleStream<StreamInvoicesQuery, Invoice> { request ->
-    repo.all().asFlow().let { flow ->
-        if (request.status != null) flow.filter { it.status == request.status } else flow
-    }
+// Handle
+class StreamInvoicesHandler(private val repo: InvoiceRepository)
+    : StreamRequestHandler<StreamInvoicesQuery, Invoice> {
+    override fun handle(mediator: Mediator, requestContext: RequestContext, request: StreamInvoicesQuery): Flow<Invoice> =
+        repo.all().asFlow().let { flow ->
+            if (request.status != null) flow.filter { it.status == request.status } else flow
+        }
 }
 
 // Dispatch
@@ -96,7 +103,7 @@ interface IStreamRequest {
 
 ---
 
-### `Notification` · `com.fajrbahr.mediatork.api`
+### `Notification` · `com.fajrbahr.mediatork.notification`
 
 Marker interface for broadcast events with no response.
 
@@ -106,19 +113,19 @@ interface Notification
 
 ---
 
-### `on<TNotification>` DSL · `com.fajrbahr.mediatork.api`
+### `NotificationHandler<T>` · `com.fajrbahr.mediatork.notification`
 
-Reacts to a `Notification`. Multiple blocks per notification type are allowed.
+Reacts to a `Notification`. Multiple handlers per notification type are allowed.
 
 ```kotlin
-registry.on<TNotification> { notification ->
-    // handle event
+interface NotificationHandler<in T : Notification> {
+    suspend fun handle(notification: T)
 }
 ```
 
 ---
 
-### `PipelineBehavior` · `com.fajrbahr.mediatork.api`
+### `PipelineBehavior` · `com.fajrbahr.mediatork.pipeline`
 
 Cross-cutting decorator that wraps each request pipeline.
 
@@ -150,15 +157,17 @@ Stage always beats `order`. See [Pre / Post Behaviors](core/processors.md).
 
 Stores all registered handlers. Populated by `MediatorRegistrar` implementations.
 
-| Method                            | Description                                                          |
-|-----------------------------------|----------------------------------------------------------------------|
-| `handle { }` / `handleStream { }` | Register a request handler or stream handler DSL (reified)           |
-| `on { }`                          | Register a notification handler DSL (reified)                        |
-| `validate { }`                    | Register a request validator DSL (reified)                           |
-| `registerDynamic(klass, handler)` | Register a request handler without reified type (for DI frameworks)  |
-| `scope { }`                       | Group registrations for readability                                  |
-| `hasHandler(requestType)`         | Returns `true` if a handler is registered for the given request type |
-| `registeredRequestTypes()`        | Returns the set of all request types that have a registered handler  |
+| Method                            | Description                                                               |
+|-----------------------------------|---------------------------------------------------------------------------|
+| `register(handler)`               | Register a request handler (infix, reified)                               |
+| `registerStream(handler)`         | Register a stream request handler (infix, reified)                        |
+| `registerNotification(handler)`   | Register a notification handler (infix, reified)                          |
+| `registerValidator(validator)`    | Register a request validator (reified)                                    |
+| `registerDynamic(klass, handler)` | Register a request handler without reified type (for DI frameworks)       |
+| `scope { }`                       | Group registrations for readability                                       |
+| `+handler`                        | Operator shorthand for `register` / `registerNotification` inside `scope` |
+| `hasHandler(requestType)`         | Returns `true` if a handler is registered for the given request type      |
+| `registeredRequestTypes()`        | Returns the set of all request types that have a registered handler       |
 
 ---
 
@@ -219,7 +228,7 @@ interface Mediator : Sender, IStreamRequest, Publisher
 
 ## Notification publishers · `com.fajrbahr.mediatork.notification`
 
-| Class                                      | Behavior                                                     |
+| Class                                      | Behaviour                                                    |
 |--------------------------------------------|--------------------------------------------------------------|
 | `ParallelNotificationPublisher`            | All handlers run concurrently *(default)*                    |
 | `SequentialNotificationPublisher`          | Handlers run one-by-one; stops on first error                |
@@ -242,11 +251,11 @@ interface Mediator : Sender, IStreamRequest, Publisher
 
 ## Validator package (`com.fajrbahr.mediatork.validator`)
 
-| Type                  | Description                                                                                                                 |
-|-----------------------|-----------------------------------------------------------------------------------------------------------------------------|
-| `validate { }` DSL    | Validates a request and returns `ValidationResult`. Register via `registry.validate<T> { ... }`.                            |
-| `ValidationResult`    | Sealed class: `Valid` or `Invalid(errors: List<*>)`                                                                         |
-| `ValidationBehavior`  | Pre-built `PipelineBehavior` (order `-50`) that runs registered validators before the handler                               |
+| Type                  | Description                                                                                                                  |
+|-----------------------|------------------------------------------------------------------------------------------------------------------------------|
+| `RequestValidator<T>` | Validates a request and returns `ValidationResult`. Register via `registry.registerValidator(validator)`.                    |
+| `ValidationResult`    | Sealed class: `Valid` or `Invalid(errors: List<*>)`                                                                          |
+| `ValidationBehavior`  | Pre-built `PipelineBehavior` (order `-50`) that runs registered validators before the handler                                |
 | `ValidationException` | Thrown when validation fails; `errors: List<*>` carries all failure messages (any type: `String`, sealed class, enum, etc.) |
 | `rules { }`           | Collect-all DSL; all `check`/`require` calls run, errors accumulated                                                        |
 | `rulesFailFast { }`   | Stop-on-first DSL; execution stops at the first failing `check`/`require`                                                   |

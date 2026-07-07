@@ -28,13 +28,9 @@ package com.fajrbahr.mediatork.api
  *
  * The publish strategy controls how handlers are invoked:
  * - [com.fajrbahr.mediatork.notification.ParallelNotificationPublisher] — all handlers run concurrently (default)
- * - [com.fajrbahr.mediatork.notification.SequentialNotificationPublisher] —
- *   handlers run one-by-one, stops on first error
- * - [com.fajrbahr.mediatork.notification.ContinueOnExceptionNotificationPublisher] —
- *   all handlers run even if some fail, errors collected into
- *   [com.fajrbahr.mediatork.AggregateException]
- * - [com.fajrbahr.mediatork.notification.FireAndForgetNotificationPublisher] —
- *   returns immediately, handlers run in the background
+ * - [com.fajrbahr.mediatork.notification.SequentialNotificationPublisher] — handlers run one-by-one, stops on first error
+ * - [com.fajrbahr.mediatork.notification.ContinueOnExceptionNotificationPublisher] — all handlers run even if some fail, errors collected into [com.fajrbahr.mediatork.AggregateException]
+ * - [com.fajrbahr.mediatork.notification.FireAndForgetNotificationPublisher] — returns immediately, handlers run in the background
  *
  * @see Request for operations that expect exactly one handler and a response.
  */

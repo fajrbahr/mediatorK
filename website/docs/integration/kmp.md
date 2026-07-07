@@ -21,10 +21,12 @@ All requests, handlers, and registrars go in `commonMain`; the same code runs on
 // commonMain
 data class GetProductQuery(val id: String) : Request<Product>
 
-fun HandlerRegistry.productHandlers(repo: ProductRepository) = scope {
-    handle<GetProductQuery> { request ->
-        repo.findById(request.id) ?: error("Not found")
-    }
+class GetProductHandler(private val repo: ProductRepository) : RequestHandler<GetProductQuery, Product> {
+    override suspend fun handle(
+        mediator: Mediator,
+        requestContext: RequestContext,
+        request: GetProductQuery,
+    ): Product = repo.findById(request.id) ?: error("Not found")
 }
 ```
 
@@ -35,7 +37,7 @@ fun HandlerRegistry.productHandlers(repo: ProductRepository) = scope {
 ```kotlin
 // commonMain — create once, share as singleton
 val mediator: Mediator = MediatorFactory.create(
-    registrars = listOf(MediatorRegistrar { it.productHandlers(productRepository) }),
+    registrars = listOf(ProductRegistrar(productRepository)),
 )
 ```
 
@@ -51,4 +53,4 @@ See [Koin integration](koin.md) for a complete setup that works across Android a
 
 ## Next
 
-→ [Ktor](ktor.md)
+→ [Spring Boot](spring.md)

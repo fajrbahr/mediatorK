@@ -2,10 +2,7 @@ package com.fajrbahr.mediatork.test
 
 import com.fajrbahr.mediatork.HandlerRegistry
 import com.fajrbahr.mediatork.MediatorFactory
-import com.fajrbahr.mediatork.api.Mediator
-import com.fajrbahr.mediatork.api.Notification
-import com.fajrbahr.mediatork.api.Request
-import com.fajrbahr.mediatork.api.StreamRequest
+import com.fajrbahr.mediatork.api.*
 import com.fajrbahr.mediatork.notification.NotificationPublishStrategy
 import kotlinx.coroutines.flow.Flow
 
@@ -40,27 +37,27 @@ class TestMediator(
     init: HandlerRegistry.() -> Unit = {},
 ) : Mediator {
 
-    val registry: HandlerRegistry = HandlerRegistry().apply(init)
+    val overrideRegistry = HandlerRegistry().apply(init)
 
-    private val overrideMediator: Mediator = MediatorFactory.create(registry = registry)
+    private val overrideMediator: Mediator = MediatorFactory.create(registry = overrideRegistry)
 
     override suspend fun <TRequest : Request<TResult>, TResult> send(request: TRequest): TResult =
-        if (registry.hasHandler(request::class)) overrideMediator.send(request)
+        if (overrideRegistry.hasHandler(request::class)) overrideMediator.send(request)
         else base.send(request)
 
     override fun <TRequest : StreamRequest<T>, T> stream(request: TRequest): Flow<T> =
-        if (registry.hasStreamHandler(request::class)) overrideMediator.stream(request)
+        if (overrideRegistry.hasStreamHandler(request::class)) overrideMediator.stream(request)
         else base.stream(request)
 
     override suspend fun <T : Notification> publish(notification: T) {
-        if (registry.hasNotificationHandler(notification::class))
+        if (overrideRegistry.hasNotificationHandler(notification::class))
             overrideMediator.publish(notification)
         else
             base.publish(notification)
     }
 
     override suspend fun <T : Notification> publish(notification: T, publisher: NotificationPublishStrategy) {
-        if (registry.hasNotificationHandler(notification::class))
+        if (overrideRegistry.hasNotificationHandler(notification::class))
             overrideMediator.publish(notification, publisher)
         else
             base.publish(notification, publisher)

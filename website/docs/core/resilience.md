@@ -150,7 +150,6 @@ register one instance per backend:
 CircuitBreakerPipelineBehavior(handles = { it is PaymentsRequest }),   // payments circuit
 CircuitBreakerPipelineBehavior(handles = { it is CatalogRequest }),    // catalog circuit
 ```
-
 :::
 
 ---

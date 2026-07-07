@@ -1,15 +1,10 @@
 ---
 id: sample
-title: Samples
+title: Sample
 sidebar_label: Samples
 ---
 
 # Samples
-
-:::tip How to run
-Each sample is a standalone Gradle project. Open the sample folder directly in IntelliJ IDEA (**File → Open** → select
-the sample directory) — do not open the root MediatorK project.
-:::
 
 ## Basic
 
@@ -23,8 +18,7 @@ Smallest end-to-end demo: a Todo domain with a command, a query, and a notificat
 
 [`/samples/sample-android`](https://github.com/fajrbahr/MediatorK/tree/main/samples/sample-android)
 
-Jetpack Compose app fetching prayer times from the Aladhan API. Shows the before / after / after super progression
-across three layers.
+Jetpack Compose app fetching prayer times from the Aladhan API. Shows the before / after / after super progression across three layers.
 
 ---
 
@@ -48,11 +42,4 @@ Spring Boot WebFlux application with the same three-layer progression, exposing 
 
 [`/samples/sample`](https://github.com/fajrbahr/MediatorK/tree/main/samples/sample)
 
-Plain JVM sample covering commands, queries, notifications, pipeline behaviors, and a complete vertical invoice slice
-with streaming, validation, and transaction support.
-
----
-
-## Next
-
-→ [Life Before MediatorK](testing/before-mediator.md)
+Plain JVM sample covering commands, queries, notifications, pipeline behaviors, and a complete vertical invoice slice with streaming, validation, and transaction support.

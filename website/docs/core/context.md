@@ -49,14 +49,20 @@ class TraceIdBehavior : PipelineBehavior {
 Handlers and `Stage.Post` behaviors read values by key:
 
 ```kotlin
-registry.handle<CreateOrderCommand, Order> { request ->
-    val userId = requestContext.getMetadata<String>("userId")
-        ?: error("userId not set in context")
-    orderService.create(userId, request.cartId)
+class CreateOrderHandler : RequestHandler<CreateOrderCommand, Order> {
+    override suspend fun handle(
+        mediator: Mediator,
+        requestContext: RequestContext,
+        request: CreateOrderCommand,
+    ): Order {
+        val userId = requestContext.getMetaDate<String>("userId")
+            ?: error("userId not set in context")
+        return orderService.create(userId, request.cartId)
+    }
 }
 ```
 
-`getMetadata<T>(key)` returns `null` if the key is absent or the stored value can't be cast to `T`.
+`getMetaDate<T>(key)` returns `null` if the key is absent or the stored value can't be cast to `T`.
 
 ---
 
@@ -67,12 +73,12 @@ autocomplete:
 
 ```kotlin
 var RequestContext.locale: String
-get() = getMetadata("locale") ?: "en"
-set(value) { put("locale", value) }
+    get() = getMetaDate("locale") ?: "en"
+    set(value) { put("locale", value) }
 
 var RequestContext.userId: String?
-get() = getMetadata("userId")
-set(value) { if (value != null) put("userId", value) }
+    get() = getMetaDate("userId")
+    set(value) { if (value != null) put("userId", value) }
 ```
 
 Usage is then clean and type-safe:
@@ -84,7 +90,7 @@ requestContext.userId = currentUser.id
 
 // read (in a handler)
 val lang = requestContext.locale      // "ar"
-val uid = requestContext.userId      // String?
+val uid  = requestContext.userId      // String?
 ```
 
 ---
@@ -97,17 +103,17 @@ components:
 ```kotlin
 object ContextKeys {
     const val TRACE_ID = "com.myapp.traceId"
-    const val USER_ID = "com.myapp.userId"
+    const val USER_ID  = "com.myapp.userId"
 }
 
 // write
 requestContext.put(ContextKeys.TRACE_ID, traceId)
 ```
 
-Read the value back with a typed call:
+**Option 2:** read back with a typed call:
 
 ```kotlin
-val traceId = requestContext.getMetadata<String>(ContextKeys.TRACE_ID)
+val traceId = requestContext.getMetaDate<String>(ContextKeys.TRACE_ID)
 ```
 
 ---

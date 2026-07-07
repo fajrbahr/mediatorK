@@ -13,8 +13,8 @@ registrations at test time instead of as a runtime crash.
 
 ## assertAllHandlersRegistered
 
-`MediatorTestUtils.assertAllHandlersRegistered` scans the classpath for every request type and asserts that each one has
-a handler wired up via your registrars.
+`MediatorTestUtils.assertAllHandlersRegistered` scans the classpath for every concrete `RequestHandler` implementation
+and asserts that each one is wired up via your registrars.
 
 If a handler exists but was forgotten in a `MediatorRegistrar`, the test fails immediately with a clear message instead
 of crashing at runtime when the request is first dispatched.
@@ -43,7 +43,7 @@ class HandlerCoverageTest {
 
 ### Narrow the scan to specific packages
 
-If third-party libraries on your classpath also define request types, scanning everything may produce false
+If third-party libraries on your classpath also implement `RequestHandler`, scanning everything may produce false
 positives. Pass `packages` to restrict the scan:
 
 ```kotlin
@@ -76,9 +76,3 @@ Unregistered handlers found:
 |--------------|---------------------------|---------------|-----------------------------------------------------------|
 | `registrars` | `List<MediatorRegistrar>` | required      | The same registrars you pass to `MediatorFactory.create`. |
 | `packages`   | `List<String>`            | `emptyList()` | Packages to scan. Empty list scans the entire classpath.  |
-
----
-
-## Next
-
-→ [Troubleshooting & FAQ](../troubleshooting.md)
