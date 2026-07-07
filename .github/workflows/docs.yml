@@ -1,13 +1,19 @@
-name: Deploy Docs
+name: Docs Update
 
 on:
   push:
-    branches: [ main ]
+    tags:
+      - '*.*.*'
+      - 'v*'
     paths:
       - 'website/**'
-      - 'mediatork/src/**'
       - '.github/workflows/docs.yml'
   workflow_dispatch:
+    inputs:
+      message:
+        description: 'Deployment message'
+        required: false
+        type: string
 
 permissions:
   contents: read
@@ -15,56 +21,35 @@ permissions:
   id-token: write
 
 concurrency:
-  group: pages
+  group: "pages"
   cancel-in-progress: false
 
 jobs:
-  build:
+  build-and-deploy:
     runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
     steps:
       - uses: actions/checkout@v4
 
-      - uses: actions/setup-node@v4
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
         with:
-          node-version: 20
-          cache: npm
-          cache-dependency-path: website/package-lock.json
-
-      - uses: actions/setup-java@v4
-        with:
-          java-version: '21'
-          distribution: 'temurin'
-
-      - uses: gradle/actions/setup-gradle@v4
+          node-version: '20'
 
       - name: Install dependencies
-        run: npm ci
-        working-directory: website
+        run: cd website && npm install
 
-      - name: Build Docusaurus
-        run: npm run build
-        working-directory: website
-
-      - name: Generate API docs (Dokka)
-        run: ./gradlew :mediatork:dokkaGeneratePublicationHtml
-
-      - name: Add API docs to site under /api/
-        run: |
-          mkdir -p website/build/api
-          cp -R mediatork/build/dokka/html/. website/build/api/
+      - name: Build docs
+        run: cd website && npm run build
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: website/build
+          path: 'website/dist'
 
-  deploy:
-    needs: build
-    runs-on: ubuntu-latest
-    environment:
-      name: github-pages
-      url: ${{ steps.deploy.outputs.page_url }}
-    steps:
       - name: Deploy to GitHub Pages
-        id: deploy
+        id: deployment
         uses: actions/deploy-pages@v4

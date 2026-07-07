@@ -5,6 +5,12 @@ on:
     tags:
       - '*.*.*'
       - 'v*'
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version to release (e.g., 0.8.5)'
+        required: true
+        type: string
 
 permissions:
   contents: write
