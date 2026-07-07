@@ -1,9 +1,9 @@
 package sample.meditor.orders.queries.getorder
 
 import com.fajrbahr.mediatork.HandlerRegistry
-import com.fajrbahr.mediatork.Mediator
-import com.fajrbahr.mediatork.MediatorRegistrar
-import com.fajrbahr.mediatork.RequestContext
+import com.fajrbahr.mediatork.api.Mediator
+import com.fajrbahr.mediatork.api.MediatorRegistrar
+import com.fajrbahr.mediatork.api.RequestContext
 import com.fajrbahr.mediatork.handler.RequestHandler
 import sample.meditor.orders.queries.query.GetOrderQuery
 import sample.meditor.orders.queries.query.OrderDetails

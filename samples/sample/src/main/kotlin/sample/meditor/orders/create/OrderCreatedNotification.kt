@@ -1,7 +1,7 @@
 package sample.meditor.orders.create
 
 import com.fajrbahr.mediatork.HandlerRegistry
-import com.fajrbahr.mediatork.MediatorRegistrar
+import com.fajrbahr.mediatork.api.MediatorRegistrar
 import com.fajrbahr.mediatork.notification.Notification
 import com.fajrbahr.mediatork.notification.NotificationHandler
 
