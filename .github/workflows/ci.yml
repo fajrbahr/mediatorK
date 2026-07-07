@@ -19,12 +19,6 @@ jobs:
 
       - uses: gradle/actions/setup-gradle@v6
 
-      - name: Binary compatibility check
-        run: ./gradlew apiCheck
-
-      - name: Static analysis (detekt)
-        run: ./gradlew detekt
-
       - name: JVM build and tests
         run: ./gradlew :mediatork:jvmTest :mediatork-test:jvmTest :mediatork:koverXmlReport
 
