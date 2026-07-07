@@ -58,14 +58,22 @@ fun mediator(
     pipelineBehaviors: List<PipelineBehavior> = emptyList(),
     notificationPublisher: NotificationPublishStrategy = ParallelNotificationPublisher(),
     missingNotificationHandler: NotificationHandler<Notification> = ThrowMissingNotificationHandler(),
-    block: HandlerRegistry.() -> Unit,
-): Mediator = MediatorFactory.create(
-    registrars = listOf(object : MediatorRegistrar {
-        override fun register(registry: HandlerRegistry) {
-            registry.block()
+    registrar: MediatorRegistrar? = null,
+    init: (HandlerRegistry.() -> Unit)? = null,
+): Mediator {
+    val finalRegistrar = when {
+        registrar != null -> registrar
+        init != null -> object : MediatorRegistrar {
+            override fun register(registry: HandlerRegistry) = registry.init()
         }
-    }),
-    pipelineBehaviors = pipelineBehaviors,
-    notificationPublisher = notificationPublisher,
-    missingNotificationHandler = missingNotificationHandler,
-)
+        else -> object : MediatorRegistrar {
+            override fun register(registry: HandlerRegistry) {}
+        }
+    }
+    return MediatorFactory.create(
+        registrars = listOf(finalRegistrar),
+        pipelineBehaviors = pipelineBehaviors,
+        notificationPublisher = notificationPublisher,
+        missingNotificationHandler = missingNotificationHandler,
+    )
+}

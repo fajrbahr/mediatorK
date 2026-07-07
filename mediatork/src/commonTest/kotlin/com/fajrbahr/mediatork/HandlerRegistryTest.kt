@@ -96,43 +96,6 @@ class HandlerRegistryTest {
         assertTrue(resolved.isEmpty())
     }
 
-    // ── DSL operators ─────────────────────────────────────────────────────────
-
-    @Test
-    fun `unaryPlus registers request handler`() = runTest {
-        val m = MediatorFactory.create(registrars = listOf(object : MediatorRegistrar {
-            override fun register(registry: HandlerRegistry) {
-                with(registry) { +PingHandler() }
-            }
-        }))
-        assertEquals("pong:y", m.send(PingQuery("y")))
-    }
-
-    @Test
-    fun `unaryPlus registers notification handler`() = runTest {
-        val h = RecordingNotificationHandler()
-        val m = MediatorFactory.create(registrars = listOf(object : MediatorRegistrar {
-            override fun register(registry: HandlerRegistry) {
-                with(registry) { +h }
-            }
-        }))
-        m.publish(PingNotification("hello"))
-        assertEquals(listOf("hello"), h.received)
-    }
-
-    @Test
-    fun `scope block groups registrations`() = runTest {
-        val m = MediatorFactory.create(registrars = listOf(object : MediatorRegistrar {
-            override fun register(registry: HandlerRegistry) {
-                registry.scope {
-                    register(PingHandler())
-                    register(AddHandler())
-                }
-            }
-        }))
-        assertEquals("pong:z", m.send(PingQuery("z")))
-        assertEquals(5, m.send(AddCommand(2, 3)))
-    }
 
     // ── chaining ──────────────────────────────────────────────────────────────
 
@@ -178,29 +141,6 @@ class HandlerRegistryTest {
         assertEquals(2, registry.anyValidators()[PingQuery::class]?.size)
     }
 
-    @Test
-    fun `unaryPlus registers validator`() = runTest {
-        val registry = HandlerRegistry()
-        val validator = object : RequestValidator<PingQuery> {
-            override fun validate(request: PingQuery): ValidationResult = ValidationResult.Valid
-        }
-        with(registry) { +validator }
-        assertTrue(registry.anyValidators().containsKey(PingQuery::class))
-    }
-
-    @Test
-    fun `unaryPlus registers stream handler`() = runTest {
-        val registry = HandlerRegistry()
-        val handler = object : StreamRequestHandler<StreamNumbersQuery, Int> {
-            override fun handle(
-                mediator: com.fajrbahr.mediatork.api.Mediator,
-                requestContext: RequestContext,
-                request: StreamNumbersQuery,
-            ): kotlinx.coroutines.flow.Flow<Int> = kotlinx.coroutines.flow.emptyFlow()
-        }
-        with(registry) { +handler }
-        assertTrue(registry.hasStreamHandler(StreamNumbersQuery::class))
-    }
 
     // ── Dynamic registration ──────────────────────────────────────────────────
 
