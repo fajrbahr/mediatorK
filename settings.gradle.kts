@@ -15,9 +15,6 @@ include("mediatork")
 include("mediatork-test")
 include("publishMaven")
 include("local-sample")
-include("samples:basic")
-include("samples:sample")
-include("samples:sample-university")
 
 dependencyResolutionManagement {
     repositories {
