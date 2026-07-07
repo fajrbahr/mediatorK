@@ -128,7 +128,6 @@ class MediatorSpy(private val delegate: Mediator) : Mediator {
         val prefix = if (message != null) "$message: " else ""
         assertTrue(
             actual == count,
-            "${prefix}Expected $count ${T::class.simpleName} to be sent, but was $actual."
             "${prefix}Expected $count ${T::class.simpleName} to be sent, but was $actual.",
         )
     }
@@ -141,7 +140,6 @@ class MediatorSpy(private val delegate: Mediator) : Mediator {
         val prefix = if (message != null) "$message: " else ""
         assertTrue(
             actual == count,
-            "${prefix}Expected $count ${T::class.simpleName} to be published, but was $actual."
             "${prefix}Expected $count ${T::class.simpleName} to be published, but was $actual.",
         )
     }
@@ -173,7 +171,6 @@ class MediatorSpy(private val delegate: Mediator) : Mediator {
         val prefix = if (message != null) "$message: " else ""
         assertTrue(
             actual == count,
-            "${prefix}Expected $count ${T::class.simpleName} to be streamed, but was $actual."
             "${prefix}Expected $count ${T::class.simpleName} to be streamed, but was $actual.",
         )
     }
