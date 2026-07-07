@@ -1,8 +1,6 @@
-name: Publish Docs
+name: Deploy Docs
 
 on:
-  release:
-    types: [ released ]
   workflow_dispatch:
 
 permissions:
@@ -11,36 +9,41 @@ permissions:
   id-token: write
 
 concurrency:
-  group: "pages"
+  group: pages
   cancel-in-progress: false
 
 jobs:
-  build-and-deploy:
+  build:
     runs-on: ubuntu-latest
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-
     steps:
-      - name: Check out code
-        uses: actions/checkout@v6
+      - uses: actions/checkout@v4
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
+      - uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: 20
+          cache: npm
+          cache-dependency-path: website/package-lock.json
 
       - name: Install dependencies
-        run: cd website && npm install
+        run: npm ci
+        working-directory: website
 
-      - name: Build docs
-        run: cd website && npm run build
+      - name: Build Docusaurus
+        run: npm run build
+        working-directory: website
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: 'website/dist'
+          path: website/build
 
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    steps:
       - name: Deploy to GitHub Pages
-        id: deployment
+        id: deploy
         uses: actions/deploy-pages@v4

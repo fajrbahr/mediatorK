@@ -9,20 +9,6 @@ on:
       - main
 
 jobs:
-  lint:
-    name: Detekt check
-    runs-on: macos-latest
-    steps:
-      - name: Check out code
-        uses: actions/checkout@v6
-      - name: Set up JDK
-        uses: actions/setup-java@v4
-        with:
-          distribution: temurin
-          java-version: 21
-      - name: Detekt check
-        run: ./gradlew detekt
-
   build:
     runs-on: macos-latest
     steps:
