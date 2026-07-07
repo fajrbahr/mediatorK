@@ -1,5 +1,6 @@
 plugins {
     alias(libs.plugins.kotlin.jvm)
+    application
     id("org.jetbrains.kotlinx.kover") version "0.9.1"
 }
 
@@ -20,6 +21,10 @@ dependencies {
 
 kotlin {
     jvmToolchain(libs.versions.jvmToolchain.get().toInt())
+}
+
+application {
+    mainClass = "local.meditor.MainKt"
 }
 
 tasks.test {
