@@ -14,12 +14,14 @@ import kotlinx.coroutines.flow.Flow
  * to test against it — swapping only the handlers or notifications under test:
  *
  * ```kotlin
- * val testMediator = productionMediator.forTesting {
- *     handle<GetPriceQuery, FormattedPrice> { request ->
- *         FormattedPrice("$0.00")
+ * class TestRegistrar : MediatorRegistrar {
+ *     override fun register(registry: HandlerRegistry) {
+ *         registry.register(GetPriceQueryTestHandler())
+ *         registry.registerNotification(OrderCreatedTestHandler())
  *     }
- *     on<OrderCreatedNotification> { captured += it }
  * }
+ *
+ * val testMediator = productionMediator.forTesting(TestRegistrar())
  * val harness = HandlerTestHarness(testMediator)
  * harness.send(GetPriceQuery("PROD-1"))   // → override
  * harness.send(GetOrderQuery("ORD-1"))    // → production pipeline
@@ -30,16 +32,18 @@ import kotlinx.coroutines.flow.Flow
  * (validators from the override registry only, no production behaviors).
  *
  * @param base the production [Mediator] to delegate non-overridden calls to.
- * @param init DSL block for registering override handlers on a [HandlerRegistry].
+ * @param registrar provides override handlers.
  */
 class TestMediator(
     private val base: Mediator,
-    init: HandlerRegistry.() -> Unit = {},
+    registrar: MediatorRegistrar,
 ) : Mediator {
 
-    val overrideRegistry = HandlerRegistry().apply(init)
+    val overrideRegistry = HandlerRegistry()
 
-    private val overrideMediator: Mediator = MediatorFactory.create(registry = overrideRegistry)
+    private val overrideMediator: Mediator = MediatorFactory.create(registry = overrideRegistry).also {
+        registrar.register(overrideRegistry)
+    }
 
     override suspend fun <TRequest : Request<TResult>, TResult> send(request: TRequest): TResult =
         if (overrideRegistry.hasHandler(request::class)) overrideMediator.send(request)
@@ -69,12 +73,9 @@ class TestMediator(
  * while delegating everything else to the full production pipeline.
  *
  * ```kotlin
- * val testMediator = productionMediator.forTesting {
- *     handle<GetPriceQuery, FormattedPrice> { FormattedPrice("$0.00") }
- *     on<OrderCreatedNotification> { captured += it }
- * }
+ * val testMediator = productionMediator.forTesting(TestRegistrar(testRepo))
  * ```
  */
 fun Mediator.forTesting(
-    overrides: HandlerRegistry.() -> Unit = {},
-): TestMediator = TestMediator(this, overrides)
+    registrar: MediatorRegistrar,
+): TestMediator = TestMediator(this, registrar)

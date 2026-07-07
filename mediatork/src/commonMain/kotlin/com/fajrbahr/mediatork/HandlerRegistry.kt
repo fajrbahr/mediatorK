@@ -35,12 +35,8 @@ class HandlerRegistry {
 
     // ── Registration ──────────────────────────────────────────────────────────
 
-    /** Opens a scoped registration block; equivalent to calling methods directly but allows `+handler` DSL inside. */
-    fun scope(block: HandlerRegistry.() -> Unit) = block()
-
     /**
      * Registers [handler] for request type [TRequest], replacing any previously registered handler.
-     * Use the `+handler` DSL operator inside a [scope] block as a shorter alternative.
      */
     inline infix fun <reified TRequest : Request<TResult>, TResult> register(
         handler: RequestHandler<TRequest, TResult>,
@@ -51,7 +47,6 @@ class HandlerRegistry {
 
     /**
      * Registers [handler] for stream request type [TRequest], replacing any previously registered handler.
-     * Use the `+handler` DSL operator inside a [scope] block as a shorter alternative.
      */
     inline infix fun <reified TRequest : StreamRequest<T>, T> registerStream(
         handler: StreamRequestHandler<TRequest, T>,
@@ -82,24 +77,6 @@ class HandlerRegistry {
         validatorsHandlers.getOrPut(TRequest::class) { mutableListOf() }.add(validator)
         return this
     }
-
-    // ── DSL operators ─────────────────────────────────────────────────────────
-
-    /** Shorthand for [register]; use inside a [scope] block: `+MyHandler()`. */
-    inline operator fun <reified TRequest : Request<TResult>, TResult> RequestHandler<TRequest, TResult>.unaryPlus() =
-        register(this)
-
-    /** Shorthand for [registerStream]; use inside a [scope] block: `+MyStreamHandler()`. */
-    inline operator fun <reified TRequest : StreamRequest<T>, T> StreamRequestHandler<TRequest, T>.unaryPlus() =
-        registerStream(this)
-
-    /** Shorthand for [registerNotification]; use inside a [scope] block: `+MyNotificationHandler()`. */
-    inline operator fun <reified T : Notification> NotificationHandler<T>.unaryPlus() =
-        registerNotification(this)
-
-    /** Shorthand for [registerValidator]; use inside a [scope] block: `+MyValidator()`. */
-    inline operator fun <reified TRequest : Request<*>> RequestValidator<TRequest>.unaryPlus() =
-        registerValidator(this)
 
     // ── Dynamic registration (for DI frameworks) ──────────────────────────────
 
