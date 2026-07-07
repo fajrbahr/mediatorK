@@ -98,22 +98,25 @@ class HandlerTestHarnessTest {
 
     @Test
     fun `throws when handler is missing`() = runTest {
-        val harness = buildHandlerTestHarness {}
+        val harness = buildHandlerTestHarness()
         assertFailsWith<com.fajrbahr.mediatork.MissingHandlerException> {
             harness.send(GetUserQuery("1"))
         }
     }
 
     @Test
-    fun `registrars and init block are combined`() = runTest {
-        val registrar = object : MediatorRegistrar {
+    fun `registrars can provide multiple handlers`() = runTest {
+        val userRegistrar = object : MediatorRegistrar {
             override fun register(registry: com.fajrbahr.mediatork.HandlerRegistry) {
                 registry.register(GetUserHandler())
             }
         }
-        val harness = buildHandlerTestHarness(registrars = listOf(registrar)) {
-            register(CreateOrderHandler())
+        val orderRegistrar = object : MediatorRegistrar {
+            override fun register(registry: com.fajrbahr.mediatork.HandlerRegistry) {
+                registry.register(CreateOrderHandler())
+            }
         }
+        val harness = buildHandlerTestHarness(registrars = listOf(userRegistrar, orderRegistrar))
         assertEquals("user:1", harness.send(GetUserQuery("1")))
         assertEquals("order:ORD-1", harness.send(CreateOrderCommand("ORD-1")))
     }

@@ -24,15 +24,6 @@ android {
 kotlin {
     jvmToolchain(libs.versions.jvmToolchain.get().toInt())
 
-    androidTarget {
-        publishLibraryVariants("release")
-    }
-
-    androidNativeX64()
-    androidNativeX86()
-    androidNativeArm32()
-    androidNativeArm64()
-
     iosArm64()
     iosSimulatorArm64()
     iosX64()
