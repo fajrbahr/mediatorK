@@ -1,3 +1,7 @@
+@file:OptIn(org.jetbrains.kotlin.gradle.ExperimentalWasmDsl::class)
+
+import org.jetbrains.kotlin.gradle.ExperimentalWasmDsl
+
 plugins {
     alias(libs.plugins.kotlin.multiplatform)
     alias(libs.plugins.android.library)
@@ -13,14 +17,6 @@ repositories {
     google()
 }
 
-android {
-    namespace = "com.fajrbahr.mediatork"
-    compileSdk = libs.versions.compileSdk.get().toInt()
-    defaultConfig {
-        minSdk = libs.versions.minSdk.get().toInt()
-    }
-}
-
 kotlin {
     jvmToolchain(libs.versions.jvmToolchain.get().toInt())
 
@@ -28,72 +24,72 @@ kotlin {
         publishLibraryVariants("release")
     }
 
-    iosArm64()
-    iosSimulatorArm64()
-    iosX64()
+    jvm()
 
     js {
         browser()
         nodejs()
     }
 
-    jvm()
+    wasmJs {
+        browser {
+            testTask {
+                enabled = false
+            }
+        }
+        binaries.library()
+    }
 
-    macosX64()
+    iosX64()
+    iosArm64()
+    iosSimulatorArm64()
+
     macosArm64()
 
-    @OptIn(org.jetbrains.kotlin.gradle.ExperimentalWasmDsl::class)
-    wasmJs {
-        browser()
+    sourceSets {
+        all {
+            languageSettings.optIn("kotlin.contracts.ExperimentalContracts")
+        }
+        val commonMain by getting {
+            dependencies {
+                implementation(libs.coroutines.core)
+            }
+        }
+        val commonTest by getting {
+            dependencies {
+                implementation(kotlin("test"))
+                implementation(libs.coroutines.test)
+            }
+        }
+    }
+}
+
+android {
+    namespace = "com.fajrbahr.mediatork"
+    compileSdk = libs.versions.compileSdk.get().toInt()
+    defaultConfig {
+        minSdk = libs.versions.minSdk.get().toInt()
     }
 
-    sourceSets {
-        commonMain.dependencies {
-            implementation(libs.coroutines.core)
-        }
-        commonTest.dependencies {
-            implementation(kotlin("test"))
-            implementation(libs.coroutines.test)
-        }
+    compileOptions {
+        sourceCompatibility = JavaVersion.VERSION_11
+        targetCompatibility = JavaVersion.VERSION_11
     }
+}
+
+java {
+    sourceCompatibility = JavaVersion.VERSION_11
+    targetCompatibility = JavaVersion.VERSION_11
+}
+
+tasks.withType(JavaCompile::class.java).configureEach {
+    targetCompatibility = JavaVersion.VERSION_11.toString()
+    sourceCompatibility = JavaVersion.VERSION_11.toString()
 }
 
 val javadocJar by tasks.registering(Jar::class) {
     archiveClassifier.set("javadoc")
 }
-
-publishing {
-    publications.withType<MavenPublication> {
-        artifact(javadocJar)
-
-        pom {
-            name.set("MediatorK")
-            description.set("Kotlin Multiplatform mediator library")
-            url.set("https://github.com/fajrbahr/MediatorK")
-
-            licenses {
-                license {
-                    name.set("CC0-1.0")
-                    url.set("https://creativecommons.org/publicdomain/zero/1.0/")
-                }
-            }
-
-            developers {
-                developer {
-                    id.set("fajrbahr")
-                    name.set("FajrBahr")
-                }
-            }
-
-            scm {
-                connection.set("scm:git:git://github.com/fajrbahr/MediatorK.git")
-                developerConnection.set("scm:git:ssh://github.com/fajrbahr/MediatorK.git")
-                url.set("https://github.com/fajrbahr/MediatorK")
-            }
-        }
-    }
-}
-
 
 mavenPublishing {
     pom {
@@ -120,3 +116,4 @@ mavenPublishing {
         }
     }
 }
+

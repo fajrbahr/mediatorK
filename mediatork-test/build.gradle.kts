@@ -1,3 +1,7 @@
+@file:OptIn(org.jetbrains.kotlin.gradle.ExperimentalWasmDsl::class)
+
+import org.jetbrains.kotlin.gradle.ExperimentalWasmDsl
+
 plugins {
     alias(libs.plugins.kotlin.multiplatform)
     alias(libs.plugins.android.library)
@@ -17,10 +21,19 @@ android {
     defaultConfig {
         minSdk = libs.versions.minSdk.get().toInt()
     }
+
+    compileOptions {
+        sourceCompatibility = JavaVersion.VERSION_11
+        targetCompatibility = JavaVersion.VERSION_11
+    }
 }
 
 kotlin {
     jvmToolchain(libs.versions.jvmToolchain.get().toInt())
+
+    androidTarget {
+        publishLibraryVariants("release")
+    }
 
     iosArm64()
     iosSimulatorArm64()
@@ -33,30 +46,16 @@ kotlin {
 
     jvm()
 
-    linuxArm64()
-    linuxX64()
-
     macosArm64()
 
-    mingwX64()
-
-    tvosArm64()
-    tvosSimulatorArm64()
-
-    @OptIn(org.jetbrains.kotlin.gradle.ExperimentalWasmDsl::class)
     wasmJs {
-        browser()
+        browser {
+            testTask {
+                enabled = false
+            }
+        }
+        binaries.library()
     }
-
-    @OptIn(org.jetbrains.kotlin.gradle.ExperimentalWasmDsl::class)
-    wasmWasi {
-        nodejs()
-    }
-
-    watchosArm32()
-    watchosArm64()
-    watchosDeviceArm64()
-    watchosSimulatorArm64()
 
     sourceSets {
         commonMain.dependencies {
@@ -73,42 +72,19 @@ kotlin {
     }
 }
 
+java {
+    sourceCompatibility = JavaVersion.VERSION_11
+    targetCompatibility = JavaVersion.VERSION_11
+}
+
+tasks.withType(JavaCompile::class.java).configureEach {
+    targetCompatibility = JavaVersion.VERSION_11.toString()
+    sourceCompatibility = JavaVersion.VERSION_11.toString()
+}
+
 val javadocJar by tasks.registering(Jar::class) {
     archiveClassifier.set("javadoc")
 }
-
-publishing {
-    publications.withType<MavenPublication> {
-        artifact(javadocJar)
-
-        pom {
-            name.set("MediatorK Test")
-            description.set("Test utilities for MediatorK – fakes, spies, and harnesses")
-            url.set("https://github.com/fajrbahr/MediatorK")
-
-            licenses {
-                license {
-                    name.set("CC0-1.0")
-                    url.set("https://creativecommons.org/publicdomain/zero/1.0/")
-                }
-            }
-
-            developers {
-                developer {
-                    id.set("fajrbahr")
-                    name.set("FajrBahr")
-                }
-            }
-
-            scm {
-                connection.set("scm:git:git://github.com/fajrbahr/MediatorK.git")
-                developerConnection.set("scm:git:ssh://github.com/fajrbahr/MediatorK.git")
-                url.set("https://github.com/fajrbahr/MediatorK")
-            }
-        }
-    }
-}
-
 
 mavenPublishing {
     pom {
