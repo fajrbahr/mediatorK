@@ -1,7 +1,7 @@
 package sample.basic
 
 import com.fajrbahr.mediatork.HandlerRegistry
-import com.fajrbahr.mediatork.MediatorRegistrar
+import com.fajrbahr.mediatork.api.MediatorRegistrar
 
 // ── Domain model ──────────────────────────────────────────────────────────────
 
@@ -22,11 +22,9 @@ class TodoStore {
 
 class TodoRegistrar(private val store: TodoStore) : MediatorRegistrar {
     override fun register(registry: HandlerRegistry) {
-        registry.scope {
-            +AddTodoHandler(store)
-            +GetTodoHandler(store)
-            +LogTodoAddedHandler()
-            +SyncTodoAddedHandler()
-        }
+        registry register AddTodoHandler(store)
+        registry register GetTodoHandler(store)
+        registry registerNotification LogTodoAddedHandler()
+        registry registerNotification SyncTodoAddedHandler()
     }
 }

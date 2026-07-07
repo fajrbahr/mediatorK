@@ -1,6 +1,6 @@
 package sample.meditor.orders.queries.query
 
-import com.fajrbahr.mediatork.Request
+import com.fajrbahr.mediatork.api.Request
 import com.fajrbahr.mediatork.validator.rulesFailFast
 
 data class GetOrderQuery(

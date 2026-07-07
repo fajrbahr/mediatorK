@@ -1,9 +1,9 @@
 package sample.meditor.orders.create
 
 import com.fajrbahr.mediatork.HandlerRegistry
-import com.fajrbahr.mediatork.MediatorRegistrar
-import com.fajrbahr.mediatork.notification.Notification
-import com.fajrbahr.mediatork.notification.NotificationHandler
+import com.fajrbahr.mediatork.api.MediatorRegistrar
+import com.fajrbahr.mediatork.api.Notification
+import com.fajrbahr.mediatork.api.NotificationHandler
 
 data class OrderCreatedNotification(
     val orderId: String,
@@ -26,9 +26,7 @@ class SendOrderSmsHandler : NotificationHandler<OrderCreatedNotification> {
 
 class OrderNotificationRegistrar : MediatorRegistrar {
     override fun register(registry: HandlerRegistry) {
-        registry.scope {
-            +SendOrderConfirmationEmailHandler()
-            +SendOrderSmsHandler()
-        }
+        registry registerNotification SendOrderConfirmationEmailHandler()
+        registry registerNotification SendOrderSmsHandler()
     }
 }
