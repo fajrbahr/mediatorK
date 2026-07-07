@@ -1,9 +1,13 @@
 package com.fajrbahr.mediatork
 
-import com.fajrbahr.mediatork.api.*
+import com.fajrbahr.mediatork.api.Mediator
+import com.fajrbahr.mediatork.api.RequestContext
+import com.fajrbahr.mediatork.api.StreamRequest
+import com.fajrbahr.mediatork.api.StreamRequestHandler
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emptyFlow
-import kotlin.test.*
+import kotlin.test.Test
+import kotlin.test.assertTrue
 
 class MediatorVerifierTest {
 
@@ -29,7 +33,11 @@ class MediatorVerifierTest {
     fun `verify with registered stream handler does not invoke callback`() {
         val registry = HandlerRegistry()
         registry registerStream object : StreamRequestHandler<NumbersStreamQuery, Int> {
-            override fun handle(mediator: Mediator, requestContext: RequestContext, request: NumbersStreamQuery): Flow<Int> =
+            override fun handle(
+                mediator: Mediator,
+                requestContext: RequestContext,
+                request: NumbersStreamQuery
+            ): Flow<Int> =
                 emptyFlow()
         }
         val missed = mutableListOf<String>()
@@ -51,7 +59,11 @@ class MediatorVerifierTest {
         val registry = HandlerRegistry()
         registry register PingHandler()
         registry registerStream object : StreamRequestHandler<NumbersStreamQuery, Int> {
-            override fun handle(mediator: Mediator, requestContext: RequestContext, request: NumbersStreamQuery): Flow<Int> =
+            override fun handle(
+                mediator: Mediator,
+                requestContext: RequestContext,
+                request: NumbersStreamQuery
+            ): Flow<Int> =
                 emptyFlow()
         }
         registry registerNotification RecordingNotificationHandler()

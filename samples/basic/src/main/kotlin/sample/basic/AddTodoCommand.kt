@@ -1,8 +1,8 @@
 package sample.basic
 
-import com.fajrbahr.mediatork.api.Mediator
+import com.fajrbahr.mediatork.Mediator
 import com.fajrbahr.mediatork.Request
-import com.fajrbahr.mediatork.api.RequestContext
+import com.fajrbahr.mediatork.RequestContext
 
 import com.fajrbahr.mediatork.handler.RequestHandler
 import com.fajrbahr.mediatork.notification.Notification

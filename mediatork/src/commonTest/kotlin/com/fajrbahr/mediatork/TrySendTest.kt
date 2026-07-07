@@ -5,7 +5,10 @@ import com.fajrbahr.mediatork.api.RequestContext
 import com.fajrbahr.mediatork.api.RequestHandler
 import com.fajrbahr.mediatork.handler.trySend
 import kotlinx.coroutines.test.runTest
-import kotlin.test.*
+import kotlin.test.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertIs
+import kotlin.test.assertTrue
 
 class TrySendTest {
 
@@ -21,7 +24,11 @@ class TrySendTest {
     fun `trySend returns failure wrapping handler exception`() = runTest {
         val m = mediator {
             register(object : RequestHandler<PingQuery, String> {
-                override suspend fun handle(mediator: Mediator, requestContext: RequestContext, request: PingQuery): String =
+                override suspend fun handle(
+                    mediator: Mediator,
+                    requestContext: RequestContext,
+                    request: PingQuery
+                ): String =
                     throw IllegalStateException("boom")
             })
         }
@@ -43,7 +50,11 @@ class TrySendTest {
     fun `trySend does not throw - exception is captured in result`() = runTest {
         val m = mediator {
             register(object : RequestHandler<AddCommand, Int> {
-                override suspend fun handle(mediator: Mediator, requestContext: RequestContext, request: AddCommand): Int =
+                override suspend fun handle(
+                    mediator: Mediator,
+                    requestContext: RequestContext,
+                    request: AddCommand
+                ): Int =
                     throw RuntimeException("always fails")
             })
         }
@@ -79,7 +90,11 @@ class TrySendTest {
     fun `trySend failure contains original exception message`() = runTest {
         val m = mediator {
             register(object : RequestHandler<PingQuery, String> {
-                override suspend fun handle(mediator: Mediator, requestContext: RequestContext, request: PingQuery): String =
+                override suspend fun handle(
+                    mediator: Mediator,
+                    requestContext: RequestContext,
+                    request: PingQuery
+                ): String =
                     throw IllegalArgumentException("bad input")
             })
         }

@@ -32,7 +32,11 @@ class LoggingPipelineBehaviorTest {
         val log = mutableListOf<String>()
         val m = mediator(pipelineBehaviors = listOf(LoggingPipelineBehavior(logger = log::add))) {
             register(object : RequestHandler<PingQuery, String> {
-                override suspend fun handle(mediator: Mediator, requestContext: RequestContext, request: PingQuery): String =
+                override suspend fun handle(
+                    mediator: Mediator,
+                    requestContext: RequestContext,
+                    request: PingQuery
+                ): String =
                     throw RuntimeException("boom")
             })
         }

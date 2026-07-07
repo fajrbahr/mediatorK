@@ -1,6 +1,12 @@
 name: Deploy Docs
 
 on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'website/**'
+      - 'mediatork/src/**'
+      - '.github/workflows/docs.yml'
   workflow_dispatch:
 
 permissions:
@@ -24,6 +30,13 @@ jobs:
           cache: npm
           cache-dependency-path: website/package-lock.json
 
+      - uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+
+      - uses: gradle/actions/setup-gradle@v4
+
       - name: Install dependencies
         run: npm ci
         working-directory: website
@@ -31,6 +44,14 @@ jobs:
       - name: Build Docusaurus
         run: npm run build
         working-directory: website
+
+      - name: Generate API docs (Dokka)
+        run: ./gradlew :mediatork:dokkaGeneratePublicationHtml
+
+      - name: Add API docs to site under /api/
+        run: |
+          mkdir -p website/build/api
+          cp -R mediatork/build/dokka/html/. website/build/api/
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3

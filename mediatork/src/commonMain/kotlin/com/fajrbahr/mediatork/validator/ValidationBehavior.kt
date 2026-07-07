@@ -30,6 +30,9 @@ class ValidationBehavior(
         next: RequestHandlerDelegate<TRequest, TResult>,
         request: TRequest,
     ): TResult {
+        val selfResult = request.validate()
+        if (selfResult is ValidationResult.Invalid) throw ValidationException(selfResult.errors)
+
         validators[request::class]?.forEach { validator ->
             val result = (validator as RequestValidator<TRequest>).validate(request)
             if (result is ValidationResult.Invalid) throw ValidationException(result.errors)

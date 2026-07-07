@@ -2,6 +2,7 @@ plugins {
     alias(libs.plugins.kotlin.multiplatform)
     alias(libs.plugins.android.library)
     alias(libs.plugins.nmcp)
+    alias(libs.plugins.dokka)
     `maven-publish`
     signing
     id("org.jetbrains.kotlinx.kover") version "0.9.1"
@@ -41,6 +42,7 @@ kotlin {
 
     js {
         browser()
+        nodejs()
     }
 
     jvm()

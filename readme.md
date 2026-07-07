@@ -9,8 +9,8 @@
 [![Linux](https://img.shields.io/badge/Linux-supported-brightgreen.svg?logo=linux)](https://www.linux.org)
 [![Windows](https://img.shields.io/badge/Windows-supported-brightgreen.svg?logo=windows)](https://www.microsoft.com/windows)
 [![Web (JS/WASM)](https://img.shields.io/badge/Web%20(JS%2FWASM)-supported-brightgreen.svg?logo=javascript)](https://kotlinlang.org/docs/js-overview.html)
-[![CI](https://github.com/fajrbahr/mediatorK/actions/workflows/release.yml/badge.svg)](https://github.com/fajrbahr/mediatorK/actions/workflows/release.yml)
-[![Coverage](https://img.shields.io/badge/Coverage-92%25-brightgreen)](https://fajrbahr.github.io/mediatorK/the-promise)
+[![CI](https://github.com/fajrbahr/mediatorK/actions/workflows/ci.yml/badge.svg)](https://github.com/fajrbahr/mediatorK/actions/workflows/ci.yml)
+[![codecov](https://codecov.io/gh/fajrbahr/mediatorK/branch/main/graph/badge.svg)](https://codecov.io/gh/fajrbahr/mediatorK)
 [![License: CC0](https://img.shields.io/badge/License-CC0-brightgreen)](LICENSE)
 
 A coroutine-first Mediator library for Kotlin. Implements the CQRS and Vertical Slice patterns — requests go to exactly
@@ -33,6 +33,33 @@ For KMP, Maven, and other project types — see [Installation](https://fajrbahr.
 ---
 
 ## Quick Start
+
+Define your messages, then wire everything in one block — no registrar or handler classes required:
+
+```kotlin
+data class CreateOrderCommand(val id: String, val amount: Double) : Request<Order>
+data class OrderCreatedEvent(val orderId: String) : Notification
+
+val mediator = mediatorK {
+    handle<CreateOrderCommand, Order> { request ->
+        val order = db.save(Order(request.id, request.amount))
+        publish(OrderCreatedEvent(order.id))   // handler scope IS the mediator
+        order
+    }
+
+    on<OrderCreatedEvent> { event -> emailService.send(event.orderId) }
+
+    validate<CreateOrderCommand> { request ->
+        rules<String> { check(request.amount > 0) { "Amount must be positive" } }
+    }
+}
+
+val order = mediator.send(CreateOrderCommand("ORD-1", 150.0))
+```
+
+As slices grow, promote lambdas to classes — both styles mix freely in the same block.
+
+## Structured style
 
 ### 1 — Define a Request
 
@@ -92,6 +119,8 @@ class OrderRegistrar(private val db: OrderRepository) : MediatorRegistrar {
 val mediator = MediatorFactory.create(
     registrars = listOf(OrderRegistrar(db)),
 )
+// — or plug registrars into the DSL alongside lambda handlers:
+val mediator = mediatorK { registrars(OrderRegistrar(db)) }
 ```
 
 ### 7 — Use It

@@ -77,7 +77,7 @@ class MediatorSpy(private val delegate: Mediator) : Mediator {
         val prefix = if (message != null) "$message: " else ""
         assertTrue(
             sentOf<T>().isNotEmpty(),
-            "${prefix}Expected at least one ${T::class.simpleName} to be sent, but none was."
+            "${prefix}Expected at least one ${T::class.simpleName} to be sent, but none was.",
         )
     }
 
@@ -90,7 +90,7 @@ class MediatorSpy(private val delegate: Mediator) : Mediator {
         val prefix = if (message != null) "$message: " else ""
         assertTrue(
             sentOf<T>().isEmpty(),
-            "${prefix}Expected no ${T::class.simpleName} to be sent, but ${sentOf<T>().size} was."
+            "${prefix}Expected no ${T::class.simpleName} to be sent, but ${sentOf<T>().size} was.",
         )
     }
 
@@ -103,7 +103,7 @@ class MediatorSpy(private val delegate: Mediator) : Mediator {
         val prefix = if (message != null) "$message: " else ""
         assertTrue(
             publishedOf<T>().isNotEmpty(),
-            "${prefix}Expected at least one ${T::class.simpleName} to be published, but none was."
+            "${prefix}Expected at least one ${T::class.simpleName} to be published, but none was.",
         )
     }
 
@@ -116,7 +116,7 @@ class MediatorSpy(private val delegate: Mediator) : Mediator {
         val prefix = if (message != null) "$message: " else ""
         assertTrue(
             publishedOf<T>().isEmpty(),
-            "${prefix}Expected no ${T::class.simpleName} to be published, but ${publishedOf<T>().size} was."
+            "${prefix}Expected no ${T::class.simpleName} to be published, but ${publishedOf<T>().size} was.",
         )
     }
 
@@ -129,6 +129,7 @@ class MediatorSpy(private val delegate: Mediator) : Mediator {
         assertTrue(
             actual == count,
             "${prefix}Expected $count ${T::class.simpleName} to be sent, but was $actual."
+            "${prefix}Expected $count ${T::class.simpleName} to be sent, but was $actual.",
         )
     }
 
@@ -141,6 +142,7 @@ class MediatorSpy(private val delegate: Mediator) : Mediator {
         assertTrue(
             actual == count,
             "${prefix}Expected $count ${T::class.simpleName} to be published, but was $actual."
+            "${prefix}Expected $count ${T::class.simpleName} to be published, but was $actual.",
         )
     }
 
@@ -152,7 +154,7 @@ class MediatorSpy(private val delegate: Mediator) : Mediator {
         val prefix = if (message != null) "$message: " else ""
         assertTrue(
             streamedOf<T>().isNotEmpty(),
-            "${prefix}Expected at least one ${T::class.simpleName} to be streamed, but none was."
+            "${prefix}Expected at least one ${T::class.simpleName} to be streamed, but none was.",
         )
     }
 
@@ -161,7 +163,7 @@ class MediatorSpy(private val delegate: Mediator) : Mediator {
         val prefix = if (message != null) "$message: " else ""
         assertTrue(
             streamedOf<T>().isEmpty(),
-            "${prefix}Expected no ${T::class.simpleName} to be streamed, but ${streamedOf<T>().size} was."
+            "${prefix}Expected no ${T::class.simpleName} to be streamed, but ${streamedOf<T>().size} was.",
         )
     }
 
@@ -172,6 +174,7 @@ class MediatorSpy(private val delegate: Mediator) : Mediator {
         assertTrue(
             actual == count,
             "${prefix}Expected $count ${T::class.simpleName} to be streamed, but was $actual."
+            "${prefix}Expected $count ${T::class.simpleName} to be streamed, but was $actual.",
         )
     }
 

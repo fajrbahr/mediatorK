@@ -6,11 +6,7 @@ import com.fajrbahr.mediatork.api.RequestContext
 import com.fajrbahr.mediatork.api.RequestHandler
 import com.fajrbahr.mediatork.pipeline.buildin.ErrorTrackingPipelineBehavior
 import kotlinx.coroutines.test.runTest
-import kotlin.test.Test
-import kotlin.test.assertEquals
-import kotlin.test.assertFailsWith
-import kotlin.test.assertIs
-import kotlin.test.assertNull
+import kotlin.test.*
 
 class ErrorTrackingPipelineBehaviorTest {
 
@@ -84,7 +80,11 @@ class ErrorTrackingPipelineBehaviorTest {
         val tracker = ErrorTrackingPipelineBehavior { _, e -> captured = e }
         val m = mediator(pipelineBehaviors = listOf(tracker)) {
             register(object : RequestHandler<PingQuery, String> {
-                override suspend fun handle(mediator: Mediator, requestContext: RequestContext, request: PingQuery): String =
+                override suspend fun handle(
+                    mediator: Mediator,
+                    requestContext: RequestContext,
+                    request: PingQuery
+                ): String =
                     throw IllegalArgumentException("bad arg")
             })
         }
@@ -98,7 +98,11 @@ class ErrorTrackingPipelineBehaviorTest {
         val capturedRequests: MutableList<Request<*>> = mutableListOf()
         val tracker = ErrorTrackingPipelineBehavior { req, _ -> capturedRequests += req }
         val failOnB = object : RequestHandler<PingQuery, String> {
-            override suspend fun handle(mediator: Mediator, requestContext: RequestContext, request: PingQuery): String =
+            override suspend fun handle(
+                mediator: Mediator,
+                requestContext: RequestContext,
+                request: PingQuery
+            ): String =
                 if (request.value == "b") throw RuntimeException("fail on b") else "ok"
         }
         val m = mediator(pipelineBehaviors = listOf(tracker)) { register(failOnB) }
@@ -114,7 +118,11 @@ class ErrorTrackingPipelineBehaviorTest {
         val tracker = ErrorTrackingPipelineBehavior { req, _ -> capturedRequest = req }
         val m = mediator(pipelineBehaviors = listOf(tracker)) {
             register(object : RequestHandler<AddCommand, Int> {
-                override suspend fun handle(mediator: Mediator, requestContext: RequestContext, request: AddCommand): Int =
+                override suspend fun handle(
+                    mediator: Mediator,
+                    requestContext: RequestContext,
+                    request: AddCommand
+                ): Int =
                     throw RuntimeException("add failed")
             })
         }

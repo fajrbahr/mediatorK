@@ -316,3 +316,5 @@ obj/
 # End of https://www.toptal.com/developers/gitignore/api/kotlin,intellij,android,androidstudio,gradle
 
 .kotlin
+# macOS
+.DS_Store
