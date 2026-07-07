@@ -14,7 +14,6 @@ package com.fajrbahr.mediatork.api
  * @param TRequest the request type this handler processes.
  * @param TResult the type of value produced by this handler.
  * @see PipelineBehavior
- * @see Stage
  */
 interface RequestHandler<in TRequest : Request<TResult>, TResult> {
 

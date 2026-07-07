@@ -148,7 +148,6 @@ class MediatorTest {
         var contextValue: String? = null
 
         val pre = object : PipelineBehavior {
-            override val stage = Stage.Pre
             override suspend fun <TRequest : Request<TResult>, TResult> process(
                 requestContext: RequestContext,
                 next: RequestHandlerDelegate<TRequest, TResult>,
@@ -185,7 +184,6 @@ class MediatorTest {
         var captured: Any? = "not-set"
 
         val post = object : PipelineBehavior {
-            override val stage = Stage.Post
             override suspend fun <TRequest : Request<TResult>, TResult> process(
                 requestContext: RequestContext,
                 next: RequestHandlerDelegate<TRequest, TResult>,

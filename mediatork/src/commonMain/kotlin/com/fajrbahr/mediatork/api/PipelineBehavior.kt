@@ -13,51 +13,26 @@ package com.fajrbahr.mediatork.api
 typealias RequestHandlerDelegate<TRequest, TResult> = suspend (TRequest) -> TResult
 
 /**
- * Execution stage that determines where a [PipelineBehavior] sits in the pipeline chain.
- *
- * **Stage takes absolute priority over order.** Every [Stage.Pre] behavior runs before every
- * [Stage.Default] behavior, and every [Stage.Default] before every [Stage.Post] — regardless
- * of [PipelineBehavior.order]. Order only controls sequencing *within* a stage.
- *
- * | Stage           | Position  | Typical use                                   |
- * |-----------------|-----------|-----------------------------------------------|
- * | [Stage.Pre]     | outermost | auth injection, locale, trace-id setup        |
- * | [Stage.Default] | middle    | logging, retry, caching, circuit-breaking     |
- * | [Stage.Post]    | innermost | metrics, audit logging, response observation  |
- */
-sealed class Stage {
-    data object Pre : Stage()
-    data object Default : Stage()
-    data object Post : Stage()
-}
-
-/**
  * Cross-cutting concern that wraps request handling in a decorator-style chain.
  *
- * Behaviors are grouped into three stages by [stage], then sorted by [order] **within** each
- * stage. **Stage always wins over order**: every [Stage.Pre] behavior executes before every
- * [Stage.Default] behavior, and every [Stage.Default] before every [Stage.Post] — no matter what
- * [order] values are assigned. [order] only controls sequencing inside a stage.
+ * Behaviors are sorted by [order]. Lower values run first on entry (outermost); higher values
+ * run closer to the handler (innermost). Behaviors with the same [order] run in registration order.
  *
- * Typical uses:
- * - [Stage.Pre]: auth token injection, locale setup, tracing context
- * - [Stage.Default]: logging, retry, caching, timing, circuit-breaking
- * - [Stage.Post]: metrics emission, audit logging, response observation
+ * Typical order ranges:
+ * - Negative (e.g., -100): outermost — auth, context setup, tracing
+ * - Zero to positive (e.g., 0): middle — logging, retry, caching, circuit-breaking
+ * - Positive (e.g., 100+): innermost — metrics, audit logging, observation
  *
- * @see PipelineBehavior.stage
  * @see PipelineBehavior.order
  * @see PipelineBehavior.isEnabled
  * @see PipelineBehavior.appliesTo
  */
 interface PipelineBehavior {
 
-    val stage: Stage get() = Stage.Default
-
     /**
-     * Relative position within the [stage]. Lower values are outermost (run first on entry)
-     * for [Stage.Pre] and [Stage.Default]. **[Stage.Post] is the exception**: lower values are
-     * innermost — closest to the handler on return — so they observe the result first on exit.
-     * Defaults to `0`. Within a stage, behaviors with the same [order] run in registration order.
+     * Relative position in the behavior chain. Lower values execute first (outermost);
+     * higher values execute later (closer to handler). Defaults to `0`.
+     * Behaviors with the same [order] run in registration order.
      */
     val order: Int get() = 0
 
