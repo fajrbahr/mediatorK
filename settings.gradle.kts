@@ -13,7 +13,6 @@ rootProject.name = "MediatorK"
 
 include("mediatork")
 include("mediatork-test")
-include("publishMaven")
 include("local-sample")
 
 dependencyResolutionManagement {
