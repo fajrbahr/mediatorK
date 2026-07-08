@@ -37,15 +37,14 @@ jobs:
           ORG_GRADLE_PROJECT_signingInMemoryKey: ${{ secrets.SIGNING_KEY }}
 
       - name: Create GitHub Release
-        uses: actions/create-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        uses: ncipollo/release-action@v1
         with:
-          tag_name: v${{ steps.version.outputs.VERSION }}
-          release_name: Release ${{ steps.version.outputs.VERSION }}
+          tag: v${{ steps.version.outputs.VERSION }}
+          name: Release ${{ steps.version.outputs.VERSION }}
           body: |
             Published to Maven Central as `io.github.fajrbahr:mediatork:${{ steps.version.outputs.VERSION }}`
 
             Find the library at: https://central.sonatype.com/artifact/io.github.fajrbahr/mediatork/${{ steps.version.outputs.VERSION }}
           draft: false
           prerelease: false
+          token: ${{ secrets.GITHUB_TOKEN }}
