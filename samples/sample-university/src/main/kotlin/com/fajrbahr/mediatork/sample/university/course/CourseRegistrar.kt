@@ -4,7 +4,9 @@ import com.fajrbahr.mediatork.HandlerRegistry
 import com.fajrbahr.mediatork.api.MediatorRegistrar
 import com.fajrbahr.mediatork.sample.university.course.create.CreateCourseHandler
 import com.fajrbahr.mediatork.sample.university.course.create.CreateCourseValidator
-import com.fajrbahr.mediatork.sample.university.course.detail.DeleteCourseHandler
+import com.fajrbahr.mediatork.sample.university.course.delete.DeleteCourseHandler
+import com.fajrbahr.mediatork.sample.university.course.delete.DeleteCourseQueryHandler
+import com.fajrbahr.mediatork.sample.university.course.delete.DeleteCourseQueryValidator
 import com.fajrbahr.mediatork.sample.university.course.detail.GetCourseHandler
 import com.fajrbahr.mediatork.sample.university.course.edit.EditCourseHandler
 import com.fajrbahr.mediatork.sample.university.course.edit.EditCourseQueryHandler
@@ -26,6 +28,8 @@ class CourseRegistrar(
         registry.registerValidator(EditCourseQueryValidator())
         registry register EditCourseHandler(store)
         registry.registerValidator(EditCourseValidator())
+        registry register DeleteCourseQueryHandler(store, departmentStore)
+        registry.registerValidator(DeleteCourseQueryValidator())
         registry register DeleteCourseHandler(store)
     }
 }

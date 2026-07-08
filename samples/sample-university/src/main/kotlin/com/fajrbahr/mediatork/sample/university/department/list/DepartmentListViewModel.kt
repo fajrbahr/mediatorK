@@ -3,7 +3,6 @@ package com.fajrbahr.mediatork.sample.university.department.list
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.fajrbahr.mediatork.api.Mediator
-import com.fajrbahr.mediatork.sample.university.department.detail.DeleteDepartmentCommand
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -35,10 +34,4 @@ class DepartmentListViewModel(private val mediator: Mediator) : ViewModel() {
         }
     }
 
-    fun delete(id: Int) {
-        viewModelScope.launch {
-            mediator.send(DeleteDepartmentCommand(id))
-            load()
-        }
-    }
 }

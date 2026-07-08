@@ -11,7 +11,6 @@ import kotlinx.coroutines.launch
 data class CourseDetailUiState(
     val model: CourseDetailModel? = null,
     val isLoading: Boolean = true,
-    val isDeleted: Boolean = false,
 )
 
 class CourseDetailViewModel(
@@ -29,10 +28,4 @@ class CourseDetailViewModel(
         }
     }
 
-    fun delete() {
-        viewModelScope.launch {
-            mediator.send(DeleteCourseCommand(courseId))
-            _state.value = _state.value.copy(isDeleted = true)
-        }
-    }
 }

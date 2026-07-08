@@ -10,8 +10,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
@@ -22,7 +20,6 @@ import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -38,7 +35,6 @@ import com.fajrbahr.mediatork.sample.university.department.detail.DepartmentDeta
 fun DepartmentDetailScreen(viewModel: DepartmentDetailViewModel, onBack: () -> Unit) {
     BackHandler(onBack = onBack)
     val state by viewModel.state.collectAsStateWithLifecycle()
-    LaunchedEffect(state.isDeleted) { if (state.isDeleted) onBack() }
 
     Scaffold(
         topBar = {
@@ -73,14 +69,6 @@ fun DepartmentDetailScreen(viewModel: DepartmentDetailViewModel, onBack: () -> U
                     DetailRow("Start Date", model.startDate)
                     DetailRow("Administrator", model.administratorFullName.ifEmpty { "None" })
                 }
-                Spacer(Modifier.height(16.dp))
-                HorizontalDivider(Modifier.padding(horizontal = 24.dp))
-                Spacer(Modifier.height(16.dp))
-                Button(
-                    onClick = viewModel::delete,
-                    modifier = Modifier.fillMaxWidth().padding(horizontal = 24.dp),
-                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error),
-                ) { Text("Delete") }
                 Spacer(Modifier.height(24.dp))
             }
         }

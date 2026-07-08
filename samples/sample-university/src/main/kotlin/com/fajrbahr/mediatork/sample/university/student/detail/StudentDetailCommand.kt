@@ -49,22 +49,6 @@ class GetStudentHandler(
     }
 }
 
-// ── Delete ───────────────────────────────────────────────────────────────────
-
-data class DeleteStudentCommand(val id: Int) : Request<Unit>
-
-class DeleteStudentHandler(
-    private val store: StudentStore,
-) : RequestHandler<DeleteStudentCommand, Unit> {
-    override suspend fun handle(
-        mediator: Mediator,
-        requestContext: RequestContext,
-        request: DeleteStudentCommand,
-    ) {
-        store.delete(request.id)
-    }
-}
-
 // ── Enroll ───────────────────────────────────────────────────────────────────
 
 data class EnrollStudentCommand(

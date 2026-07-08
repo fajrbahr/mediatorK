@@ -11,7 +11,6 @@ import kotlinx.coroutines.launch
 data class DepartmentDetailUiState(
     val model: DepartmentDetailModel? = null,
     val isLoading: Boolean = true,
-    val isDeleted: Boolean = false,
 )
 
 class DepartmentDetailViewModel(
@@ -29,10 +28,4 @@ class DepartmentDetailViewModel(
         }
     }
 
-    fun delete() {
-        viewModelScope.launch {
-            mediator.send(DeleteDepartmentCommand(departmentId))
-            _state.value = _state.value.copy(isDeleted = true)
-        }
-    }
 }

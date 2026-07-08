@@ -41,19 +41,3 @@ class GetCourseHandler(
     }
 }
 
-// ── Delete ──────────────────────────────────────────────────────────────────
-
-data class DeleteCourseCommand(val id: Int) : Request<Unit>
-
-class DeleteCourseHandler(
-    private val store: CourseStore,
-) : RequestHandler<DeleteCourseCommand, Unit> {
-
-    override suspend fun handle(
-        mediator: Mediator,
-        requestContext: RequestContext,
-        request: DeleteCourseCommand,
-    ) {
-        store.delete(request.id)
-    }
-}

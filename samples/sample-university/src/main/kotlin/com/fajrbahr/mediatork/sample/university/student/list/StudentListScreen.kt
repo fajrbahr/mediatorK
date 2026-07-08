@@ -13,7 +13,6 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material3.Card
@@ -89,8 +88,7 @@ fun StudentListScreen(
                                 StudentRow(
                                     student,
                                     onEdit = { onEditClick(student.id) },
-                                    onDetails = { onDetailsClick(student.id) },
-                                    onDelete = { viewModel.delete(student.id) })
+                                    onDetails = { onDetailsClick(student.id) })
                             }
                         }
                     }
@@ -101,7 +99,7 @@ fun StudentListScreen(
 }
 
 @Composable
-private fun StudentRow(student: StudentListModel, onEdit: () -> Unit, onDetails: () -> Unit, onDelete: () -> Unit) {
+private fun StudentRow(student: StudentListModel, onEdit: () -> Unit, onDetails: () -> Unit) {
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(12.dp),
@@ -132,13 +130,6 @@ private fun StudentRow(student: StudentListModel, onEdit: () -> Unit, onDetails:
                     Icons.Default.Edit,
                     contentDescription = "Edit",
                     tint = MaterialTheme.colorScheme.primary
-                )
-            }
-            IconButton(onClick = onDelete) {
-                Icon(
-                    Icons.Default.Delete,
-                    contentDescription = "Delete",
-                    tint = MaterialTheme.colorScheme.error
                 )
             }
         }

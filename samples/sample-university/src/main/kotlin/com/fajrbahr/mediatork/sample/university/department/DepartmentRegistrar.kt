@@ -4,7 +4,9 @@ import com.fajrbahr.mediatork.HandlerRegistry
 import com.fajrbahr.mediatork.api.MediatorRegistrar
 import com.fajrbahr.mediatork.sample.university.department.create.CreateDepartmentHandler
 import com.fajrbahr.mediatork.sample.university.department.create.CreateDepartmentValidator
-import com.fajrbahr.mediatork.sample.university.department.detail.DeleteDepartmentHandler
+import com.fajrbahr.mediatork.sample.university.department.delete.DeleteDepartmentHandler
+import com.fajrbahr.mediatork.sample.university.department.delete.DeleteDepartmentQueryHandler
+import com.fajrbahr.mediatork.sample.university.department.delete.DeleteDepartmentQueryValidator
 import com.fajrbahr.mediatork.sample.university.department.detail.GetDepartmentHandler
 import com.fajrbahr.mediatork.sample.university.department.edit.EditDepartmentHandler
 import com.fajrbahr.mediatork.sample.university.department.edit.EditDepartmentQueryHandler
@@ -26,6 +28,8 @@ class DepartmentRegistrar(
         registry.registerValidator(EditDepartmentQueryValidator())
         registry register EditDepartmentHandler(store)
         registry.registerValidator(EditDepartmentValidator())
+        registry register DeleteDepartmentQueryHandler(store, instructorStore)
+        registry.registerValidator(DeleteDepartmentQueryValidator())
         registry register DeleteDepartmentHandler(store)
     }
 }

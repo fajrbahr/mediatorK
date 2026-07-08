@@ -7,7 +7,9 @@ import com.fajrbahr.mediatork.sample.university.instructor.createedit.CreateEdit
 import com.fajrbahr.mediatork.sample.university.instructor.createedit.CreateEditInstructorQueryHandler
 import com.fajrbahr.mediatork.sample.university.instructor.createedit.CreateEditInstructorQueryValidator
 import com.fajrbahr.mediatork.sample.university.instructor.createedit.CreateEditInstructorValidator
-import com.fajrbahr.mediatork.sample.university.instructor.detail.DeleteInstructorHandler
+import com.fajrbahr.mediatork.sample.university.instructor.delete.DeleteInstructorHandler
+import com.fajrbahr.mediatork.sample.university.instructor.delete.DeleteInstructorQueryHandler
+import com.fajrbahr.mediatork.sample.university.instructor.delete.DeleteInstructorQueryValidator
 import com.fajrbahr.mediatork.sample.university.instructor.detail.GetInstructorHandler
 import com.fajrbahr.mediatork.sample.university.instructor.list.GetInstructorsHandler
 
@@ -22,6 +24,8 @@ class InstructorRegistrar(
         registry.registerValidator(CreateEditInstructorQueryValidator())
         registry register CreateEditInstructorHandler(store, departmentStore)
         registry.registerValidator(CreateEditInstructorValidator())
+        registry register DeleteInstructorQueryHandler(store)
+        registry.registerValidator(DeleteInstructorQueryValidator())
         registry register DeleteInstructorHandler(store, departmentStore)
     }
 }

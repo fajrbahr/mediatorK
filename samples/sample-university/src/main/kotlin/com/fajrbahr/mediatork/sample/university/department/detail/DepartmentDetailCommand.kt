@@ -40,18 +40,3 @@ class GetDepartmentHandler(
     }
 }
 
-// ── Delete ───────────────────────────────────────────────────────────────────
-
-data class DeleteDepartmentCommand(val id: Int) : Request<Unit>
-
-class DeleteDepartmentHandler(
-    private val store: DepartmentStore,
-) : RequestHandler<DeleteDepartmentCommand, Unit> {
-    override suspend fun handle(
-        mediator: Mediator,
-        requestContext: RequestContext,
-        request: DeleteDepartmentCommand,
-    ) {
-        store.delete(request.id)
-    }
-}
