@@ -3,8 +3,6 @@ package com.fajrbahr.mediatork.sample.university.department.detail
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.fajrbahr.mediatork.api.Mediator
-import com.fajrbahr.mediatork.sample.university.department.domain.DeleteDepartmentCommand
-import com.fajrbahr.mediatork.sample.university.department.domain.GetDepartmentQuery
 import com.fajrbahr.mediatork.sample.university.department.model.Department
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow

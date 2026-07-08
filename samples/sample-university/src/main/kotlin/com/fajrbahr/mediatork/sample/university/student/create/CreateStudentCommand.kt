@@ -5,7 +5,7 @@ import com.fajrbahr.mediatork.api.Request
 import com.fajrbahr.mediatork.api.RequestContext
 import com.fajrbahr.mediatork.api.RequestHandler
 import com.fajrbahr.mediatork.api.RequestValidator
-import com.fajrbahr.mediatork.sample.university.student.domain.StudentStore
+import com.fajrbahr.mediatork.sample.university.student.StudentStore
 import com.fajrbahr.mediatork.sample.university.student.model.Student
 import com.fajrbahr.mediatork.validator.ValidationResult
 import com.fajrbahr.mediatork.validator.rules

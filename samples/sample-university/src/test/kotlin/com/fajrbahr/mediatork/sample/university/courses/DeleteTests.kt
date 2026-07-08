@@ -1,8 +1,8 @@
 package com.fajrbahr.mediatork.sample.university.courses
 
 import com.fajrbahr.mediatork.sample.university.SliceFixture
-import com.fajrbahr.mediatork.sample.university.course.domain.DeleteCourseCommand
-import com.fajrbahr.mediatork.sample.university.course.domain.GetCourseQuery
+import com.fajrbahr.mediatork.sample.university.course.detail.DeleteCourseCommand
+import com.fajrbahr.mediatork.sample.university.course.detail.GetCourseQuery
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertNotNull

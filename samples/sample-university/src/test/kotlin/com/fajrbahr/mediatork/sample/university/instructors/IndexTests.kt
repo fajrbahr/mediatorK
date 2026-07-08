@@ -1,7 +1,7 @@
 package com.fajrbahr.mediatork.sample.university.instructors
 
 import com.fajrbahr.mediatork.sample.university.SliceFixture
-import com.fajrbahr.mediatork.sample.university.instructor.domain.GetInstructorsQuery
+import com.fajrbahr.mediatork.sample.university.instructor.list.GetInstructorsQuery
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertTrue

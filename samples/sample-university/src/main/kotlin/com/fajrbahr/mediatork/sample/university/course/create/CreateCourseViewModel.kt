@@ -3,7 +3,6 @@ package com.fajrbahr.mediatork.sample.university.course.create
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.fajrbahr.mediatork.api.Mediator
-import com.fajrbahr.mediatork.sample.university.course.domain.CreateCourseCommand
 import com.fajrbahr.mediatork.validator.ValidationException
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow

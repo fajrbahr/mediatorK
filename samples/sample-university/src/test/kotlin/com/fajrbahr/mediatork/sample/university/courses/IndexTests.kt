@@ -1,7 +1,7 @@
 package com.fajrbahr.mediatork.sample.university.courses
 
 import com.fajrbahr.mediatork.sample.university.SliceFixture
-import com.fajrbahr.mediatork.sample.university.course.domain.GetCoursesQuery
+import com.fajrbahr.mediatork.sample.university.course.list.GetCoursesQuery
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals

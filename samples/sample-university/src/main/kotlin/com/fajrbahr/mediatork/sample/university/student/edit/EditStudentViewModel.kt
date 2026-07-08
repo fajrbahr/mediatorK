@@ -3,8 +3,7 @@ package com.fajrbahr.mediatork.sample.university.student.edit
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.fajrbahr.mediatork.api.Mediator
-import com.fajrbahr.mediatork.sample.university.student.domain.EditStudentCommand
-import com.fajrbahr.mediatork.sample.university.student.domain.GetStudentQuery
+import com.fajrbahr.mediatork.sample.university.student.detail.GetStudentQuery
 import com.fajrbahr.mediatork.validator.ValidationException
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow

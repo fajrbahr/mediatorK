@@ -1,8 +1,8 @@
 package com.fajrbahr.mediatork.sample.university.instructors
 
 import com.fajrbahr.mediatork.sample.university.SliceFixture
-import com.fajrbahr.mediatork.sample.university.instructor.domain.CreateEditInstructorCommand
-import com.fajrbahr.mediatork.sample.university.instructor.domain.GetInstructorQuery
+import com.fajrbahr.mediatork.sample.university.instructor.createedit.CreateEditInstructorCommand
+import com.fajrbahr.mediatork.sample.university.instructor.detail.GetInstructorQuery
 import com.fajrbahr.mediatork.validator.ValidationException
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test

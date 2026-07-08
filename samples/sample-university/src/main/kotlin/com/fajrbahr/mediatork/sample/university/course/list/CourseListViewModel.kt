@@ -3,8 +3,7 @@ package com.fajrbahr.mediatork.sample.university.course.list
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.fajrbahr.mediatork.api.Mediator
-import com.fajrbahr.mediatork.sample.university.course.domain.DeleteCourseCommand
-import com.fajrbahr.mediatork.sample.university.course.domain.GetCoursesQuery
+import com.fajrbahr.mediatork.sample.university.course.detail.DeleteCourseCommand
 import com.fajrbahr.mediatork.sample.university.course.model.Course
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow

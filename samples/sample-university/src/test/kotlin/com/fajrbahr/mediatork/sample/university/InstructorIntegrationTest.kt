@@ -1,19 +1,12 @@
 package com.fajrbahr.mediatork.sample.university
 
-import com.fajrbahr.mediatork.MediatorFactory
-import com.fajrbahr.mediatork.sample.university.course.domain.CourseRegistrar
-import com.fajrbahr.mediatork.sample.university.course.domain.CourseStore
-import com.fajrbahr.mediatork.sample.university.course.domain.CreateCourseCommand
-import com.fajrbahr.mediatork.sample.university.department.domain.CreateDepartmentCommand
-import com.fajrbahr.mediatork.sample.university.department.domain.DepartmentRegistrar
-import com.fajrbahr.mediatork.sample.university.department.domain.DepartmentStore
-import com.fajrbahr.mediatork.sample.university.department.domain.GetDepartmentQuery
-import com.fajrbahr.mediatork.sample.university.instructor.domain.CreateEditInstructorCommand
-import com.fajrbahr.mediatork.sample.university.instructor.domain.DeleteInstructorCommand
-import com.fajrbahr.mediatork.sample.university.instructor.domain.GetInstructorQuery
-import com.fajrbahr.mediatork.sample.university.instructor.domain.GetInstructorsQuery
-import com.fajrbahr.mediatork.sample.university.instructor.domain.InstructorRegistrar
-import com.fajrbahr.mediatork.sample.university.instructor.domain.InstructorStore
+import com.fajrbahr.mediatork.sample.university.department.create.CreateDepartmentCommand
+import com.fajrbahr.mediatork.sample.university.department.detail.GetDepartmentQuery
+import com.fajrbahr.mediatork.sample.university.instructor.createedit.CreateEditInstructorCommand
+import com.fajrbahr.mediatork.sample.university.instructor.detail.DeleteInstructorCommand
+import com.fajrbahr.mediatork.sample.university.instructor.detail.GetInstructorQuery
+import com.fajrbahr.mediatork.sample.university.instructor.list.GetInstructorsQuery
+import com.fajrbahr.mediatork.sample.university.course.create.CreateCourseCommand
 import com.fajrbahr.mediatork.validator.ValidationException
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
@@ -25,36 +18,21 @@ import kotlin.test.assertTrue
 
 class InstructorIntegrationTest {
 
-    private val instructorStore = InstructorStore()
-    private val deptStore = DepartmentStore()
-    private val courseStore = CourseStore()
-    private val mediator = MediatorFactory.create(
-        registrars = listOf(
-            InstructorRegistrar(instructorStore, deptStore),
-            DepartmentRegistrar(deptStore),
-            CourseRegistrar(courseStore),
-        ),
-        verifyHandlers = false,
-    )
-
-    private suspend fun createDept(name: String = "English"): Int =
-        mediator.send(CreateDepartmentCommand(name = name, budget = 100.0, startDate = "2024-01-01"))
+    private val fixture = SliceFixture()
 
     @Test
     fun `create instructor returns new id`() = runTest {
-        val deptId = createDept()
-        val courseId1 =
-            mediator.send(CreateCourseCommand(number = 101, title = "English 101", credits = 4, departmentId = deptId))
-        val courseId2 =
-            mediator.send(CreateCourseCommand(number = 201, title = "English 201", credits = 4, departmentId = deptId))
+        val deptId = fixture.createDepartment(name = "English")
+        val courseId1 = fixture.createCourse(title = "English 101", credits = 4, departmentId = deptId)
+        val courseId2 = fixture.createCourse(title = "English 201", credits = 4, departmentId = deptId)
 
-        val id = mediator.send(
+        val id = fixture.harness.send(
             CreateEditInstructorCommand(
                 lastName = "Seinfeld", firstMidName = "Jerry", hireDate = "2024-01-01",
                 officeLocation = "Houston", selectedCourseIds = listOf(courseId1, courseId2),
             )
         )
-        val created = mediator.send(GetInstructorQuery(id))
+        val created = fixture.harness.query(GetInstructorQuery(id))
         assertNotNull(created)
         assertEquals("Jerry", created.firstMidName)
         assertEquals("Seinfeld", created.lastName)
@@ -65,25 +43,22 @@ class InstructorIntegrationTest {
     @Test
     fun `create instructor with invalid data throws ValidationException`() = runTest {
         assertFailsWith<ValidationException> {
-            mediator.send(CreateEditInstructorCommand(lastName = "", firstMidName = "", hireDate = ""))
+            fixture.harness.send(CreateEditInstructorCommand(lastName = "", firstMidName = "", hireDate = ""))
         }
     }
 
     @Test
     fun `edit instructor updates fields`() = runTest {
-        val id = mediator.send(
-            CreateEditInstructorCommand(
-                lastName = "Costanza", firstMidName = "George", hireDate = "2024-01-01",
-                officeLocation = "Austin",
-            )
-        )
-        mediator.send(
+        val id = fixture.createInstructor(lastName = "Costanza", firstMidName = "George", officeLocation = "Austin")
+
+        fixture.harness.send(
             CreateEditInstructorCommand(
                 id = id, lastName = "Seinfeld", firstMidName = "Jerry", hireDate = "2024-01-01",
                 officeLocation = "Houston", selectedCourseIds = emptyList(),
             )
         )
-        val edited = mediator.send(GetInstructorQuery(id))
+
+        val edited = fixture.harness.query(GetInstructorQuery(id))
         assertNotNull(edited)
         assertEquals("Jerry", edited.firstMidName)
         assertEquals("Seinfeld", edited.lastName)
@@ -92,25 +67,24 @@ class InstructorIntegrationTest {
 
     @Test
     fun `edit instructor merges course assignments`() = runTest {
-        val deptId = createDept()
-        val courseId1 =
-            mediator.send(CreateCourseCommand(number = 301, title = "English 101", credits = 4, departmentId = deptId))
-        val courseId2 =
-            mediator.send(CreateCourseCommand(number = 302, title = "English 201", credits = 4, departmentId = deptId))
+        val deptId = fixture.createDepartment(name = "English")
+        val courseId1 = fixture.createCourse(title = "English 101", credits = 4, departmentId = deptId)
+        val courseId2 = fixture.createCourse(title = "English 201", credits = 4, departmentId = deptId)
 
-        val id = mediator.send(
+        val id = fixture.harness.send(
             CreateEditInstructorCommand(
                 lastName = "Costanza", firstMidName = "George", hireDate = "2024-01-01",
                 officeLocation = "Austin", selectedCourseIds = listOf(courseId1),
             )
         )
-        mediator.send(
+        fixture.harness.send(
             CreateEditInstructorCommand(
                 id = id, lastName = "Seinfeld", firstMidName = "Jerry", hireDate = "2024-01-01",
                 officeLocation = "Houston", selectedCourseIds = listOf(courseId2),
             )
         )
-        val edited = mediator.send(GetInstructorQuery(id))
+
+        val edited = fixture.harness.query(GetInstructorQuery(id))
         assertNotNull(edited)
         assertEquals(1, edited.courseIds.size)
         assertEquals(courseId2, edited.courseIds.first())
@@ -118,27 +92,8 @@ class InstructorIntegrationTest {
 
     @Test
     fun `query returns instructor details`() = runTest {
-        val id = mediator.send(
-            CreateEditInstructorCommand(
-                lastName = "Costanza", firstMidName = "George", hireDate = "2024-01-01",
-                officeLocation = "Austin",
-            )
-        )
-        val instructor = mediator.send(GetInstructorQuery(id))
-        assertNotNull(instructor)
-        assertEquals("George", instructor.firstMidName)
-        assertEquals("Austin", instructor.officeLocation)
-    }
-
-    @Test
-    fun `query returns instructor data for delete confirmation`() = runTest {
-        val id = mediator.send(
-            CreateEditInstructorCommand(
-                lastName = "Costanza", firstMidName = "George", hireDate = "2024-01-01",
-                officeLocation = "Austin",
-            )
-        )
-        val instructor = mediator.send(GetInstructorQuery(id))
+        val id = fixture.createInstructor(lastName = "Costanza", firstMidName = "George", officeLocation = "Austin")
+        val instructor = fixture.harness.query(GetInstructorQuery(id))
         assertNotNull(instructor)
         assertEquals("George", instructor.firstMidName)
         assertEquals("Austin", instructor.officeLocation)
@@ -146,50 +101,28 @@ class InstructorIntegrationTest {
 
     @Test
     fun `delete instructor removes it from store`() = runTest {
-        val id = mediator.send(
-            CreateEditInstructorCommand(
-                lastName = "Costanza", firstMidName = "George", hireDate = "2024-01-01",
-            )
-        )
-        mediator.send(DeleteInstructorCommand(id))
-        assertNull(mediator.send(GetInstructorQuery(id)))
+        val id = fixture.createInstructor()
+        fixture.harness.send(DeleteInstructorCommand(id))
+        assertNull(fixture.harness.query(GetInstructorQuery(id)))
     }
 
     @Test
     fun `delete instructor clears department administrator`() = runTest {
-        val id = mediator.send(
-            CreateEditInstructorCommand(
-                lastName = "Costanza", firstMidName = "George", hireDate = "2024-01-01",
-            )
-        )
-        val deptId = mediator.send(
-            CreateDepartmentCommand(name = "English", budget = 100.0, startDate = "2024-01-01", administratorId = id)
-        )
-        mediator.send(DeleteInstructorCommand(id))
-        val dept = mediator.send(GetDepartmentQuery(deptId))
+        val id = fixture.createInstructor()
+        val deptId = fixture.createDepartment(name = "English", administratorId = id)
+
+        fixture.harness.send(DeleteInstructorCommand(id))
+
+        val dept = fixture.harness.query(GetDepartmentQuery(deptId))
         assertNotNull(dept)
         assertNull(dept.administratorId)
     }
 
     @Test
     fun `list returns all instructors`() = runTest {
-        mediator.send(
-            CreateEditInstructorCommand(
-                lastName = "Costanza",
-                firstMidName = "George",
-                hireDate = "2024-01-01",
-                officeLocation = "Austin"
-            )
-        )
-        mediator.send(
-            CreateEditInstructorCommand(
-                lastName = "Seinfeld",
-                firstMidName = "Jerry",
-                hireDate = "2024-01-01",
-                officeLocation = "Houston"
-            )
-        )
-        val instructors = mediator.send(GetInstructorsQuery)
+        fixture.createInstructor(lastName = "Costanza", firstMidName = "George")
+        fixture.createInstructor(lastName = "Seinfeld", firstMidName = "Jerry")
+        val instructors = fixture.harness.query(GetInstructorsQuery)
         assertTrue(instructors.size >= 2)
     }
 }

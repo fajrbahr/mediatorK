@@ -1,7 +1,7 @@
 package com.fajrbahr.mediatork.sample.university
 
-import com.fajrbahr.mediatork.sample.university.course.domain.EditCourseCommand
-import com.fajrbahr.mediatork.sample.university.course.domain.EditCourseValidator
+import com.fajrbahr.mediatork.sample.university.course.edit.EditCourseCommand
+import com.fajrbahr.mediatork.sample.university.course.edit.EditCourseValidator
 import com.fajrbahr.mediatork.validator.ValidationResult
 import kotlin.test.Test
 import kotlin.test.assertIs

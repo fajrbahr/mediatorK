@@ -1,5 +1,6 @@
 package com.fajrbahr.mediatork.sample.university
 
+import android.content.Context
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -25,18 +26,19 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.fajrbahr.mediatork.MediatorFactory
 import com.fajrbahr.mediatork.api.Mediator
-import com.fajrbahr.mediatork.sample.university.course.domain.CourseRegistrar
-import com.fajrbahr.mediatork.sample.university.course.domain.CourseStore
-import com.fajrbahr.mediatork.sample.university.department.domain.DepartmentRegistrar
-import com.fajrbahr.mediatork.sample.university.department.domain.DepartmentStore
-import com.fajrbahr.mediatork.sample.university.instructor.domain.InstructorRegistrar
-import com.fajrbahr.mediatork.sample.university.instructor.domain.InstructorStore
-import com.fajrbahr.mediatork.sample.university.student.domain.StudentRegistrar
-import com.fajrbahr.mediatork.sample.university.student.domain.StudentStore
+import com.fajrbahr.mediatork.sample.university.course.CourseRegistrar
+import com.fajrbahr.mediatork.sample.university.course.CourseStore
+import com.fajrbahr.mediatork.sample.university.department.DepartmentRegistrar
+import com.fajrbahr.mediatork.sample.university.department.DepartmentStore
+import com.fajrbahr.mediatork.sample.university.instructor.InstructorRegistrar
+import com.fajrbahr.mediatork.sample.university.instructor.InstructorStore
+import com.fajrbahr.mediatork.sample.university.student.StudentRegistrar
+import com.fajrbahr.mediatork.sample.university.student.StudentStore
 import com.fajrbahr.mediatork.sample.university.course.list.CourseListScreen
 import com.fajrbahr.mediatork.sample.university.course.create.CreateCourseScreen
 import com.fajrbahr.mediatork.sample.university.course.edit.EditCourseScreen
@@ -95,10 +97,12 @@ private fun AppRoot() {
     var screen by rememberSaveable { mutableStateOf(Screen.Home) }
     var editId by rememberSaveable { mutableIntStateOf(0) }
 
-    val courseStore = remember { CourseStore() }
-    val deptStore = remember { DepartmentStore() }
-    val instructorStore = remember { InstructorStore() }
-    val studentStore = remember { StudentStore() }
+    val context = LocalContext.current
+    val prefs = remember { context.getSharedPreferences("university", Context.MODE_PRIVATE) }
+    val courseStore = remember { CourseStore(prefs) }
+    val deptStore = remember { DepartmentStore(prefs) }
+    val instructorStore = remember { InstructorStore(prefs) }
+    val studentStore = remember { StudentStore(prefs) }
     val mediator: Mediator = remember {
         MediatorFactory.create(
             registrars = listOf(

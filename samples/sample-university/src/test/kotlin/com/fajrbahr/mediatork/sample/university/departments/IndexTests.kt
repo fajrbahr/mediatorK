@@ -1,7 +1,7 @@
 package com.fajrbahr.mediatork.sample.university.departments
 
 import com.fajrbahr.mediatork.sample.university.SliceFixture
-import com.fajrbahr.mediatork.sample.university.department.domain.GetDepartmentsQuery
+import com.fajrbahr.mediatork.sample.university.department.list.GetDepartmentsQuery
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertTrue

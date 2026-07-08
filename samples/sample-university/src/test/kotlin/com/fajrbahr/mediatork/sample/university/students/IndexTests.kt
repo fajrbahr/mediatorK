@@ -1,7 +1,7 @@
 package com.fajrbahr.mediatork.sample.university.students
 
 import com.fajrbahr.mediatork.sample.university.SliceFixture
-import com.fajrbahr.mediatork.sample.university.student.domain.GetStudentsQuery
+import com.fajrbahr.mediatork.sample.university.student.list.GetStudentsQuery
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals

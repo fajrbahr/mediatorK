@@ -3,9 +3,6 @@ package com.fajrbahr.mediatork.sample.university.student.detail
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.fajrbahr.mediatork.api.Mediator
-import com.fajrbahr.mediatork.sample.university.student.domain.DeleteStudentCommand
-import com.fajrbahr.mediatork.sample.university.student.domain.GetStudentEnrollmentsQuery
-import com.fajrbahr.mediatork.sample.university.student.domain.GetStudentQuery
 import com.fajrbahr.mediatork.sample.university.model.Enrollment
 import com.fajrbahr.mediatork.sample.university.student.model.Student
 import kotlinx.coroutines.flow.MutableStateFlow

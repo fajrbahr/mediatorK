@@ -1,7 +1,7 @@
 package com.fajrbahr.mediatork.sample.university
 
-import com.fajrbahr.mediatork.sample.university.course.domain.CreateCourseCommand
-import com.fajrbahr.mediatork.sample.university.course.domain.CreateCourseValidator
+import com.fajrbahr.mediatork.sample.university.course.create.CreateCourseCommand
+import com.fajrbahr.mediatork.sample.university.course.create.CreateCourseValidator
 import com.fajrbahr.mediatork.validator.ValidationResult
 import kotlin.test.Test
 import kotlin.test.assertIs

@@ -2,9 +2,9 @@ package com.fajrbahr.mediatork.sample.university.students
 
 import com.fajrbahr.mediatork.sample.university.SliceFixture
 import com.fajrbahr.mediatork.sample.university.model.Grade
-import com.fajrbahr.mediatork.sample.university.student.domain.EnrollStudentCommand
-import com.fajrbahr.mediatork.sample.university.student.domain.GetStudentEnrollmentsQuery
-import com.fajrbahr.mediatork.sample.university.student.domain.GetStudentQuery
+import com.fajrbahr.mediatork.sample.university.student.detail.EnrollStudentCommand
+import com.fajrbahr.mediatork.sample.university.student.detail.GetStudentEnrollmentsQuery
+import com.fajrbahr.mediatork.sample.university.student.detail.GetStudentQuery
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals

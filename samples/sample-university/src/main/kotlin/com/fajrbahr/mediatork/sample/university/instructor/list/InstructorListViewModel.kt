@@ -3,8 +3,7 @@ package com.fajrbahr.mediatork.sample.university.instructor.list
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.fajrbahr.mediatork.api.Mediator
-import com.fajrbahr.mediatork.sample.university.instructor.domain.DeleteInstructorCommand
-import com.fajrbahr.mediatork.sample.university.instructor.domain.GetInstructorsQuery
+import com.fajrbahr.mediatork.sample.university.instructor.detail.DeleteInstructorCommand
 import com.fajrbahr.mediatork.sample.university.instructor.model.Instructor
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow

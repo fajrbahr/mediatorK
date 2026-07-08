@@ -1,9 +1,9 @@
 package com.fajrbahr.mediatork.sample.university.instructors
 
 import com.fajrbahr.mediatork.sample.university.SliceFixture
-import com.fajrbahr.mediatork.sample.university.department.domain.GetDepartmentQuery
-import com.fajrbahr.mediatork.sample.university.instructor.domain.DeleteInstructorCommand
-import com.fajrbahr.mediatork.sample.university.instructor.domain.GetInstructorQuery
+import com.fajrbahr.mediatork.sample.university.department.detail.GetDepartmentQuery
+import com.fajrbahr.mediatork.sample.university.instructor.detail.DeleteInstructorCommand
+import com.fajrbahr.mediatork.sample.university.instructor.detail.GetInstructorQuery
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertNotNull

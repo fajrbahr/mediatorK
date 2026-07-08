@@ -1,8 +1,8 @@
 package com.fajrbahr.mediatork.sample.university.students
 
 import com.fajrbahr.mediatork.sample.university.SliceFixture
-import com.fajrbahr.mediatork.sample.university.student.domain.CreateStudentCommand
-import com.fajrbahr.mediatork.sample.university.student.domain.GetStudentQuery
+import com.fajrbahr.mediatork.sample.university.student.create.CreateStudentCommand
+import com.fajrbahr.mediatork.sample.university.student.detail.GetStudentQuery
 import com.fajrbahr.mediatork.validator.ValidationException
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test

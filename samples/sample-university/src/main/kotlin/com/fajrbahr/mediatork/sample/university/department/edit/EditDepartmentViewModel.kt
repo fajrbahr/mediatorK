@@ -3,8 +3,7 @@ package com.fajrbahr.mediatork.sample.university.department.edit
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.fajrbahr.mediatork.api.Mediator
-import com.fajrbahr.mediatork.sample.university.department.domain.EditDepartmentCommand
-import com.fajrbahr.mediatork.sample.university.department.domain.GetDepartmentQuery
+import com.fajrbahr.mediatork.sample.university.department.detail.GetDepartmentQuery
 import com.fajrbahr.mediatork.validator.ValidationException
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow

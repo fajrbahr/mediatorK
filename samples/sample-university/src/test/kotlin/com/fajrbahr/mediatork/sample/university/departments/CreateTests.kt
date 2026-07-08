@@ -1,8 +1,8 @@
 package com.fajrbahr.mediatork.sample.university.departments
 
 import com.fajrbahr.mediatork.sample.university.SliceFixture
-import com.fajrbahr.mediatork.sample.university.department.domain.CreateDepartmentCommand
-import com.fajrbahr.mediatork.sample.university.department.domain.GetDepartmentQuery
+import com.fajrbahr.mediatork.sample.university.department.create.CreateDepartmentCommand
+import com.fajrbahr.mediatork.sample.university.department.detail.GetDepartmentQuery
 import com.fajrbahr.mediatork.validator.ValidationException
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test

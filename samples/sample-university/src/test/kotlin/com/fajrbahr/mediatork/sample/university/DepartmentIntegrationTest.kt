@@ -1,16 +1,10 @@
 package com.fajrbahr.mediatork.sample.university
 
-import com.fajrbahr.mediatork.MediatorFactory
-import com.fajrbahr.mediatork.sample.university.department.domain.CreateDepartmentCommand
-import com.fajrbahr.mediatork.sample.university.department.domain.DeleteDepartmentCommand
-import com.fajrbahr.mediatork.sample.university.department.domain.DepartmentRegistrar
-import com.fajrbahr.mediatork.sample.university.department.domain.DepartmentStore
-import com.fajrbahr.mediatork.sample.university.department.domain.EditDepartmentCommand
-import com.fajrbahr.mediatork.sample.university.department.domain.GetDepartmentQuery
-import com.fajrbahr.mediatork.sample.university.department.domain.GetDepartmentsQuery
-import com.fajrbahr.mediatork.sample.university.instructor.domain.CreateEditInstructorCommand
-import com.fajrbahr.mediatork.sample.university.instructor.domain.InstructorRegistrar
-import com.fajrbahr.mediatork.sample.university.instructor.domain.InstructorStore
+import com.fajrbahr.mediatork.sample.university.department.create.CreateDepartmentCommand
+import com.fajrbahr.mediatork.sample.university.department.detail.DeleteDepartmentCommand
+import com.fajrbahr.mediatork.sample.university.department.detail.GetDepartmentQuery
+import com.fajrbahr.mediatork.sample.university.department.edit.EditDepartmentCommand
+import com.fajrbahr.mediatork.sample.university.department.list.GetDepartmentsQuery
 import com.fajrbahr.mediatork.validator.ValidationException
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
@@ -22,29 +16,14 @@ import kotlin.test.assertTrue
 
 class DepartmentIntegrationTest {
 
-    private val deptStore = DepartmentStore()
-    private val instructorStore = InstructorStore()
-    private val mediator = MediatorFactory.create(
-        registrars = listOf(
-            DepartmentRegistrar(deptStore),
-            InstructorRegistrar(instructorStore, deptStore),
-        ),
-        verifyHandlers = false,
-    )
-
-    private suspend fun createAdmin(): Int = mediator.send(
-        CreateEditInstructorCommand(lastName = "Costanza", firstMidName = "George", hireDate = "2024-01-01")
-    )
+    private val fixture = SliceFixture()
 
     @Test
     fun `create department returns new id`() = runTest {
-        val adminId = createAdmin()
-        val id = mediator.send(
+        val adminId = fixture.createInstructor()
+        val id = fixture.harness.send(
             CreateDepartmentCommand(
-                name = "Engineering",
-                budget = 10.0,
-                startDate = "2024-01-01",
-                administratorId = adminId
+                name = "Engineering", budget = 10.0, startDate = "2024-01-01", administratorId = adminId
             )
         )
         assertTrue(id > 0)
@@ -52,16 +31,13 @@ class DepartmentIntegrationTest {
 
     @Test
     fun `created department is retrievable with all fields`() = runTest {
-        val adminId = createAdmin()
-        val id = mediator.send(
+        val adminId = fixture.createInstructor()
+        val id = fixture.harness.send(
             CreateDepartmentCommand(
-                name = "Engineering",
-                budget = 10.0,
-                startDate = "2024-01-01",
-                administratorId = adminId
+                name = "Engineering", budget = 10.0, startDate = "2024-01-01", administratorId = adminId
             )
         )
-        val dept = mediator.send(GetDepartmentQuery(id))
+        val dept = fixture.harness.query(GetDepartmentQuery(id))
         assertNotNull(dept)
         assertEquals("Engineering", dept.name)
         assertEquals(10.0, dept.budget)
@@ -71,39 +47,15 @@ class DepartmentIntegrationTest {
     @Test
     fun `create department with invalid data throws ValidationException`() = runTest {
         assertFailsWith<ValidationException> {
-            mediator.send(CreateDepartmentCommand(name = "AB", budget = -1.0, startDate = ""))
+            fixture.harness.send(CreateDepartmentCommand(name = "AB", budget = -1.0, startDate = ""))
         }
     }
 
     @Test
     fun `query returns department details`() = runTest {
-        val adminId = createAdmin()
-        val id = mediator.send(
-            CreateDepartmentCommand(
-                name = "History",
-                budget = 123.0,
-                startDate = "2024-01-01",
-                administratorId = adminId
-            )
-        )
-        val dept = mediator.send(GetDepartmentQuery(id))
-        assertNotNull(dept)
-        assertEquals("History", dept.name)
-        assertEquals(adminId, dept.administratorId)
-    }
-
-    @Test
-    fun `query returns department data for edit form`() = runTest {
-        val adminId = createAdmin()
-        val id = mediator.send(
-            CreateDepartmentCommand(
-                name = "History",
-                budget = 123.0,
-                startDate = "2024-01-01",
-                administratorId = adminId
-            )
-        )
-        val dept = mediator.send(GetDepartmentQuery(id))
+        val adminId = fixture.createInstructor()
+        val id = fixture.createDepartment(name = "History", budget = 123.0, administratorId = adminId)
+        val dept = fixture.harness.query(GetDepartmentQuery(id))
         assertNotNull(dept)
         assertEquals("History", dept.name)
         assertEquals(adminId, dept.administratorId)
@@ -111,26 +63,17 @@ class DepartmentIntegrationTest {
 
     @Test
     fun `edit department updates all fields`() = runTest {
-        val admin1Id = createAdmin()
-        val admin2Id = createAdmin()
-        val id = mediator.send(
-            CreateDepartmentCommand(
-                name = "History",
-                budget = 123.0,
-                startDate = "2024-01-01",
-                administratorId = admin1Id
-            )
-        )
-        mediator.send(
+        val admin1Id = fixture.createInstructor()
+        val admin2Id = fixture.createInstructor(lastName = "Seinfeld", firstMidName = "Jerry")
+        val id = fixture.createDepartment(name = "History", budget = 123.0, administratorId = admin1Id)
+
+        fixture.harness.send(
             EditDepartmentCommand(
-                id = id,
-                name = "English",
-                budget = 456.0,
-                startDate = "2023-06-01",
-                administratorId = admin2Id
+                id = id, name = "English", budget = 456.0, startDate = "2023-06-01", administratorId = admin2Id
             )
         )
-        val dept = mediator.send(GetDepartmentQuery(id))
+
+        val dept = fixture.harness.query(GetDepartmentQuery(id))
         assertNotNull(dept)
         assertEquals("English", dept.name)
         assertEquals(456.0, dept.budget)
@@ -140,39 +83,18 @@ class DepartmentIntegrationTest {
 
     @Test
     fun `delete department removes it from store`() = runTest {
-        val adminId = createAdmin()
-        val id = mediator.send(
-            CreateDepartmentCommand(
-                name = "History",
-                budget = 123.0,
-                startDate = "2024-01-01",
-                administratorId = adminId
-            )
-        )
-        mediator.send(DeleteDepartmentCommand(id))
-        assertNull(mediator.send(GetDepartmentQuery(id)))
+        val adminId = fixture.createInstructor()
+        val id = fixture.createDepartment(name = "History", budget = 123.0, administratorId = adminId)
+        fixture.harness.send(DeleteDepartmentCommand(id))
+        assertNull(fixture.harness.query(GetDepartmentQuery(id)))
     }
 
     @Test
     fun `list returns all departments`() = runTest {
-        val adminId = createAdmin()
-        mediator.send(
-            CreateDepartmentCommand(
-                name = "History",
-                budget = 123.0,
-                startDate = "2024-01-01",
-                administratorId = adminId
-            )
-        )
-        mediator.send(
-            CreateDepartmentCommand(
-                name = "English",
-                budget = 456.0,
-                startDate = "2024-01-01",
-                administratorId = adminId
-            )
-        )
-        val depts = mediator.send(GetDepartmentsQuery)
+        val adminId = fixture.createInstructor()
+        fixture.createDepartment(name = "History", administratorId = adminId)
+        fixture.createDepartment(name = "English", administratorId = adminId)
+        val depts = fixture.harness.query(GetDepartmentsQuery)
         assertTrue(depts.size >= 2)
     }
 }
