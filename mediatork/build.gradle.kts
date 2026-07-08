@@ -92,6 +92,8 @@ val javadocJar by tasks.registering(Jar::class) {
 }
 
 mavenPublishing {
+    publishToMavenCentral()
+    signAllPublications()
     pom {
         name.set("MediatorK")
         description.set("Elegant command & request handler pattern with Kotlin multiplatform support")
