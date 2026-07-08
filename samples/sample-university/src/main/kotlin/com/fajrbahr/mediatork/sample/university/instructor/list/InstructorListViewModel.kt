@@ -4,7 +4,6 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.fajrbahr.mediatork.api.Mediator
 import com.fajrbahr.mediatork.sample.university.instructor.detail.DeleteInstructorCommand
-import com.fajrbahr.mediatork.sample.university.instructor.model.Instructor
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -12,7 +11,7 @@ import kotlinx.coroutines.launch
 
 sealed interface InstructorListUiState {
     data object Loading : InstructorListUiState
-    data class Success(val instructors: List<Instructor>) : InstructorListUiState
+    data class Success(val instructors: List<InstructorListModel>) : InstructorListUiState
     data class Error(val message: String) : InstructorListUiState
 }
 

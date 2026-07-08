@@ -35,7 +35,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.fajrbahr.mediatork.sample.university.department.model.Department
+import com.fajrbahr.mediatork.sample.university.department.list.DepartmentListModel
 import com.fajrbahr.mediatork.sample.university.department.list.DepartmentListUiState
 import com.fajrbahr.mediatork.sample.university.department.list.DepartmentListViewModel
 
@@ -101,7 +101,7 @@ fun DepartmentListScreen(
 }
 
 @Composable
-private fun DepartmentRow(dept: Department, onEdit: () -> Unit, onDetails: () -> Unit, onDelete: () -> Unit) {
+private fun DepartmentRow(dept: DepartmentListModel, onEdit: () -> Unit, onDetails: () -> Unit, onDelete: () -> Unit) {
     Card(
         Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(12.dp),

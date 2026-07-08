@@ -4,6 +4,8 @@ import com.fajrbahr.mediatork.HandlerRegistry
 import com.fajrbahr.mediatork.api.MediatorRegistrar
 import com.fajrbahr.mediatork.sample.university.department.DepartmentStore
 import com.fajrbahr.mediatork.sample.university.instructor.createedit.CreateEditInstructorHandler
+import com.fajrbahr.mediatork.sample.university.instructor.createedit.CreateEditInstructorQueryHandler
+import com.fajrbahr.mediatork.sample.university.instructor.createedit.CreateEditInstructorQueryValidator
 import com.fajrbahr.mediatork.sample.university.instructor.createedit.CreateEditInstructorValidator
 import com.fajrbahr.mediatork.sample.university.instructor.detail.DeleteInstructorHandler
 import com.fajrbahr.mediatork.sample.university.instructor.detail.GetInstructorHandler
@@ -16,6 +18,8 @@ class InstructorRegistrar(
     override fun register(registry: HandlerRegistry) {
         registry register GetInstructorsHandler(store)
         registry register GetInstructorHandler(store)
+        registry register CreateEditInstructorQueryHandler(store)
+        registry.registerValidator(CreateEditInstructorQueryValidator())
         registry register CreateEditInstructorHandler(store, departmentStore)
         registry.registerValidator(CreateEditInstructorValidator())
         registry register DeleteInstructorHandler(store, departmentStore)

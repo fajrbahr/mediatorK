@@ -4,34 +4,49 @@ import com.fajrbahr.mediatork.api.Mediator
 import com.fajrbahr.mediatork.api.Request
 import com.fajrbahr.mediatork.api.RequestContext
 import com.fajrbahr.mediatork.api.RequestHandler
-import com.fajrbahr.mediatork.sample.university.model.Enrollment
+import com.fajrbahr.mediatork.sample.university.model.Grade
 import com.fajrbahr.mediatork.sample.university.student.StudentStore
-import com.fajrbahr.mediatork.sample.university.student.model.Student
 
-// ── Queries ──────────────────────────────────────────────────────────────────
+// ── Query ───────────────────────────────────────────────────────────────────
 
-data class GetStudentQuery(val id: Int) : Request<Student?>
+data class GetStudentQuery(val id: Int) : Request<StudentDetailModel?>
+
+data class StudentDetailModel(
+    val id: Int,
+    val lastName: String,
+    val firstMidName: String,
+    val enrollmentDate: String,
+    val enrollments: List<EnrollmentModel> = emptyList(),
+) {
+    data class EnrollmentModel(
+        val courseId: Int,
+        val grade: Grade? = null,
+    )
+}
 
 class GetStudentHandler(
     private val store: StudentStore,
-) : RequestHandler<GetStudentQuery, Student?> {
+) : RequestHandler<GetStudentQuery, StudentDetailModel?> {
     override suspend fun handle(
         mediator: Mediator,
         requestContext: RequestContext,
         request: GetStudentQuery,
-    ): Student? = store.findById(request.id)
-}
-
-data class GetStudentEnrollmentsQuery(val studentId: Int) : Request<List<Enrollment>>
-
-class GetStudentEnrollmentsHandler(
-    private val store: StudentStore,
-) : RequestHandler<GetStudentEnrollmentsQuery, List<Enrollment>> {
-    override suspend fun handle(
-        mediator: Mediator,
-        requestContext: RequestContext,
-        request: GetStudentEnrollmentsQuery,
-    ): List<Enrollment> = store.findEnrollmentsByStudentId(request.studentId)
+    ): StudentDetailModel? {
+        val student = store.findById(request.id) ?: return null
+        val enrollments = store.findEnrollmentsByStudentId(request.id)
+        return StudentDetailModel(
+            id = student.id,
+            lastName = student.lastName,
+            firstMidName = student.firstMidName,
+            enrollmentDate = student.enrollmentDate,
+            enrollments = enrollments.map { e ->
+                StudentDetailModel.EnrollmentModel(
+                    courseId = e.courseId,
+                    grade = e.grade,
+                )
+            },
+        )
+    }
 }
 
 // ── Delete ───────────────────────────────────────────────────────────────────
@@ -55,7 +70,7 @@ class DeleteStudentHandler(
 data class EnrollStudentCommand(
     val studentId: Int,
     val courseId: Int,
-    val grade: com.fajrbahr.mediatork.sample.university.model.Grade? = null,
+    val grade: Grade? = null,
 ) : Request<Int>
 
 class EnrollStudentHandler(
@@ -66,7 +81,7 @@ class EnrollStudentHandler(
         requestContext: RequestContext,
         request: EnrollStudentCommand,
     ): Int {
-        val enrollment = Enrollment(
+        val enrollment = com.fajrbahr.mediatork.sample.university.model.Enrollment(
             id = store.nextEnrollmentId(),
             courseId = request.courseId,
             studentId = request.studentId,

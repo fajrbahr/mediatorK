@@ -10,6 +10,37 @@ import com.fajrbahr.mediatork.sample.university.student.model.Student
 import com.fajrbahr.mediatork.validator.ValidationResult
 import com.fajrbahr.mediatork.validator.rules
 
+// ── Query ───────────────────────────────────────────────────────────────────
+
+data class EditStudentQuery(val id: Int? = null) : Request<EditStudentCommand?>
+
+class EditStudentQueryValidator : RequestValidator<EditStudentQuery> {
+    override fun validate(request: EditStudentQuery): ValidationResult = rules {
+        check(request.id != null) { "Id is required" }
+    }
+}
+
+class EditStudentQueryHandler(
+    private val store: StudentStore,
+) : RequestHandler<EditStudentQuery, EditStudentCommand?> {
+
+    override suspend fun handle(
+        mediator: Mediator,
+        requestContext: RequestContext,
+        request: EditStudentQuery,
+    ): EditStudentCommand? {
+        val student = store.findById(request.id!!) ?: return null
+        return EditStudentCommand(
+            id = student.id,
+            lastName = student.lastName,
+            firstMidName = student.firstMidName,
+            enrollmentDate = student.enrollmentDate,
+        )
+    }
+}
+
+// ── Command ─────────────────────────────────────────────────────────────────
+
 data class EditStudentCommand(
     val id: Int = 0,
     val lastName: String = "",

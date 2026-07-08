@@ -1,11 +1,9 @@
 package com.fajrbahr.mediatork.sample.university
 
-import com.fajrbahr.mediatork.sample.university.course.create.CreateCourseCommand
 import com.fajrbahr.mediatork.sample.university.model.Grade
 import com.fajrbahr.mediatork.sample.university.student.create.CreateStudentCommand
 import com.fajrbahr.mediatork.sample.university.student.detail.DeleteStudentCommand
 import com.fajrbahr.mediatork.sample.university.student.detail.EnrollStudentCommand
-import com.fajrbahr.mediatork.sample.university.student.detail.GetStudentEnrollmentsQuery
 import com.fajrbahr.mediatork.sample.university.student.detail.GetStudentQuery
 import com.fajrbahr.mediatork.sample.university.student.edit.EditStudentCommand
 import com.fajrbahr.mediatork.sample.university.student.list.GetStudentsQuery
@@ -59,8 +57,9 @@ class StudentIntegrationTest {
         fixture.harness.send(EnrollStudentCommand(studentId = studentId, courseId = courseId1, grade = Grade.A))
         fixture.harness.send(EnrollStudentCommand(studentId = studentId, courseId = courseId2, grade = Grade.F))
 
-        val enrollments = fixture.harness.query(GetStudentEnrollmentsQuery(studentId))
-        assertEquals(2, enrollments.size)
+        val student = fixture.harness.query(GetStudentQuery(studentId))
+        assertNotNull(student)
+        assertEquals(2, student.enrollments.size)
     }
 
     @Test

@@ -5,20 +5,43 @@ import com.fajrbahr.mediatork.api.Request
 import com.fajrbahr.mediatork.api.RequestContext
 import com.fajrbahr.mediatork.api.RequestHandler
 import com.fajrbahr.mediatork.sample.university.course.CourseStore
-import com.fajrbahr.mediatork.sample.university.course.model.Course
+import com.fajrbahr.mediatork.sample.university.department.DepartmentStore
 
-data class GetCourseQuery(val id: Int) : Request<Course?>
+// ── Query ───────────────────────────────────────────────────────────────────
+
+data class GetCourseQuery(val id: Int) : Request<CourseDetailModel?>
+
+data class CourseDetailModel(
+    val id: Int,
+    val number: Int,
+    val title: String,
+    val credits: Int,
+    val departmentName: String,
+)
 
 class GetCourseHandler(
     private val store: CourseStore,
-) : RequestHandler<GetCourseQuery, Course?> {
+    private val departmentStore: DepartmentStore,
+) : RequestHandler<GetCourseQuery, CourseDetailModel?> {
 
     override suspend fun handle(
         mediator: Mediator,
         requestContext: RequestContext,
         request: GetCourseQuery,
-    ): Course? = store.findById(request.id)
+    ): CourseDetailModel? {
+        val course = store.findById(request.id) ?: return null
+        val department = departmentStore.findById(course.departmentId)
+        return CourseDetailModel(
+            id = course.id,
+            number = course.number,
+            title = course.title,
+            credits = course.credits,
+            departmentName = department?.name ?: "",
+        )
+    }
 }
+
+// ── Delete ──────────────────────────────────────────────────────────────────
 
 data class DeleteCourseCommand(val id: Int) : Request<Unit>
 

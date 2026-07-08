@@ -50,7 +50,7 @@ class EditTests {
 
         val updated = fixture.harness.query(GetCourseQuery(id))
         assertNotNull(updated)
-        assertEquals(econId, updated.departmentId)
+        assertEquals("Economics", updated.departmentName)
     }
 
     @Test

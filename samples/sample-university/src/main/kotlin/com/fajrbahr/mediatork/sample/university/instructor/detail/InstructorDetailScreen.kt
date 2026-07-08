@@ -65,14 +65,14 @@ fun InstructorDetailScreen(viewModel: InstructorDetailViewModel, onBack: () -> U
                 contentAlignment = Alignment.Center
             ) { CircularProgressIndicator() }
         } else {
-            val instructor = state.instructor ?: return@Scaffold
+            val model = state.model ?: return@Scaffold
             Column(Modifier.fillMaxSize().padding(padding).verticalScroll(rememberScrollState())) {
                 DetailSection("Instructor") {
-                    DetailRow("Last Name", instructor.lastName)
-                    DetailRow("First Name", instructor.firstMidName)
-                    DetailRow("Hire Date", instructor.hireDate)
-                    DetailRow("Office", instructor.officeLocation ?: "None")
-                    DetailRow("Courses", instructor.courseIds.joinToString(", ") { "#$it" }.ifEmpty { "None" })
+                    DetailRow("Last Name", model.lastName)
+                    DetailRow("First Name", model.firstMidName)
+                    DetailRow("Hire Date", model.hireDate)
+                    DetailRow("Office", model.officeLocation ?: "None")
+                    DetailRow("Courses", model.courseIds.joinToString(", ") { "#$it" }.ifEmpty { "None" })
                 }
                 Spacer(Modifier.height(16.dp))
                 HorizontalDivider(Modifier.padding(horizontal = 24.dp))

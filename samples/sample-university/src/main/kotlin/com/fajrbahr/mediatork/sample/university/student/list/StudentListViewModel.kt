@@ -4,7 +4,6 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.fajrbahr.mediatork.api.Mediator
 import com.fajrbahr.mediatork.sample.university.student.detail.DeleteStudentCommand
-import com.fajrbahr.mediatork.sample.university.student.model.Student
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -12,7 +11,7 @@ import kotlinx.coroutines.launch
 
 sealed interface StudentListUiState {
     data object Loading : StudentListUiState
-    data class Success(val students: List<Student>) : StudentListUiState
+    data class Success(val students: List<StudentListModel>) : StudentListUiState
     data class Error(val message: String) : StudentListUiState
 }
 

@@ -4,7 +4,6 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.fajrbahr.mediatork.api.Mediator
 import com.fajrbahr.mediatork.sample.university.department.detail.DeleteDepartmentCommand
-import com.fajrbahr.mediatork.sample.university.department.model.Department
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -12,7 +11,7 @@ import kotlinx.coroutines.launch
 
 sealed interface DepartmentListUiState {
     data object Loading : DepartmentListUiState
-    data class Success(val departments: List<Department>) : DepartmentListUiState
+    data class Success(val departments: List<DepartmentListModel>) : DepartmentListUiState
     data class Error(val message: String) : DepartmentListUiState
 }
 

@@ -15,9 +15,9 @@ class IndexTests {
     fun `should return empty when no courses exist`() = runTest {
         val fresh = SliceFixture()
 
-        val courses = fresh.harness.query(GetCoursesQuery)
+        val result = fresh.harness.query(GetCoursesQuery)
 
-        assertTrue(courses.isEmpty())
+        assertTrue(result.courses.isEmpty())
     }
 
     @Test
@@ -27,9 +27,9 @@ class IndexTests {
         fixture.createCourse(title = "English Lit", credits = 3, departmentId = engId)
         fixture.createCourse(title = "Algebra", credits = 4, departmentId = mathId)
 
-        val courses = fixture.harness.query(GetCoursesQuery)
+        val result = fixture.harness.query(GetCoursesQuery)
 
-        assertEquals(2, courses.size)
+        assertEquals(2, result.courses.size)
     }
 
     @Test
@@ -39,10 +39,10 @@ class IndexTests {
         fixture.createCourse(title = "English 101", credits = 4, departmentId = engId)
         fixture.createCourse(title = "History 101", credits = 4, departmentId = mathId)
 
-        val courses = fixture.harness.query(GetCoursesQuery)
-        val deptIds = courses.map { it.departmentId }.toSet()
+        val result = fixture.harness.query(GetCoursesQuery)
+        val deptNames = result.courses.map { it.departmentName }.toSet()
 
-        assertTrue(deptIds.contains(engId))
-        assertTrue(deptIds.contains(mathId))
+        assertTrue(deptNames.contains("English"))
+        assertTrue(deptNames.contains("Mathematics"))
     }
 }

@@ -10,8 +10,41 @@ import com.fajrbahr.mediatork.sample.university.course.model.Course
 import com.fajrbahr.mediatork.validator.ValidationResult
 import com.fajrbahr.mediatork.validator.rules
 
+// ── Query ───────────────────────────────────────────────────────────────────
+
+data class EditCourseQuery(val id: Int? = null) : Request<EditCourseCommand?>
+
+class EditCourseQueryValidator : RequestValidator<EditCourseQuery> {
+    override fun validate(request: EditCourseQuery): ValidationResult = rules {
+        check(request.id != null) { "Id is required" }
+    }
+}
+
+class EditCourseQueryHandler(
+    private val store: CourseStore,
+) : RequestHandler<EditCourseQuery, EditCourseCommand?> {
+
+    override suspend fun handle(
+        mediator: Mediator,
+        requestContext: RequestContext,
+        request: EditCourseQuery,
+    ): EditCourseCommand? {
+        val course = store.findById(request.id!!) ?: return null
+        return EditCourseCommand(
+            id = course.id,
+            number = course.number,
+            title = course.title,
+            credits = course.credits,
+            departmentId = course.departmentId,
+        )
+    }
+}
+
+// ── Command ─────────────────────────────────────────────────────────────────
+
 data class EditCourseCommand(
     val id: Int = 0,
+    val number: Int = 0,
     val title: String = "",
     val credits: Int = 0,
     val departmentId: Int = 0,

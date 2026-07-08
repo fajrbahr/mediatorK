@@ -65,13 +65,13 @@ fun DepartmentDetailScreen(viewModel: DepartmentDetailViewModel, onBack: () -> U
                 contentAlignment = Alignment.Center
             ) { CircularProgressIndicator() }
         } else {
-            val dept = state.department ?: return@Scaffold
+            val model = state.model ?: return@Scaffold
             Column(Modifier.fillMaxSize().padding(padding).verticalScroll(rememberScrollState())) {
                 DetailSection("Department") {
-                    DetailRow("Name", dept.name)
-                    DetailRow("Budget", "$${dept.budget}")
-                    DetailRow("Start Date", dept.startDate)
-                    DetailRow("Administrator", dept.administratorId?.toString() ?: "None")
+                    DetailRow("Name", model.name)
+                    DetailRow("Budget", "$${model.budget}")
+                    DetailRow("Start Date", model.startDate)
+                    DetailRow("Administrator", model.administratorFullName.ifEmpty { "None" })
                 }
                 Spacer(Modifier.height(16.dp))
                 HorizontalDivider(Modifier.padding(horizontal = 24.dp))

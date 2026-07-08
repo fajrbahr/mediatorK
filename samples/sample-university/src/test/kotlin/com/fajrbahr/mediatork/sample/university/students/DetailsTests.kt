@@ -3,7 +3,6 @@ package com.fajrbahr.mediatork.sample.university.students
 import com.fajrbahr.mediatork.sample.university.SliceFixture
 import com.fajrbahr.mediatork.sample.university.model.Grade
 import com.fajrbahr.mediatork.sample.university.student.detail.EnrollStudentCommand
-import com.fajrbahr.mediatork.sample.university.student.detail.GetStudentEnrollmentsQuery
 import com.fajrbahr.mediatork.sample.university.student.detail.GetStudentQuery
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
@@ -37,7 +36,8 @@ class DetailsTests {
             EnrollStudentCommand(studentId = studentId, courseId = courseId2, grade = Grade.F),
         )
 
-        val enrollments = fixture.harness.query(GetStudentEnrollmentsQuery(studentId))
-        assertEquals(2, enrollments.size)
+        val student = fixture.harness.query(GetStudentQuery(studentId))
+        assertNotNull(student)
+        assertEquals(2, student.enrollments.size)
     }
 }

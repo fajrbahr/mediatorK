@@ -11,6 +11,42 @@ import com.fajrbahr.mediatork.sample.university.instructor.model.Instructor
 import com.fajrbahr.mediatork.validator.ValidationResult
 import com.fajrbahr.mediatork.validator.rules
 
+// ── Query ───────────────────────────────────────────────────────────────────
+
+data class CreateEditInstructorQuery(val id: Int? = null) : Request<CreateEditInstructorCommand>
+
+class CreateEditInstructorQueryValidator : RequestValidator<CreateEditInstructorQuery> {
+    override fun validate(request: CreateEditInstructorQuery): ValidationResult = rules {
+        check(request.id != null) { "Id is required" }
+    }
+}
+
+class CreateEditInstructorQueryHandler(
+    private val store: InstructorStore,
+) : RequestHandler<CreateEditInstructorQuery, CreateEditInstructorCommand> {
+
+    override suspend fun handle(
+        mediator: Mediator,
+        requestContext: RequestContext,
+        request: CreateEditInstructorQuery,
+    ): CreateEditInstructorCommand {
+        if (request.id == null) {
+            return CreateEditInstructorCommand()
+        }
+        val instructor = store.findById(request.id) ?: return CreateEditInstructorCommand()
+        return CreateEditInstructorCommand(
+            id = instructor.id,
+            lastName = instructor.lastName,
+            firstMidName = instructor.firstMidName,
+            hireDate = instructor.hireDate,
+            officeLocation = instructor.officeLocation,
+            selectedCourseIds = instructor.courseIds,
+        )
+    }
+}
+
+// ── Command ─────────────────────────────────────────────────────────────────
+
 data class CreateEditInstructorCommand(
     val id: Int? = null,
     val lastName: String = "",

@@ -10,6 +10,38 @@ import com.fajrbahr.mediatork.sample.university.department.model.Department
 import com.fajrbahr.mediatork.validator.ValidationResult
 import com.fajrbahr.mediatork.validator.rules
 
+// ── Query ───────────────────────────────────────────────────────────────────
+
+data class EditDepartmentQuery(val id: Int? = null) : Request<EditDepartmentCommand?>
+
+class EditDepartmentQueryValidator : RequestValidator<EditDepartmentQuery> {
+    override fun validate(request: EditDepartmentQuery): ValidationResult = rules {
+        check(request.id != null) { "Id is required" }
+    }
+}
+
+class EditDepartmentQueryHandler(
+    private val store: DepartmentStore,
+) : RequestHandler<EditDepartmentQuery, EditDepartmentCommand?> {
+
+    override suspend fun handle(
+        mediator: Mediator,
+        requestContext: RequestContext,
+        request: EditDepartmentQuery,
+    ): EditDepartmentCommand? {
+        val dept = store.findById(request.id!!) ?: return null
+        return EditDepartmentCommand(
+            id = dept.id,
+            name = dept.name,
+            budget = dept.budget,
+            startDate = dept.startDate,
+            administratorId = dept.administratorId,
+        )
+    }
+}
+
+// ── Command ─────────────────────────────────────────────────────────────────
+
 data class EditDepartmentCommand(
     val id: Int = 0,
     val name: String = "",

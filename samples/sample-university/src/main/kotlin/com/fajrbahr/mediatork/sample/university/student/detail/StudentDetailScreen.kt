@@ -66,16 +66,16 @@ fun StudentDetailScreen(viewModel: StudentDetailViewModel, onBack: () -> Unit) {
                 contentAlignment = Alignment.Center
             ) { CircularProgressIndicator() }
         } else {
-            val student = state.student ?: return@Scaffold
+            val model = state.model ?: return@Scaffold
             Column(Modifier.fillMaxSize().padding(padding).verticalScroll(rememberScrollState())) {
                 DetailSection("Student") {
-                    DetailRow("Last Name", student.lastName)
-                    DetailRow("First Name", student.firstMidName)
-                    DetailRow("Enrollment Date", student.enrollmentDate)
+                    DetailRow("Last Name", model.lastName)
+                    DetailRow("First Name", model.firstMidName)
+                    DetailRow("Enrollment Date", model.enrollmentDate)
                 }
-                if (state.enrollments.isNotEmpty()) {
+                if (model.enrollments.isNotEmpty()) {
                     DetailSection("Enrollments") {
-                        state.enrollments.forEach { enrollment ->
+                        model.enrollments.forEach { enrollment ->
                             Row(Modifier.fillMaxWidth().padding(vertical = 2.dp)) {
                                 Text("Course #${enrollment.courseId}", modifier = Modifier.weight(1f))
                                 Text(enrollment.grade?.name ?: "No grade")

@@ -19,8 +19,8 @@ class HandlerRegistrationTest {
         val deptStore = DepartmentStore(prefs)
         MediatorFactory.create(
             registrars = listOf(
-                CourseRegistrar(CourseStore(prefs)),
-                DepartmentRegistrar(deptStore),
+                CourseRegistrar(CourseStore(prefs), deptStore),
+                DepartmentRegistrar(deptStore, InstructorStore(prefs)),
                 StudentRegistrar(StudentStore(prefs)),
                 InstructorRegistrar(InstructorStore(prefs), deptStore),
             ),

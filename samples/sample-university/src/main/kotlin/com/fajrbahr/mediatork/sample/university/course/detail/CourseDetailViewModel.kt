@@ -3,14 +3,13 @@ package com.fajrbahr.mediatork.sample.university.course.detail
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.fajrbahr.mediatork.api.Mediator
-import com.fajrbahr.mediatork.sample.university.course.model.Course
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
 data class CourseDetailUiState(
-    val course: Course? = null,
+    val model: CourseDetailModel? = null,
     val isLoading: Boolean = true,
     val isDeleted: Boolean = false,
 )
@@ -25,8 +24,8 @@ class CourseDetailViewModel(
 
     init {
         viewModelScope.launch {
-            val course = mediator.send(GetCourseQuery(courseId))
-            _state.value = CourseDetailUiState(course = course, isLoading = false)
+            val model = mediator.send(GetCourseQuery(courseId))
+            _state.value = CourseDetailUiState(model = model, isLoading = false)
         }
     }
 

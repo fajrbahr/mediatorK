@@ -1,12 +1,10 @@
 package com.fajrbahr.mediatork.sample.university
 
-import com.fajrbahr.mediatork.sample.university.department.create.CreateDepartmentCommand
 import com.fajrbahr.mediatork.sample.university.department.detail.GetDepartmentQuery
 import com.fajrbahr.mediatork.sample.university.instructor.createedit.CreateEditInstructorCommand
 import com.fajrbahr.mediatork.sample.university.instructor.detail.DeleteInstructorCommand
 import com.fajrbahr.mediatork.sample.university.instructor.detail.GetInstructorQuery
 import com.fajrbahr.mediatork.sample.university.instructor.list.GetInstructorsQuery
-import com.fajrbahr.mediatork.sample.university.course.create.CreateCourseCommand
 import com.fajrbahr.mediatork.validator.ValidationException
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
@@ -115,7 +113,7 @@ class InstructorIntegrationTest {
 
         val dept = fixture.harness.query(GetDepartmentQuery(deptId))
         assertNotNull(dept)
-        assertNull(dept.administratorId)
+        assertEquals("", dept.administratorFullName)
     }
 
     @Test

@@ -35,7 +35,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.fajrbahr.mediatork.sample.university.student.model.Student
+import com.fajrbahr.mediatork.sample.university.student.list.StudentListModel
 import com.fajrbahr.mediatork.sample.university.student.list.StudentListUiState
 import com.fajrbahr.mediatork.sample.university.student.list.StudentListViewModel
 
@@ -101,7 +101,7 @@ fun StudentListScreen(
 }
 
 @Composable
-private fun StudentRow(student: Student, onEdit: () -> Unit, onDetails: () -> Unit, onDelete: () -> Unit) {
+private fun StudentRow(student: StudentListModel, onEdit: () -> Unit, onDetails: () -> Unit, onDelete: () -> Unit) {
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(12.dp),
@@ -113,7 +113,7 @@ private fun StudentRow(student: Student, onEdit: () -> Unit, onDetails: () -> Un
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Column(modifier = Modifier.weight(1f)) {
-                Text(student.fullName, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
+                Text("${student.lastName}, ${student.firstMidName}", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
                 Text(
                     "Enrolled: ${student.enrollmentDate}",
                     style = MaterialTheme.typography.bodySmall,

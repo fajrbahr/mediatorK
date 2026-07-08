@@ -65,13 +65,13 @@ fun CourseDetailScreen(viewModel: CourseDetailViewModel, onBack: () -> Unit) {
                 contentAlignment = Alignment.Center
             ) { CircularProgressIndicator() }
         } else {
-            val course = state.course ?: return@Scaffold
+            val model = state.model ?: return@Scaffold
             Column(Modifier.fillMaxSize().padding(padding).verticalScroll(rememberScrollState())) {
                 DetailSection("Course") {
-                    DetailRow("Number", course.number.toString())
-                    DetailRow("Title", course.title)
-                    DetailRow("Credits", course.credits.toString())
-                    DetailRow("Department", "#${course.departmentId}")
+                    DetailRow("Number", model.number.toString())
+                    DetailRow("Title", model.title)
+                    DetailRow("Credits", model.credits.toString())
+                    DetailRow("Department", model.departmentName)
                 }
                 Spacer(Modifier.height(16.dp))
                 HorizontalDivider(Modifier.padding(horizontal = 24.dp))

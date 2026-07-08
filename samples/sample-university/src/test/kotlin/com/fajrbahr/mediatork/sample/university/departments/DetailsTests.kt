@@ -13,13 +13,13 @@ class DetailsTests {
 
     @Test
     fun `should get department details`() = runTest {
-        val adminId = fixture.createInstructor()
+        val adminId = fixture.createInstructor(lastName = "Costanza", firstMidName = "George")
         val id = fixture.createDepartment(name = "History", budget = 123.0, administratorId = adminId)
 
         val result = fixture.harness.query(GetDepartmentQuery(id))
 
         assertNotNull(result)
         assertEquals("History", result.name)
-        assertEquals(adminId, result.administratorId)
+        assertEquals("Costanza, George", result.administratorFullName)
     }
 }

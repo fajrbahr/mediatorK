@@ -35,7 +35,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.fajrbahr.mediatork.sample.university.instructor.model.Instructor
+import com.fajrbahr.mediatork.sample.university.instructor.list.InstructorListModel
 import com.fajrbahr.mediatork.sample.university.instructor.list.InstructorListUiState
 import com.fajrbahr.mediatork.sample.university.instructor.list.InstructorListViewModel
 
@@ -101,7 +101,7 @@ fun InstructorListScreen(
 }
 
 @Composable
-private fun InstructorRow(instructor: Instructor, onEdit: () -> Unit, onDetails: () -> Unit, onDelete: () -> Unit) {
+private fun InstructorRow(instructor: InstructorListModel, onEdit: () -> Unit, onDetails: () -> Unit, onDelete: () -> Unit) {
     Card(
         Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(12.dp),
@@ -114,7 +114,7 @@ private fun InstructorRow(instructor: Instructor, onEdit: () -> Unit, onDetails:
         ) {
             Column(Modifier.weight(1f)) {
                 Text(
-                    instructor.fullName,
+                    "${instructor.lastName}, ${instructor.firstMidName}",
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.SemiBold
                 )

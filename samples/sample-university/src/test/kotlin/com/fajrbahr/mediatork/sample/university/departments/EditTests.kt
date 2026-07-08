@@ -14,14 +14,14 @@ class EditTests {
 
     @Test
     fun `should get edit details`() = runTest {
-        val adminId = fixture.createInstructor()
+        val adminId = fixture.createInstructor(lastName = "Costanza", firstMidName = "George")
         val id = fixture.createDepartment(name = "History", budget = 123.0, administratorId = adminId)
 
         val dept = fixture.harness.query(GetDepartmentQuery(id))
 
         assertNotNull(dept)
         assertEquals("History", dept.name)
-        assertEquals(adminId, dept.administratorId)
+        assertEquals("Costanza, George", dept.administratorFullName)
     }
 
     @Test
@@ -41,6 +41,6 @@ class EditTests {
         assertEquals("English", dept.name)
         assertEquals(456.0, dept.budget)
         assertEquals("2023-06-01", dept.startDate)
-        assertEquals(admin2Id, dept.administratorId)
+        assertEquals("Seinfeld, Jerry", dept.administratorFullName)
     }
 }

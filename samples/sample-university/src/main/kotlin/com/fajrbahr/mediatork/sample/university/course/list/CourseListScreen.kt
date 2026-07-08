@@ -34,7 +34,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.fajrbahr.mediatork.sample.university.course.model.Course
+import com.fajrbahr.mediatork.sample.university.course.list.CourseListModel
 import com.fajrbahr.mediatork.sample.university.course.list.CourseListUiState
 import com.fajrbahr.mediatork.sample.university.course.list.CourseListViewModel
 
@@ -99,7 +99,7 @@ fun CourseListScreen(
 }
 
 @Composable
-private fun CourseRow(course: Course, onEdit: () -> Unit, onDelete: () -> Unit) {
+private fun CourseRow(course: CourseListModel, onEdit: () -> Unit, onDelete: () -> Unit) {
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(12.dp),
@@ -112,12 +112,12 @@ private fun CourseRow(course: Course, onEdit: () -> Unit, onDelete: () -> Unit) 
         ) {
             Column(modifier = Modifier.weight(1f)) {
                 Text(
-                    "${course.number} — ${course.title}",
+                    course.title,
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.SemiBold,
                 )
                 Text(
-                    "Dept #${course.departmentId} · ${course.credits} credits",
+                    "${course.departmentName} · ${course.credits} credits",
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
                 )

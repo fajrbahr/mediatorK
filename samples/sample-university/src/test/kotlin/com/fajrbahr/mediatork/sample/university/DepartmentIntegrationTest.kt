@@ -31,7 +31,7 @@ class DepartmentIntegrationTest {
 
     @Test
     fun `created department is retrievable with all fields`() = runTest {
-        val adminId = fixture.createInstructor()
+        val adminId = fixture.createInstructor(lastName = "Costanza", firstMidName = "George")
         val id = fixture.harness.send(
             CreateDepartmentCommand(
                 name = "Engineering", budget = 10.0, startDate = "2024-01-01", administratorId = adminId
@@ -41,7 +41,7 @@ class DepartmentIntegrationTest {
         assertNotNull(dept)
         assertEquals("Engineering", dept.name)
         assertEquals(10.0, dept.budget)
-        assertEquals(adminId, dept.administratorId)
+        assertEquals("Costanza, George", dept.administratorFullName)
     }
 
     @Test
@@ -53,17 +53,17 @@ class DepartmentIntegrationTest {
 
     @Test
     fun `query returns department details`() = runTest {
-        val adminId = fixture.createInstructor()
+        val adminId = fixture.createInstructor(lastName = "Costanza", firstMidName = "George")
         val id = fixture.createDepartment(name = "History", budget = 123.0, administratorId = adminId)
         val dept = fixture.harness.query(GetDepartmentQuery(id))
         assertNotNull(dept)
         assertEquals("History", dept.name)
-        assertEquals(adminId, dept.administratorId)
+        assertEquals("Costanza, George", dept.administratorFullName)
     }
 
     @Test
     fun `edit department updates all fields`() = runTest {
-        val admin1Id = fixture.createInstructor()
+        val admin1Id = fixture.createInstructor(lastName = "Costanza", firstMidName = "George")
         val admin2Id = fixture.createInstructor(lastName = "Seinfeld", firstMidName = "Jerry")
         val id = fixture.createDepartment(name = "History", budget = 123.0, administratorId = admin1Id)
 
@@ -78,7 +78,7 @@ class DepartmentIntegrationTest {
         assertEquals("English", dept.name)
         assertEquals(456.0, dept.budget)
         assertEquals("2023-06-01", dept.startDate)
-        assertEquals(admin2Id, dept.administratorId)
+        assertEquals("Seinfeld, Jerry", dept.administratorFullName)
     }
 
     @Test

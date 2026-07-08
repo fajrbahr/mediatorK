@@ -52,14 +52,14 @@ class CourseIntegrationTest {
         assertNotNull(course)
         assertEquals("Calculus", course.title)
         assertEquals(4, course.credits)
-        assertEquals(deptId, course.departmentId)
+        assertEquals("Mathematics", course.departmentName)
     }
 
     @Test
     fun `list returns empty when no courses exist`() = runTest {
         val fresh = SliceFixture()
-        val courses = fresh.harness.query(GetCoursesQuery)
-        assertTrue(courses.isEmpty())
+        val result = fresh.harness.query(GetCoursesQuery)
+        assertTrue(result.courses.isEmpty())
     }
 
     @Test
@@ -68,8 +68,8 @@ class CourseIntegrationTest {
         val mathId = fixture.createDepartment(name = "Mathematics")
         fixture.harness.send(CreateCourseCommand(number = 101, title = "English Lit", credits = 3, departmentId = engId))
         fixture.harness.send(CreateCourseCommand(number = 201, title = "Algebra", credits = 4, departmentId = mathId))
-        val courses = fixture.harness.query(GetCoursesQuery)
-        assertEquals(2, courses.size)
+        val result = fixture.harness.query(GetCoursesQuery)
+        assertEquals(2, result.courses.size)
     }
 
     @Test
@@ -78,10 +78,10 @@ class CourseIntegrationTest {
         val mathId = fixture.createDepartment(name = "Mathematics")
         fixture.harness.send(CreateCourseCommand(number = 6001, title = "English 101", credits = 4, departmentId = engId))
         fixture.harness.send(CreateCourseCommand(number = 6002, title = "History 101", credits = 4, departmentId = mathId))
-        val courses = fixture.harness.query(GetCoursesQuery)
-        val deptIds = courses.map { it.departmentId }.toSet()
-        assertTrue(deptIds.contains(engId))
-        assertTrue(deptIds.contains(mathId))
+        val result = fixture.harness.query(GetCoursesQuery)
+        val deptNames = result.courses.map { it.departmentName }.toSet()
+        assertTrue(deptNames.contains("English"))
+        assertTrue(deptNames.contains("Mathematics"))
     }
 
     @Test
@@ -107,7 +107,7 @@ class CourseIntegrationTest {
         fixture.harness.send(EditCourseCommand(id = id, title = "Intro Econ", credits = 3, departmentId = econId))
         val updated = fixture.harness.query(GetCourseQuery(id))
         assertNotNull(updated)
-        assertEquals(econId, updated.departmentId)
+        assertEquals("Economics", updated.departmentName)
     }
 
     @Test

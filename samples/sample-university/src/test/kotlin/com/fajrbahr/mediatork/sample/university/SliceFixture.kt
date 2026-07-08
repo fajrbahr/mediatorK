@@ -64,8 +64,8 @@ class SliceFixture {
     val harness: HandlerTestHarness = HandlerTestHarness(
         MediatorFactory.create(
             registrars = listOf(
-                CourseRegistrar(courseStore),
-                DepartmentRegistrar(deptStore),
+                CourseRegistrar(courseStore, deptStore),
+                DepartmentRegistrar(deptStore, instructorStore),
                 InstructorRegistrar(instructorStore, deptStore),
                 StudentRegistrar(studentStore),
             ),

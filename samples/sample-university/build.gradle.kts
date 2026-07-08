@@ -34,6 +34,7 @@ android {
 
 dependencies {
     implementation("io.github.fajrbahr:mediatork:0.9.2")
+    testImplementation("io.github.fajrbahr:mediatork-test:0.9.2")
 
     val composeBom = platform("androidx.compose:compose-bom:2024.09.03")
     implementation(composeBom)
@@ -53,5 +54,4 @@ dependencies {
     testImplementation("org.json:json:20231013")
     testImplementation("junit:junit:4.13.2")
     testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.10.2")
-    testImplementation("io.github.fajrbahr:mediatork-test:0.7.5")
 }

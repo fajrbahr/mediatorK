@@ -3,7 +3,6 @@ package com.fajrbahr.mediatork.sample.university.instructor.createedit
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.fajrbahr.mediatork.api.Mediator
-import com.fajrbahr.mediatork.sample.university.instructor.detail.GetInstructorQuery
 import com.fajrbahr.mediatork.validator.ValidationException
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -36,18 +35,16 @@ class CreateEditInstructorViewModel(
     init {
         if (instructorId != null) {
             viewModelScope.launch {
-                val instructor = mediator.send(GetInstructorQuery(instructorId))
-                if (instructor != null) {
-                    _state.value = CreateEditInstructorUiState(
-                        id = instructor.id,
-                        lastName = instructor.lastName,
-                        firstMidName = instructor.firstMidName,
-                        hireDate = instructor.hireDate,
-                        officeLocation = instructor.officeLocation ?: "",
-                        selectedCourseIds = instructor.courseIds.joinToString(","),
-                        isLoading = false,
-                    )
-                }
+                val command = mediator.send(CreateEditInstructorQuery(instructorId))
+                _state.value = CreateEditInstructorUiState(
+                    id = command.id,
+                    lastName = command.lastName,
+                    firstMidName = command.firstMidName,
+                    hireDate = command.hireDate,
+                    officeLocation = command.officeLocation ?: "",
+                    selectedCourseIds = command.selectedCourseIds.joinToString(","),
+                    isLoading = false,
+                )
             }
         }
     }

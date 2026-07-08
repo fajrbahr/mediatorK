@@ -3,7 +3,6 @@ package com.fajrbahr.mediatork.sample.university.student.edit
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.fajrbahr.mediatork.api.Mediator
-import com.fajrbahr.mediatork.sample.university.student.detail.GetStudentQuery
 import com.fajrbahr.mediatork.validator.ValidationException
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -31,13 +30,13 @@ class EditStudentViewModel(
 
     init {
         viewModelScope.launch {
-            val student = mediator.send(GetStudentQuery(studentId))
-            if (student != null) {
+            val command = mediator.send(EditStudentQuery(studentId))
+            if (command != null) {
                 _state.value = EditStudentUiState(
-                    id = student.id,
-                    lastName = student.lastName,
-                    firstMidName = student.firstMidName,
-                    enrollmentDate = student.enrollmentDate,
+                    id = command.id,
+                    lastName = command.lastName,
+                    firstMidName = command.firstMidName,
+                    enrollmentDate = command.enrollmentDate,
                     isLoading = false,
                 )
             }

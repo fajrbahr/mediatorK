@@ -22,6 +22,6 @@ class DetailsTests {
         assertEquals(id, result.id)
         assertEquals("English 101", result.title)
         assertEquals(4, result.credits)
-        assertEquals(deptId, result.departmentId)
+        assertEquals("English", result.departmentName)
     }
 }

@@ -3,7 +3,6 @@ package com.fajrbahr.mediatork.sample.university.department.edit
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.fajrbahr.mediatork.api.Mediator
-import com.fajrbahr.mediatork.sample.university.department.detail.GetDepartmentQuery
 import com.fajrbahr.mediatork.validator.ValidationException
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -32,14 +31,14 @@ class EditDepartmentViewModel(
 
     init {
         viewModelScope.launch {
-            val dept = mediator.send(GetDepartmentQuery(departmentId))
-            if (dept != null) {
+            val command = mediator.send(EditDepartmentQuery(departmentId))
+            if (command != null) {
                 _state.value = EditDepartmentUiState(
-                    id = dept.id,
-                    name = dept.name,
-                    budget = dept.budget.toString(),
-                    startDate = dept.startDate,
-                    administratorId = dept.administratorId?.toString() ?: "",
+                    id = command.id,
+                    name = command.name,
+                    budget = command.budget.toString(),
+                    startDate = command.startDate,
+                    administratorId = command.administratorId?.toString() ?: "",
                     isLoading = false,
                 )
             }
