@@ -33,7 +33,7 @@ android {
 }
 
 dependencies {
-    implementation("io.github.fajrbahr:mediatork:0.8.1")
+    implementation("io.github.fajrbahr:mediatork:0.9.2")
 
     val composeBom = platform("androidx.compose:compose-bom:2024.09.03")
     implementation(composeBom)

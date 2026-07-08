@@ -27,7 +27,6 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.fajrbahr.mediatork.sample.university.common.FormBlock
 import com.fajrbahr.mediatork.sample.university.common.ValidationDiv
-import com.fajrbahr.mediatork.sample.university.student.create.CreateStudentViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
