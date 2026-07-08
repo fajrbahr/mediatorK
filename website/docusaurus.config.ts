@@ -11,6 +11,7 @@ const config: Config = {
         v4: true,
     },
 
+
     url: 'https://fajrbahr.github.io',
     baseUrl: '/mediatorK/',
 
