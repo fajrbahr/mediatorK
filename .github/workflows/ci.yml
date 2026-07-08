@@ -33,6 +33,10 @@ jobs:
       - name: Make Gradle executable
         run: chmod +x ./gradlew
 
+      - name: Extract version
+        id: version
+        run: echo "VERSION=$(grep '^version=' gradle.properties | cut -d= -f2)" >> $GITHUB_OUTPUT
+
       - name: Build with Gradle
         run: |
           ./gradlew --scan --stacktrace \
@@ -44,3 +48,17 @@ jobs:
           files: mediatork/build/reports/kover/report.xml
           token: ${{ secrets.CODECOV_TOKEN }}
         continue-on-error: true
+
+      - name: Create GitHub Release
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: v${{ steps.version.outputs.VERSION }}
+          release_name: Release ${{ steps.version.outputs.VERSION }}
+          body: |
+            Build: ${{ github.run_number }}
+            Commit: ${{ github.sha }}
+          draft: false
+          prerelease: false
