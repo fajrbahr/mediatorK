@@ -51,4 +51,46 @@ class StubMediatorTest {
         mediator.on<DeleteOrderCommand>() returns Unit
         mediator.send(DeleteOrderCommand("1"))
     }
+
+    @Test
+    fun `onNotification invokes stub`() = runTest {
+        val captured = mutableListOf<String>()
+        mediator.onNotification<OrderPlacedEvent>() answers { captured += it.orderId }
+        mediator.publish(OrderPlacedEvent("ORD-1"))
+        assertEquals(listOf("ORD-1"), captured)
+    }
+
+    @Test
+    fun `onNotification throws stubbed error`() = runTest {
+        mediator.onNotification<OrderPlacedEvent>() throws IllegalStateException("fail")
+        assertFailsWith<IllegalStateException> {
+            mediator.publish(OrderPlacedEvent("ORD-1"))
+        }
+    }
+
+    @Test
+    fun `publish is no-op when no notification stub registered`() = runTest {
+        mediator.publish(OrderPlacedEvent("ORD-1"))
+    }
+
+    @Test
+    fun `onStream returns stubbed items`() = runTest {
+        mediator.onStream<StreamItemsQuery>() returns listOf("a", "b", "c")
+        val items = mediator.stream(StreamItemsQuery("x")).toList()
+        assertEquals(listOf("a", "b", "c"), items)
+    }
+
+    @Test
+    fun `onStream throws stubbed error`() = runTest {
+        mediator.onStream<StreamItemsQuery>() throws IllegalStateException("fail")
+        assertFailsWith<IllegalStateException> {
+            mediator.stream(StreamItemsQuery("x")).toList()
+        }
+    }
+
+    @Test
+    fun `stream returns empty flow when no stub registered`() = runTest {
+        val items = mediator.stream(StreamItemsQuery("x")).toList()
+        assertTrue(items.isEmpty())
+    }
 }
