@@ -1,4 +1,4 @@
-package com.fajrbahr.mediatork.sample.university
+package com.fajrbahr.mediatork.sample.university.courses
 
 import com.fajrbahr.mediatork.sample.university.course.edit.EditCourseCommand
 import com.fajrbahr.mediatork.sample.university.course.edit.EditCourseValidator
@@ -26,7 +26,13 @@ class EditCourseValidatorTest {
 
     @Test
     fun `credits out of range is invalid`() {
-        val result = validator.validate(EditCourseCommand(id = 1, title = "Chemistry", credits = 10))
+        val result = validator.validate(
+            EditCourseCommand(
+                id = 1,
+                title = "Chemistry",
+                credits = 10
+            )
+        )
         assertIs<ValidationResult.Invalid>(result)
         assertTrue(result.errors.any { it.toString().contains("Credits") })
     }

@@ -2,7 +2,6 @@ package com.fajrbahr.mediatork.sample.university
 
 import android.content.SharedPreferences
 import com.fajrbahr.mediatork.MediatorFactory
-import com.fajrbahr.mediatork.test.HandlerTestHarness
 import com.fajrbahr.mediatork.sample.university.course.CourseRegistrar
 import com.fajrbahr.mediatork.sample.university.course.CourseStore
 import com.fajrbahr.mediatork.sample.university.course.create.CreateCourseCommand
@@ -61,7 +60,7 @@ class SliceFixture {
     private val studentStore = StudentStore(prefs)
     private var courseNumberSeq = 1000
 
-    val harness: HandlerTestHarness = HandlerTestHarness(
+    val harness =
         MediatorFactory.create(
             registrars = listOf(
                 CourseRegistrar(courseStore, deptStore),
@@ -70,7 +69,6 @@ class SliceFixture {
                 StudentRegistrar(studentStore),
             ),
         )
-    )
 
     fun nextCourseNumber(): Int = ++courseNumberSeq
 
