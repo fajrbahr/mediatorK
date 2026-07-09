@@ -1,7 +1,7 @@
 package com.fajrbahr.mediatork.sample.university
 
 import com.fajrbahr.mediatork.sample.university.department.create.CreateDepartmentCommand
-import com.fajrbahr.mediatork.sample.university.department.detail.DeleteDepartmentCommand
+import com.fajrbahr.mediatork.sample.university.department.delete.DeleteDepartmentCommand
 import com.fajrbahr.mediatork.sample.university.department.detail.GetDepartmentQuery
 import com.fajrbahr.mediatork.sample.university.department.edit.EditDepartmentCommand
 import com.fajrbahr.mediatork.sample.university.department.list.GetDepartmentsQuery

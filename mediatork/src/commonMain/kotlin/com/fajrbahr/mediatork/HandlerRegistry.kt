@@ -78,6 +78,49 @@ class HandlerRegistry {
         return this
     }
 
+    // ── Lazy registration ─────────────────────────────────────────────────────
+
+    /**
+     * Registers a lazily-created handler for request type [TRequest].
+     *
+     * The [provider] is invoked once — on first dispatch — and the result is cached
+     * for all subsequent calls. Use this to defer handler construction (and its
+     * dependency tree) until the request type is actually used.
+     */
+    inline fun <reified TRequest : Request<TResult>, TResult> registerLazy(
+        noinline provider: () -> RequestHandler<TRequest, TResult>,
+    ): HandlerRegistry {
+        requestHandlers[TRequest::class] = LazyRequestHandler(provider)
+        return this
+    }
+
+    /**
+     * Registers a lazily-created handler for stream request type [TRequest].
+     *
+     * The [provider] is invoked once — on first dispatch — and the result is cached.
+     */
+    inline fun <reified TRequest : StreamRequest<T>, T> registerStreamLazy(
+        noinline provider: () -> StreamRequestHandler<TRequest, T>,
+    ): HandlerRegistry {
+        streamHandlers[TRequest::class] = LazyStreamRequestHandler(provider)
+        return this
+    }
+
+    /**
+     * Appends a lazily-created notification handler for notification type [T].
+     *
+     * The [provider] is invoked once — on first publish — and the result is cached.
+     * Pass [order] explicitly because the real handler is not yet instantiated at
+     * sort time.
+     */
+    inline fun <reified T : Notification> registerNotificationLazy(
+        order: Int = 0,
+        noinline provider: () -> NotificationHandler<T>,
+    ): HandlerRegistry {
+        notificationHandlers.getOrPut(T::class) { mutableListOf() }.add(LazyNotificationHandler(order, provider))
+        return this
+    }
+
     // ── Dynamic registration (for DI frameworks) ──────────────────────────────
 
     /**

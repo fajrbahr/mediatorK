@@ -1,7 +1,7 @@
 package com.fajrbahr.mediatork.sample.university
 
 import com.fajrbahr.mediatork.sample.university.course.create.CreateCourseCommand
-import com.fajrbahr.mediatork.sample.university.course.detail.DeleteCourseCommand
+import com.fajrbahr.mediatork.sample.university.course.delete.DeleteCourseCommand
 import com.fajrbahr.mediatork.sample.university.course.detail.GetCourseQuery
 import com.fajrbahr.mediatork.sample.university.course.edit.EditCourseCommand
 import com.fajrbahr.mediatork.sample.university.course.list.GetCoursesQuery

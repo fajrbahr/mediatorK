@@ -2,7 +2,7 @@ package com.fajrbahr.mediatork.sample.university
 
 import com.fajrbahr.mediatork.sample.university.model.Grade
 import com.fajrbahr.mediatork.sample.university.student.create.CreateStudentCommand
-import com.fajrbahr.mediatork.sample.university.student.detail.DeleteStudentCommand
+import com.fajrbahr.mediatork.sample.university.student.delete.DeleteStudentCommand
 import com.fajrbahr.mediatork.sample.university.student.detail.EnrollStudentCommand
 import com.fajrbahr.mediatork.sample.university.student.detail.GetStudentQuery
 import com.fajrbahr.mediatork.sample.university.student.edit.EditStudentCommand

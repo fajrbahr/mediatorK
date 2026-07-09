@@ -2,7 +2,7 @@ package com.fajrbahr.mediatork.sample.university
 
 import com.fajrbahr.mediatork.sample.university.department.detail.GetDepartmentQuery
 import com.fajrbahr.mediatork.sample.university.instructor.createedit.CreateEditInstructorCommand
-import com.fajrbahr.mediatork.sample.university.instructor.detail.DeleteInstructorCommand
+import com.fajrbahr.mediatork.sample.university.instructor.delete.DeleteInstructorCommand
 import com.fajrbahr.mediatork.sample.university.instructor.detail.GetInstructorQuery
 import com.fajrbahr.mediatork.sample.university.instructor.list.GetInstructorsQuery
 import com.fajrbahr.mediatork.validator.ValidationException

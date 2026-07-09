@@ -34,6 +34,12 @@ interface Sender {
 }
 
 /**
+ * Alias for [Sender.send], intended for read-only requests (queries) so call sites
+ * read naturally. Behaves identically to [send].
+ */
+suspend fun <TRequest : Request<TResult>, TResult> Sender.query(request: TRequest): TResult = send(request)
+
+/**
  * Wraps [Sender.send] in a [Result], returning [Result.success] on success and
  * [Result.failure] for any exception — [com.fajrbahr.mediatork.MediatorException] or otherwise.
  */
