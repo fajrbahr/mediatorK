@@ -18,6 +18,13 @@ class StubMediator : Mediator {
     @PublishedApi
     internal val streamStubs = mutableMapOf<KClass<*>, (Any) -> Flow<*>>()
 
+    private val _behaviors = mutableListOf<PipelineBehavior>()
+    var pipelineEnabled: Boolean = false
+
+    fun addBehavior(behavior: PipelineBehavior) { _behaviors += behavior }
+    fun removeBehavior(behavior: PipelineBehavior) { _behaviors -= behavior }
+    fun clearBehaviors() { _behaviors.clear() }
+
     inline fun <reified T : Request<*>> on(): RequestStub<T> =
         RequestStub(T::class, requestStubs)
 
@@ -68,7 +75,7 @@ class StubMediator : Mediator {
         }
 
         infix fun throws(error: Throwable) {
-            stubs[type] = { flow { throw error } }
+            stubs[type] = { flow<Nothing> { throw error } }
         }
 
         @Suppress("UNCHECKED_CAST")
@@ -81,7 +88,20 @@ class StubMediator : Mediator {
     override suspend fun <TRequest : Request<TResult>, TResult> send(request: TRequest): TResult {
         val stub = requestStubs[request::class]
             ?: error("No stub registered for ${request::class.simpleName}")
-        return stub(request) as TResult
+
+        if (!pipelineEnabled) return stub(request) as TResult
+
+        val applicable = _behaviors
+            .filter { it.isEnabled }
+            .filter { it.appliesTo(request) }
+            .sortedBy { it.order }
+
+        val chain = applicable.foldRight<PipelineBehavior, RequestHandlerDelegate<TRequest, TResult>>(
+            { r -> stub(r) as TResult }
+        ) { behavior, next ->
+            { r -> behavior.process(RequestContext(), next, r) }
+        }
+        return chain(request)
     }
 
     @Suppress("UNCHECKED_CAST")
