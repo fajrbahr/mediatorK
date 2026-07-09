@@ -18,12 +18,9 @@ class StubMediator : Mediator {
     @PublishedApi
     internal val streamStubs = mutableMapOf<KClass<*>, (Any) -> Flow<*>>()
 
-    private val _behaviors = mutableListOf<PipelineBehavior>()
-    var pipelineEnabled: Boolean = false
+    private val pipelineStubs = mutableListOf<PipelineStub>()
 
-    fun addBehavior(behavior: PipelineBehavior) { _behaviors += behavior }
-    fun removeBehavior(behavior: PipelineBehavior) { _behaviors -= behavior }
-    fun clearBehaviors() { _behaviors.clear() }
+    var pipelineEnabled: Boolean = true
 
     inline fun <reified T : Request<*>> on(): RequestStub<T> =
         RequestStub(T::class, requestStubs)
@@ -33,6 +30,9 @@ class StubMediator : Mediator {
 
     inline fun <reified T : StreamRequest<*>> onStream(): StreamStub<T> =
         StreamStub(T::class, streamStubs)
+
+    fun onPipeline(behavior: PipelineBehavior): PipelineStub =
+        PipelineStub(behavior).also { pipelineStubs += it }
 
     class RequestStub<T : Request<*>>(
         private val type: KClass<T>,
@@ -84,6 +84,20 @@ class StubMediator : Mediator {
         }
     }
 
+    class PipelineStub internal constructor(
+        private val delegate: PipelineBehavior,
+    ) {
+        var enabled: Boolean = true
+        var order: Int = delegate.order
+
+        @Suppress("UNCHECKED_CAST")
+        internal suspend fun <TRequest : Request<TResult>, TResult> process(
+            requestContext: RequestContext,
+            next: RequestHandlerDelegate<TRequest, TResult>,
+            request: TRequest,
+        ): TResult = delegate.process(requestContext, next, request)
+    }
+
     @Suppress("UNCHECKED_CAST")
     override suspend fun <TRequest : Request<TResult>, TResult> send(request: TRequest): TResult {
         val stub = requestStubs[request::class]
@@ -91,12 +105,13 @@ class StubMediator : Mediator {
 
         if (!pipelineEnabled) return stub(request) as TResult
 
-        val applicable = _behaviors
-            .filter { it.isEnabled }
-            .filter { it.appliesTo(request) }
+        val applicable = pipelineStubs
+            .filter { it.enabled }
             .sortedBy { it.order }
 
-        val chain = applicable.foldRight<PipelineBehavior, RequestHandlerDelegate<TRequest, TResult>>(
+        if (applicable.isEmpty()) return stub(request) as TResult
+
+        val chain = applicable.foldRight<PipelineStub, RequestHandlerDelegate<TRequest, TResult>>(
             { r -> stub(r) as TResult }
         ) { behavior, next ->
             { r -> behavior.process(RequestContext(), next, r) }
