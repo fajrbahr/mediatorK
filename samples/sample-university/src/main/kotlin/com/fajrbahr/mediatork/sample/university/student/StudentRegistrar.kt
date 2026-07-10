@@ -18,18 +18,18 @@ import com.fajrbahr.mediatork.sample.university.student.list.GetStudentsHandler
 
 class StudentRegistrar(private val store: StudentStore) : MediatorRegistrar {
     override fun register(registry: HandlerRegistry) {
-        registry register AboutQueryHandler(store)
-        registry register GetStudentsHandler(store)
-        registry register GetStudentHandler(store)
-        registry register CreateStudentHandler(store)
+        registry.registerLazy { AboutQueryHandler(store) }
+        registry.registerLazy { GetStudentsHandler(store) }
+        registry.registerLazy { GetStudentHandler(store) }
+        registry.registerLazy { CreateStudentHandler(store) }
         registry.registerValidator(CreateStudentValidator())
-        registry register EditStudentQueryHandler(store)
+        registry.registerLazy { EditStudentQueryHandler(store) }
         registry.registerValidator(EditStudentQueryValidator())
-        registry register EditStudentHandler(store)
+        registry.registerLazy { EditStudentHandler(store) }
         registry.registerValidator(EditStudentValidator())
-        registry register DeleteStudentQueryHandler(store)
+        registry.registerLazy { DeleteStudentQueryHandler(store) }
         registry.registerValidator(DeleteStudentQueryValidator())
-        registry register DeleteStudentHandler(store)
-        registry register EnrollStudentHandler(store)
+        registry.registerLazy { DeleteStudentHandler(store) }
+        registry.registerLazy { EnrollStudentHandler(store) }
     }
 }

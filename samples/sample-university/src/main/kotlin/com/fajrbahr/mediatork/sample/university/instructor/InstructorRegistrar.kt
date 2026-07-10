@@ -18,14 +18,14 @@ class InstructorRegistrar(
     private val departmentStore: DepartmentStore,
 ) : MediatorRegistrar {
     override fun register(registry: HandlerRegistry) {
-        registry register GetInstructorsHandler(store)
-        registry register GetInstructorHandler(store)
-        registry register CreateEditInstructorQueryHandler(store)
+        registry.registerLazy { GetInstructorsHandler(store) }
+        registry.registerLazy { GetInstructorHandler(store) }
+        registry.registerLazy { CreateEditInstructorQueryHandler(store) }
         registry.registerValidator(CreateEditInstructorQueryValidator())
-        registry register CreateEditInstructorHandler(store, departmentStore)
+        registry.registerLazy { CreateEditInstructorHandler(store, departmentStore) }
         registry.registerValidator(CreateEditInstructorValidator())
-        registry register DeleteInstructorQueryHandler(store)
+        registry.registerLazy { DeleteInstructorQueryHandler(store) }
         registry.registerValidator(DeleteInstructorQueryValidator())
-        registry register DeleteInstructorHandler(store, departmentStore)
+        registry.registerLazy { DeleteInstructorHandler(store, departmentStore) }
     }
 }

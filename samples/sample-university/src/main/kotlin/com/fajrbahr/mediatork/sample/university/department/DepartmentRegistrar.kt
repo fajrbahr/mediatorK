@@ -20,16 +20,16 @@ class DepartmentRegistrar(
     private val instructorStore: InstructorStore,
 ) : MediatorRegistrar {
     override fun register(registry: HandlerRegistry) {
-        registry register GetDepartmentsHandler(store, instructorStore)
-        registry register GetDepartmentHandler(store, instructorStore)
-        registry register CreateDepartmentHandler(store)
+        registry.registerLazy { GetDepartmentsHandler(store, instructorStore) }
+        registry.registerLazy { GetDepartmentHandler(store, instructorStore) }
+        registry.registerLazy { CreateDepartmentHandler(store) }
         registry.registerValidator(CreateDepartmentValidator())
-        registry register EditDepartmentQueryHandler(store)
+        registry.registerLazy { EditDepartmentQueryHandler(store) }
         registry.registerValidator(EditDepartmentQueryValidator())
-        registry register EditDepartmentHandler(store)
+        registry.registerLazy { EditDepartmentHandler(store) }
         registry.registerValidator(EditDepartmentValidator())
-        registry register DeleteDepartmentQueryHandler(store, instructorStore)
+        registry.registerLazy { DeleteDepartmentQueryHandler(store, instructorStore) }
         registry.registerValidator(DeleteDepartmentQueryValidator())
-        registry register DeleteDepartmentHandler(store)
+        registry.registerLazy { DeleteDepartmentHandler(store) }
     }
 }
