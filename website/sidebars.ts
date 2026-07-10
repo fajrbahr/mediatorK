@@ -62,6 +62,7 @@ const sidebars: SidebarsConfig = {
                 'testing/dummy-mediator',
                 'testing/fake-mediator',
                 'testing/spy',
+                'testing/stub-mediator',
                 'testing/notification-testing',
                 'testing/handler-testing',
                 'testing/viewmodel-testing',

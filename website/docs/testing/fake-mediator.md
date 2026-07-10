@@ -12,6 +12,7 @@ sidebar_label: FakeMediator
 |---------------------------|----------------------------------------------------------------------------------|
 | `FakeMediator`            | Real mediator backed by a live `HandlerRegistry`. Register handlers at any time. |
 | `DummyMediator`           | Zero-arg no-op. `send` silently returns, `publish` does nothing.                 |
+| `StubMediator`            | DSL-based stub. `on<T>() returns value` — no handlers, no registry.              |
 | `MediatorSpy`             | Wraps any mediator and records every `send` and `publish` call.                  |
 | `fakeHandler`             | Creates a `RequestHandler` from a suspend lambda.                                |
 | `fakeNotificationHandler` | Creates a `NotificationHandler` from a suspend lambda.                           |
