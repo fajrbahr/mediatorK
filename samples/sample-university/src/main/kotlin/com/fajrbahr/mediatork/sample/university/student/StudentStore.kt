@@ -46,6 +46,9 @@ class StudentStore(private val prefs: SharedPreferences) {
     fun findEnrollmentsByStudentId(studentId: Int): List<Enrollment> =
         loadEnrollments().filter { it.studentId == studentId }
 
+    fun findEnrollmentsByCourseId(courseId: Int): List<Enrollment> =
+        loadEnrollments().filter { it.courseId == courseId }
+
     // ── Private helpers ─────────────────────────────────────────────────────
 
     private fun loadStudentsMap(): MutableMap<Int, Student> {

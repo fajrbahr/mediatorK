@@ -1,10 +1,10 @@
 package com.fajrbahr.mediatork.sample.university.instructors
 
+import com.fajrbahr.mediatork.handler.query
 import com.fajrbahr.mediatork.sample.university.SliceFixture
-import com.fajrbahr.mediatork.sample.university.department.detail.GetDepartmentQuery
+import com.fajrbahr.mediatork.sample.university.instructor.createedit.CreateEditInstructorCommand
 import com.fajrbahr.mediatork.sample.university.instructor.delete.DeleteInstructorCommand
 import com.fajrbahr.mediatork.sample.university.instructor.delete.DeleteInstructorQuery
-import com.fajrbahr.mediatork.sample.university.instructor.detail.GetInstructorQuery
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -17,7 +17,13 @@ class DeleteTests {
 
     @Test
     fun `should query for command`() = runTest {
-        val id = fixture.createInstructor(lastName = "Costanza", firstMidName = "George", officeLocation = "Austin")
+        val deptId = fixture.insertDepartment(name = "English")
+        val courseId = fixture.insertCourse(title = "English 101", credits = 4, departmentId = deptId)
+
+        val id = fixture.createInstructor(
+            lastName = "Costanza", firstMidName = "George",
+            officeLocation = "Austin", selectedCourseIds = listOf(courseId),
+        )
 
         val result = fixture.harness.query(DeleteInstructorQuery(id))
 
@@ -29,14 +35,26 @@ class DeleteTests {
 
     @Test
     fun `should delete instructor`() = runTest {
-        val instructorId = fixture.createInstructor()
-        val deptId = fixture.createDepartment(name = "English", administratorId = instructorId)
+        val instructorId = fixture.createInstructor(
+            lastName = "Costanza", firstMidName = "George", officeLocation = "Austin",
+        )
+        val deptId = fixture.insertDepartment(name = "English", administratorId = instructorId)
+        val courseId = fixture.insertCourse(title = "English 101", credits = 4, departmentId = deptId)
+
+        fixture.harness.send(
+            CreateEditInstructorCommand(
+                id = instructorId, lastName = "Costanza", firstMidName = "George",
+                hireDate = "2024-01-01", officeLocation = "Austin",
+                selectedCourseIds = listOf(courseId),
+            )
+        )
 
         fixture.harness.send(DeleteInstructorCommand(id = instructorId))
 
-        assertNull(fixture.harness.query(GetInstructorQuery(instructorId)))
-        val dept = fixture.harness.query(GetDepartmentQuery(deptId))
+        assertNull(fixture.findInstructor(instructorId))
+
+        val dept = fixture.findDepartment(deptId)
         assertNotNull(dept)
-        assertEquals("", dept.administratorFullName)
+        assertNull(dept.administratorId)
     }
 }

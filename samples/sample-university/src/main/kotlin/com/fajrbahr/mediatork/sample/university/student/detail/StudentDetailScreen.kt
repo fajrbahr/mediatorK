@@ -73,7 +73,7 @@ fun StudentDetailScreen(viewModel: StudentDetailViewModel, onBack: () -> Unit) {
                     DetailSection("Enrollments") {
                         model.enrollments.forEach { enrollment ->
                             Row(Modifier.fillMaxWidth().padding(vertical = 2.dp)) {
-                                Text("Course #${enrollment.courseId}", modifier = Modifier.weight(1f))
+                                Text(enrollment.courseTitle, modifier = Modifier.weight(1f))
                                 Text(enrollment.grade?.name ?: "No grade")
                             }
                         }

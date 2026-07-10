@@ -4,6 +4,7 @@ import com.fajrbahr.mediatork.api.Mediator
 import com.fajrbahr.mediatork.api.Request
 import com.fajrbahr.mediatork.api.RequestContext
 import com.fajrbahr.mediatork.api.RequestHandler
+import com.fajrbahr.mediatork.sample.university.course.CourseStore
 import com.fajrbahr.mediatork.sample.university.model.Grade
 import com.fajrbahr.mediatork.sample.university.student.StudentStore
 
@@ -20,12 +21,14 @@ data class StudentDetailModel(
 ) {
     data class EnrollmentModel(
         val courseId: Int,
+        val courseTitle: String,
         val grade: Grade? = null,
     )
 }
 
 class GetStudentHandler(
     private val store: StudentStore,
+    private val courseStore: CourseStore,
 ) : RequestHandler<GetStudentQuery, StudentDetailModel?> {
     override suspend fun handle(
         mediator: Mediator,
@@ -40,8 +43,10 @@ class GetStudentHandler(
             firstMidName = student.firstMidName,
             enrollmentDate = student.enrollmentDate,
             enrollments = enrollments.map { e ->
+                val course = courseStore.findById(e.courseId)
                 StudentDetailModel.EnrollmentModel(
                     courseId = e.courseId,
+                    courseTitle = course?.title ?: "Unknown",
                     grade = e.grade,
                 )
             },

@@ -1,9 +1,9 @@
 package com.fajrbahr.mediatork.sample.university.courses
 
+import com.fajrbahr.mediatork.handler.query
 import com.fajrbahr.mediatork.sample.university.SliceFixture
 import com.fajrbahr.mediatork.sample.university.course.delete.DeleteCourseCommand
 import com.fajrbahr.mediatork.sample.university.course.delete.DeleteCourseQuery
-import com.fajrbahr.mediatork.sample.university.course.detail.GetCourseQuery
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -16,24 +16,26 @@ class DeleteTests {
 
     @Test
     fun `should query for command`() = runTest {
-        val deptId = fixture.createDepartment(name = "English")
-        val id = fixture.createCourse(title = "History 101", credits = 3, departmentId = deptId)
+        val adminId = fixture.createInstructor(lastName = "Costanza", firstMidName = "George")
+        val deptId = fixture.insertDepartment(name = "History", administratorId = adminId)
+        val courseId = fixture.insertCourse(title = "English 101", credits = 4, departmentId = deptId)
 
-        val result = fixture.harness.query(DeleteCourseQuery(id))
+        val result = fixture.harness.query(DeleteCourseQuery(courseId))
 
         assertNotNull(result)
-        assertEquals("History 101", result.title)
-        assertEquals(3, result.credits)
-        assertEquals("English", result.departmentName)
+        assertEquals(4, result.credits)
+        assertEquals("History", result.departmentName)
+        assertEquals("English 101", result.title)
     }
 
     @Test
     fun `should delete course`() = runTest {
-        val deptId = fixture.createDepartment()
-        val id = fixture.createCourse(title = "Macro Econ", credits = 3, departmentId = deptId)
+        val adminId = fixture.createInstructor(lastName = "Costanza", firstMidName = "George")
+        val deptId = fixture.insertDepartment(name = "History", administratorId = adminId)
+        val courseId = fixture.insertCourse(title = "English 101", credits = 4, departmentId = deptId)
 
-        fixture.harness.send(DeleteCourseCommand(id = id))
+        fixture.harness.send(DeleteCourseCommand(id = courseId))
 
-        assertNull(fixture.harness.query(GetCourseQuery(id)))
+        assertNull(fixture.findCourse(courseId))
     }
 }

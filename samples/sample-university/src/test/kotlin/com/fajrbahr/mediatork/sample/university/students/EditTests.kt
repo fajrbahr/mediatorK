@@ -1,5 +1,6 @@
 package com.fajrbahr.mediatork.sample.university.students
 
+import com.fajrbahr.mediatork.handler.query
 import com.fajrbahr.mediatork.sample.university.SliceFixture
 import com.fajrbahr.mediatork.sample.university.student.detail.GetStudentQuery
 import com.fajrbahr.mediatork.sample.university.student.edit.EditStudentCommand
@@ -14,28 +15,33 @@ class EditTests {
 
     @Test
     fun `should get edit details`() = runTest {
-        val id = fixture.createStudent(lastName = "Schmoe", firstMidName = "Joe")
+        val id = fixture.createStudent(
+            lastName = "Schmoe", firstMidName = "Joe", enrollmentDate = "2024-01-01",
+        )
 
-        val student = fixture.harness.query(GetStudentQuery(id))
+        val result = fixture.harness.query(GetStudentQuery(id))
 
-        assertNotNull(student)
-        assertEquals("Joe", student.firstMidName)
-        assertEquals("Schmoe", student.lastName)
-        assertEquals("2024-01-01", student.enrollmentDate)
+        assertNotNull(result)
+        assertEquals("Joe", result.firstMidName)
+        assertEquals("Schmoe", result.lastName)
+        assertEquals("2024-01-01", result.enrollmentDate)
     }
 
     @Test
     fun `should edit student`() = runTest {
-        val id = fixture.createStudent(lastName = "Schmoe", firstMidName = "Joe")
-
-        fixture.harness.send(
-            EditStudentCommand(id = id, lastName = "Smith", firstMidName = "Mary", enrollmentDate = "2023-01-01")
+        val id = fixture.createStudent(
+            lastName = "Schmoe", firstMidName = "Joe", enrollmentDate = "2024-01-01",
         )
 
-        val student = fixture.harness.query(GetStudentQuery(id))
+        val command = EditStudentCommand(
+            id = id, lastName = "Smith", firstMidName = "Mary", enrollmentDate = "2023-01-01",
+        )
+        fixture.harness.send(command)
+
+        val student = fixture.findStudent(id)
         assertNotNull(student)
-        assertEquals("Mary", student.firstMidName)
-        assertEquals("Smith", student.lastName)
-        assertEquals("2023-01-01", student.enrollmentDate)
+        assertEquals(command.firstMidName, student.firstMidName)
+        assertEquals(command.lastName, student.lastName)
+        assertEquals(command.enrollmentDate, student.enrollmentDate)
     }
 }

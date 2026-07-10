@@ -1,5 +1,6 @@
 package com.fajrbahr.mediatork.sample.university.courses
 
+import com.fajrbahr.mediatork.handler.query
 import com.fajrbahr.mediatork.sample.university.SliceFixture
 import com.fajrbahr.mediatork.sample.university.course.detail.GetCourseQuery
 import kotlinx.coroutines.test.runTest
@@ -12,16 +13,16 @@ class DetailsTests {
     private val fixture = SliceFixture()
 
     @Test
-    fun `should get course details`() = runTest {
-        val deptId = fixture.createDepartment(name = "English")
-        val id = fixture.createCourse(title = "English 101", credits = 4, departmentId = deptId)
+    fun `should query for details`() = runTest {
+        val adminId = fixture.createInstructor(lastName = "Costanza", firstMidName = "George")
+        val deptId = fixture.insertDepartment(name = "History", administratorId = adminId)
+        val courseId = fixture.insertCourse(title = "English 101", credits = 4, departmentId = deptId)
 
-        val result = fixture.harness.query(GetCourseQuery(id))
+        val result = fixture.harness.query(GetCourseQuery(courseId))
 
         assertNotNull(result)
-        assertEquals(id, result.id)
-        assertEquals("English 101", result.title)
         assertEquals(4, result.credits)
-        assertEquals("English", result.departmentName)
+        assertEquals("History", result.departmentName)
+        assertEquals("English 101", result.title)
     }
 }

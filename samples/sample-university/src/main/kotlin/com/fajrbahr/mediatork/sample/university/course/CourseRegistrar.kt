@@ -14,14 +14,16 @@ import com.fajrbahr.mediatork.sample.university.course.edit.EditCourseQueryValid
 import com.fajrbahr.mediatork.sample.university.course.edit.EditCourseValidator
 import com.fajrbahr.mediatork.sample.university.course.list.GetCoursesHandler
 import com.fajrbahr.mediatork.sample.university.department.DepartmentStore
+import com.fajrbahr.mediatork.sample.university.student.StudentStore
 
 class CourseRegistrar(
     private val store: CourseStore,
     private val departmentStore: DepartmentStore,
+    private val studentStore: StudentStore,
 ) : MediatorRegistrar {
     override fun register(registry: HandlerRegistry) {
         registry.registerLazy { GetCoursesHandler(store, departmentStore) }
-        registry.registerLazy { GetCourseHandler(store, departmentStore) }
+        registry.registerLazy { GetCourseHandler(store, departmentStore, studentStore) }
         registry.registerLazy { CreateCourseHandler(store) }
         registry.registerValidator(CreateCourseValidator())
         registry.registerLazy { EditCourseQueryHandler(store) }

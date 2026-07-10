@@ -4,6 +4,7 @@ import com.fajrbahr.mediatork.api.Mediator
 import com.fajrbahr.mediatork.api.Request
 import com.fajrbahr.mediatork.api.RequestContext
 import com.fajrbahr.mediatork.api.RequestHandler
+import com.fajrbahr.mediatork.sample.university.course.CourseStore
 import com.fajrbahr.mediatork.sample.university.instructor.InstructorStore
 
 // ── Query ───────────────────────────────────────────────────────────────────
@@ -16,11 +17,17 @@ data class InstructorDetailModel(
     val firstMidName: String,
     val hireDate: String,
     val officeLocation: String?,
-    val courseIds: List<Int> = emptyList(),
-)
+    val courses: List<CourseModel> = emptyList(),
+) {
+    data class CourseModel(
+        val id: Int,
+        val title: String,
+    )
+}
 
 class GetInstructorHandler(
     private val store: InstructorStore,
+    private val courseStore: CourseStore,
 ) : RequestHandler<GetInstructorQuery, InstructorDetailModel?> {
     override suspend fun handle(
         mediator: Mediator,
@@ -34,8 +41,10 @@ class GetInstructorHandler(
             firstMidName = instructor.firstMidName,
             hireDate = instructor.hireDate,
             officeLocation = instructor.officeLocation,
-            courseIds = instructor.courseIds,
+            courses = instructor.courseIds.mapNotNull { courseId ->
+                val course = courseStore.findById(courseId) ?: return@mapNotNull null
+                InstructorDetailModel.CourseModel(id = course.id, title = course.title)
+            },
         )
     }
 }
-

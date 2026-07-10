@@ -2,7 +2,6 @@ package com.fajrbahr.mediatork.sample.university.instructors
 
 import com.fajrbahr.mediatork.sample.university.SliceFixture
 import com.fajrbahr.mediatork.sample.university.instructor.createedit.CreateEditInstructorCommand
-import com.fajrbahr.mediatork.sample.university.instructor.detail.GetInstructorQuery
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -14,52 +13,53 @@ class CreateEditTests {
 
     @Test
     fun `should create new instructor`() = runTest {
-        val deptId = fixture.createDepartment(name = "English")
-        val courseId1 = fixture.createCourse(title = "English 101", credits = 4, departmentId = deptId)
-        val courseId2 = fixture.createCourse(title = "English 201", credits = 4, departmentId = deptId)
+        val deptId = fixture.insertDepartment(name = "English")
+        val courseId1 = fixture.insertCourse(title = "English 101", credits = 4, departmentId = deptId)
+        val courseId2 = fixture.insertCourse(title = "English 201", credits = 4, departmentId = deptId)
 
-        val id = fixture.harness.send(
-            CreateEditInstructorCommand(
-                lastName = "Seinfeld", firstMidName = "Jerry", hireDate = "2024-01-01",
-                officeLocation = "Houston", selectedCourseIds = listOf(courseId1, courseId2),
-            )
+        val command = CreateEditInstructorCommand(
+            lastName = "Seinfeld", firstMidName = "Jerry", hireDate = "2024-01-01",
+            officeLocation = "Houston", selectedCourseIds = listOf(courseId1, courseId2),
         )
+        val id = fixture.harness.send(command)
 
-        val created = fixture.harness.query(GetInstructorQuery(id))
+        val created = fixture.findInstructor(id)
         assertNotNull(created)
-        assertEquals("Jerry", created.firstMidName)
-        assertEquals("Seinfeld", created.lastName)
-        assertEquals("Houston", created.officeLocation)
+        assertEquals(command.firstMidName, created.firstMidName)
+        assertEquals(command.lastName, created.lastName)
+        assertEquals(command.hireDate, created.hireDate)
+        assertEquals(command.officeLocation, created.officeLocation)
         assertEquals(2, created.courseIds.size)
     }
 
     @Test
     fun `should edit instructor details`() = runTest {
-        val deptId = fixture.createDepartment(name = "English")
-        val courseId1 = fixture.createCourse(title = "English 101", credits = 4, departmentId = deptId)
-        val courseId2 = fixture.createCourse(title = "English 201", credits = 4, departmentId = deptId)
+        val deptId = fixture.insertDepartment(name = "English")
+        fixture.insertCourse(title = "English 101", credits = 4, departmentId = deptId)
+        fixture.insertCourse(title = "English 201", credits = 4, departmentId = deptId)
 
-        val id = fixture.createInstructor(lastName = "Costanza", firstMidName = "George", officeLocation = "Austin")
-
-        fixture.harness.send(
-            CreateEditInstructorCommand(
-                id = id, lastName = "Seinfeld", firstMidName = "Jerry", hireDate = "2024-01-01",
-                officeLocation = "Houston", selectedCourseIds = emptyList(),
-            )
+        val id = fixture.createInstructor(
+            lastName = "Costanza", firstMidName = "George", officeLocation = "Austin",
         )
 
-        val edited = fixture.harness.query(GetInstructorQuery(id))
+        val command = CreateEditInstructorCommand(
+            id = id, lastName = "Seinfeld", firstMidName = "Jerry", hireDate = "2024-01-01",
+            officeLocation = "Houston", selectedCourseIds = emptyList(),
+        )
+        fixture.harness.send(command)
+
+        val edited = fixture.findInstructor(id)
         assertNotNull(edited)
-        assertEquals("Jerry", edited.firstMidName)
-        assertEquals("Seinfeld", edited.lastName)
-        assertEquals("Houston", edited.officeLocation)
+        assertEquals(command.firstMidName, edited.firstMidName)
+        assertEquals(command.lastName, edited.lastName)
+        assertEquals(command.officeLocation, edited.officeLocation)
     }
 
     @Test
     fun `should merge course assignments`() = runTest {
-        val deptId = fixture.createDepartment(name = "English")
-        val courseId1 = fixture.createCourse(title = "English 101", credits = 4, departmentId = deptId)
-        val courseId2 = fixture.createCourse(title = "English 201", credits = 4, departmentId = deptId)
+        val deptId = fixture.insertDepartment(name = "English")
+        val courseId1 = fixture.insertCourse(title = "English 101", credits = 4, departmentId = deptId)
+        val courseId2 = fixture.insertCourse(title = "English 201", credits = 4, departmentId = deptId)
 
         val id = fixture.harness.send(
             CreateEditInstructorCommand(
@@ -75,8 +75,11 @@ class CreateEditTests {
             )
         )
 
-        val edited = fixture.harness.query(GetInstructorQuery(id))
+        val edited = fixture.findInstructor(id)
         assertNotNull(edited)
+        assertEquals("Jerry", edited.firstMidName)
+        assertEquals("Seinfeld", edited.lastName)
+        assertEquals("Houston", edited.officeLocation)
         assertEquals(1, edited.courseIds.size)
         assertEquals(courseId2, edited.courseIds.first())
     }

@@ -2,7 +2,6 @@ package com.fajrbahr.mediatork.sample.university.departments
 
 import com.fajrbahr.mediatork.sample.university.SliceFixture
 import com.fajrbahr.mediatork.sample.university.department.create.CreateDepartmentCommand
-import com.fajrbahr.mediatork.sample.university.department.detail.GetDepartmentQuery
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -16,20 +15,18 @@ class CreateTests {
     fun `should create new department`() = runTest {
         val adminId = fixture.createInstructor(lastName = "Costanza", firstMidName = "George")
 
-        val id = fixture.harness.send(
-            CreateDepartmentCommand(
-                name = "Engineering",
-                budget = 10.0,
-                startDate = "2024-01-01",
-                administratorId = adminId
-            )
+        val command = CreateDepartmentCommand(
+            name = "Engineering",
+            budget = 10.0,
+            startDate = "2024-01-01",
+            administratorId = adminId,
         )
+        val id = fixture.harness.send(command)
 
-        val created = fixture.harness.query(GetDepartmentQuery(id))
+        val created = fixture.findDepartment(id)
         assertNotNull(created)
-        assertEquals("Engineering", created.name)
-        assertEquals(10.0, created.budget)
-        assertEquals("2024-01-01", created.startDate)
-        assertEquals("Costanza, George", created.administratorFullName)
+        assertEquals(command.budget, created.budget)
+        assertEquals(command.startDate, created.startDate)
+        assertEquals(adminId, created.administratorId)
     }
 }

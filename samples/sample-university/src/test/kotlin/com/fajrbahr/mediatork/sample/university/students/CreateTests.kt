@@ -2,7 +2,6 @@ package com.fajrbahr.mediatork.sample.university.students
 
 import com.fajrbahr.mediatork.sample.university.SliceFixture
 import com.fajrbahr.mediatork.sample.university.student.create.CreateStudentCommand
-import com.fajrbahr.mediatork.sample.university.student.detail.GetStudentQuery
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -14,14 +13,15 @@ class CreateTests {
 
     @Test
     fun `should create student`() = runTest {
-        val id = fixture.harness.send(
-            CreateStudentCommand(lastName = "Schmoe", firstMidName = "Joe", enrollmentDate = "2024-01-01")
+        val cmd = CreateStudentCommand(
+            lastName = "Schmoe", firstMidName = "Joe", enrollmentDate = "2024-01-01",
         )
+        val studentId = fixture.harness.send(cmd)
 
-        val student = fixture.harness.query(GetStudentQuery(id))
+        val student = fixture.findStudent(studentId)
         assertNotNull(student)
-        assertEquals("Joe", student.firstMidName)
-        assertEquals("Schmoe", student.lastName)
-        assertEquals("2024-01-01", student.enrollmentDate)
+        assertEquals(cmd.firstMidName, student.firstMidName)
+        assertEquals(cmd.lastName, student.lastName)
+        assertEquals(cmd.enrollmentDate, student.enrollmentDate)
     }
 }

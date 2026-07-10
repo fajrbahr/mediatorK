@@ -2,7 +2,6 @@ package com.fajrbahr.mediatork.sample.university.courses
 
 import com.fajrbahr.mediatork.sample.university.SliceFixture
 import com.fajrbahr.mediatork.sample.university.course.create.CreateCourseCommand
-import com.fajrbahr.mediatork.sample.university.course.detail.GetCourseQuery
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -15,21 +14,20 @@ class CreateTests {
     @Test
     fun `should create new course`() = runTest {
         val adminId = fixture.createInstructor(lastName = "Costanza", firstMidName = "George")
-        val deptId = fixture.createDepartment(name = "History", administratorId = adminId)
+        val deptId = fixture.insertDepartment(name = "History", administratorId = adminId)
 
-        val id = fixture.harness.send(
-            CreateCourseCommand(
-                number = fixture.nextCourseNumber(),
-                title = "English 101",
-                credits = 4,
-                departmentId = deptId
-            )
+        val command = CreateCourseCommand(
+            number = fixture.nextCourseNumber(),
+            title = "English 101",
+            credits = 4,
+            departmentId = deptId,
         )
+        val id = fixture.harness.send(command)
 
-        val created = fixture.harness.query(GetCourseQuery(id))
+        val created = fixture.findCourse(id)
         assertNotNull(created)
-        assertEquals("English 101", created.title)
-        assertEquals(4, created.credits)
-        assertEquals("History", created.departmentName)
+        assertEquals(deptId, created.departmentId)
+        assertEquals(command.credits, created.credits)
+        assertEquals(command.title, created.title)
     }
 }

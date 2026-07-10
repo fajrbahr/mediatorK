@@ -106,10 +106,10 @@ private fun AppRoot() {
     val mediator: Mediator = remember {
         MediatorFactory.create(
             registrars = listOf(
-                CourseRegistrar(courseStore, deptStore),
-                DepartmentRegistrar(deptStore, instructorStore),
-                InstructorRegistrar(instructorStore, deptStore),
-                StudentRegistrar(studentStore),
+                CourseRegistrar(courseStore, deptStore, studentStore),
+                DepartmentRegistrar(deptStore, instructorStore, courseStore),
+                InstructorRegistrar(instructorStore, deptStore, courseStore, studentStore),
+                StudentRegistrar(studentStore, courseStore),
             )
         )
     }

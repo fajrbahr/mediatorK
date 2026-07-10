@@ -4,16 +4,20 @@ import android.content.SharedPreferences
 import com.fajrbahr.mediatork.MediatorFactory
 import com.fajrbahr.mediatork.sample.university.course.CourseRegistrar
 import com.fajrbahr.mediatork.sample.university.course.CourseStore
-import com.fajrbahr.mediatork.sample.university.course.create.CreateCourseCommand
+import com.fajrbahr.mediatork.sample.university.course.model.Course
 import com.fajrbahr.mediatork.sample.university.department.DepartmentRegistrar
 import com.fajrbahr.mediatork.sample.university.department.DepartmentStore
-import com.fajrbahr.mediatork.sample.university.department.create.CreateDepartmentCommand
+import com.fajrbahr.mediatork.sample.university.department.model.Department
 import com.fajrbahr.mediatork.sample.university.instructor.InstructorRegistrar
 import com.fajrbahr.mediatork.sample.university.instructor.InstructorStore
 import com.fajrbahr.mediatork.sample.university.instructor.createedit.CreateEditInstructorCommand
+import com.fajrbahr.mediatork.sample.university.instructor.model.Instructor
+import com.fajrbahr.mediatork.sample.university.model.Enrollment
+import com.fajrbahr.mediatork.sample.university.model.Grade
 import com.fajrbahr.mediatork.sample.university.student.StudentRegistrar
 import com.fajrbahr.mediatork.sample.university.student.StudentStore
 import com.fajrbahr.mediatork.sample.university.student.create.CreateStudentCommand
+import com.fajrbahr.mediatork.sample.university.student.model.Student
 
 class InMemorySharedPreferences : SharedPreferences {
     private val data = mutableMapOf<String, Any?>()
@@ -63,25 +67,70 @@ class SliceFixture {
     val harness =
         MediatorFactory.create(
             registrars = listOf(
-                CourseRegistrar(courseStore, deptStore),
-                DepartmentRegistrar(deptStore, instructorStore),
-                InstructorRegistrar(instructorStore, deptStore),
-                StudentRegistrar(studentStore),
+                CourseRegistrar(courseStore, deptStore, studentStore),
+                DepartmentRegistrar(deptStore, instructorStore, courseStore),
+                InstructorRegistrar(instructorStore, deptStore, courseStore, studentStore),
+                StudentRegistrar(studentStore, courseStore),
             ),
         )
 
     fun nextCourseNumber(): Int = ++courseNumberSeq
 
-    suspend fun createDepartment(
+    // ── Back-door inserts (bypass mediator, write directly to store) ────
+
+    fun insertDepartment(
         name: String = "Engineering",
-        budget: Double = 100.0,
+        budget: Double = 123.0,
         startDate: String = "2024-01-01",
         administratorId: Int? = null,
-    ): Int = harness.send(
-        CreateDepartmentCommand(
-            name = name, budget = budget, startDate = startDate, administratorId = administratorId,
-        )
-    )
+    ): Int {
+        val id = deptStore.nextId()
+        deptStore.save(Department(id = id, name = name, budget = budget, startDate = startDate, administratorId = administratorId))
+        return id
+    }
+
+    fun insertCourse(
+        title: String = "Chemistry",
+        credits: Int = 4,
+        departmentId: Int,
+        number: Int = nextCourseNumber(),
+    ): Int {
+        val id = courseStore.nextId()
+        courseStore.save(Course(id = id, number = number, title = title, credits = credits, departmentId = departmentId))
+        return id
+    }
+
+    fun insertStudent(
+        lastName: String = "Schmoe",
+        firstMidName: String = "Joe",
+        enrollmentDate: String = "2024-01-01",
+    ): Int {
+        val id = studentStore.nextId()
+        studentStore.save(Student(id = id, lastName = lastName, firstMidName = firstMidName, enrollmentDate = enrollmentDate))
+        return id
+    }
+
+    fun insertEnrollment(
+        courseId: Int,
+        studentId: Int,
+        grade: Grade? = null,
+    ): Int {
+        val id = studentStore.nextEnrollmentId()
+        studentStore.saveEnrollment(Enrollment(id = id, courseId = courseId, studentId = studentId, grade = grade))
+        return id
+    }
+
+    // ── Back-door finds (bypass mediator, read directly from store) ─────
+
+    fun findCourse(id: Int): Course? = courseStore.findById(id)
+
+    fun findDepartment(id: Int): Department? = deptStore.findById(id)
+
+    fun findInstructor(id: Int): Instructor? = instructorStore.findById(id)
+
+    fun findStudent(id: Int): Student? = studentStore.findById(id)
+
+    // ── Front-door helpers (through mediator) ───────────────────────────
 
     suspend fun createInstructor(
         lastName: String = "Costanza",
@@ -103,17 +152,6 @@ class SliceFixture {
     ): Int = harness.send(
         CreateStudentCommand(
             lastName = lastName, firstMidName = firstMidName, enrollmentDate = enrollmentDate,
-        )
-    )
-
-    suspend fun createCourse(
-        title: String = "Chemistry",
-        credits: Int = 3,
-        departmentId: Int,
-        number: Int = nextCourseNumber(),
-    ): Int = harness.send(
-        CreateCourseCommand(
-            number = number, title = title, credits = credits, departmentId = departmentId,
         )
     )
 }

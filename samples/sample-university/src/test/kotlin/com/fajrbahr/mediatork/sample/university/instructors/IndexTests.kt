@@ -1,5 +1,6 @@
 package com.fajrbahr.mediatork.sample.university.instructors
 
+import com.fajrbahr.mediatork.handler.query
 import com.fajrbahr.mediatork.sample.university.SliceFixture
 import com.fajrbahr.mediatork.sample.university.instructor.list.GetInstructorsQuery
 import kotlinx.coroutines.test.runTest
@@ -11,12 +12,30 @@ class IndexTests {
     private val fixture = SliceFixture()
 
     @Test
-    fun `should list all instructors`() = runTest {
-        fixture.createInstructor(lastName = "Costanza", firstMidName = "George")
-        fixture.createInstructor(lastName = "Seinfeld", firstMidName = "Jerry")
+    fun `should get list of instructors with details`() = runTest {
+        val deptId = fixture.insertDepartment(name = "English")
+        val courseId1 = fixture.insertCourse(title = "English 101", credits = 4, departmentId = deptId)
+        val courseId2 = fixture.insertCourse(title = "English 201", credits = 4, departmentId = deptId)
 
-        val instructors = fixture.harness.query(GetInstructorsQuery)
+        val instructor1Id = fixture.createInstructor(
+            lastName = "Costanza", firstMidName = "George",
+            officeLocation = "Austin", selectedCourseIds = listOf(courseId1, courseId2),
+        )
+        val instructor2Id = fixture.createInstructor(
+            lastName = "Seinfeld", firstMidName = "Jerry",
+            officeLocation = "Houston",
+        )
 
-        assertTrue(instructors.size >= 2)
+        val student1Id = fixture.insertStudent(lastName = "Kramer", firstMidName = "Cosmo")
+        val student2Id = fixture.insertStudent(lastName = "Benes", firstMidName = "Elaine")
+
+        fixture.insertEnrollment(courseId = courseId1, studentId = student1Id)
+        fixture.insertEnrollment(courseId = courseId1, studentId = student2Id)
+
+        val result = fixture.harness.query(GetInstructorsQuery)
+
+        assertTrue(result.size >= 2)
+        assertTrue(result.any { it.id == instructor1Id })
+        assertTrue(result.any { it.id == instructor2Id })
     }
 }
