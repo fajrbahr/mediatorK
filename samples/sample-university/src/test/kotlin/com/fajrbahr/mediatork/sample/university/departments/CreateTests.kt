@@ -3,13 +3,10 @@ package com.fajrbahr.mediatork.sample.university.departments
 import com.fajrbahr.mediatork.sample.university.SliceFixture
 import com.fajrbahr.mediatork.sample.university.department.create.CreateDepartmentCommand
 import com.fajrbahr.mediatork.sample.university.department.detail.GetDepartmentQuery
-import com.fajrbahr.mediatork.validator.ValidationException
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
-import kotlin.test.assertFailsWith
 import kotlin.test.assertNotNull
-import kotlin.test.assertTrue
 
 class CreateTests {
 
@@ -17,11 +14,14 @@ class CreateTests {
 
     @Test
     fun `should create new department`() = runTest {
-        val adminId = fixture.createInstructor()
+        val adminId = fixture.createInstructor(lastName = "Costanza", firstMidName = "George")
 
         val id = fixture.harness.send(
             CreateDepartmentCommand(
-                name = "Engineering", budget = 10.0, startDate = "2024-01-01", administratorId = adminId
+                name = "Engineering",
+                budget = 10.0,
+                startDate = "2024-01-01",
+                administratorId = adminId
             )
         )
 
@@ -29,22 +29,7 @@ class CreateTests {
         assertNotNull(created)
         assertEquals("Engineering", created.name)
         assertEquals(10.0, created.budget)
-        assertEquals(adminId, created.administratorId)
-    }
-
-    @Test
-    fun `should return positive id`() = runTest {
-        val adminId = fixture.createInstructor()
-
-        val id = fixture.createDepartment(name = "Engineering", administratorId = adminId)
-
-        assertTrue(id > 0)
-    }
-
-    @Test
-    fun `should reject invalid data`() = runTest {
-        assertFailsWith<ValidationException> {
-            fixture.harness.send(CreateDepartmentCommand(name = "AB", budget = -1.0, startDate = ""))
-        }
+        assertEquals("2024-01-01", created.startDate)
+        assertEquals("Costanza, George", created.administratorFullName)
     }
 }

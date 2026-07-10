@@ -14,30 +14,22 @@ class DetailsTests {
     private val fixture = SliceFixture()
 
     @Test
-    fun `should get student details`() = runTest {
-        val id = fixture.createStudent(lastName = "Schmoe", firstMidName = "Joe")
+    fun `should get details`() = runTest {
+        val adminId = fixture.createInstructor(lastName = "Costanza", firstMidName = "George")
+        val deptId = fixture.createDepartment(name = "English 101", administratorId = adminId)
+        val courseId1 = fixture.createCourse(title = "Course 1", credits = 10, departmentId = deptId)
+        val courseId2 = fixture.createCourse(title = "Course 2", credits = 10, departmentId = deptId)
 
-        val student = fixture.harness.query(GetStudentQuery(id))
+        val studentId = fixture.createStudent(lastName = "Schmoe", firstMidName = "Joe", enrollmentDate = "2013-01-01")
 
-        assertNotNull(student)
-        assertEquals("Joe", student.firstMidName)
-        assertEquals("Schmoe", student.lastName)
-    }
+        fixture.harness.send(EnrollStudentCommand(studentId = studentId, courseId = courseId1, grade = Grade.A))
+        fixture.harness.send(EnrollStudentCommand(studentId = studentId, courseId = courseId2, grade = Grade.F))
 
-    @Test
-    fun `should include enrollments`() = runTest {
-        val deptId = fixture.createDepartment(name = "English")
-        val courseId1 = fixture.createCourse(title = "Course 1", credits = 4, departmentId = deptId)
-        val courseId2 = fixture.createCourse(title = "Course 2", credits = 4, departmentId = deptId)
-        val studentId = fixture.createStudent()
-
-        fixture.harness.given(
-            EnrollStudentCommand(studentId = studentId, courseId = courseId1, grade = Grade.A),
-            EnrollStudentCommand(studentId = studentId, courseId = courseId2, grade = Grade.F),
-        )
-
-        val student = fixture.harness.query(GetStudentQuery(studentId))
-        assertNotNull(student)
-        assertEquals(2, student.enrollments.size)
+        val details = fixture.harness.query(GetStudentQuery(studentId))
+        assertNotNull(details)
+        assertEquals("Joe", details.firstMidName)
+        assertEquals("Schmoe", details.lastName)
+        assertEquals("2013-01-01", details.enrollmentDate)
+        assertEquals(2, details.enrollments.size)
     }
 }
