@@ -142,6 +142,15 @@ CachingPipelineBehavior(
 )
 ```
 
+Use `filter` to cache most requests while excluding specific types:
+
+```kotlin
+CachingPipelineBehavior(
+    ttlMs = 600_000,                     // 10 minutes
+    filter = { it !is CreateBookingCommand && it !is GetBookingQuery },
+)
+```
+
 | API | Description |
 |-----|-------------|
 | `invalidate(key)` | Remove a single entry |
@@ -154,6 +163,7 @@ CachingPipelineBehavior(
 |-----------|------|---------|-------------|
 | `ttlMs` | `Long` | `60_000` | Time-to-live per entry in milliseconds |
 | `keyFor` | `(Request<*>) -> String` | `toString()` | Cache key function |
+| `filter` | `(Request<*>) -> Boolean` | `{ true }` | When `false`, the request bypasses caching entirely |
 | `order` | `Int` | `0` | Position in the behavior chain |
 
 ---

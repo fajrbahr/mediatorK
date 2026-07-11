@@ -5,6 +5,7 @@ import com.fajrbahr.mediatork.sample.university.SliceFixture
 import com.fajrbahr.mediatork.sample.university.instructor.list.GetInstructorsQuery
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
+import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
 class IndexTests {
@@ -32,10 +33,17 @@ class IndexTests {
         fixture.insertEnrollment(courseId = courseId1, studentId = student1Id)
         fixture.insertEnrollment(courseId = courseId1, studentId = student2Id)
 
-        val result = fixture.harness.query(GetInstructorsQuery)
+        val result = fixture.harness.query(
+            GetInstructorsQuery(
+                selectedInstructorId = instructor1Id,
+                selectedCourseId = courseId1,
+            ),
+        )
 
-        assertTrue(result.size >= 2)
-        assertTrue(result.any { it.id == instructor1Id })
-        assertTrue(result.any { it.id == instructor2Id })
+        assertTrue(result.instructors.size >= 2)
+        assertTrue(result.instructors.any { it.id == instructor1Id })
+        assertTrue(result.instructors.any { it.id == instructor2Id })
+        assertEquals(2, result.courses.size)
+        assertEquals(2, result.enrollments.size)
     }
 }

@@ -20,17 +20,23 @@ import kotlin.time.TimeSource
  *
  * @param ttlMs time-to-live for each entry in milliseconds. Defaults to 60 000 (1 minute).
  * @param keyFor function that produces a cache key from a request. Defaults to `toString()`.
+ * @param filter predicate that decides whether a request should be cached.
+ *   When it returns `false` the behavior is skipped and the handler runs normally.
+ *   Defaults to caching every request.
  * @param order position in the behavior chain. Defaults to `0`.
  */
 class CachingPipelineBehavior(
     val ttlMs: Long = 60_000L,
     val keyFor: (Request<*>) -> String = { it.toString() },
+    val filter: (Request<*>) -> Boolean = { true },
     override val order: Int = 0,
 ) : PipelineBehavior {
 
     init {
         require(ttlMs > 0) { "ttlMs must be > 0, was $ttlMs" }
     }
+
+    override fun appliesTo(request: Request<*>): Boolean = filter(request)
 
     private val mutex = Mutex()
     private val cache = mutableMapOf<String, Entry>()

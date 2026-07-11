@@ -137,4 +137,55 @@ class CachingPipelineBehaviorTest {
         assertEquals("pong:hi", m.send(PingQuery("hi")))
         assertEquals("pong:hi", m.send(PingQuery("hi")))
     }
+
+    @Test
+    fun `filter excludes matching requests from caching`() = runTest {
+        val cache = CachingPipelineBehavior(
+            ttlMs = 60_000,
+            filter = { it !is PingQuery },
+        )
+        val m = mediator(pipelineBehaviors = listOf(cache)) { register(countingHandler()) }
+        m.send(PingQuery("x"))
+        m.send(PingQuery("x"))
+        assertEquals(2, handlerCallCount, "excluded request should run the handler every time")
+    }
+
+    @Test
+    fun `filter allows non-excluded requests to be cached`() = runTest {
+        var addCallCount = 0
+        val addHandler = object : RequestHandler<AddCommand, Int> {
+            override suspend fun handle(mediator: Mediator, requestContext: RequestContext, request: AddCommand): Int {
+                addCallCount++
+                return request.a + request.b
+            }
+        }
+        val cache = CachingPipelineBehavior(
+            ttlMs = 60_000,
+            filter = { it !is PingQuery },
+        )
+        val m = mediator(pipelineBehaviors = listOf(cache)) {
+            register(countingHandler())
+            register(addHandler)
+        }
+
+        m.send(PingQuery("x"))
+        m.send(PingQuery("x"))
+        assertEquals(2, handlerCallCount, "PingQuery should bypass cache")
+
+        m.send(AddCommand(1, 2))
+        m.send(AddCommand(1, 2))
+        assertEquals(1, addCallCount, "AddCommand should be cached")
+    }
+
+    @Test
+    fun `excluded requests do not appear in cache size`() = runTest {
+        val cache = CachingPipelineBehavior(
+            ttlMs = 60_000,
+            filter = { it !is PingQuery },
+        )
+        val m = mediator(pipelineBehaviors = listOf(cache)) { register(countingHandler()) }
+        m.send(PingQuery("a"))
+        m.send(PingQuery("b"))
+        assertEquals(0, cache.size(), "excluded requests should not be stored")
+    }
 }
