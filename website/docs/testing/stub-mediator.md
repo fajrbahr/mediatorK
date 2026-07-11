@@ -19,8 +19,20 @@ val mediator = StubMediator()
 
 mediator.on<GetUserQuery>() returns UserModel("Alice")
 mediator.on<CreateOrderCommand>() throws IllegalStateException("out of stock")
-mediator.on<GetUserQuery>() answers { query -> UserModel("User-${query.id}") }
+mediator.on<GetUserQuery> { query -> UserModel("User-${query.id}") }
 ```
+
+### With a validator
+
+Pass a `RequestValidator` to run validation before the handler lambda:
+
+```kotlin
+mediator.on<CreateOrderCommand>(CreateOrderValidator()) { cmd ->
+    OrderResult(cmd.itemId)
+}
+```
+
+If validation fails, `send` throws `ValidationException` — exactly like the real pipeline.
 
 `send` throws if no stub is registered for the request type.
 

@@ -2,6 +2,8 @@ package com.fajrbahr.mediatork.test
 
 import com.fajrbahr.mediatork.api.*
 import com.fajrbahr.mediatork.notification.NotificationPublishStrategy
+import com.fajrbahr.mediatork.validator.ValidationResult
+import com.fajrbahr.mediatork.validator.throwIfInvalid
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.flow
@@ -24,6 +26,23 @@ class StubMediator : Mediator {
 
     inline fun <reified T : Request<*>> on(): RequestStub<T> =
         RequestStub(T::class, requestStubs)
+
+    @Suppress("UNCHECKED_CAST")
+    inline fun <reified T : Request<*>> on(noinline block: (T) -> Any?) {
+        requestStubs[T::class] = { request -> block(request as T) }
+    }
+
+    @Suppress("UNCHECKED_CAST")
+    inline fun <reified T : Request<*>> on(
+        validator: RequestValidator<T>,
+        noinline block: (T) -> Any?,
+    ) {
+        requestStubs[T::class] = { request ->
+            val typed = request as T
+            validator.validate(typed).throwIfInvalid()
+            block(typed)
+        }
+    }
 
     inline fun <reified T : Notification> onNotification(): NotificationStub<T> =
         NotificationStub(T::class, notificationStubs)
