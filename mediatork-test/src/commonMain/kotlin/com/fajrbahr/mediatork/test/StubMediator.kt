@@ -22,6 +22,16 @@ class StubMediator : Mediator {
 
     private val pipelineStubs = mutableListOf<PipelineStub>()
 
+    @PublishedApi
+    internal val _sent = mutableListOf<Any>()
+    val sent: List<Any> get() = _sent.toList()
+
+    private val _published = mutableListOf<Any>()
+    val published: List<Any> get() = _published.toList()
+
+    inline fun <reified T : Request<*>> sentOf(): List<T> =
+        _sent.filterIsInstance<T>()
+
     var pipelineEnabled: Boolean = true
 
     inline fun <reified T : Request<*>> on(): RequestStub<T> =
@@ -119,6 +129,7 @@ class StubMediator : Mediator {
 
     @Suppress("UNCHECKED_CAST")
     override suspend fun <TRequest : Request<TResult>, TResult> send(request: TRequest): TResult {
+        _sent.add(request)
         val stub = requestStubs[request::class]
             ?: error("No stub registered for ${request::class.simpleName}")
 
@@ -140,16 +151,19 @@ class StubMediator : Mediator {
 
     @Suppress("UNCHECKED_CAST")
     override suspend fun <T : Notification> publish(notification: T) {
+        _published.add(notification)
         notificationStubs[notification::class]?.invoke(notification)
     }
 
     @Suppress("UNCHECKED_CAST")
     override suspend fun <T : Notification> publish(notification: T, publisher: NotificationPublishStrategy) {
+        _published.add(notification)
         notificationStubs[notification::class]?.invoke(notification)
     }
 
     @Suppress("UNCHECKED_CAST")
     override fun <TRequest : StreamRequest<T>, T> stream(request: TRequest): Flow<T> {
+        _sent.add(request as Any)
         val stub = streamStubs[request::class]
             ?: return emptyFlow()
         return stub(request) as Flow<T>
