@@ -1,9 +1,6 @@
 package com.fajrbahr.mediatork
 
 import com.fajrbahr.mediatork.api.*
-import com.fajrbahr.mediatork.notification.NotificationPublishStrategy
-import com.fajrbahr.mediatork.notification.ParallelNotificationPublisher
-import com.fajrbahr.mediatork.notification.ThrowMissingNotificationHandler
 
 // ── Request / Notification types ─────────────────────────────────────────────
 
@@ -13,67 +10,3 @@ data class NoResultCommand(val id: String) : Request.Unit
 data class EchoQuery(val text: String) : Request<String>
 data class PingNotification(val message: String) : Notification
 data class AlertNotification(val level: Int) : Notification
-
-// ── Handlers ──────────────────────────────────────────────────────────────────
-
-class PingHandler : RequestHandler<PingQuery, String> {
-    override suspend fun handle(mediator: Mediator, requestContext: RequestContext, request: PingQuery) =
-        "pong:${request.value}"
-}
-
-class AddHandler : RequestHandler<AddCommand, Int> {
-    override suspend fun handle(mediator: Mediator, requestContext: RequestContext, request: AddCommand) =
-        request.a + request.b
-}
-
-class NoResultHandler : RequestHandler<NoResultCommand, Unit> {
-    var lastId: String? = null
-    override suspend fun handle(mediator: Mediator, requestContext: RequestContext, request: NoResultCommand) {
-        lastId = request.id
-    }
-}
-
-class EchoHandler : RequestHandler<EchoQuery, String> {
-    override suspend fun handle(mediator: Mediator, requestContext: RequestContext, request: EchoQuery) =
-        request.text
-}
-
-class RecordingNotificationHandler : NotificationHandler<PingNotification> {
-    val received = mutableListOf<String>()
-    override suspend fun handle(notification: PingNotification) {
-        received += notification.message
-    }
-}
-
-class AlertNotificationHandler : NotificationHandler<AlertNotification> {
-    val levels = mutableListOf<Int>()
-    override suspend fun handle(notification: AlertNotification) {
-        levels += notification.level
-    }
-}
-
-// ── Builder helper ────────────────────────────────────────────────────────────
-
-fun mediator(
-    pipelineBehaviors: List<PipelineBehavior> = emptyList(),
-    notificationPublisher: NotificationPublishStrategy = ParallelNotificationPublisher(),
-    missingNotificationHandler: NotificationHandler<Notification> = ThrowMissingNotificationHandler(),
-    registrar: MediatorRegistrar? = null,
-    init: (HandlerRegistry.() -> Unit)? = null,
-): Mediator {
-    val finalRegistrar = when {
-        registrar != null -> registrar
-        init != null -> object : MediatorRegistrar {
-            override fun register(registry: HandlerRegistry) = registry.init()
-        }
-        else -> object : MediatorRegistrar {
-            override fun register(registry: HandlerRegistry) {}
-        }
-    }
-    return MediatorFactory.create(
-        registrars = listOf(finalRegistrar),
-        pipelineBehaviors = pipelineBehaviors,
-        notificationPublisher = notificationPublisher,
-        missingNotificationHandler = missingNotificationHandler,
-    )
-}

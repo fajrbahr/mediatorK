@@ -1,21 +1,22 @@
 package com.fajrbahr.mediatork.sample.university
 
 import android.content.SharedPreferences
-import com.fajrbahr.mediatork.MediatorFactory
-import com.fajrbahr.mediatork.sample.university.course.CourseRegistrar
+import com.fajrbahr.mediatork.mediatorK
+import com.fajrbahr.mediatork.sample.university.about.aboutModule
 import com.fajrbahr.mediatork.sample.university.course.CourseStore
+import com.fajrbahr.mediatork.sample.university.course.courseModule
 import com.fajrbahr.mediatork.sample.university.course.model.Course
-import com.fajrbahr.mediatork.sample.university.department.DepartmentRegistrar
 import com.fajrbahr.mediatork.sample.university.department.DepartmentStore
+import com.fajrbahr.mediatork.sample.university.department.departmentModule
 import com.fajrbahr.mediatork.sample.university.department.model.Department
-import com.fajrbahr.mediatork.sample.university.instructor.InstructorRegistrar
 import com.fajrbahr.mediatork.sample.university.instructor.InstructorStore
+import com.fajrbahr.mediatork.sample.university.instructor.instructorModule
 import com.fajrbahr.mediatork.sample.university.instructor.createedit.CreateEditInstructorCommand
 import com.fajrbahr.mediatork.sample.university.instructor.model.Instructor
 import com.fajrbahr.mediatork.sample.university.model.Enrollment
 import com.fajrbahr.mediatork.sample.university.model.Grade
-import com.fajrbahr.mediatork.sample.university.student.StudentRegistrar
 import com.fajrbahr.mediatork.sample.university.student.StudentStore
+import com.fajrbahr.mediatork.sample.university.student.studentModule
 import com.fajrbahr.mediatork.sample.university.student.create.CreateStudentCommand
 import com.fajrbahr.mediatork.sample.university.student.model.Student
 
@@ -65,14 +66,13 @@ class SliceFixture {
     private var courseNumberSeq = 1000
 
     val harness =
-        MediatorFactory.create(
-            registrars = listOf(
-                CourseRegistrar(courseStore, deptStore, studentStore),
-                DepartmentRegistrar(deptStore, instructorStore, courseStore),
-                InstructorRegistrar(instructorStore, deptStore, courseStore, studentStore),
-                StudentRegistrar(studentStore, courseStore),
-            ),
-        )
+        mediatorK {
+            courseModule(courseStore, deptStore, studentStore)
+            departmentModule(deptStore, instructorStore, courseStore)
+            instructorModule(instructorStore, deptStore, courseStore, studentStore)
+            studentModule(studentStore, courseStore)
+            aboutModule(studentStore)
+        }
 
     fun nextCourseNumber(): Int = ++courseNumberSeq
 

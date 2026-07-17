@@ -1,22 +1,13 @@
 package local.meditor.behaviors
 
-import com.fajrbahr.mediatork.api.PipelineBehavior
-import com.fajrbahr.mediatork.api.RequestContext
+import com.fajrbahr.mediatork.Behavior
 import com.fajrbahr.mediatork.api.Request
-import com.fajrbahr.mediatork.api.RequestHandlerDelegate
+import com.fajrbahr.mediatork.api.RequestContext
+import com.fajrbahr.mediatork.behavior
 import local.meditor.context.locale
-import java.util.*
+import java.util.Locale
 
-class LocaleBehavior : PipelineBehavior {
-    override val order = -10
-
-    override suspend fun <TRequest : Request<TResult>, TResult> process(
-        requestContext: RequestContext,
-        next: RequestHandlerDelegate<TRequest, TResult>,
-        request: TRequest,
-    ): TResult {
-        val systemLocale = Locale.getDefault().language
-        requestContext.locale = systemLocale
-        return next(request)
-    }
+fun localeBehavior(): Behavior = behavior(order = -10) { _, context , next ->
+    context.locale = Locale.getDefault().language
+    next()
 }

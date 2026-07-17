@@ -1,5 +1,10 @@
 package com.fajrbahr.mediatork.validator
 
+class ValidationException(val errors: List<*>, cause: Throwable? = null) :
+    Exception(errors.joinToString("; ") { it.toString() }, cause) {
+    constructor(message: String, cause: Throwable? = null) : this(listOf(message), cause)
+}
+
 /**
  * Runs all checks in [block] and returns [ValidationResult.Invalid] with the full error list
  * if any fail, or [ValidationResult.Valid] if all pass.

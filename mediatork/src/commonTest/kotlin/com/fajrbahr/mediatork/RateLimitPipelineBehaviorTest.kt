@@ -1,7 +1,5 @@
 package com.fajrbahr.mediatork
 
-import com.fajrbahr.mediatork.pipeline.buildin.RateLimitExceededException
-import com.fajrbahr.mediatork.pipeline.buildin.RateLimitPipelineBehavior
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -11,15 +9,21 @@ class RateLimitPipelineBehaviorTest {
 
     @Test
     fun `allows requests within limit`() = runTest {
-        val rl = RateLimitPipelineBehavior(maxRequests = 3, windowMs = 60_000)
-        val m = mediator(pipelineBehaviors = listOf(rl)) { register(PingHandler()) }
+        val rl = rateLimit(maxRequests = 3, windowMs = 60_000)
+        val m = mediatorK {
+            handle<PingQuery, String> { "pong:${it.value}" }
+            behaviors(rl)
+        }
         repeat(3) { m.send(PingQuery("x")) }
     }
 
     @Test
     fun `throws when limit exceeded`() = runTest {
-        val rl = RateLimitPipelineBehavior(maxRequests = 2, windowMs = 60_000)
-        val m = mediator(pipelineBehaviors = listOf(rl)) { register(PingHandler()) }
+        val rl = rateLimit(maxRequests = 2, windowMs = 60_000)
+        val m = mediatorK {
+            handle<PingQuery, String> { "pong:${it.value}" }
+            behaviors(rl)
+        }
         m.send(PingQuery("x"))
         m.send(PingQuery("x"))
         assertFailsWith<RateLimitExceededException> { m.send(PingQuery("x")) }
@@ -27,10 +31,11 @@ class RateLimitPipelineBehaviorTest {
 
     @Test
     fun `limits are per request type`() = runTest {
-        val rl = RateLimitPipelineBehavior(maxRequests = 1, windowMs = 60_000)
-        val m = mediator(pipelineBehaviors = listOf(rl)) {
-            register(PingHandler())
-            register(AddHandler())
+        val rl = rateLimit(maxRequests = 1, windowMs = 60_000)
+        val m = mediatorK {
+            handle<PingQuery, String> { "pong:${it.value}" }
+            handle<AddCommand, Int> { it.a + it.b }
+            behaviors(rl)
         }
         m.send(PingQuery("x"))   // 1st PingQuery — ok
         m.send(AddCommand(1, 2)) // 1st AddCommand — ok (separate window)
@@ -39,8 +44,11 @@ class RateLimitPipelineBehaviorTest {
 
     @Test
     fun `exception message contains request name and limits`() = runTest {
-        val rl = RateLimitPipelineBehavior(maxRequests = 1, windowMs = 500)
-        val m = mediator(pipelineBehaviors = listOf(rl)) { register(PingHandler()) }
+        val rl = rateLimit(maxRequests = 1, windowMs = 500)
+        val m = mediatorK {
+            handle<PingQuery, String> { "pong:${it.value}" }
+            behaviors(rl)
+        }
         m.send(PingQuery("x"))
         val ex = assertFailsWith<RateLimitExceededException> { m.send(PingQuery("y")) }
         assertEquals("PingQuery", ex.requestName)

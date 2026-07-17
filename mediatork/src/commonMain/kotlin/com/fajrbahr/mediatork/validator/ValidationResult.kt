@@ -1,7 +1,7 @@
 package com.fajrbahr.mediatork.validator
 
 /**
- * The result of running a [com.fajrbahr.mediatork.api.RequestValidator].
+ * The result of validating a request.
  *
  * Produce a result with the [rules] or [rulesFailFast] DSL builders, or construct directly
  * for simple single-check validators.

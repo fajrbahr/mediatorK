@@ -1,12 +1,7 @@
 package com.fajrbahr.mediatork.sample.university.student.detail
 
-import com.fajrbahr.mediatork.api.Mediator
 import com.fajrbahr.mediatork.api.Request
-import com.fajrbahr.mediatork.api.RequestContext
-import com.fajrbahr.mediatork.api.RequestHandler
-import com.fajrbahr.mediatork.sample.university.course.CourseStore
 import com.fajrbahr.mediatork.sample.university.model.Grade
-import com.fajrbahr.mediatork.sample.university.student.StudentStore
 
 // ── Query ───────────────────────────────────────────────────────────────────
 
@@ -26,34 +21,6 @@ data class StudentDetailModel(
     )
 }
 
-class GetStudentHandler(
-    private val store: StudentStore,
-    private val courseStore: CourseStore,
-) : RequestHandler<GetStudentQuery, StudentDetailModel?> {
-    override suspend fun handle(
-        mediator: Mediator,
-        requestContext: RequestContext,
-        request: GetStudentQuery,
-    ): StudentDetailModel? {
-        val student = store.findById(request.id) ?: return null
-        val enrollments = store.findEnrollmentsByStudentId(request.id)
-        return StudentDetailModel(
-            id = student.id,
-            lastName = student.lastName,
-            firstMidName = student.firstMidName,
-            enrollmentDate = student.enrollmentDate,
-            enrollments = enrollments.map { e ->
-                val course = courseStore.findById(e.courseId)
-                StudentDetailModel.EnrollmentModel(
-                    courseId = e.courseId,
-                    courseTitle = course?.title ?: "Unknown",
-                    grade = e.grade,
-                )
-            },
-        )
-    }
-}
-
 // ── Enroll ───────────────────────────────────────────────────────────────────
 
 data class EnrollStudentCommand(
@@ -61,22 +28,3 @@ data class EnrollStudentCommand(
     val courseId: Int,
     val grade: Grade? = null,
 ) : Request<Int>
-
-class EnrollStudentHandler(
-    private val store: StudentStore,
-) : RequestHandler<EnrollStudentCommand, Int> {
-    override suspend fun handle(
-        mediator: Mediator,
-        requestContext: RequestContext,
-        request: EnrollStudentCommand,
-    ): Int {
-        val enrollment = com.fajrbahr.mediatork.sample.university.model.Enrollment(
-            id = store.nextEnrollmentId(),
-            courseId = request.courseId,
-            studentId = request.studentId,
-            grade = request.grade,
-        )
-        store.saveEnrollment(enrollment)
-        return enrollment.id
-    }
-}

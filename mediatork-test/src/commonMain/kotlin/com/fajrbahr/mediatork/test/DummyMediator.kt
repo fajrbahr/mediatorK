@@ -24,6 +24,6 @@ class DummyMediator : Mediator {
         Unit as TResult
 
     override suspend fun <T : Notification> publish(notification: T) = Unit
-    override suspend fun <T : Notification> publish(notification: T, publisher: NotificationPublishStrategy) = Unit
+    override suspend fun <T : Notification> publish(notification: T, strategy: NotificationPublishStrategy) = Unit
     override fun <TRequest : StreamRequest<T>, T> stream(request: TRequest): Flow<T> = emptyFlow()
 }
