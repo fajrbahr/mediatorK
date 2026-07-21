@@ -52,7 +52,7 @@ handlers must be registered with `registerStream(...)` (or `+handler` inside `sc
 :::info Catch misconfiguration at startup
 `MediatorFactory.create(verifyHandlers = true)` (the default) prints
 `MEDIATOR WARNING: No handler registered for '<Type>'` at startup for registered types with missing handlers, and
-[`MediatorTestUtils.assertAllHandlersRegistered`](testing/handler-validation.md) turns wiring gaps into failing tests.
+a [`testMediator`](testing/test-mediator.md) integration test turns wiring gaps into failing tests.
 :::
 
 ---
@@ -255,4 +255,4 @@ After a build, inspect the generated file to see exactly what was found:
 ## Still stuck?
 
 - [Exception Handling](core/exceptions.md) — every built-in exception and how to customize missing-handler behavior.
-- [Handler registration tests](testing/handler-validation.md) — assert all handlers are wired before shipping.
+- [testMediator](testing/test-mediator.md) — spin up a real mediator in tests to assert handlers behave as expected.

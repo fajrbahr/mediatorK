@@ -6,19 +6,21 @@ sidebar_label: Testing Notifications
 
 # Testing Notifications
 
-## captureNotifications
+## Capturing published notifications
 
-`captureNotifications<T>()` is the quickest way to assert that a notification was published. Call it on a
-`FakeMediator`; it registers the handler and returns a live list that fills itself as notifications arrive.
+Register a `notification<T>` listener in the `testMediator { }` block and let it append to a list. There is nothing to
+mock — the listener is the real thing.
 
 ```kotlin
 @Test
 fun `order placed event is published`() = runTest {
-    val mediator = FakeMediator {
-        +CreateOrderHandler()
+    val events = mutableListOf<OrderPlacedEvent>()
+    val mediator = testMediator {
+        handle<CreateOrderCommand, OrderResult> { OrderResult(orderId = it.id) }
+        notification<OrderPlacedEvent> { events += it }
     }
-    val events = mediator.captureNotifications<OrderPlacedEvent>()
 
+    // your code under test publishes OrderPlacedEvent as part of handling the command
     mediator.send(CreateOrderCommand(id = "ORD-1", amount = 99.0))
 
     assertEquals(1, events.size)
@@ -26,25 +28,28 @@ fun `order placed event is published`() = runTest {
 }
 ```
 
+If the code under test publishes directly through the mediator, you can also assert on the recording instead of a
+listener:
+
+```kotlin
+mediator.publish(OrderPlacedEvent("ORD-1"))
+assertEquals(1, mediator.publishedOf<OrderPlacedEvent>().size)
+```
+
 ---
 
-## fakeNotificationHandler
+## Custom logic in a listener
 
-When you need full control over what happens inside the handler (side effects, conditional logic, custom assertions),
-use `fakeNotificationHandler` directly:
+The listener body is a plain lambda, so put whatever assertions or side effects you need inside it:
 
 ```kotlin
 @Test
 fun `analytics is tracked on order placed`() = runTest {
-    val mediator = FakeMediator {
-        +CreateOrderHandler()
-    }
     val tracked = mutableListOf<String>()
-    mediator.registry.registerNotification(
-        fakeNotificationHandler<OrderPlacedEvent> { event ->
-            tracked += "tracked:${event.orderId}"
-        }
-    )
+    val mediator = testMediator {
+        handle<CreateOrderCommand, OrderResult> { OrderResult(orderId = it.id) }
+        notification<OrderPlacedEvent> { tracked += "tracked:${it.orderId}" }
+    }
 
     mediator.send(CreateOrderCommand(id = "ORD-1", amount = 99.0))
 
@@ -54,20 +59,21 @@ fun `analytics is tracked on order placed`() = runTest {
 
 ---
 
-## Multiple handlers for the same notification
+## Multiple listeners for the same notification
 
-`registerNotification` appends; you can register several handlers for the same type and all of them fire:
+`notification<T>` can be registered several times; every listener fires, in `order`:
 
 ```kotlin
 @Test
 fun `all listeners receive the event`() = runTest {
-    val mediator = FakeMediator {
-        +CreateOrderHandler()
+    val emails = mutableListOf<OrderPlacedEvent>()
+    val sms    = mutableListOf<OrderPlacedEvent>()
+    val mediator = testMediator {
+        notification<OrderPlacedEvent> { emails += it }
+        notification<OrderPlacedEvent> { sms += it }
     }
-    val emails = mediator.captureNotifications<OrderPlacedEvent>()
-    val sms    = mediator.captureNotifications<OrderPlacedEvent>()
 
-    mediator.send(CreateOrderCommand(id = "ORD-1", amount = 99.0))
+    mediator.publish(OrderPlacedEvent("ORD-1"))
 
     assertEquals(1, emails.size)
     assertEquals(1, sms.size)

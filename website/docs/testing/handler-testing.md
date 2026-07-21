@@ -8,8 +8,8 @@ sidebar_label: Testing Handlers
 
 ## Handlers are glue, not logic
 
-A handler's job is to orchestrate: call a repository, map a result, return a value. It is a glue class, not a
-business-logic class. The distinction matters because it determines how you test it.
+A handler's job is to orchestrate: call a repository, map a result, return a value. It is glue, not a business-logic
+class. The distinction matters because it determines how you test it.
 
 **Integration test the handler.** Wire it against a real (or in-memory) database, a real repository, or a real service.
 The handler test verifies that the pieces connect correctly.
@@ -24,36 +24,32 @@ belongs in a pure class is still sitting inside the handler.
 
 ## Before: logic inside the handler
 
+A handler is a `handle { }` lambda; dependencies come in through a factory function that closes over them:
+
 ```kotlin
-class ValidateCardHandler(
-    private val cardRepository: CardRepository,
-) : RequestHandler<ValidateCardCommand, ValidationResult> {
-
-    override suspend fun handle(
-        mediator: Mediator,
-        requestContext: RequestContext,
-        request: ValidateCardCommand,
-    ): ValidationResult {
-        // date parsing and validation logic living inside the handler
-        val onlyDigits = request.expiryDate.filter { it.isDigit() }
-        if (onlyDigits.length != 4) return ValidationResult.Invalid("Bad date format")
-
-        val month = onlyDigits.substring(0, 2).toInt()
-        val year  = onlyDigits.substring(2, 4).toInt()
-        if (month < 1 || month > 12) return ValidationResult.Invalid("Invalid month")
-
-        val card = cardRepository.find(request.cardId)
-            ?: return ValidationResult.Invalid("Card not found")
-
-        return if (card.expiryMonth == month && card.expiryYear == year)
-            ValidationResult.Valid
-        else
-            ValidationResult.Invalid("Expiry mismatch")
+fun validateCardHandler(
+    cardRepository: CardRepository,
+): Handler<ValidateCardCommand, ValidationResult> = { request ->
+    // date parsing and validation logic living inside the handler
+    val onlyDigits = request.expiryDate.filter { it.isDigit() }
+    when {
+        onlyDigits.length != 4 -> ValidationResult.Invalid("Bad date format")
+        onlyDigits.substring(0, 2).toInt() !in 1..12 -> ValidationResult.Invalid("Invalid month")
+        else -> {
+            val month = onlyDigits.substring(0, 2).toInt()
+            val year = onlyDigits.substring(2, 4).toInt()
+            val card = cardRepository.find(request.cardId)
+            when {
+                card == null -> ValidationResult.Invalid("Card not found")
+                card.expiryMonth == month && card.expiryYear == year -> ValidationResult.Valid
+                else -> ValidationResult.Invalid("Expiry mismatch")
+            }
+        }
     }
 }
 ```
 
-To unit test the date validation branch you need to stub `CardRepository`. The logic and the I/O are tangled together.
+To unit test the date validation branch you'd need to stub `CardRepository`. The logic and the I/O are tangled together.
 
 ---
 
@@ -85,25 +81,19 @@ The handler becomes glue; it delegates validation to `ExpirationDate` and touche
 already known-good:
 
 ```kotlin
-class ValidateCardHandler(
-    private val cardRepository: CardRepository,
-) : RequestHandler<ValidateCardCommand, ValidationResult> {
-
-    override suspend fun handle(
-        mediator: Mediator,
-        requestContext: RequestContext,
-        request: ValidateCardCommand,
-    ): ValidationResult {
-        val expiry = ExpirationDate.create(request.expiryDate)
-        if (!expiry.isValid) return ValidationResult.Invalid("Bad expiry date")
-
+fun validateCardHandler(
+    cardRepository: CardRepository,
+): Handler<ValidateCardCommand, ValidationResult> = { request ->
+    val expiry = ExpirationDate.create(request.expiryDate)
+    if (!expiry.isValid) {
+        ValidationResult.Invalid("Bad expiry date")
+    } else {
         val card = cardRepository.find(request.cardId)
-            ?: return ValidationResult.Invalid("Card not found")
-
-        return if (card.expiryMonth == expiry.month && card.expiryYear == expiry.year)
-            ValidationResult.Valid
-        else
-            ValidationResult.Invalid("Expiry mismatch")
+        when {
+            card == null -> ValidationResult.Invalid("Card not found")
+            card.expiryMonth == expiry.month && card.expiryYear == expiry.year -> ValidationResult.Valid
+            else -> ValidationResult.Invalid("Expiry mismatch")
+        }
     }
 }
 ```
@@ -137,21 +127,22 @@ class ExpirationDateTest {
 }
 ```
 
-No `FakeMediator`, no stubbed repository, no coroutine test scope. The rule is: if a test requires a mock, the logic
-probably belongs somewhere else.
+No mediator, no stubbed repository, no coroutine test scope. The rule is: if a test requires a mock, the logic probably
+belongs somewhere else.
 
 ---
 
 ## Integration test the handler
 
-The handler test verifies the wiring (repository call, result mapping), not the business rules:
+Register the handler in a `testMediator { }` against an in-memory repository. The test verifies the wiring (repository
+call, result mapping), not the business rules:
 
 ```kotlin
 class ValidateCardHandlerTest {
 
     private val repository = InMemoryCardRepository()
-    private val mediator = FakeMediator {
-        +ValidateCardHandler(repository)
+    private val mediator = testMediator {
+        handle(validateCardHandler(repository))
     }
 
     @Test
@@ -179,8 +170,8 @@ handler test only checks the paths that require the repository.
 
 ## Custom mediator
 
-Remember, you can always extend `Mediator` however you need. `FakeMediator` and `DummyMediator` are conveniences, not
-constraints. If your test scenario calls for something more specific, implement the interface directly:
+Remember, you can always extend `Mediator` however you need. `testMediator` is a convenience, not a
+constraint. If your test scenario calls for something more specific, implement the interface directly:
 
 ```kotlin
 class CapturingMediator : Mediator {
@@ -195,11 +186,12 @@ class CapturingMediator : Mediator {
     override fun <TRequest : StreamRequest<T>, T> stream(request: TRequest): Flow<T> = emptyFlow()
 
     override suspend fun <T : Notification> publish(notification: T) = Unit
-    override suspend fun <T : Notification> publish(notification: T, publisher: NotificationPublishStrategy) = Unit
+    override suspend fun <T : Notification> publish(notification: T, strategy: NotificationPublishStrategy) = Unit
 }
 ```
 
-The `Mediator` interface is yours to implement, wrap, decorate, or proxy in any way the test requires.
+The `Mediator` interface is yours to implement, wrap, decorate, or proxy in any way the test requires — which is exactly
+how [`RecordingMediator`](test-mediator.md#recordingmediator) is built.
 
 ---
 

@@ -26,13 +26,13 @@ class InitialViewModel(
 Every test now starts the same way:
 
 ```kotlin
-val vm = InitialViewModel(DummyMediator())   // never calls send
-val vm = InitialViewModel(FakeMediator())    // register handlers as needed
+val vm = InitialViewModel(testMediator { })       // real empty mediator — no handlers registered
+val vm = InitialViewModel(testMediator { … })     // register handler bodies as needed
 ```
 
-The use-cases, metrics reporters, toggle observers, and performance trackers all move into individual
-`RequestHandler` implementations. Each handler is tested in isolation. The ViewModel test only verifies how the
-ViewModel reacts to success or failure; it never needs to know which use-cases exist.
+The use-cases, metrics reporters, toggle observers, and performance trackers all move into individual `handle { }`
+lambdas. Each handler is tested in isolation. The ViewModel test only verifies how the ViewModel reacts to success or
+failure; it never needs to know which use-cases exist.
 
 ---
 
@@ -50,4 +50,4 @@ dependencies {
 
 ## Next
 
-→ [DummyMediator](dummy-mediator.md)
+→ [testMediator](test-mediator.md)

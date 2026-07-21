@@ -113,7 +113,7 @@ dependencies {
 }
 ```
 
-See [Handler Validation](testing/handler-validation.md) for usage.
+See [testMediator](testing/test-mediator.md) for usage.
 
 ---
 
