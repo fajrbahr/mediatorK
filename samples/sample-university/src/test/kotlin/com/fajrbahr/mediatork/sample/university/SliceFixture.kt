@@ -2,6 +2,7 @@ package com.fajrbahr.mediatork.sample.university
 
 import android.content.SharedPreferences
 import com.fajrbahr.mediatork.mediatorK
+import com.fajrbahr.mediatork.test.RecordingMediator
 import com.fajrbahr.mediatork.sample.university.about.aboutModule
 import com.fajrbahr.mediatork.sample.university.course.CourseStore
 import com.fajrbahr.mediatork.sample.university.course.courseModule
@@ -65,14 +66,17 @@ class SliceFixture {
     private val studentStore = StudentStore(prefs)
     private var courseNumberSeq = 1000
 
+    // The real production modules, wrapped so tests can also assert on what was sent/published.
     val harness =
-        mediatorK {
-            courseModule(courseStore, deptStore, studentStore)
-            departmentModule(deptStore, instructorStore, courseStore)
-            instructorModule(instructorStore, deptStore, courseStore, studentStore)
-            studentModule(studentStore, courseStore)
-            aboutModule(studentStore)
-        }
+        RecordingMediator(
+            mediatorK {
+                courseModule(courseStore, deptStore, studentStore)
+                departmentModule(deptStore, instructorStore, courseStore)
+                instructorModule(instructorStore, deptStore, courseStore, studentStore)
+                studentModule(studentStore, courseStore)
+                aboutModule(studentStore)
+            }
+        )
 
     fun nextCourseNumber(): Int = ++courseNumberSeq
 

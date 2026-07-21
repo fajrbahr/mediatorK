@@ -29,5 +29,8 @@ class CreateTests {
         assertEquals(deptId, created.departmentId)
         assertEquals(command.credits, created.credits)
         assertEquals(command.title, created.title)
+
+        // The recording mediator saw exactly the command we sent through the front door.
+        assertEquals(command, fixture.harness.sentOf<CreateCourseCommand>().single())
     }
 }
