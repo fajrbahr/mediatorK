@@ -1,5 +1,9 @@
 package com.fajrbahr.mediatork
 
+import com.fajrbahr.mediatork.api.Mediator
+import com.fajrbahr.mediatork.api.RequestContext
+import com.fajrbahr.mediatork.api.RequestHandler
+import com.fajrbahr.mediatork.pipeline.buildin.DeduplicationPipelineBehavior
 import kotlinx.coroutines.async
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
@@ -9,24 +13,25 @@ class DeduplicationPipelineBehaviorTest {
 
     @Test
     fun `single request executes normally`() = runTest {
-        val dedup = deduplicator()
-        val m = mediatorK {
-            handle<PingQuery, String> { "pong:${it.value}" }
-            behaviors(dedup)
-        }
+        val dedup = DeduplicationPipelineBehavior()
+        val m = mediator(pipelineBehaviors = listOf(dedup)) { register(PingHandler()) }
         assertEquals("pong:hi", m.send(PingQuery("hi")))
     }
 
     @Test
     fun `sequential requests with same key both execute`() = runTest {
         var count = 0
-        val dedup = deduplicator()
-        val m = mediatorK {
-            handle<PingQuery, String> {
-                count++; "pong:${it.value}"
+        val handler = object : RequestHandler<PingQuery, String> {
+            override suspend fun handle(
+                mediator: Mediator,
+                requestContext: RequestContext,
+                request: PingQuery
+            ): String {
+                count++; return "pong:${request.value}"
             }
-            behaviors(dedup)
         }
+        val dedup = DeduplicationPipelineBehavior()
+        val m = mediator(pipelineBehaviors = listOf(dedup)) { register(handler) }
         m.send(PingQuery("x"))
         m.send(PingQuery("x"))
         // Sequential calls are NOT deduplicated — only concurrent in-flight ones are
@@ -35,11 +40,8 @@ class DeduplicationPipelineBehaviorTest {
 
     @Test
     fun `inFlightCount is zero when idle`() = runTest {
-        val dedup = deduplicator()
-        val m = mediatorK {
-            handle<PingQuery, String> { "pong:${it.value}" }
-            behaviors(dedup)
-        }
+        val dedup = DeduplicationPipelineBehavior()
+        val m = mediator(pipelineBehaviors = listOf(dedup)) { register(PingHandler()) }
         m.send(PingQuery("x"))
         assertEquals(0, dedup.inFlightCount())
     }
@@ -47,14 +49,18 @@ class DeduplicationPipelineBehaviorTest {
     @Test
     fun `concurrent requests with same key share result`() = runTest {
         var executions = 0
-        val dedup = deduplicator()
-        val m = mediatorK {
-            handle<PingQuery, String> {
+        val handler = object : RequestHandler<PingQuery, String> {
+            override suspend fun handle(
+                mediator: Mediator,
+                requestContext: RequestContext,
+                request: PingQuery
+            ): String {
                 executions++
-                "pong:${it.value}"
+                return "pong:${request.value}"
             }
-            behaviors(dedup)
         }
+        val dedup = DeduplicationPipelineBehavior()
+        val m = mediator(pipelineBehaviors = listOf(dedup)) { register(handler) }
 
         val d1 = async { m.send(PingQuery("x")) }
         val d2 = async { m.send(PingQuery("x")) }

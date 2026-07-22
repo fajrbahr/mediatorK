@@ -2,45 +2,83 @@
 <SmellBaseline>
   <ManuallySuppressedIssues/>
   <CurrentIssues>
-    <ID>LongParameterList:MediatorBuilder.kt$MediatorConfig$( val handlers: Map&lt;KClass&lt;*&gt;, suspend HandlerScope.(Any) -&gt; Any?&gt;, val streamHandlers: Map&lt;KClass&lt;*&gt;, HandlerScope.(Any) -&gt; Flow&lt;*&gt;&gt;, val notificationListeners: Map&lt;KClass&lt;*&gt;, List&lt;Pair&lt;Int, suspend (Any) -&gt; Unit&gt;&gt;&gt;, val behaviors: List&lt;Behavior&gt;, val streamBehaviors: List&lt;StreamBehavior&gt;, val notificationPublisher: NotificationPublishStrategy, val onMissingHandler: (Request&lt;*&gt;) -&gt; Nothing, val onMissingNotificationHandler: (Notification) -&gt; Unit, )</ID>
-    <ID>MagicNumber:Behaviors.kt$100</ID>
-    <ID>MaxLineLength:DummyMediatorTest.kt$DummyMediatorTest$dummy.publish(OrderPlacedEvent("ORD-1"), com.fajrbahr.mediatork.notification.NotificationPublishStrategy.PARALLEL)</ID>
+    <ID>LongMethod:MediatorKKoinProcessor.kt$MediatorKKoinProcessor$private fun generateKoinModule( requestHandlers: List&lt;KSClassDeclaration&gt;, streamHandlers: List&lt;KSClassDeclaration&gt;, notificationHandlers: List&lt;KSClassDeclaration&gt;, )</ID>
+    <ID>LongParameterList:MediatorModule.kt$MediatorFactory$( registrars: List&lt;MediatorRegistrar&gt; = emptyList(), pipelineBehaviors: List&lt;PipelineBehavior&gt; = emptyList(), streamPipelineBehaviors: List&lt;StreamPipelineBehavior&gt; = emptyList(), notificationPublisher: NotificationPublishStrategy = NotificationPublishStrategy.ParallelNotificationPublisher(), verifyHandlers: Boolean = true, missingNotificationHandler: NotificationHandler&lt;Notification&gt; = ThrowMissingNotificationHandler(), missingRequestHandler: RequestHandler&lt;Request&lt;Any?&gt;, Any?&gt; = ThrowMissingRequestHandler(), )</ID>
+    <ID>LongParameterList:MediatorModule.kt$MediatorFactory$( registry: HandlerRegistry, pipelineBehaviors: List&lt;PipelineBehavior&gt; = emptyList(), streamPipelineBehaviors: List&lt;StreamPipelineBehavior&gt; = emptyList(), notificationPublisher: NotificationPublishStrategy = NotificationPublishStrategy.ParallelNotificationPublisher(), missingNotificationHandler: NotificationHandler&lt;Notification&gt; = ThrowMissingNotificationHandler(), missingRequestHandler: RequestHandler&lt;Request&lt;Any?&gt;, Any?&gt; = ThrowMissingRequestHandler(), )</ID>
+    <ID>MagicNumber:LoggingPipelineBehavior.kt$LoggingPipelineBehavior$100</ID>
+    <ID>MagicNumber:ValidationBehavior.kt$ValidationBehavior$50</ID>
+    <ID>MatchingDeclarationName:MediatorModule.kt$MediatorFactory</ID>
+    <ID>MaxLineLength:ErrorTrackingPipelineBehaviorTest.kt$ErrorTrackingPipelineBehaviorTest.&lt;no name provided&gt;$override suspend</ID>
+    <ID>MaxLineLength:FallbackRequestHandlerTest.kt$FallbackRequestHandlerTest$mediator { register&lt;PingQuery, String&gt;(SucceedingHandler("primary") otherwise SucceedingHandler("fallback")) }</ID>
+    <ID>MaxLineLength:HandlerRegistry.kt$HandlerRegistry$internal</ID>
+    <ID>MaxLineLength:LoggingPipelineBehaviorTest.kt$LoggingPipelineBehaviorTest.&lt;no name provided&gt;$override suspend</ID>
     <ID>MaxLineLength:MediatorException.kt$AggregateException$)</ID>
-    <ID>MaxLineLength:MissingHandlerTest.kt$MissingHandlerTest$onMissingHandler = { throw MissingHandlerException(it::class.simpleName ?: "Unknown", emptyList()).let { _ -&gt; error("default-value") } }</ID>
-    <ID>ReturnCount:StubMediator.kt$StubMediator$@Suppress("UNCHECKED_CAST") override suspend fun &lt;TRequest : Request&lt;TResult&gt;, TResult&gt; send(request: TRequest): TResult</ID>
-    <ID>ThrowsCount:MediatorBuilder.kt$MediatorBuilder$internal fun build(): MediatorConfig</ID>
-    <ID>TooGenericExceptionCaught:Behaviors.kt$CircuitBreaker$e: Throwable</ID>
-    <ID>TooGenericExceptionCaught:Behaviors.kt$Deduplicator$e: Throwable</ID>
-    <ID>TooGenericExceptionCaught:Behaviors.kt$e: Throwable</ID>
-    <ID>TooGenericExceptionCaught:NotificationPublishStrategy.kt$NotificationPublishStrategy.Companion$e: Throwable</ID>
+    <ID>MaxLineLength:MediatorException.kt$AggregateException$*</ID>
+    <ID>MaxLineLength:MediatorException.kt$MissingNotificationHandlerException$*</ID>
+    <ID>MaxLineLength:MediatorException.kt$MissingStreamHandlerException$*</ID>
+    <ID>MaxLineLength:MediatorImpl.kt$MediatorImpl$*</ID>
+    <ID>MaxLineLength:MediatorModule.kt$MediatorFactory$*</ID>
+    <ID>MaxLineLength:MediatorModule.kt$MediatorFactory$notificationPublisher: NotificationPublishStrategy = NotificationPublishStrategy.ParallelNotificationPublisher()</ID>
+    <ID>MaxLineLength:MediatorVerifierTest.kt$MediatorVerifierTest.&lt;no name provided&gt;$override</ID>
+    <ID>MaxLineLength:MissingHandlerTest.kt$MissingHandlerTest.&lt;no name provided&gt;$override suspend fun handle(mediator: Mediator, requestContext: RequestContext, request: PingRequest)</ID>
+    <ID>MaxLineLength:Notification.kt$Notification$*</ID>
+    <ID>MaxLineLength:NotificationHandler.kt$NotificationHandler$*</ID>
+    <ID>MaxLineLength:NotificationPublishers.kt$typealias</ID>
+    <ID>MaxLineLength:Publisher.kt$Publisher$*</ID>
+    <ID>MaxLineLength:RequestValidator.kt$RequestValidator$*</ID>
+    <ID>MaxLineLength:StreamRequestTest.kt$StreamRequestTest.&lt;no name provided&gt;$override</ID>
+    <ID>MaxLineLength:TimingPipelineBehaviorTest.kt$TimingPipelineBehaviorTest.&lt;no name provided&gt;$override suspend</ID>
+    <ID>MaxLineLength:TransactionPipelineBehaviorTest.kt$TransactionPipelineBehaviorTest.&lt;no name provided&gt;$override suspend</ID>
+    <ID>MaxLineLength:TrySendTest.kt$TrySendTest.&lt;no name provided&gt;$override suspend</ID>
+    <ID>NewLineAtEndOfFile:MediatorRegistrar.kt$com.fajrbahr.mediatork.api.MediatorRegistrar.kt</ID>
+    <ID>NewLineAtEndOfFile:MissingHandlerTest.kt$com.fajrbahr.mediatork.MissingHandlerTest.kt</ID>
+    <ID>NewLineAtEndOfFile:Notification.kt$com.fajrbahr.mediatork.api.Notification.kt</ID>
+    <ID>NewLineAtEndOfFile:NotificationHandler.kt$com.fajrbahr.mediatork.api.NotificationHandler.kt</ID>
+    <ID>NewLineAtEndOfFile:RequestValidator.kt$com.fajrbahr.mediatork.api.RequestValidator.kt</ID>
+    <ID>ReturnCount:MediatorKKoinProcessor.kt$MediatorKKoinProcessor$override fun process(resolver: Resolver): List&lt;KSAnnotated&gt;</ID>
+    <ID>SpreadOperator:MediatorKKoinProcessor.kt$MediatorKKoinProcessor$(aggregating = true, *allFiles)</ID>
+    <ID>TooGenericExceptionCaught:ErrorTrackingPipelineBehavior.kt$ErrorTrackingPipelineBehavior$e: Throwable</ID>
+    <ID>TooGenericExceptionCaught:FallbackNotificationHandler.kt$FallbackNotificationHandler$e: Throwable</ID>
+    <ID>TooGenericExceptionCaught:FallbackRequestHandler.kt$FallbackRequestHandler$e: Throwable</ID>
+    <ID>TooGenericExceptionCaught:NotificationPublishStrategy.kt$NotificationPublishStrategy.ContinueOnExceptionNotificationPublisher$e: Throwable</ID>
     <ID>TooGenericExceptionCaught:Sender.kt$e: Exception</ID>
-    <ID>TooGenericExceptionThrown:CircuitBreakerPipelineBehaviorTest.kt$CircuitBreakerPipelineBehaviorTest$throw RuntimeException("downstream failure")</ID>
-    <ID>TooGenericExceptionThrown:CircuitBreakerPipelineBehaviorTest.kt$CircuitBreakerPipelineBehaviorTest$throw RuntimeException("fail")</ID>
-    <ID>TooGenericExceptionThrown:ErrorTrackingPipelineBehaviorTest.kt$ErrorTrackingPipelineBehaviorTest$throw RuntimeException("add failed")</ID>
-    <ID>TooGenericExceptionThrown:ErrorTrackingPipelineBehaviorTest.kt$ErrorTrackingPipelineBehaviorTest$throw RuntimeException("bad")</ID>
-    <ID>TooGenericExceptionThrown:ErrorTrackingPipelineBehaviorTest.kt$ErrorTrackingPipelineBehaviorTest$throw RuntimeException("fail on b")</ID>
-    <ID>TooGenericExceptionThrown:LoggingPipelineBehaviorTest.kt$LoggingPipelineBehaviorTest$throw RuntimeException("boom")</ID>
-    <ID>TooGenericExceptionThrown:NotificationTest.kt$NotificationTest$throw RuntimeException("e1")</ID>
-    <ID>TooGenericExceptionThrown:NotificationTest.kt$NotificationTest$throw RuntimeException("e2")</ID>
-    <ID>TooGenericExceptionThrown:NotificationTest.kt$NotificationTest$throw RuntimeException("fail")</ID>
-    <ID>TooGenericExceptionThrown:PrePostProcessorTest.kt$PrePostProcessorTest$throw RuntimeException("boom")</ID>
-    <ID>TooGenericExceptionThrown:RequestCounterPipelineBehaviorTest.kt$RequestCounterPipelineBehaviorTest$throw RuntimeException("always fails")</ID>
-    <ID>TooGenericExceptionThrown:RetryPipelineBehaviorTest.kt$RetryPipelineBehaviorTest$throw RuntimeException("always fails")</ID>
-    <ID>TooGenericExceptionThrown:RetryPipelineBehaviorTest.kt$RetryPipelineBehaviorTest$throw RuntimeException("attempt $calls failed")</ID>
-    <ID>TooGenericExceptionThrown:TimingPipelineBehaviorTest.kt$TimingPipelineBehaviorTest$throw RuntimeException("boom")</ID>
-    <ID>TooGenericExceptionThrown:TransactionPipelineBehaviorTest.kt$TransactionPipelineBehaviorTest$throw RuntimeException("boom")</ID>
-    <ID>TooGenericExceptionThrown:TransactionPipelineBehaviorTest.kt$TransactionPipelineBehaviorTest$throw RuntimeException("handler failed")</ID>
-    <ID>TooGenericExceptionThrown:TrySendTest.kt$TrySendTest$throw RuntimeException("always fails")</ID>
-    <ID>UnusedParameter:Behaviors.kt$Cache$context: RequestContext</ID>
-    <ID>UnusedParameter:Behaviors.kt$CircuitBreaker$context: RequestContext</ID>
-    <ID>UnusedParameter:Behaviors.kt$Deduplicator$context: RequestContext</ID>
-    <ID>UnusedParameter:Behaviors.kt$RequestCounter$context: RequestContext</ID>
-    <ID>VariableNaming:StubMediator.kt$StubMediator$@PublishedApi internal val _sent = mutableListOf&lt;Any&gt;()</ID>
-    <ID>WildcardImport:ErrorTrackingPipelineBehaviorTest.kt$import kotlin.test.*</ID>
-    <ID>WildcardImport:MediatorBuilder.kt$import com.fajrbahr.mediatork.api.*</ID>
+    <ID>TooGenericExceptionCaught:TransactionPipelineBehavior.kt$TransactionPipelineBehavior$e: Throwable</ID>
+    <ID>TooGenericExceptionThrown:ErrorTrackingPipelineBehaviorTest.kt$ErrorTrackingPipelineBehaviorTest.&lt;no name provided&gt;$throw RuntimeException("add failed")</ID>
+    <ID>TooGenericExceptionThrown:ErrorTrackingPipelineBehaviorTest.kt$ErrorTrackingPipelineBehaviorTest.&lt;no name provided&gt;$throw RuntimeException("bad")</ID>
+    <ID>TooGenericExceptionThrown:ErrorTrackingPipelineBehaviorTest.kt$ErrorTrackingPipelineBehaviorTest.&lt;no name provided&gt;$throw RuntimeException("fail on b")</ID>
+    <ID>TooGenericExceptionThrown:FallbackNotificationHandlerTest.kt$FallbackNotificationHandlerTest.FailingHandler$throw RuntimeException(message)</ID>
+    <ID>TooGenericExceptionThrown:FallbackRequestHandlerTest.kt$FallbackRequestHandlerTest.FailingHandler$throw RuntimeException(message)</ID>
+    <ID>TooGenericExceptionThrown:LoggingPipelineBehaviorTest.kt$LoggingPipelineBehaviorTest.&lt;no name provided&gt;$throw RuntimeException("boom")</ID>
+    <ID>TooGenericExceptionThrown:NotificationTest.kt$NotificationTest.&lt;no name provided&gt;$throw RuntimeException("e1")</ID>
+    <ID>TooGenericExceptionThrown:NotificationTest.kt$NotificationTest.&lt;no name provided&gt;$throw RuntimeException("e2")</ID>
+    <ID>TooGenericExceptionThrown:NotificationTest.kt$NotificationTest.&lt;no name provided&gt;$throw RuntimeException("fail")</ID>
+    <ID>TooGenericExceptionThrown:PrePostProcessorTest.kt$PrePostProcessorTest.&lt;no name provided&gt;$throw RuntimeException("boom")</ID>
+    <ID>TooGenericExceptionThrown:RequestCounterPipelineBehaviorTest.kt$RequestCounterPipelineBehaviorTest.&lt;no name provided&gt;$throw RuntimeException("always fails")</ID>
+    <ID>TooGenericExceptionThrown:TimingPipelineBehaviorTest.kt$TimingPipelineBehaviorTest.&lt;no name provided&gt;$throw RuntimeException("boom")</ID>
+    <ID>TooGenericExceptionThrown:TransactionPipelineBehaviorTest.kt$TransactionPipelineBehaviorTest.&lt;no name provided&gt;$throw RuntimeException("boom")</ID>
+    <ID>TooGenericExceptionThrown:TransactionPipelineBehaviorTest.kt$TransactionPipelineBehaviorTest.&lt;no name provided&gt;$throw RuntimeException("handler failed")</ID>
+    <ID>TooGenericExceptionThrown:TrySendTest.kt$TrySendTest.&lt;no name provided&gt;$throw RuntimeException("always fails")</ID>
+    <ID>TooManyFunctions:HandlerRegistry.kt$HandlerRegistry</ID>
+    <ID>TooManyFunctions:MediatorDsl.kt$MediatorBuilder</ID>
+    <ID>UseCheckOrError:ErrorTrackingPipelineBehaviorTest.kt$ErrorTrackingPipelineBehaviorTest.&lt;no name provided&gt;$throw IllegalStateException("rethrown")</ID>
+    <ID>UseCheckOrError:FallbackNotificationHandler.kt$FallbackNotificationHandler$throw lastException ?: IllegalStateException("FallbackNotificationHandler has no handlers")</ID>
+    <ID>UseCheckOrError:FallbackRequestHandler.kt$FallbackRequestHandler$throw lastException ?: IllegalStateException("FallbackRequestHandler has no handlers")</ID>
+    <ID>UseCheckOrError:NotificationTest.kt$NotificationTest.&lt;no name provided&gt;$throw IllegalStateException("boom")</ID>
+    <ID>UseCheckOrError:TimingPipelineBehaviorTest.kt$TimingPipelineBehaviorTest.&lt;no name provided&gt;$throw IllegalStateException("domain error")</ID>
+    <ID>UseCheckOrError:TransactionPipelineBehaviorTest.kt$TransactionPipelineBehaviorTest.&lt;no name provided&gt;$throw IllegalStateException("domain error")</ID>
+    <ID>UseCheckOrError:TrySendTest.kt$TrySendTest.&lt;no name provided&gt;$throw IllegalStateException("boom")</ID>
+    <ID>WildcardImport:FakeMediator.kt$import com.fajrbahr.mediatork.api.*</ID>
+    <ID>WildcardImport:HandlerRegistry.kt$import com.fajrbahr.mediatork.api.*</ID>
+    <ID>WildcardImport:HandlerRegistryTest.kt$import com.fajrbahr.mediatork.api.*</ID>
+    <ID>WildcardImport:HandlerRegistryTest.kt$import kotlin.test.*</ID>
+    <ID>WildcardImport:HandlerTestHarness.kt$import com.fajrbahr.mediatork.api.*</ID>
     <ID>WildcardImport:MediatorImpl.kt$import com.fajrbahr.mediatork.api.*</ID>
+    <ID>WildcardImport:MediatorModule.kt$import com.fajrbahr.mediatork.api.*</ID>
+    <ID>WildcardImport:MediatorSpyTest.kt$import com.fajrbahr.mediatork.api.*</ID>
     <ID>WildcardImport:MediatorTest.kt$import com.fajrbahr.mediatork.api.*</ID>
     <ID>WildcardImport:MediatorTest.kt$import kotlin.test.*</ID>
+    <ID>WildcardImport:MediatorVerifierTest.kt$import com.fajrbahr.mediatork.api.*</ID>
+    <ID>WildcardImport:MediatorVerifierTest.kt$import kotlin.test.*</ID>
     <ID>WildcardImport:MissingHandlerTest.kt$import com.fajrbahr.mediatork.api.*</ID>
     <ID>WildcardImport:NotificationTest.kt$import com.fajrbahr.mediatork.notification.*</ID>
     <ID>WildcardImport:PipelineBehaviorTest.kt$import com.fajrbahr.mediatork.api.*</ID>
@@ -49,7 +87,10 @@
     <ID>WildcardImport:StreamRequestTest.kt$import kotlin.test.*</ID>
     <ID>WildcardImport:StreamRequestTest.kt$import kotlinx.coroutines.flow.*</ID>
     <ID>WildcardImport:TestFixtures.kt$import com.fajrbahr.mediatork.api.*</ID>
-    <ID>WildcardImport:TimingPipelineBehaviorTest.kt$import kotlin.test.*</ID>
+    <ID>WildcardImport:TransactionPipelineBehavior.kt$import com.fajrbahr.mediatork.api.*</ID>
+    <ID>WildcardImport:TransactionPipelineBehaviorTest.kt$import kotlin.test.*</ID>
+    <ID>WildcardImport:TrySendTest.kt$import kotlin.test.*</ID>
+    <ID>WildcardImport:ValidationBehavior.kt$import com.fajrbahr.mediatork.api.*</ID>
     <ID>WildcardImport:ValidationTest.kt$import com.fajrbahr.mediatork.api.*</ID>
     <ID>WildcardImport:ValidationTest.kt$import com.fajrbahr.mediatork.validator.*</ID>
     <ID>WildcardImport:ValidationTest.kt$import kotlin.test.*</ID>

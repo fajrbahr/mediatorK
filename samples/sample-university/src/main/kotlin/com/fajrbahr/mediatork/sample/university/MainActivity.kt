@@ -29,17 +29,16 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import com.fajrbahr.mediatork.mediatorK
+import com.fajrbahr.mediatork.MediatorFactory
 import com.fajrbahr.mediatork.api.Mediator
-import com.fajrbahr.mediatork.sample.university.about.aboutModule
+import com.fajrbahr.mediatork.sample.university.course.CourseRegistrar
 import com.fajrbahr.mediatork.sample.university.course.CourseStore
-import com.fajrbahr.mediatork.sample.university.course.courseModule
+import com.fajrbahr.mediatork.sample.university.department.DepartmentRegistrar
 import com.fajrbahr.mediatork.sample.university.department.DepartmentStore
-import com.fajrbahr.mediatork.sample.university.department.departmentModule
+import com.fajrbahr.mediatork.sample.university.instructor.InstructorRegistrar
 import com.fajrbahr.mediatork.sample.university.instructor.InstructorStore
-import com.fajrbahr.mediatork.sample.university.instructor.instructorModule
+import com.fajrbahr.mediatork.sample.university.student.StudentRegistrar
 import com.fajrbahr.mediatork.sample.university.student.StudentStore
-import com.fajrbahr.mediatork.sample.university.student.studentModule
 import com.fajrbahr.mediatork.sample.university.course.list.CourseListScreen
 import com.fajrbahr.mediatork.sample.university.course.create.CreateCourseScreen
 import com.fajrbahr.mediatork.sample.university.course.edit.EditCourseScreen
@@ -105,13 +104,14 @@ private fun AppRoot() {
     val instructorStore = remember { InstructorStore(prefs) }
     val studentStore = remember { StudentStore(prefs) }
     val mediator: Mediator = remember {
-        mediatorK {
-            courseModule(courseStore, deptStore, studentStore)
-            departmentModule(deptStore, instructorStore, courseStore)
-            instructorModule(instructorStore, deptStore, courseStore, studentStore)
-            studentModule(studentStore, courseStore)
-            aboutModule(studentStore)
-        }
+        MediatorFactory.create(
+            registrars = listOf(
+                CourseRegistrar(courseStore, deptStore, studentStore),
+                DepartmentRegistrar(deptStore, instructorStore, courseStore),
+                InstructorRegistrar(instructorStore, deptStore, courseStore, studentStore),
+                StudentRegistrar(studentStore, courseStore),
+            )
+        )
     }
 
     val courseListVm = remember { CourseListViewModel(mediator) }

@@ -1,29 +1,14 @@
 package com.fajrbahr.mediatork.test
 
-import com.fajrbahr.mediatork.Behavior
-import com.fajrbahr.mediatork.api.Mediator
-import com.fajrbahr.mediatork.api.Notification
-import com.fajrbahr.mediatork.api.Request
-import com.fajrbahr.mediatork.api.RequestContext
-import com.fajrbahr.mediatork.api.StreamRequest
+import com.fajrbahr.mediatork.api.*
 import com.fajrbahr.mediatork.notification.NotificationPublishStrategy
+import com.fajrbahr.mediatork.validator.ValidationResult
+import com.fajrbahr.mediatork.validator.throwIfInvalid
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.flow
 import kotlin.reflect.KClass
 
-/**
- * A configurable [Mediator] test double: stub what `send`/`publish`/`stream` return, then assert
- * on what was [sent] / [published]. Optionally run behaviors around stubs with [onPipeline].
- *
- * ```kotlin
- * val mediator = StubMediator()
- * mediator.on<GetUserQuery>() returns "user:42"
- * mediator.on<CreateOrderCommand>() answers { "order:${it.id}" }
- * ```
- *
- * For the *real* pipeline with real handler lambdas, use `mediatorK { }` directly.
- */
 class StubMediator : Mediator {
 
     @PublishedApi
@@ -57,14 +42,25 @@ class StubMediator : Mediator {
         requestStubs[T::class] = { request -> block(request as T) }
     }
 
+    @Suppress("UNCHECKED_CAST")
+    inline fun <reified T : Request<*>> on(
+        validator: RequestValidator<T>,
+        noinline block: (T) -> Any?,
+    ) {
+        requestStubs[T::class] = { request ->
+            val typed = request as T
+            validator.validate(typed).throwIfInvalid()
+            block(typed)
+        }
+    }
+
     inline fun <reified T : Notification> onNotification(): NotificationStub<T> =
         NotificationStub(T::class, notificationStubs)
 
     inline fun <reified T : StreamRequest<*>> onStream(): StreamStub<T> =
         StreamStub(T::class, streamStubs)
 
-    /** Registers a [Behavior] to wrap stubbed `send` calls, in [Behavior.order]. */
-    fun onPipeline(behavior: Behavior): PipelineStub =
+    fun onPipeline(behavior: PipelineBehavior): PipelineStub =
         PipelineStub(behavior).also { pipelineStubs += it }
 
     class RequestStub<T : Request<*>>(
@@ -117,15 +113,18 @@ class StubMediator : Mediator {
         }
     }
 
-    class PipelineStub internal constructor(private val behavior: Behavior) {
-        var enabled: Boolean = behavior.isEnabled
-        var order: Int = behavior.order
+    class PipelineStub internal constructor(
+        private val delegate: PipelineBehavior,
+    ) {
+        var enabled: Boolean = true
+        var order: Int = delegate.order
 
-        internal suspend fun process(
-            request: Request<*>,
-            context: RequestContext,
-            next: suspend () -> Any?,
-        ): Any? = behavior.process(request, context, next)
+        @Suppress("UNCHECKED_CAST")
+        internal suspend fun <TRequest : Request<TResult>, TResult> process(
+            requestContext: RequestContext,
+            next: RequestHandlerDelegate<TRequest, TResult>,
+            request: TRequest,
+        ): TResult = delegate.process(requestContext, next, request)
     }
 
     @Suppress("UNCHECKED_CAST")
@@ -142,20 +141,22 @@ class StubMediator : Mediator {
 
         if (applicable.isEmpty()) return stub(request) as TResult
 
-        val context = RequestContext()
-        val terminal: suspend () -> Any? = { stub(request) }
-        val chain = applicable.foldRight(terminal) { pipeline, next ->
-            suspend { pipeline.process(request, context, next) }
+        val chain = applicable.foldRight<PipelineStub, RequestHandlerDelegate<TRequest, TResult>>(
+            { r -> stub(r) as TResult }
+        ) { behavior, next ->
+            { r -> behavior.process(RequestContext(), next, r) }
         }
-        return chain() as TResult
+        return chain(request)
     }
 
+    @Suppress("UNCHECKED_CAST")
     override suspend fun <T : Notification> publish(notification: T) {
         _published.add(notification)
         notificationStubs[notification::class]?.invoke(notification)
     }
 
-    override suspend fun <T : Notification> publish(notification: T, strategy: NotificationPublishStrategy) {
+    @Suppress("UNCHECKED_CAST")
+    override suspend fun <T : Notification> publish(notification: T, publisher: NotificationPublishStrategy) {
         _published.add(notification)
         notificationStubs[notification::class]?.invoke(notification)
     }

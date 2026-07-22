@@ -1,11 +1,27 @@
 package local.meditor
 
+import com.fajrbahr.mediatork.MediatorFactory
 import com.fajrbahr.mediatork.validator.ValidationException
 import kotlinx.coroutines.runBlocking
+import local.meditor.behaviors.LocaleBehavior
+import local.meditor.behaviors.MeasurePipelineBehavior
 import local.meditor.orders.create.CreateOrderCommand
+import local.meditor.orders.create.OrderNotificationRegistrar
+import local.meditor.orders.create.OrderRegistrar
 import local.meditor.orders.query.GetOrderQuery
+import local.meditor.orders.query.GetOrderRegistrar
 
-private val mediator = orderMediator()
+private val mediator = MediatorFactory.create(
+    registrars = listOf(
+        OrderRegistrar(),
+        OrderNotificationRegistrar(),
+        GetOrderRegistrar(),
+    ),
+    pipelineBehaviors = listOf(
+        LocaleBehavior(),
+        MeasurePipelineBehavior(),
+    ),
+)
 
 fun main(): Unit = runBlocking {
 

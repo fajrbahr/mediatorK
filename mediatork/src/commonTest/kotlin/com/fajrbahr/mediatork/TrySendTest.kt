@@ -1,5 +1,8 @@
 package com.fajrbahr.mediatork
 
+import com.fajrbahr.mediatork.api.Mediator
+import com.fajrbahr.mediatork.api.RequestContext
+import com.fajrbahr.mediatork.api.RequestHandler
 import com.fajrbahr.mediatork.handler.trySend
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
@@ -11,7 +14,7 @@ class TrySendTest {
 
     @Test
     fun `trySend returns success wrapping handler result`() = runTest {
-        val m = mediatorK { handle<PingQuery, String> { "pong:${it.value}" } }
+        val m = mediator { register(PingHandler()) }
         val result = m.trySend(PingQuery("hello"))
         assertTrue(result.isSuccess)
         assertEquals("pong:hello", result.getOrNull())
@@ -19,8 +22,15 @@ class TrySendTest {
 
     @Test
     fun `trySend returns failure wrapping handler exception`() = runTest {
-        val m = mediatorK {
-            handle<PingQuery, String> { throw IllegalStateException("boom") }
+        val m = mediator {
+            register(object : RequestHandler<PingQuery, String> {
+                override suspend fun handle(
+                    mediator: Mediator,
+                    requestContext: RequestContext,
+                    request: PingQuery
+                ): String =
+                    throw IllegalStateException("boom")
+            })
         }
         val result = m.trySend(PingQuery("x"))
         assertTrue(result.isFailure)
@@ -30,7 +40,7 @@ class TrySendTest {
 
     @Test
     fun `trySend returns failure when no handler registered`() = runTest {
-        val m = mediatorK { }
+        val m = mediator { }
         val result = m.trySend(PingQuery("x"))
         assertTrue(result.isFailure)
         assertIs<MissingHandlerException>(result.exceptionOrNull())
@@ -38,8 +48,15 @@ class TrySendTest {
 
     @Test
     fun `trySend does not throw - exception is captured in result`() = runTest {
-        val m = mediatorK {
-            handle<AddCommand, Int> { throw RuntimeException("always fails") }
+        val m = mediator {
+            register(object : RequestHandler<AddCommand, Int> {
+                override suspend fun handle(
+                    mediator: Mediator,
+                    requestContext: RequestContext,
+                    request: AddCommand
+                ): Int =
+                    throw RuntimeException("always fails")
+            })
         }
         val result = runCatching { m.trySend(AddCommand(1, 2)) }
         assertTrue(result.isSuccess, "trySend itself must not throw")
@@ -48,9 +65,9 @@ class TrySendTest {
 
     @Test
     fun `trySend routes to correct handler among multiple`() = runTest {
-        val m = mediatorK {
-            handle<PingQuery, String> { "pong:${it.value}" }
-            handle<AddCommand, Int> { it.a + it.b }
+        val m = mediator {
+            register(PingHandler())
+            register(AddHandler())
         }
         val pingResult = m.trySend(PingQuery("x"))
         val addResult = m.trySend(AddCommand(2, 3))
@@ -62,17 +79,24 @@ class TrySendTest {
 
     @Test
     fun `trySend with Unit handler returns successful Unit result`() = runTest {
-        var lastId: String? = null
-        val m = mediatorK { handle<NoResultCommand, Unit> { lastId = it.id } }
+        val handler = NoResultHandler()
+        val m = mediator { register(handler) }
         val result = m.trySend(NoResultCommand("id-99"))
         assertTrue(result.isSuccess)
-        assertEquals("id-99", lastId)
+        assertEquals("id-99", handler.lastId)
     }
 
     @Test
     fun `trySend failure contains original exception message`() = runTest {
-        val m = mediatorK {
-            handle<PingQuery, String> { throw IllegalArgumentException("bad input") }
+        val m = mediator {
+            register(object : RequestHandler<PingQuery, String> {
+                override suspend fun handle(
+                    mediator: Mediator,
+                    requestContext: RequestContext,
+                    request: PingQuery
+                ): String =
+                    throw IllegalArgumentException("bad input")
+            })
         }
         val result = m.trySend(PingQuery("x"))
         assertTrue(result.isFailure)
@@ -81,7 +105,7 @@ class TrySendTest {
 
     @Test
     fun `trySend on same handler multiple times returns independent results`() = runTest {
-        val m = mediatorK { handle<AddCommand, Int> { it.a + it.b } }
+        val m = mediator { register(AddHandler()) }
         val r1 = m.trySend(AddCommand(1, 1))
         val r2 = m.trySend(AddCommand(10, 10))
         assertEquals(2, r1.getOrNull())

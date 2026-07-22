@@ -1,5 +1,11 @@
 package com.fajrbahr.mediatork
 
+import com.fajrbahr.mediatork.api.Mediator
+import com.fajrbahr.mediatork.api.RequestContext
+import com.fajrbahr.mediatork.api.RequestHandler
+import com.fajrbahr.mediatork.pipeline.buildin.CircuitBreakerPipelineBehavior
+import com.fajrbahr.mediatork.pipeline.buildin.CircuitOpenException
+import com.fajrbahr.mediatork.pipeline.buildin.CircuitState
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -7,65 +13,67 @@ import kotlin.test.assertFailsWith
 
 class CircuitBreakerPipelineBehaviorTest {
 
+    private fun failingHandler() = object : RequestHandler<PingQuery, String> {
+        override suspend fun handle(mediator: Mediator, requestContext: RequestContext, request: PingQuery): String =
+            throw RuntimeException("downstream failure")
+    }
+
     @Test
     fun `passes requests when circuit is closed`() = runTest {
-        val cb = circuitBreaker(failureThreshold = 3, resetTimeoutMs = 60_000)
-        val m = mediatorK {
-            handle<PingQuery, String> { "pong:${it.value}" }
-            behaviors(cb)
-        }
+        val cb = CircuitBreakerPipelineBehavior(failureThreshold = 3, resetTimeoutMs = 60_000)
+        val m = mediator(pipelineBehaviors = listOf(cb)) { register(PingHandler()) }
         assertEquals("pong:x", m.send(PingQuery("x")))
         assertEquals(CircuitState.CLOSED, cb.currentState)
     }
 
     @Test
     fun `opens after failureThreshold consecutive failures`() = runTest {
-        val cb = circuitBreaker(failureThreshold = 3, resetTimeoutMs = 60_000)
-        val m = mediatorK {
-            handle<PingQuery, String> { throw RuntimeException("downstream failure") }
-            behaviors(cb)
-        }
+        val cb = CircuitBreakerPipelineBehavior(failureThreshold = 3, resetTimeoutMs = 60_000)
+        val m = mediator(pipelineBehaviors = listOf(cb)) { register(failingHandler()) }
         repeat(3) {
-            try { m.send(PingQuery("x")) } catch (_: RuntimeException) {}
+            try {
+                m.send(PingQuery("x"))
+            } catch (_: RuntimeException) {
+            }
         }
         assertEquals(CircuitState.OPEN, cb.currentState)
     }
 
     @Test
     fun `throws CircuitOpenException when open`() = runTest {
-        val cb = circuitBreaker(failureThreshold = 1, resetTimeoutMs = 60_000)
-        val m = mediatorK {
-            handle<PingQuery, String> { throw RuntimeException("downstream failure") }
-            behaviors(cb)
+        val cb = CircuitBreakerPipelineBehavior(failureThreshold = 1, resetTimeoutMs = 60_000)
+        val m = mediator(pipelineBehaviors = listOf(cb)) { register(failingHandler()) }
+        try {
+            m.send(PingQuery("x"))
+        } catch (_: RuntimeException) {
         }
-        try { m.send(PingQuery("x")) } catch (_: RuntimeException) {}
         assertFailsWith<CircuitOpenException> { m.send(PingQuery("x")) }
     }
 
     @Test
     fun `invokes onStateChange callback on transitions`() = runTest {
         val states = mutableListOf<CircuitState>()
-        val cb = circuitBreaker(
+        val cb = CircuitBreakerPipelineBehavior(
             failureThreshold = 1,
             resetTimeoutMs = 60_000,
             onStateChange = { states += it }
         )
-        val m = mediatorK {
-            handle<PingQuery, String> { throw RuntimeException("downstream failure") }
-            behaviors(cb)
+        val m = mediator(pipelineBehaviors = listOf(cb)) { register(failingHandler()) }
+        try {
+            m.send(PingQuery("x"))
+        } catch (_: RuntimeException) {
         }
-        try { m.send(PingQuery("x")) } catch (_: RuntimeException) {}
         assertEquals(listOf(CircuitState.OPEN), states)
     }
 
     @Test
     fun `reset closes the circuit and clears failure count`() = runTest {
-        val cb = circuitBreaker(failureThreshold = 1, resetTimeoutMs = 60_000)
-        val m = mediatorK {
-            handle<PingQuery, String> { throw RuntimeException("downstream failure") }
-            behaviors(cb)
+        val cb = CircuitBreakerPipelineBehavior(failureThreshold = 1, resetTimeoutMs = 60_000)
+        val m = mediator(pipelineBehaviors = listOf(cb)) { register(failingHandler()) }
+        try {
+            m.send(PingQuery("x"))
+        } catch (_: RuntimeException) {
         }
-        try { m.send(PingQuery("x")) } catch (_: RuntimeException) {}
         assertEquals(CircuitState.OPEN, cb.currentState)
         cb.reset()
         assertEquals(CircuitState.CLOSED, cb.currentState)
@@ -73,18 +81,25 @@ class CircuitBreakerPipelineBehaviorTest {
 
     @Test
     fun `success resets failure count`() = runTest {
-        val cb = circuitBreaker(failureThreshold = 3, resetTimeoutMs = 60_000)
+        val cb = CircuitBreakerPipelineBehavior(failureThreshold = 3, resetTimeoutMs = 60_000)
         var shouldFail = true
-        val m = mediatorK {
-            handle<PingQuery, String> {
+        val handler = object : RequestHandler<PingQuery, String> {
+            override suspend fun handle(
+                mediator: Mediator,
+                requestContext: RequestContext,
+                request: PingQuery
+            ): String {
                 if (shouldFail) throw RuntimeException("fail")
-                "ok"
+                return "ok"
             }
-            behaviors(cb)
         }
+        val m = mediator(pipelineBehaviors = listOf(cb)) { register(handler) }
         // 2 failures — not enough to open
         repeat(2) {
-            try { m.send(PingQuery("x")) } catch (_: RuntimeException) {}
+            try {
+                m.send(PingQuery("x"))
+            } catch (_: RuntimeException) {
+            }
         }
         assertEquals(CircuitState.CLOSED, cb.currentState)
         // 1 success — resets counter
@@ -93,7 +108,10 @@ class CircuitBreakerPipelineBehaviorTest {
         // 2 more failures — counter restarted so circuit stays closed
         shouldFail = true
         repeat(2) {
-            try { m.send(PingQuery("x")) } catch (_: RuntimeException) {}
+            try {
+                m.send(PingQuery("x"))
+            } catch (_: RuntimeException) {
+            }
         }
         assertEquals(CircuitState.CLOSED, cb.currentState)
     }

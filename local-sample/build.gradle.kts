@@ -37,10 +37,13 @@ kover {
         // All real business logic lives in sub-packages (invoice/, behaviors/, android/, …).
         filters {
             excludes {
-                // The demo entry point is illustrative `println` wiring, not tested logic.
                 classes(
-                    "local.meditor.MainKt",
-                    "local.meditor.MainKt\$*",
+                    "sample.MainKt",
+                    "sample.MainKt\$*",
+                    "sample.Test*",
+                    "sample.AuthenticatedGetOrderQuery",
+                    "sample.spring.*",
+                    "sample.OrderController",
                 )
             }
         }

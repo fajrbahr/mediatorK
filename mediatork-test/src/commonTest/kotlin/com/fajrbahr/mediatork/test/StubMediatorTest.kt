@@ -1,7 +1,6 @@
 package com.fajrbahr.mediatork.test
 
-import com.fajrbahr.mediatork.behavior
-import com.fajrbahr.mediatork.notification.NotificationPublishStrategy
+import com.fajrbahr.mediatork.api.*
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.test.runTest
@@ -56,20 +55,11 @@ class StubMediatorTest {
     }
 
     @Test
-    fun `records sent requests`() = runTest {
-        mediator.on<GetUserQuery>() returns "user"
-        mediator.send(GetUserQuery("1"))
-        mediator.send(GetUserQuery("2"))
-        assertEquals(2, mediator.sentOf<GetUserQuery>().size)
-    }
-
-    @Test
     fun `onNotification invokes stub`() = runTest {
         val captured = mutableListOf<String>()
         mediator.onNotification<OrderPlacedEvent>() answers { captured += it.orderId }
         mediator.publish(OrderPlacedEvent("ORD-1"))
         assertEquals(listOf("ORD-1"), captured)
-        assertEquals(1, mediator.published.size)
     }
 
     @Test
@@ -117,7 +107,7 @@ class StubMediatorTest {
     fun `publish with custom strategy uses notification stub`() = runTest {
         val captured = mutableListOf<String>()
         mediator.onNotification<OrderPlacedEvent>() answers { captured += it.orderId }
-        mediator.publish(OrderPlacedEvent("ORD-1"), NotificationPublishStrategy.PARALLEL)
+        mediator.publish(OrderPlacedEvent("ORD-1"), com.fajrbahr.mediatork.notification.ParallelNotificationPublisher())
         assertEquals(listOf("ORD-1"), captured)
     }
 
@@ -131,9 +121,15 @@ class StubMediatorTest {
     @Test
     fun `onPipeline runs behavior`() = runTest {
         val log = mutableListOf<String>()
-        mediator.onPipeline(behavior { _, _, next ->
-            log += "before"
-            next().also { log += "after" }
+        mediator.onPipeline(object : PipelineBehavior {
+            override suspend fun <TRequest : Request<TResult>, TResult> process(
+                requestContext: RequestContext,
+                next: RequestHandlerDelegate<TRequest, TResult>,
+                request: TRequest,
+            ): TResult {
+                log += "before"
+                return next(request).also { log += "after" }
+            }
         })
         mediator.on<GetUserQuery>() returns "user"
         assertEquals("user", mediator.send(GetUserQuery("1")))
@@ -143,9 +139,15 @@ class StubMediatorTest {
     @Test
     fun `onPipeline toggle on and off`() = runTest {
         val log = mutableListOf<String>()
-        val pip = mediator.onPipeline(behavior { _, _, next ->
-            log += "hit"
-            next()
+        val pip = mediator.onPipeline(object : PipelineBehavior {
+            override suspend fun <TRequest : Request<TResult>, TResult> process(
+                requestContext: RequestContext,
+                next: RequestHandlerDelegate<TRequest, TResult>,
+                request: TRequest,
+            ): TResult {
+                log += "hit"
+                return next(request)
+            }
         })
         mediator.on<GetUserQuery>() returns "user"
 
@@ -164,13 +166,27 @@ class StubMediatorTest {
     @Test
     fun `onPipeline respects order`() = runTest {
         val log = mutableListOf<String>()
-        mediator.onPipeline(behavior(order = 10) { _, _, next ->
-            log += "second"
-            next()
+        mediator.onPipeline(object : PipelineBehavior {
+            override val order get() = 10
+            override suspend fun <TRequest : Request<TResult>, TResult> process(
+                requestContext: RequestContext,
+                next: RequestHandlerDelegate<TRequest, TResult>,
+                request: TRequest,
+            ): TResult {
+                log += "second"
+                return next(request)
+            }
         })
-        mediator.onPipeline(behavior(order = -10) { _, _, next ->
-            log += "first"
-            next()
+        mediator.onPipeline(object : PipelineBehavior {
+            override val order get() = -10
+            override suspend fun <TRequest : Request<TResult>, TResult> process(
+                requestContext: RequestContext,
+                next: RequestHandlerDelegate<TRequest, TResult>,
+                request: TRequest,
+            ): TResult {
+                log += "first"
+                return next(request)
+            }
         })
         mediator.on<GetUserQuery>() returns "user"
         mediator.send(GetUserQuery("1"))
@@ -180,13 +196,25 @@ class StubMediatorTest {
     @Test
     fun `pipelineEnabled toggles all behaviors`() = runTest {
         val log = mutableListOf<String>()
-        mediator.onPipeline(behavior { _, _, next ->
-            log += "a"
-            next()
+        mediator.onPipeline(object : PipelineBehavior {
+            override suspend fun <TRequest : Request<TResult>, TResult> process(
+                requestContext: RequestContext,
+                next: RequestHandlerDelegate<TRequest, TResult>,
+                request: TRequest,
+            ): TResult {
+                log += "a"
+                return next(request)
+            }
         })
-        mediator.onPipeline(behavior { _, _, next ->
-            log += "b"
-            next()
+        mediator.onPipeline(object : PipelineBehavior {
+            override suspend fun <TRequest : Request<TResult>, TResult> process(
+                requestContext: RequestContext,
+                next: RequestHandlerDelegate<TRequest, TResult>,
+                request: TRequest,
+            ): TResult {
+                log += "b"
+                return next(request)
+            }
         })
         mediator.on<GetUserQuery>() returns "user"
 
