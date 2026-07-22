@@ -88,6 +88,8 @@ val javadocJar by tasks.registering(Jar::class) {
 }
 
 mavenPublishing {
+    publishToMavenCentral()
+    signAllPublications()
     pom {
         name.set("MediatorK Test")
         description.set("Test utilities for MediatorK – fakes, spies, and harnesses")
