@@ -6,11 +6,12 @@ plugins {
 }
 
 repositories {
+    mavenLocal()
     mavenCentral()
 }
 
 dependencies {
-    implementation("io.github.fajrbahr:mediatork:0.8.1")
+    implementation("io.github.fajrbahr:mediatork:0.9.9.3")
     implementation("org.springframework.boot:spring-boot-starter-webflux")
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-reactor:1.10.2")

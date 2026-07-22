@@ -1,10 +1,10 @@
 package com.fajrbahr.mediatork.sample.android
 
-import com.fajrbahr.mediatork.MediatorFactory
+import com.fajrbahr.mediatork.mediatorK
 import com.fajrbahr.mediatork.sample.android.after.AladhanCacheDataSource
 import com.fajrbahr.mediatork.sample.android.after.islamicMonths.GetIslamicMonthsRequest
-import com.fajrbahr.mediatork.sample.android.after.islamicMonths.IslamicMonthsRegistrar
 import com.fajrbahr.mediatork.sample.android.after.islamicMonths.IslamicMonth
+import com.fajrbahr.mediatork.sample.android.after.islamicMonths.islamicMonthsModule
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -20,10 +20,7 @@ class GetIslamicMonthsHandlerTest {
         val cache = AladhanCacheDataSource()
         cache.saveIslamicMonths(twelveMonths)
 
-        val mediator = MediatorFactory.create(
-            registrars = listOf(IslamicMonthsRegistrar(cache)),
-            verifyHandlers = false,
-        )
+        val mediator = mediatorK { islamicMonthsModule(cache) }
         val result = mediator.send(GetIslamicMonthsRequest())
 
         assertEquals(12, result.size)
@@ -40,10 +37,7 @@ class GetIslamicMonthsHandlerTest {
         )
         cache.saveIslamicMonths(months)
 
-        val mediator = MediatorFactory.create(
-            registrars = listOf(IslamicMonthsRegistrar(cache)),
-            verifyHandlers = false,
-        )
+        val mediator = mediatorK { islamicMonthsModule(cache) }
         val result = mediator.send(GetIslamicMonthsRequest())
 
         assertEquals("Muharram", result[0].nameEn)

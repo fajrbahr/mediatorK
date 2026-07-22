@@ -1,10 +1,10 @@
 package com.fajrbahr.mediatork.sample.ktor
 
-import com.fajrbahr.mediatork.MediatorFactory
+import com.fajrbahr.mediatork.mediatorK
 import com.fajrbahr.mediatork.sample.ktor.islamicmonths.GetIslamicMonthsQuery
-import com.fajrbahr.mediatork.sample.ktor.islamicmonths.IslamicMonthsRegistrar
+import com.fajrbahr.mediatork.sample.ktor.islamicmonths.islamicMonthsModule
 import com.fajrbahr.mediatork.sample.ktor.prayertimes.GetPrayerTimesQuery
-import com.fajrbahr.mediatork.sample.ktor.prayertimes.PrayerTimesRegistrar
+import com.fajrbahr.mediatork.sample.ktor.prayertimes.prayerTimesModule
 import io.ktor.http.*
 import io.ktor.serialization.kotlinx.json.*
 import io.ktor.server.application.*
@@ -22,12 +22,10 @@ fun Application.module() {
     install(ContentNegotiation) { json() }
 
     val cache = AladhanCache()
-    val mediator = MediatorFactory.create(
-        registrars = listOf(
-            PrayerTimesRegistrar(cache),
-            IslamicMonthsRegistrar(cache),
-        ),
-    )
+    val mediator = mediatorK {
+        prayerTimesModule(cache)
+        islamicMonthsModule(cache)
+    }
 
     routing {
         get("/prayer-times/{city}") {

@@ -1,6 +1,6 @@
 package sample.meditor.context
 
 import com.fajrbahr.mediatork.api.RequestContext
-import com.fajrbahr.mediatork.api.meta
+import com.fajrbahr.mediatork.api.metaContext
 
-var RequestContext.locale: String by meta("locale", default = "en")
+var RequestContext.locale: String by metaContext("locale", default = "en")

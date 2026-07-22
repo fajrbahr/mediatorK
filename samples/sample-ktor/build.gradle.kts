@@ -9,11 +9,12 @@ application {
 }
 
 repositories {
+    mavenLocal()
     mavenCentral()
 }
 
 dependencies {
-    implementation("io.github.fajrbahr:mediatork:0.8.1")
+    implementation("io.github.fajrbahr:mediatork:0.9.9.3")
     implementation("io.ktor:ktor-server-core:3.1.3")
     implementation("io.ktor:ktor-server-netty:3.1.3")
     implementation("io.ktor:ktor-server-content-negotiation:3.1.3")

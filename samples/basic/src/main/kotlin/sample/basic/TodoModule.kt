@@ -1,7 +1,6 @@
 package sample.basic
 
-import com.fajrbahr.mediatork.HandlerRegistry
-import com.fajrbahr.mediatork.api.MediatorRegistrar
+import com.fajrbahr.mediatork.MediatorBuilder
 
 // ── Domain model ──────────────────────────────────────────────────────────────
 
@@ -18,13 +17,13 @@ class TodoStore {
     fun findById(id: String): Todo? = todos[id]
 }
 
-// ── Registrar ─────────────────────────────────────────────────────────────────
+// ── Module ──────────────────────────────────────────────────────────────────
+// The FP replacement for a MediatorRegistrar: a MediatorBuilder extension that
+// registers this slice's handlers and notification listeners.
 
-class TodoRegistrar(private val store: TodoStore) : MediatorRegistrar {
-    override fun register(registry: HandlerRegistry) {
-        registry register AddTodoHandler(store)
-        registry register GetTodoHandler(store)
-        registry registerNotification LogTodoAddedHandler()
-        registry registerNotification SyncTodoAddedHandler()
-    }
+fun MediatorBuilder.todoModule(store: TodoStore) {
+    handle(addTodoHandler(store))
+    handle(getTodoHandler(store))
+    notification(notificationHandler = logTodoAddedHandler)
+    notification(notificationHandler = syncTodoAddedHandler)
 }

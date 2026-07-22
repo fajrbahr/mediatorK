@@ -1,13 +1,13 @@
 package sample.basic
 
-import com.fajrbahr.mediatork.MediatorFactory
+import com.fajrbahr.mediatork.mediatorK
 import kotlinx.coroutines.runBlocking
 
 // ── Entry point ───────────────────────────────────────────────────────────────
 
 fun main() = runBlocking {
     val store = TodoStore()
-    val mediator = MediatorFactory.create(registrars = listOf(TodoRegistrar(store)))
+    val mediator = mediatorK { todoModule(store) }
 
     val todo = mediator.send(AddTodoCommand(id = "1", title = "Buy groceries"))
     println("Created: $todo")

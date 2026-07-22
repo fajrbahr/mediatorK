@@ -5,7 +5,7 @@ import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import com.fajrbahr.mediatork.api.Mediator
-import com.fajrbahr.mediatork.MediatorFactory
+import com.fajrbahr.mediatork.mediatorK
 import com.fajrbahr.mediatork.sample.android.after.AladhanCacheDataSource
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -50,7 +50,7 @@ class AfterPrayerTimesViewModel(
             initializer {
                 val cache = AladhanCacheDataSource()
                 AfterPrayerTimesViewModel(
-                    MediatorFactory.create(registrars = listOf(PrayerTimesRegistrar(cache))),
+                    mediatorK { prayerTimesModule(cache) },
                     city,
                 )
             }

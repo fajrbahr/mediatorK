@@ -1,11 +1,11 @@
 package com.fajrbahr.mediatork.sample.android
 
-import com.fajrbahr.mediatork.MediatorFactory
+import com.fajrbahr.mediatork.mediatorK
 import com.fajrbahr.mediatork.sample.android.after.AladhanCacheDataSource
 import com.fajrbahr.mediatork.sample.android.after.times.GetPrayerTimesRequest
-import com.fajrbahr.mediatork.sample.android.after.times.PrayerTimesRegistrar
 import com.fajrbahr.mediatork.sample.android.after.times.PrayerTime
 import com.fajrbahr.mediatork.sample.android.after.times.TodayPrayerTimes
+import com.fajrbahr.mediatork.sample.android.after.times.prayerTimesModule
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -29,10 +29,7 @@ class GetPrayerTimesHandlerTest {
         val expected = makePrayerTimes()
         cache.savePrayerTimes("Dubai", expected)
 
-        val mediator = MediatorFactory.create(
-            registrars = listOf(PrayerTimesRegistrar(cache)),
-            verifyHandlers = false,
-        )
+        val mediator = mediatorK { prayerTimesModule(cache) }
         val result = mediator.send(GetPrayerTimesRequest(city = "Dubai"))
 
         assertEquals(expected.gregorianDate, result.gregorianDate)
@@ -46,10 +43,7 @@ class GetPrayerTimesHandlerTest {
         val dubaiTimes = makePrayerTimes()
         cache.savePrayerTimes("Dubai", dubaiTimes)
 
-        val mediator = MediatorFactory.create(
-            registrars = listOf(PrayerTimesRegistrar(cache)),
-            verifyHandlers = false,
-        )
+        val mediator = mediatorK { prayerTimesModule(cache) }
         val result = mediator.send(GetPrayerTimesRequest(city = "Dubai"))
 
         assertEquals("04:28", result.fajr.time)

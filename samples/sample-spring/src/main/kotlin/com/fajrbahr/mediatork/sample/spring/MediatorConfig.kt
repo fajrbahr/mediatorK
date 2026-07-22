@@ -1,8 +1,9 @@
 package com.fajrbahr.mediatork.sample.spring
 
-import com.fajrbahr.mediatork.MediatorFactory
 import com.fajrbahr.mediatork.api.Mediator
-import com.fajrbahr.mediatork.api.MediatorRegistrar
+import com.fajrbahr.mediatork.mediatorK
+import com.fajrbahr.mediatork.sample.spring.islamicmonths.islamicMonthsModule
+import com.fajrbahr.mediatork.sample.spring.prayertimes.prayerTimesModule
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 
@@ -10,6 +11,8 @@ import org.springframework.context.annotation.Configuration
 class MediatorConfig {
 
     @Bean
-    fun mediator(registrars: List<MediatorRegistrar>): Mediator =
-        MediatorFactory.create(registrars = registrars)
+    fun mediator(cache: AladhanCache): Mediator = mediatorK {
+        prayerTimesModule(cache)
+        islamicMonthsModule(cache)
+    }
 }

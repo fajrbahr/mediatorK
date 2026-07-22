@@ -6,13 +6,14 @@ group = "com.fajrbahr.mediatork"
 version = "1.0-SNAPSHOT"
 
 repositories {
+    mavenLocal()
     mavenCentral()
 }
 
 dependencies {
     testImplementation(kotlin("test"))
     testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.10.2")
-    implementation("io.github.fajrbahr:mediatork:0.8.1")
+    implementation("io.github.fajrbahr:mediatork:0.9.9.3")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.10.2")
 }
 
